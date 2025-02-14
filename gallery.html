@@ -39,24 +39,30 @@
         }
         nav {
             background: #eac4d5;
-            padding: 15px;
+            padding: 10px;
             display: flex;
             justify-content: center;
             max-width: 900px;
             margin: 20px auto;
             border-radius: 10px;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: nowrap;
-            overflow-x: auto;
         }
         nav a {
             text-decoration: none;
             font-weight: bold;
             color: #5a3e36;
-            font-size: 18px;
+            font-size: clamp(12px, 2vw, 18px);
             transition: color 0.3s ease;
-            padding: 10px 15px;
+            padding: 8px 12px;
             white-space: nowrap;
+        }
+        nav a:hover {
+            color: white;
+        }
+        nav a.disabled {
+            pointer-events: none;
+            color: grey;
         }
         nav a:hover {
             color: white;
@@ -90,10 +96,11 @@
     </div>
 
     <nav>
-        <a href="home.html">Home</a>
+        <a href="index.html">Home</a>
         <a href="about.html">About Us</a>
-        <a href="order.html">Order Now</a>
+        <a href="#"class="disabled">Gallery</a>
         <a href="contact.html">Contact Us</a>
+        <a href="order.html">Order Now</a>
     </nav>
 
     <div class="container gallery-section">
@@ -105,5 +112,4 @@
     </div>
 </body>
 </html>
-
 
