@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gallery - Rebel Ribbon Cookies</title>
+    <style>
+        body { font-family: 'Georgia', serif; text-align: center; background: #fef6f0; color: #5a3e36; margin: 0; padding: 0; }
+        .container { width: 90%; max-width: 900px; margin: 20px auto; padding: 20px; background: #fff; border-radius: 15px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); position: relative; }
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 350px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+            padding: 20px;
+        }
+        .hero img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50%;
+            max-width: 250px;
+            opacity: 0.15;
+            z-index: 1;
+        }
+        .hero h1 {
+            position: relative;
+            z-index: 2;
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        nav {
+            background: #eac4d5;
+            padding: 15px;
+            display: flex;
+            justify-content: center;
+            max-width: 900px;
+            margin: 20px auto;
+            border-radius: 10px;
+            gap: 15px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+        }
+        nav a {
+            text-decoration: none;
+            font-weight: bold;
+            color: #5a3e36;
+            font-size: 18px;
+            transition: color 0.3s ease;
+            padding: 10px 15px;
+            white-space: nowrap;
+        }
+        nav a:hover {
+            color: white;
+        }
+        .gallery-section {
+            padding: 20px;
+            background: white;
+            margin-top: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .instagram-gallery {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+        }
+        .instagram-gallery iframe {
+            border: none;
+            width: 100%;
+            max-width: 600px;
+            height: 700px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container hero">
+        <img src="Bowtrans.png" alt="Rebel Ribbon Logo">
+        <h1>Gallery</h1>
+        <p>See our latest cookie creations!</p>
+    </div>
+
+    <nav>
+        <a href="home.html">Home</a>
+        <a href="about.html">About Us</a>
+        <a href="order.html">Order Now</a>
+        <a href="contact.html">Contact Us</a>
+    </nav>
+
+    <div class="container gallery-section">
+        <h2>Our Latest Creations</h2>
+        <p>Check out our latest cookies directly from our Instagram feed!</p>
+        <div class="instagram-gallery">
+            <iframe src="https://www.instagram.com/rebelribbon/embed" scrolling="no"></iframe>
+        </div>
+    </div>
+</body>
+</html>
+
+
