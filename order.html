@@ -39,27 +39,30 @@
         }
         nav {
             background: #eac4d5;
-            padding: 15px;
+            padding: 10px;
             display: flex;
             justify-content: center;
             max-width: 900px;
             margin: 20px auto;
             border-radius: 10px;
-            gap: 15px;
+            gap: 10px;
             flex-wrap: nowrap;
-            overflow-x: auto;
         }
         nav a {
             text-decoration: none;
             font-weight: bold;
             color: #5a3e36;
-            font-size: 18px;
+            font-size: clamp(12px, 2vw, 18px);
             transition: color 0.3s ease;
-            padding: 10px 15px;
+            padding: 8px 12px;
             white-space: nowrap;
         }
         nav a:hover {
             color: white;
+        }
+        nav a.disabled {
+            pointer-events: none;
+            color: grey;
         }
         .order-section {
             padding: 20px;
@@ -84,18 +87,29 @@
     </div>
 
     <nav>
-        <a href="home.html">Home</a>
+        <a href="index.html">Home</a>
         <a href="about.html">About Us</a>
         <a href="gallery.html">Gallery</a>
         <a href="contact.html">Contact Us</a>
+        <a href="#" class="disabled">Order Now</a>
     </nav>
 
     <div class="container order-section">
         <h2>Place Your Order</h2>
         <p>Customize your order and let us create something special just for you!</p>
-        <iframe src="YOUR_TALLY_FORM_LINK_HERE"></iframe>
+        <iframe data-tally-src="https://tally.so/embed/w8RNW5?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy" width="100%" height="1200" frameborder="0" marginheight="0" marginwidth="0" title="Rebel Ribbon Order Form"></iframe>
+        <script>
+            var d=document,w="https://tally.so/widgets/embed.js",v=function(){
+                "undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach((function(e){e.src=e.dataset.tallySrc}))
+            };
+            if("undefined"!=typeof Tally)v();else if(d.querySelector('script[src="'+w+'"]')==null){
+                var s=d.createElement("script");
+                s.src=w;
+                s.onload=v;
+                s.onerror=v;
+                d.body.appendChild(s);
+            }
+        </script>
     </div>
 </body>
 </html>
-
-
