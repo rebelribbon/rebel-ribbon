@@ -71,37 +71,12 @@
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
-        .contact-form input, .contact-form textarea {
-            width: calc(100% - 40px);
+        .tally-form {
+            width: 100%;
             max-width: 600px;
-            padding: 10px;
-            margin: 10px auto;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            font-size: 16px;
-            display: block;
-        }
-        .contact-form button {
-            display: block;
-            width: 200px;
-            margin: auto;
-            padding: 12px;
-            background: #eac4d5;
+            height: 600px;
             border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            color: #5a3e36;
-        }
-        .contact-form button:hover {
-            background: #d89bab;
-            color: white;
-        }
-        #form-message {
-            color: green;
-            font-weight: bold;
-            margin-top: 10px;
+            border-radius: 10px;
         }
     </style>
 </head>
@@ -122,35 +97,23 @@
 
     <div class="container contact-section">
         <h2>Get in Touch</h2>
-        <p>Have a question or special request? Send us a message below, and we'll get back to you as soon as possible!</p>
-        <form class="contact-form" id="contactForm">
-            <input type="text" name="name" id="name" placeholder="Your Name" required>
-            <input type="email" name="email" id="email" placeholder="Your Email" required>
-            <textarea name="message" id="message" rows="4" placeholder="Your Message" required></textarea>
-            <button type="submit">Send Message</button>
-        </form>
-        <p id="form-message"></p>
+        <p>Have a question or special request? Fill out the form below, and we’ll get back to you as soon as possible.</p>
+
+        <!-- Tally.so Embedded Form -->
+        <iframe class="tally-form" data-tally-src="https://tally.so/embed/3NRldB?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy"></iframe>
+
+        <!-- Tally Script for Proper Loading -->
+        <script>
+            var d=document,w="https://tally.so/widgets/embed.js",v=function(){
+                "undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("iframe[data-tally-src]:not([src])")
+                .forEach((function(e){e.src=e.dataset.tallySrc}));
+            };
+            if("undefined"!=typeof Tally)v();
+            else if(d.querySelector('script[src="'+w+'"]')==null){
+                var s=d.createElement("script");
+                s.src=w,s.onload=v,s.onerror=v,d.body.appendChild(s);
+            }
+        </script>
     </div>
-
-    <script>
-        document.getElementById("contactForm").addEventListener("submit", function(event) {
-            event.preventDefault();
-            
-            let formData = new FormData(this);
-
-            fetch("send_email.php", {
-                method: "POST",
-                body: formData
-            })
-            .then(response => response.text())
-            .then(data => {
-                document.getElementById("form-message").innerText = data;
-                document.getElementById("contactForm").reset();
-            })
-            .catch(error => {
-                document.getElementById("form-message").innerText = "Error sending message. Please try again.";
-            });
-        });
-    </script>
 </body>
 </html>
