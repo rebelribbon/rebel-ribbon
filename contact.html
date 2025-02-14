@@ -98,6 +98,11 @@
             background: #d89bab;
             color: white;
         }
+        #form-message {
+            color: green;
+            font-weight: bold;
+            margin-top: 10px;
+        }
     </style>
 </head>
 <body>
@@ -118,13 +123,34 @@
     <div class="container contact-section">
         <h2>Get in Touch</h2>
         <p>Have a question or special request? Send us a message below, and we'll get back to you as soon as possible!</p>
-        <form class="contact-form">
-            <input type="text" name="name" placeholder="Your Name" required>
-            <input type="email" name="email" placeholder="Your Email" required>
-            <textarea name="message" rows="4" placeholder="Your Message" required></textarea>
+        <form class="contact-form" id="contactForm">
+            <input type="text" name="name" id="name" placeholder="Your Name" required>
+            <input type="email" name="email" id="email" placeholder="Your Email" required>
+            <textarea name="message" id="message" rows="4" placeholder="Your Message" required></textarea>
             <button type="submit">Send Message</button>
         </form>
+        <p id="form-message"></p>
     </div>
+
+    <script>
+        document.getElementById("contactForm").addEventListener("submit", function(event) {
+            event.preventDefault();
+            
+            let formData = new FormData(this);
+
+            fetch("send_email.php", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.text())
+            .then(data => {
+                document.getElementById("form-message").innerText = data;
+                document.getElementById("contactForm").reset();
+            })
+            .catch(error => {
+                document.getElementById("form-message").innerText = "Error sending message. Please try again.";
+            });
+        });
+    </script>
 </body>
 </html>
-
