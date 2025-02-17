@@ -103,7 +103,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css">
 <style>
 .swiper {
-    width: 100%;
+    width: 90%;
     max-width: 600px;
     margin: 0 auto;
     padding: 20px 0;
@@ -247,7 +247,7 @@ async function loadReviews() {
             if (reviewText && firstName && lastInitial) {
                 let slide = document.createElement("div");
                 slide.classList.add("swiper-slide");
-                slide.innerHTML = `<p>"${reviewText}" - ${firstName} ${lastInitial}.</p>`;
+                slide.innerHTML = `<p>${reviewText} - ${firstName} ${lastInitial}.</p>`;
                 container.appendChild(slide);
             }
         });
