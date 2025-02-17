@@ -236,10 +236,33 @@ async function loadReviews() {
 
         console.log("Raw CSV Data:", data); // Debugging log
 
-        // Properly split CSV while keeping commas inside quotes
-        const rows = data.split("\n").slice(1).map(row => {
-            return row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map(col => col.replace(/^"|"$/g, '').trim()) || [];
-        });
+        // Function to properly parse CSV, handling commas inside quotes
+        function parseCSV(str) {
+            const result = [];
+            let insideQuote = false;
+            let value = "";
+
+            for (let i = 0; i < str.length; i++) {
+                const char = str[i];
+
+                if (char === '"' && str[i + 1] === '"') {
+                    value += '"'; // Handle escaped double quotes
+                    i++;
+                } else if (char === '"') {
+                    insideQuote = !insideQuote; // Toggle inside quote state
+                } else if (char === "," && !insideQuote) {
+                    result.push(value.trim());
+                    value = "";
+                } else {
+                    value += char;
+                }
+            }
+
+            result.push(value.trim()); // Add last value
+            return result;
+        }
+
+        const rows = data.split("\n").slice(1).map(row => parseCSV(row));
 
         let container = document.getElementById("testimonial-container");
         container.innerHTML = ""; // Clear existing content
