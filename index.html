@@ -243,7 +243,7 @@ async function loadReviews() {
 
         rows.forEach(row => {
             let columns = row.split(",");
-            let reviewText = columns[11]?.replace(/"/g, '').trim(); // Column L (Review), remove quotes
+            let reviewText = columns[12]?.replace(/"/g, '').trim(); // Column L (Review), remove quotes
             let firstName = columns[3]?.replace(/"/g, '').trim(); // Column D (First Name)
             let lastInitial = columns[4]?.replace(/"/g, '').trim().charAt(0); // Column E (Last Name Initial)
 
