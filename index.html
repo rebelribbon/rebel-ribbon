@@ -236,16 +236,18 @@ async function loadReviews() {
 
         console.log("Raw CSV Data:", data); // Debugging log
 
-        const rows = data.split("\n").slice(1); // Skip header row
+        // Properly split CSV while keeping commas inside quotes
+        const rows = data.split("\n").slice(1).map(row => {
+            return row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map(col => col.replace(/^"|"$/g, '').trim()) || [];
+        });
 
         let container = document.getElementById("testimonial-container");
         container.innerHTML = ""; // Clear existing content
 
-        rows.forEach(row => {
-            let columns = row.split(",");
-            let reviewText = columns[12]?.replace(/"/g, '').trim(); // Column L (Review), remove quotes
-            let firstName = columns[3]?.replace(/"/g, '').trim(); // Column D (First Name)
-            let lastInitial = columns[4]?.replace(/"/g, '').trim().charAt(0); // Column E (Last Name Initial)
+        rows.forEach(columns => {
+            let reviewText = columns[11]; // Column L (Review)
+            let firstName = columns[3]; // Column D (First Name)
+            let lastInitial = columns[4]?.charAt(0); // Column E (Last Name Initial)
 
             if (reviewText && firstName && lastInitial) {
                 let slide = document.createElement("div");
@@ -260,7 +262,8 @@ async function loadReviews() {
         new Swiper(".swiper", {
             loop: true,
             autoplay: { delay: 3000 },
-            });
+            pagination: { el: ".swiper-pagination", clickable: true },
+        });
 
     } catch (error) {
         console.error("Error fetching reviews:", error);
