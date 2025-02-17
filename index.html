@@ -236,17 +236,16 @@ async function loadReviews() {
 
         console.log("Raw CSV Data:", data); // Debugging log
 
-        const rows = data.split("\n").slice(1).map(row => {
-            return row.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g)?.map(col => col.replace(/^"|"$/g, '').trim()) || [];
-        });
+        const rows = data.split("\n").slice(1); // Skip header row
 
         let container = document.getElementById("testimonial-container");
         container.innerHTML = ""; // Clear existing content
 
-        rows.forEach(columns => {
-            let reviewText = columns[11]; // Column L (Review)
-            let firstName = columns[3]; // Column D (First Name)
-            let lastInitial = columns[4]?.charAt(0); // Column E (Last Name Initial)
+        rows.forEach(row => {
+            let columns = row.split(",");
+            let reviewText = columns[11]?.replace(/"/g, '').trim(); // Column L (Review), remove quotes
+            let firstName = columns[3]?.replace(/"/g, '').trim(); // Column D (First Name)
+            let lastInitial = columns[4]?.replace(/"/g, '').trim().charAt(0); // Column E (Last Name Initial)
 
             if (reviewText && firstName && lastInitial) {
                 let slide = document.createElement("div");
