@@ -242,7 +242,7 @@ async function loadReviews() {
             let columns = row.split(",");
             let reviewText = columns[12]; // Column L (Review)
             let firstName = columns[4]; // Column D (First Name)
-            let lastInitial = columns[5].charAt(0); // Column E (Last Name Initial)
+            let lastInitial = columns[5].charAt(1); // Column E (Last Name Initial)
 
             if (reviewText && firstName && lastInitial) {
                 let slide = document.createElement("div");
