@@ -100,6 +100,26 @@
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
     </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css">
+<style>
+.swiper {
+    width: 100%;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px 0;
+}
+.swiper-slide {
+    text-align: center;
+    font-style: italic;
+    font-size: 18px;
+    color: #5a3e36;
+    padding: 20px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+</style>
+
 </head>
 <body>
     <div class="container hero">
@@ -143,11 +163,16 @@
        
     </div>
 
-    <div class="container content-section">
-        <h2>What Our Customers Say</h2>
-        <blockquote>"Absolutely stunning cookies! They were the highlight of my event!" – Sarah L.</blockquote>
-        <blockquote>"Perfect balance of beauty and taste. Can’t wait to order again!" – James R.</blockquote>
+<div class="container content-section">
+    <h2>What Our Customers Say</h2>
+    <div class="swiper">
+        <div class="swiper-wrapper" id="testimonial-container">
+            <!-- Reviews will be injected here -->
+        </div>
+        <div class="swiper-pagination"></div>
     </div>
+</div>
+
 
        <div class="container content-section">
         <h2>Frequently Asked Questions</h2>
@@ -199,5 +224,39 @@
             <a href="https://www.instagram.com/rebel_ribbon/" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Instagram</a> 
         </p>
     </footer>
+<script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+<script>
+async function loadReviews() {
+    const response = await fetch("https://docs.google.com/spreadsheets/d/e/1ONgf1I9011IpKLz2CtS_Mk-rBEZVhLRAvJHYMLoCOdo/pub?output=csv");
+    const data = await response.text();
+    const rows = data.split("\n").slice(1); // Skip header row
+
+    let container = document.getElementById("testimonial-container");
+    container.innerHTML = ""; // Clear existing content
+
+    rows.forEach(row => {
+        let columns = row.split(",");
+        let reviewText = columns[11]; // Column L (Review)
+        let firstName = columns[3]; // Column D (First Name)
+        let lastInitial = columns[4].charAt(0); // Column E (Last Name Initial)
+
+        if (reviewText && firstName && lastInitial) {
+            let slide = document.createElement("div");
+            slide.classList.add("swiper-slide");
+            slide.innerHTML = `<p>"${reviewText}" - ${firstName} ${lastInitial}.</p>`;
+            container.appendChild(slide);
+        }
+    });
+
+    new Swiper(".swiper", {
+        loop: true,
+        autoplay: { delay: 3000 },
+        pagination: { el: ".swiper-pagination", clickable: true },
+    });
+}
+
+loadReviews();
+</script>
+
 </body>
 </html>
