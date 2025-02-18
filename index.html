@@ -95,6 +95,38 @@
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
+html, body {
+    width: 100%;
+    overflow-x: hidden; /* Prevents horizontal scrolling */
+    font-size: 100%; /* Base font size */
+}
+
+/* Scale the entire page based on screen width */
+@media screen and (max-width: 900px) {
+    body {
+        transform: scale(0.9); /* Shrinks everything to 90% */
+        transform-origin: top center; /* Ensures proper scaling */
+    }
+}
+
+@media screen and (max-width: 700px) {
+    body {
+        transform: scale(0.85); /* Further reduces for smaller screens */
+    }
+}
+
+@media screen and (max-width: 500px) {
+    body {
+        transform: scale(0.8); /* Scales down more for very small screens */
+    }
+}
+
+@media screen and (max-width: 400px) {
+    body {
+        transform: scale(0.75); /* Shrinks everything for tiny screens */
+    }
+}
+
     </style> 
 
 </head>
