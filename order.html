@@ -5,8 +5,29 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Order Now - Rebel Ribbon Cookies</title>
     <style>
-        body { font-family: 'Georgia', serif; text-align: center; background: #fef6f0; color: #5a3e36; margin: 0; padding: 0; }
-        .container { width: 90%; max-width: 900px; margin: 20px auto; padding: 20px; background: #fff; border-radius: 15px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); position: relative; }
+        body {
+            font-family: 'Georgia', serif;
+            text-align: center;
+            background: #fef6f0;
+            color: #5a3e36;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            box-sizing: border-box;
+        }
+        
         .hero {
             display: flex;
             flex-direction: column;
@@ -14,13 +35,10 @@
             justify-content: center;
             text-align: center;
             height: 350px;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            position: relative;
             overflow: hidden;
-            padding: 20px;
+            box-sizing: border-box;
         }
+        
         .hero img {
             position: absolute;
             top: 50%;
@@ -30,52 +48,76 @@
             max-width: 250px;
             opacity: 0.15;
             z-index: 1;
+            box-sizing: border-box;
         }
+        
         .hero h1 {
             position: relative;
             z-index: 2;
             font-size: 32px;
             margin-bottom: 10px;
+            box-sizing: border-box;
         }
+        
+        .hero p {
+            position: relative;
+            z-index: 2;
+            box-sizing: border-box;
+        }
+
         nav {
             background: #eac4d5;
             padding: 10px;
             display: flex;
             justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
             max-width: 900px;
             margin: 20px auto;
             border-radius: 10px;
-            gap: 10px;
-            flex-wrap: nowrap;
+            gap: 5px;
+            box-sizing: border-box;
+            width: 90%;
         }
+        
         nav a {
             text-decoration: none;
             font-weight: bold;
             color: #5a3e36;
-            font-size: clamp(12px, 2vw, 18px);
+            font-size: clamp(12px, 2vw, 16px);
             transition: color 0.3s ease;
-            padding: 8px 12px;
+            padding: 6px 10px;
             white-space: nowrap;
+            border-radius: 5px;
+            box-sizing: border-box;
         }
+        
         nav a:hover {
             color: white;
+            box-sizing: border-box;
         }
+        
         nav a.disabled {
             pointer-events: none;
             color: grey;
+            box-sizing: border-box;
         }
+        
         .order-section {
             padding: 20px;
             background: white;
             margin-top: 20px;
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
         }
+        
         iframe {
             width: 100%;
             height: 1200px;
             border: none;
             border-radius: 10px;
+            box-sizing: border-box;
         }
     </style>
 </head>
