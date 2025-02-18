@@ -12,7 +12,8 @@
             color: #5a3e36;
             margin: 0;
             padding: 0;
-            overflow-x: hidden; /* Prevent horizontal scroll */
+            overflow-x: hidden;
+            box-sizing: border-box;
         }
         .container, nav {
             width: 90%;
@@ -23,7 +24,7 @@
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
             position: relative;
-            box-sizing: border-box; /* Include padding and border in element's total width and height*/
+            box-sizing: border-box;
         }
         .hero {
             display: flex;
@@ -33,6 +34,7 @@
             text-align: center;
             height: 350px;
             overflow: hidden;
+            position: relative;
         }
         .hero img {
             position: absolute;
@@ -43,51 +45,58 @@
             max-width: 250px;
             opacity: 0.15;
             z-index: 1;
+            pointer-events: none;
         }
-        .hero h1 {
+        .hero h1, .hero p {
             position: relative;
             z-index: 2;
+        }
+        .hero h1 {
             font-size: 32px;
             margin-bottom: 10px;
         }
-        /* Style for the "Order Now" button in the hero section */
         .hero .order-button {
-            background-color: #eac4d5; /* Background color */
-            color: #5a3e36; /* Text color */
-            padding: 10px 20px; /* Padding */
-            border-radius: 5px; /* Rounded corners */
-            text-decoration: none; /* Remove underline */
-            font-weight: bold; /* Bold text */
-            margin-top: 20px; /* Add some space */
-            display: inline-block; /* Make it a block element */
-            font-size: clamp(12px, 2vw, 16px); /* Use the same clamp as nav links */
-              box-sizing: border-box; /* Include padding and border in element's total width and height*/
+            background-color: #eac4d5;
+            color: #5a3e36;
+            padding: 6px 10px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+            display: inline-block;
+            font-size: clamp(12px, 2vw, 16px);
+            box-sizing: border-box;
+            transition: color 0.3s ease;
+            position: relative;
+            z-index: 3;
         }
-
+        .hero .order-button:hover {
+            color: white;
+        }
         nav {
             background: #eac4d5;
             padding: 10px;
             display: flex;
-            justify-content: center; /* Center the content */
-            align-items: center; /* Vertically align the content */
-            flex-wrap: wrap; /* Allow wrapping */
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
             max-width: 900px;
             margin: 20px auto;
             border-radius: 10px;
-            gap: 5px; /* Reduce gap */
-            box-sizing: border-box; /* Include padding and border in element's total width and height*/
-             width: 90%; /* Match the width of other containers */
+            gap: 5px;
+            box-sizing: border-box;
+            width: 90%;
         }
         nav a {
             text-decoration: none;
             font-weight: bold;
             color: #5a3e36;
-            font-size: clamp(12px, 2vw, 16px); /* Adjusted font size */
+            font-size: clamp(12px, 2vw, 16px);
             transition: color 0.3s ease;
-            padding: 6px 10px; /* Adjusted padding */
+            padding: 6px 10px;
             white-space: nowrap;
-            border-radius: 5px; /* Add border-radius for visual */
-            box-sizing: border-box; /* Include padding and border in element's total width and height*/
+            border-radius: 5px;
+            box-sizing: border-box;
         }
         nav a:hover {
             color: white;
@@ -102,7 +111,7 @@
             margin-top: 20px;
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            box-sizing: border-box; /* Include padding and border in element's total width and height*/
+            box-sizing: border-box;
         }
     </style>
 </head>
@@ -119,7 +128,6 @@
         <a href="about.html">About Us</a>
         <a href="gallery.html">Gallery</a>
         <a href="contact.html">Contact Us</a>
-        <!-- Removed "Order Now" from here -->
     </nav>
 
     <div class="container content-section">
