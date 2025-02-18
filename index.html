@@ -8,177 +8,94 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css">
     
  <style>
-/* Prevent Overflow Issues */
-html, body {
-    width: 100%;
-    max-width: 100vw;
-    overflow-x: hidden; /* Stops horizontal scrolling */
-    font-size: 100%;
-}
-
-/* 🔹 Fix for Navigation Bar */
-nav {
-    background: #eac4d5;
-    padding: 10px;
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap; /* Ensures it wraps correctly */
-    max-width: 900px;
-    margin: 20px auto;
-    border-radius: 10px;
-    gap: 5px;
-}
-
-nav a {
-    text-decoration: none;
-    font-weight: bold;
-    color: #5a3e36;
-    font-size: clamp(12px, 1.6vw, 16px);
-    transition: color 0.3s ease;
-    padding: 6px 8px;
-    white-space: nowrap;
-    flex: 1;
-    text-align: center;
-    min-width: fit-content;
-}
-
-/* 🔹 Hero Section Fix */
-.hero {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    text-align: center;
-    height: auto;
-    max-height: 350px; /* Keeps it from taking up too much space */
-    background: #fff;
-    border-radius: 15px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    padding: clamp(12px, 3vw, 25px);
-    position: relative;
-    overflow: hidden;
-    max-width: 95%;
-}
-
-/* 🔹 Hero Background Image */
-.hero img {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 55%;
-    max-width: 130px;
-    opacity: 0.08;
-    z-index: 1;
-}
-
-/* 🔹 Hero Text */
-.hero h1 {
-    position: relative;
-    z-index: 2;
-    font-size: clamp(18px, 3.5vw, 26px);
-    margin-bottom: clamp(5px, 1.2vw, 10px);
-    line-height: 1.2;
-}
-
-.hero p {
-    position: relative;
-    z-index: 2;
-    font-size: clamp(12px, 1.8vw, 16px);
-    margin-bottom: clamp(5px, 1.2vw, 10px);
-}
-
-/* 🔹 Hero Button */
-.hero .order-button {
-    position: relative;
-    z-index: 2;
-    font-size: clamp(12px, 1.8vw, 15px);
-    padding: clamp(5px, 1.2vw, 8px) clamp(10px, 2vw, 18px);
-}
-
-/* 🔹 Instagram Widget Fix */
-.instagram-widget {
-    width: 100%;
-    max-width: 350px; /* Ensures it doesn’t stretch */
-    margin: 0 auto;
-    text-align: center;
-    max-height: 250px; /* Prevents excessive height */
-    overflow: hidden;
-}
-
-.instagram-widget iframe {
-    max-width: 100%;
-    height: auto;
-}
-
-/* 🔹 Adjust Layout for Desktop */
-@media screen and (min-width: 1024px) {
-    .hero {
-        max-width: 70%; /* Prevents it from being too wide */
-        max-height: 280px; /* Keeps the hero section balanced */
-    }
-    
-    .instagram-widget {
-        max-width: 450px; /* Keeps Instagram widget proportional */
-    }
-}
-
-    <style>
-        body { 
-            font-family: 'Georgia', serif; 
-            text-align: center; 
-            background: #fef6f0; 
-            color: #5a3e36; 
-            margin: 0; 
-            padding: 0; 
-        }
-
-        .container { 
-            width: 90%; 
-            max-width: 900px; 
-            margin: 20px auto; 
-            padding: 20px; 
-            background: #fff; 
-            border-radius: 15px; 
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); 
-            position: relative; 
-        }
-
+        body { font-family: 'Georgia', serif; text-align: center; background: #fef6f0; color: #5a3e36; margin: 0; padding: 0; }
+        .container { width: 90%; max-width: 900px; margin: 20px auto; padding: 20px; background: #fff; border-radius: 15px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); position: relative; }
         .hero {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             text-align: center;
-            height: auto;
+            height: 350px;
             background: #fff;
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            padding: clamp(20px, 5vw, 40px);
             position: relative;
             overflow: hidden;
-            max-width: 90%;
+            padding: 20px;
         }
-
-        /* Hero Image */
         .hero img {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            width: 70%;
-            max-width: 180px;
-            opacity: 0.08;
+            width: 50%;
+            max-width: 250px;
+            opacity: 0.15;
             z-index: 1;
         }
-
         .hero h1 {
             position: relative;
             z-index: 2;
-           
-
-    </style> 
-
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .hero h1, .hero p {
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero .order-button {
+            margin-top: 15px;
+            padding: 10px 20px;
+            background: #eac4d5;
+            color: #5a3e36;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+        
+        .hero .order-button:hover {
+            background: #d49eb3;
+            color: white;
+        }
+        
+        nav {
+            background: #eac4d5;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            max-width: 900px;
+            margin: 20px auto;
+            border-radius: 10px;
+            gap: 10px;
+            flex-wrap: nowrap;
+        }
+        nav a {
+            text-decoration: none;
+            font-weight: bold;
+            color: #5a3e36;
+            font-size: clamp(12px, 2vw, 18px);
+            transition: color 0.3s ease;
+            padding: 8px 12px;
+            white-space: nowrap;
+        }
+        nav a:hover {
+            color: white;
+        }
+        nav a.disabled {
+            pointer-events: none;
+            color: grey;
+        }
+        .about-section {
+            padding: 20px;
+            background: white;
+            margin-top: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+    </style>
 </head>
 <body>
     <div class="container hero">
