@@ -4,9 +4,28 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Thank You - Rebel Ribbon Cookies</title>
-   <style>
-        body { font-family: 'Georgia', serif; text-align: center; background: #fef6f0; color: #5a3e36; margin: 0; padding: 0; }
-        .container { width: 90%; max-width: 900px; margin: 20px auto; padding: 20px; background: #fff; border-radius: 15px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); position: relative; }
+    <style>
+        body {
+            font-family: 'Georgia', serif;
+            text-align: center;
+            background: #fef6f0;
+            color: #5a3e36;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+        .container, nav {
+            width: 90%;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            box-sizing: border-box;
+        }
         .hero {
             display: flex;
             flex-direction: column;
@@ -14,12 +33,7 @@
             justify-content: center;
             text-align: center;
             height: 350px;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            position: relative;
             overflow: hidden;
-            padding: 20px;
         }
         .hero img {
             position: absolute;
@@ -31,38 +45,52 @@
             opacity: 0.15;
             z-index: 1;
         }
-        .hero h1, .hero p {
+        .hero h1 {
             position: relative;
             z-index: 2;
-        }
-        .hero h1 {
             font-size: 32px;
             margin-bottom: 10px;
         }
         .hero p {
-            font-size: 18px;
-            max-width: 80%;
-            margin-bottom: 15px;
+            position: relative;
+            z-index: 2;
+        }
+        .hero .order-button {
+            background-color: #eac4d5;
+            color: #5a3e36;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 20px;
+            display: inline-block;
+            font-size: clamp(12px, 2vw, 16px);
+            box-sizing: border-box;
         }
         nav {
             background: #eac4d5;
             padding: 10px;
             display: flex;
             justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
             max-width: 900px;
             margin: 20px auto;
             border-radius: 10px;
-            gap: 10px;
-            flex-wrap: nowrap;
+            gap: 5px;
+            box-sizing: border-box;
+            width: 90%;
         }
         nav a {
             text-decoration: none;
             font-weight: bold;
             color: #5a3e36;
-            font-size: clamp(12px, 2vw, 18px);
+            font-size: clamp(12px, 2vw, 16px);
             transition: color 0.3s ease;
-            padding: 8px 12px;
+            padding: 6px 10px;
             white-space: nowrap;
+            border-radius: 5px;
+            box-sizing: border-box;
         }
         nav a:hover {
             color: white;
@@ -71,35 +99,34 @@
             pointer-events: none;
             color: grey;
         }
-        
         .content-section {
             padding: 20px;
             background: white;
             margin-top: 20px;
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box;
         }
     </style>
 </head>
 <body>
-
     <div class="container hero">
         <img src="Bowtrans.png" alt="Rebel Ribbon Logo">
         <h1>Thank You!</h1>
+        <p>Your order has been received!</p>
+        
     </div>
-    
+
     <nav>
         <a href="index.html">Home</a>
         <a href="about.html">About Us</a>
         <a href="gallery.html">Gallery</a>
         <a href="contact.html">Contact Us</a>
-        <a href="order.html">Order Now</a>
     </nav>
 
-    <div class="container message">
-        <p>Your order has been received! We appreciate your support and can't wait to create something special just for you.</p>
+    <div class="container content-section">
+        <p>We appreciate your support and can't wait to create something special just for you.</p>
         <p>We'll be in touch soon with order details and updates.</p>
-        
     </div>
     <footer class="container" style="background: #eac4d5; padding: 10px; margin-top: 20px; border-radius: 5px; text-align: center; font-size: 14px;">
         <p>&copy; 2025 Rebel Ribbon Cookies. All Rights Reserved.</p>
