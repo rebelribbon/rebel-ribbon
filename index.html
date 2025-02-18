@@ -114,9 +114,14 @@
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
         }
         
-        /* Instagram Widget Fix */
+        /* Ensure all containers are uniform and prevent overflow */
+        .container, .instagram-widget, .elfsight-app, .swiper {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
         .instagram-widget {
-            max-width: 100%;
             overflow: hidden;
             padding: 10px 0;
             display: flex;
