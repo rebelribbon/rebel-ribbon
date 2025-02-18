@@ -5,8 +5,27 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gallery - Rebel Ribbon Cookies</title>
     <style>
-        body { font-family: 'Georgia', serif; text-align: center; background: #fef6f0; color: #5a3e36; margin: 0; padding: 0; }
-        .container { width: 90%; max-width: 900px; margin: 20px auto; padding: 20px; background: #fff; border-radius: 15px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); position: relative; }
+        body {
+            font-family: 'Georgia', serif;
+            text-align: center;
+            background: #fef6f0;
+            color: #5a3e36;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+            box-sizing: border-box;
+        }
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            box-sizing: border-box;
+        }
         .hero {
             display: flex;
             flex-direction: column;
@@ -14,12 +33,8 @@
             justify-content: center;
             text-align: center;
             height: 350px;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            position: relative;
             overflow: hidden;
-            padding: 20px;
+             box-sizing: border-box;
         }
         .hero img {
             position: absolute;
@@ -30,39 +45,67 @@
             max-width: 250px;
             opacity: 0.15;
             z-index: 1;
+             box-sizing: border-box;
         }
         .hero h1 {
             position: relative;
             z-index: 2;
             font-size: 32px;
             margin-bottom: 10px;
+             box-sizing: border-box;
         }
+         .hero p {
+            position: relative;
+            z-index: 2;
+             box-sizing: border-box;
+        }
+        /* Style for the "Order Now" button in the hero section */
+        .hero .order-button {
+            background-color: #eac4d5; /* Background color */
+            color: #5a3e36; /* Text color */
+            padding: 10px 20px; /* Padding */
+            border-radius: 5px; /* Rounded corners */
+            text-decoration: none; /* Remove underline */
+            font-weight: bold; /* Bold text */
+            margin-top: 20px; /* Add some space */
+            display: inline-block; /* Make it a block element */
+            font-size: clamp(12px, 2vw, 16px); /* Use the same clamp as nav links */
+             box-sizing: border-box;
+        }
+
         nav {
             background: #eac4d5;
             padding: 10px;
             display: flex;
             justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
             max-width: 900px;
             margin: 20px auto;
             border-radius: 10px;
-            gap: 10px;
-            flex-wrap: nowrap;
+            gap: 5px;
+            box-sizing: border-box;
+             width: 90%; /* Match the width of other containers */
         }
         nav a {
             text-decoration: none;
             font-weight: bold;
             color: #5a3e36;
-            font-size: clamp(12px, 2vw, 18px);
+            font-size: clamp(12px, 2vw, 16px);
             transition: color 0.3s ease;
-            padding: 8px 12px;
+            padding: 6px 10px;
             white-space: nowrap;
+            border-radius: 5px;
+             box-sizing: border-box;
         }
         nav a:hover {
             color: white;
+             box-sizing: border-box;
         }
         nav a.disabled {
             pointer-events: none;
             color: grey;
+             box-sizing: border-box;
         }
         .gallery-section {
             padding: 20px;
@@ -70,12 +113,14 @@
             margin-top: 20px;
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+             box-sizing: border-box;
         }
         .instagram-gallery {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             gap: 15px;
+             box-sizing: border-box;
         }
         .instagram-gallery iframe {
             width: 100%;
@@ -83,6 +128,7 @@
             height: auto;
             aspect-ratio: 3 / 4;
             border: none;
+             box-sizing: border-box;
         }
     </style>
 </head>
@@ -91,6 +137,7 @@
         <img src="Bowtrans.png" alt="Rebel Ribbon Logo">
         <h1>Gallery</h1>
         <p>See our latest cookie creations!</p>
+         <a href="order.html" class="order-button">Order Now</a>
     </div>
 
     <nav>
@@ -98,7 +145,6 @@
         <a href="about.html">About Us</a>
         <a href="#" class="disabled">Gallery</a>
         <a href="contact.html">Contact Us</a>
-        <a href="order.html">Order Now</a>
     </nav>
 
     <div class="container gallery-section">
