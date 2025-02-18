@@ -5,8 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Us - Rebel Ribbon Cookies</title>
     <style>
-        body { font-family: 'Georgia', serif; text-align: center; background: #fef6f0; color: #5a3e36; margin: 0; padding: 0; }
-        .container { width: 90%; max-width: 900px; margin: 20px auto; padding: 20px; background: #fff; border-radius: 15px; box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); position: relative; }
+        body {
+            font-family: 'Georgia', serif;
+            text-align: center;
+            background: #fef6f0;
+            color: #5a3e36;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden; /* Prevent horizontal scroll */
+        }
+        .container, nav {
+            width: 90%;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            box-sizing: border-box; /* Include padding and border in element's total width and height*/
+        }
         .hero {
             display: flex;
             flex-direction: column;
@@ -14,12 +32,7 @@
             justify-content: center;
             text-align: center;
             height: 350px;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            position: relative;
             overflow: hidden;
-            padding: 20px;
         }
         .hero img {
             position: absolute;
@@ -37,25 +50,44 @@
             font-size: 32px;
             margin-bottom: 10px;
         }
+        /* Style for the "Order Now" button in the hero section */
+        .hero .order-button {
+            background-color: #eac4d5; /* Background color */
+            color: #5a3e36; /* Text color */
+            padding: 10px 20px; /* Padding */
+            border-radius: 5px; /* Rounded corners */
+            text-decoration: none; /* Remove underline */
+            font-weight: bold; /* Bold text */
+            margin-top: 20px; /* Add some space */
+            display: inline-block; /* Make it a block element */
+            font-size: clamp(12px, 2vw, 16px); /* Use the same clamp as nav links */
+              box-sizing: border-box; /* Include padding and border in element's total width and height*/
+        }
+
         nav {
             background: #eac4d5;
             padding: 10px;
             display: flex;
-            justify-content: center;
+            justify-content: center; /* Center the content */
+            align-items: center; /* Vertically align the content */
+            flex-wrap: wrap; /* Allow wrapping */
             max-width: 900px;
             margin: 20px auto;
             border-radius: 10px;
-            gap: 10px;
-            flex-wrap: nowrap;
+            gap: 5px; /* Reduce gap */
+            box-sizing: border-box; /* Include padding and border in element's total width and height*/
+             width: 90%; /* Match the width of other containers */
         }
         nav a {
             text-decoration: none;
             font-weight: bold;
             color: #5a3e36;
-            font-size: clamp(12px, 2vw, 18px);
+            font-size: clamp(12px, 2vw, 16px); /* Adjusted font size */
             transition: color 0.3s ease;
-            padding: 8px 12px;
+            padding: 6px 10px; /* Adjusted padding */
             white-space: nowrap;
+            border-radius: 5px; /* Add border-radius for visual */
+            box-sizing: border-box; /* Include padding and border in element's total width and height*/
         }
         nav a:hover {
             color: white;
@@ -70,6 +102,7 @@
             margin-top: 20px;
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            box-sizing: border-box; /* Include padding and border in element's total width and height*/
         }
     </style>
 </head>
@@ -78,14 +111,15 @@
         <img src="Bowtrans.png" alt="Rebel Ribbon Logo">
         <h1>About Us</h1>
         <p>Our journey, our passion, and our cookies.</p>
+        <a href="order.html" class="order-button">Order Now</a>
     </div>
 
     <nav>
-        <a href="index.html" >Home</a>
-        <a href="#"class="disabled">About Us</a>
+        <a href="index.html">Home</a>
+        <a href="#" class="disabled">About Us</a>
         <a href="gallery.html">Gallery</a>
         <a href="contact.html">Contact Us</a>
-        <a href="order.html">Order Now</a>
+        <!-- Removed "Order Now" from here -->
     </nav>
 
     <div class="container about-section">
@@ -93,25 +127,16 @@
         <p>At Rebel Ribbon, we believe cookies should do more than taste good—they should tell a story, create connections, and leave a lasting impression.</p>
         <div style="display: flex; align-items: center; gap: 20px;">
             <img src="alinka.png" alt="Alinka Chalker" style="width: 200px; border-radius: 10px;">
-            <p>In 2017, Alinka turned her passion for baking and art into a creative outlet, founding Alinka’s Custom Cookies. What started as a small, home-based business quickly became known for its intricate designs, attention to detail, and unwavering commitment to quality. With a deep love for both baking and design, she built her business on creativity, craftsmanship, and the joy of turning simple cookies into edible works of art. Over the years, her creations became more than just desserts—they became thoughtful, personalized gifts that made life’s special moments even sweeter.</p>
-            
+            <p>In 2017, Alinka turned her passion for baking and art into a creative outlet, founding Alinka's Custom Cookies. What started as a small, home-based business quickly became known for its intricate designs, attention to detail, and unwavering commitment to quality. With a deep love for both baking and design, she built her business on creativity, craftsmanship, and the joy of turning simple cookies into edible works of art. Over the years, her creations became more than just desserts—they became thoughtful, personalized gifts that made life's special moments even sweeter.</p>
         </div>
         <div style="display: flex; align-items: center; gap: 20px; flex-direction: row-reverse;">
             <img src="tabata.png" alt="Tabata Santiago Kim" style="width: 200px; border-radius: 10px;">
-            <p>In 2025, her sister Tabata joined the journey, bringing new energy and vision. More than just business partners, they are lifelong confidantes—sisters who have always leaned on each other through every challenge and triumph. Together, they rebranded as Rebel Ribbon, a reflection of their shared creativity, strong bond, and passion for making life’s moments more meaningful.</p>
-            
+            <p>In 2025, her sister Tabata joined the journey, bringing new energy and vision. More than just business partners, they are lifelong confidantes—sisters who have always leaned on each other through every challenge and triumph. Together, they rebranded as Rebel Ribbon, a reflection of their shared creativity, strong bond, and passion for making life's moments more meaningful.</p>
         </div>
         <div style="display: flex; align-items: center; gap: 20px;">
-            
-
-            <p>As a woman-owned small business, Rebel Ribbon is built on the belief that the smallest details make the biggest impact. From birthdays and weddings to corporate events and branded gifts, we bring artistry and purpose to every cookie. Whether it’s a heartfelt gift, an elegant wedding favor, or a signature touch for a business, each cookie is meticulously designed, made with high-quality ingredients, and beautifully packaged to elevate any occasion.</p>
-            
+            <p>As a woman-owned small business, Rebel Ribbon is built on the belief that the smallest details make the biggest impact. From birthdays and weddings to corporate events and branded gifts, we bring artistry and purpose to every cookie. Whether it's a heartfelt gift, an elegant wedding favor, or a signature touch for a business, each cookie is meticulously designed, made with high-quality ingredients, and beautifully packaged to elevate any occasion.</p>
         </div>
         <p>But beyond our cookies, we care about the experience. From the moment you place an order to the first bite, every detail is crafted with intention. Our recipes are made with love, our designs are thoughtfully created, and our packaging is meant to bring joy.</p>
-        <div style="display: flex; align-items: center; gap: 20px; flex-direction: row-reverse;">
-           
-            
-        </div>
     </div>
     <footer class="container" style="background: #eac4d5; padding: 10px; margin-top: 20px; border-radius: 5px; text-align: center; font-size: 14px;">
         <p>&copy; 2025 Rebel Ribbon Cookies. All Rights Reserved.</p>
@@ -122,4 +147,3 @@
     </footer>
 </body>
 </html>
-
