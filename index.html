@@ -37,7 +37,8 @@
             text-align: center;
             height: 350px;
             overflow: hidden;
-             box-sizing: border-box;
+            position: relative;
+            box-sizing: border-box;
         }
         
         .hero img {
@@ -49,38 +50,41 @@
             max-width: 250px;
             opacity: 0.15;
             z-index: 1;
-             box-sizing: border-box;
+            pointer-events: none;
+            box-sizing: border-box;
         }
         
-        .hero h1 {
+        .hero h1, .hero p {
             position: relative;
             z-index: 2;
+            box-sizing: border-box;
+        }
+
+        .hero h1 {
             font-size: 32px;
             margin-bottom: 10px;
             box-sizing: border-box;
         }
-         .hero p {
-            position: relative;
-            z-index: 2;
-             box-sizing: border-box;
-        }
 
         .hero .order-button {
-            margin-top: 15px;
-            padding: 10px 20px;
-            background: #eac4d5;
+            background-color: #eac4d5;
             color: #5a3e36;
+            padding: 6px 10px;
+            border-radius: 5px;
             text-decoration: none;
             font-weight: bold;
-            border-radius: 5px;
-            transition: background 0.3s ease;
-             box-sizing: border-box;
+            margin-top: 20px;
+            display: inline-block;
+            font-size: clamp(12px, 2vw, 16px);
+            box-sizing: border-box;
+            transition: color 0.3s ease;
+            position: relative;
+            z-index: 3;
         }
 
         .hero .order-button:hover {
-            background: #d49eb3;
             color: white;
-             box-sizing: border-box;
+            box-sizing: border-box;
         }
 
         nav {
@@ -95,7 +99,7 @@
             border-radius: 10px;
             gap: 5px;
             box-sizing: border-box;
-             width: 90%; /* Match the width of other containers */
+            width: 90%;
         }
         
         nav a {
@@ -107,18 +111,18 @@
             padding: 6px 10px;
             white-space: nowrap;
             border-radius: 5px;
-             box-sizing: border-box;
+            box-sizing: border-box;
         }
         
         nav a:hover {
             color: white;
-             box-sizing: border-box;
+            box-sizing: border-box;
         }
         
         nav a.disabled {
             pointer-events: none;
             color: grey;
-             box-sizing: border-box;
+            box-sizing: border-box;
         }
         
         .content-section {
@@ -127,7 +131,7 @@
             margin-top: 20px;
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-             box-sizing: border-box;
+            box-sizing: border-box;
         }
         
         /* Ensure uniform spacing and prevent overflow */
@@ -140,7 +144,7 @@
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
             position: relative;
-             box-sizing: border-box;
+            box-sizing: border-box;
         }
         
         .elfsight-app {
@@ -149,24 +153,24 @@
             padding: 10px;
             display: flex;
             justify-content: center;
-             box-sizing: border-box;
+            box-sizing: border-box;
         }
         
         .instagram-widget iframe {
             max-width: 100%;
             width: 100%;
             height: auto;
-             box-sizing: border-box;
+            box-sizing: border-box;
         }
         
         @media (max-width: 768px) {
             .instagram-widget {
                 padding: 15px 0;
-                 box-sizing: border-box;
+                box-sizing: border-box;
             }
             .elfsight-app {
                 width: 95% !important;
-                 box-sizing: border-box;
+                box-sizing: border-box;
             }
         }
     </style>
@@ -218,9 +222,7 @@
     <div class="container content-section">
         <h2>Stay Updated</h2>
         <p>Subscribe to our newsletter for new designs, seasonal specials, and exclusive offers.</p>
-         <iframe src="https://tally.so/embed/wokM7x?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" width="300" height="" frameborder="0" marginheight="0" marginwidth="0" title="Newsletter Signup"></iframe>
-
-    </div>
+         <iframe src="https://tally.so/embed/wokM7x?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" width="300" height="" frameborder="0" marginheight="0" marginwidth="0" title="Newsletter Signup"></iframe>... </div>
        <div class="container content-section">
         <h2>Frequently Asked Questions</h2>
         <details>
