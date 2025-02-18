@@ -22,11 +22,11 @@ nav {
     padding: 10px;
     display: flex;
     justify-content: center;
-    flex-wrap: wrap; /* Allow buttons to adjust instead of cutting off */
+    flex-wrap: wrap; /* Ensures it wraps correctly */
     max-width: 900px;
     margin: 20px auto;
     border-radius: 10px;
-    gap: 8px; /* Adds spacing between links */
+    gap: 5px;
 }
 
 nav a {
@@ -35,10 +35,11 @@ nav a {
     color: #5a3e36;
     font-size: clamp(12px, 1.6vw, 16px);
     transition: color 0.3s ease;
-    padding: 6px 10px;
+    padding: 6px 8px;
     white-space: nowrap;
     flex: 1;
     text-align: center;
+    min-width: fit-content;
 }
 
 /* 🔹 Hero Section Fix */
@@ -49,14 +50,14 @@ nav a {
     justify-content: center;
     text-align: center;
     height: auto;
-    max-height: 400px; /* Limits height on desktop */
+    max-height: 350px; /* Keeps it from taking up too much space */
     background: #fff;
     border-radius: 15px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    padding: clamp(15px, 4vw, 35px);
+    padding: clamp(12px, 3vw, 25px);
     position: relative;
     overflow: hidden;
-    max-width: 90%;
+    max-width: 95%;
 }
 
 /* 🔹 Hero Background Image */
@@ -65,7 +66,7 @@ nav a {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 60%;
+    width: 55%;
     max-width: 130px;
     opacity: 0.08;
     z-index: 1;
@@ -75,33 +76,33 @@ nav a {
 .hero h1 {
     position: relative;
     z-index: 2;
-    font-size: clamp(20px, 3.2vw, 28px);
-    margin-bottom: clamp(6px, 1.5vw, 12px);
+    font-size: clamp(18px, 3.5vw, 26px);
+    margin-bottom: clamp(5px, 1.2vw, 10px);
     line-height: 1.2;
 }
 
 .hero p {
     position: relative;
     z-index: 2;
-    font-size: clamp(13px, 2vw, 17px);
-    margin-bottom: clamp(6px, 1.5vw, 12px);
+    font-size: clamp(12px, 1.8vw, 16px);
+    margin-bottom: clamp(5px, 1.2vw, 10px);
 }
 
 /* 🔹 Hero Button */
 .hero .order-button {
     position: relative;
     z-index: 2;
-    font-size: clamp(12px, 2vw, 16px);
-    padding: clamp(6px, 1.5vw, 10px) clamp(12px, 2.5vw, 20px);
+    font-size: clamp(12px, 1.8vw, 15px);
+    padding: clamp(5px, 1.2vw, 8px) clamp(10px, 2vw, 18px);
 }
 
 /* 🔹 Instagram Widget Fix */
 .instagram-widget {
     width: 100%;
-    max-width: 350px; /* Smaller for mobile */
+    max-width: 350px; /* Ensures it doesn’t stretch */
     margin: 0 auto;
     text-align: center;
-    max-height: 250px; /* Prevents it from getting too tall */
+    max-height: 250px; /* Prevents excessive height */
     overflow: hidden;
 }
 
@@ -113,14 +114,15 @@ nav a {
 /* 🔹 Adjust Layout for Desktop */
 @media screen and (min-width: 1024px) {
     .hero {
-        max-width: 70%; /* Limits width on larger screens */
-        max-height: 300px; /* Prevents excessive height */
+        max-width: 70%; /* Prevents it from being too wide */
+        max-height: 280px; /* Keeps the hero section balanced */
     }
     
     .instagram-widget {
-        max-width: 450px; /* Keeps Instagram widget smaller */
+        max-width: 450px; /* Keeps Instagram widget proportional */
     }
 }
+
     <style>
         body { 
             font-family: 'Georgia', serif; 
