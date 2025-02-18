@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rebel Ribbon Cookies</title>
@@ -107,7 +108,9 @@
         max-width: 100%; /* Ensures it doesn’t exceed the container */
         overflow: hidden; /* Prevents any overflow issues */
         padding: 10px 0; /* Adds slight spacing */
-    }
+    display: flex;
+    justify-content: center; /* Centers the widget */
+}
 
     .elfsight-app {
         max-width: 100% !important; /* Forces the widget to be responsive */
@@ -119,6 +122,16 @@
         width: 100%;
         height: auto;
     }
+@media (max-width: 768px) {
+    .instagram-widget {
+        padding: 5px 0;
+    }
+
+    .elfsight-app {
+        width: 95% !important; /* Slight padding on small screens */
+    }
+}
+
 </style>
 
 <style>
@@ -161,7 +174,6 @@
     </nav>
 
     <div class="container instagram-widget">
-<!-- SnapWidget -->
 <!-- Elfsight Instagram Feed | Untitled Instagram Feed -->
 <script src="https://static.elfsight.com/platform/platform.js" async></script>
 <div class="elfsight-app-6b3d4c64-62f6-48b0-bd95-35fce2520756" data-elfsight-app-lazy></div>
