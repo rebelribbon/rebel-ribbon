@@ -4,18 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Terms of Service - Rebel Ribbon Cookies</title>
+
+    <!-- Importing Elegant Fonts -->
     <style>
-        body {
-            font-family: 'Georgia', serif;
-            text-align: center;
-            background: #fef6f0 url('background-pattern.png');
-            color: #5a3e36;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
+        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Playfair+Display:wght@400;700&display=swap');
+
+        /* Global Reset */
+        * {
             box-sizing: border-box;
+            padding: 0;
+            margin: 0;
         }
-        .container, nav {
+
+        body {
+            font-family: 'EB Garamond', serif;
+            text-align: center;
+            background: #fef6f0;
+            color: #5a3e36;
+            overflow-x: hidden;
+        }
+
+        .container {
             width: 90%;
             max-width: 900px;
             margin: 20px auto;
@@ -23,9 +32,9 @@
             background: #fff;
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            position: relative;
-            box-sizing: border-box;
+            overflow: hidden;
         }
+
         .hero {
             display: flex;
             flex-direction: column;
@@ -36,6 +45,7 @@
             overflow: hidden;
             position: relative;
         }
+
         .hero img {
             position: absolute;
             top: 50%;
@@ -47,32 +57,21 @@
             z-index: 1;
             pointer-events: none;
         }
-        .hero h1, .hero p {
+
+        .hero h1,
+        .hero p {
             position: relative;
             z-index: 2;
         }
+
         .hero h1 {
+            font-family: 'Playfair Display', serif;
             font-size: 32px;
             margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .hero .order-button {
-            background-color: #eac4d5;
-            color: #5a3e36;
-            padding: 6px 10px;
-            border-radius: 5px;
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 20px;
-            display: inline-block;
-            font-size: clamp(12px, 2vw, 16px);
-            box-sizing: border-box;
-            transition: color 0.3s ease;
-            position: relative;
-            z-index: 3;
-        }
-        .hero .order-button:hover {
-            color: white;
-        }
+
         nav {
             background: #eac4d5;
             padding: 10px;
@@ -83,43 +82,62 @@
             max-width: 900px;
             margin: 20px auto;
             border-radius: 10px;
-            gap: 5px;
-            box-sizing: border-box;
-            width: 90%;
+            gap: 10px;
         }
+        
         nav a {
             text-decoration: none;
-            font-weight: bold;
+            font-family: 'EB Garamond', serif;
+            font-weight: 500;
             color: #5a3e36;
             font-size: clamp(12px, 2vw, 16px);
             transition: color 0.3s ease;
-            padding: 6px 10px;
+            padding: 6px 15px;
             white-space: nowrap;
             border-radius: 5px;
-            box-sizing: border-box;
         }
+        
         nav a:hover {
-            color: white;
+            color: #c17c8a;
         }
+        
         nav a.disabled {
             pointer-events: none;
             color: grey;
         }
+
         .content-section {
             padding: 20px;
             background: white;
             margin-top: 20px;
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            box-sizing: border-box;
+            line-height: 1.6;
+            text-align: left;
         }
+
         .content-section h2 {
-          text-align:center;
-          box-sizing: border-box;
+            font-family: 'Playfair Display', serif;
+            color: #5a3e36;
+            font-size: 28px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            text-align: center;
         }
-         .content-section p {
-          text-align:center;
-          box-sizing: border-box;
+
+        .content-section p {
+            font-family: 'EB Garamond', serif;
+            color: #5a3e36;
+            line-height: 1.8;
+        }
+
+        .content-section a {
+            color: #c17c8a;
+            text-decoration: none;
+        }
+
+        .content-section a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
@@ -128,14 +146,13 @@
         <img src="Bowtrans.png" alt="Rebel Ribbon Logo">
         <h1>Terms of Service</h1>
         <p>Effective Date: 2/17/2025</p>
-        <a href="order.html" class="order-button">Order Now</a>
     </div>
 
     <nav>
-        <a href="index.html">Home</a>
-        <a href="about.html">About Us</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="contact.html">Contact Us</a>
+        <a href="index.html">Welcome</a>
+        <a href="about.html">Our Story</a>
+        <a href="gallery.html">Creations</a>
+        <a href="contact.html">Connect</a>
     </nav>
     
     <div class="container content-section">
@@ -166,12 +183,10 @@
         <h2>9. Contact Us</h2>
         <p>If you have any questions about these Terms of Service, please contact us at <a href="mailto:admin@rebelribbon.com">admin@rebelribbon.com</a>.</p>
     </div>
-    <footer class="container" style="background: #eac4d5; padding: 10px; margin-top: 20px; border-radius: 5px; text-align: center; font-size: 14px;">
+
+    <footer style="background: #eac4d5; padding: 20px; text-align: center; font-size: 14px; width: 100%; box-sizing: border-box;">
         <p>&copy; 2025 Rebel Ribbon Cookies. All Rights Reserved.</p>
         <p><a href="privacy.html" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Privacy Policy</a> | <a href="terms.html" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Terms of Service</a></p>
-        <p>Follow us on: 
-            <a href="https://www.instagram.com/rebel_ribbon/" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Instagram</a> 
-        </p>
     </footer>
 </body>
 </html>
