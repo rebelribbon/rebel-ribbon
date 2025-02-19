@@ -5,17 +5,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rebel Ribbon Cookies</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css">
+
+    <!-- Importing Elegant Fonts -->
     <style>
-        body {
-            font-family: 'Georgia', serif;
-            text-align: center;
-            background: #fef6f0 url('background-pattern.png');
-            color: #5a3e36;
-            margin: 0;
-            padding: 0;
-            overflow-x: hidden;
+        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Playfair+Display:wght@400;700&display=swap');
+
+        /* Global Reset */
+        * {
             box-sizing: border-box;
+            padding: 0;
+            margin: 0;
         }
+
+body {
+    font-family: 'EB Garamond', serif;
+    text-align: center;
+    background: #fef6f0; /* Soft Beige Background */
+    color: #5a3e36;
+    overflow-x: hidden;
+}
+
         
         .container {
             width: 90%;
@@ -25,8 +34,7 @@
             background: #fff;
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            position: relative;
-            box-sizing: border-box;
+            overflow: hidden;
         }
         
         .hero {
@@ -38,7 +46,6 @@
             height: 350px;
             overflow: hidden;
             position: relative;
-            box-sizing: border-box;
         }
         
         .hero img {
@@ -51,40 +58,41 @@
             opacity: 0.15;
             z-index: 1;
             pointer-events: none;
-            box-sizing: border-box;
         }
         
-        .hero h1, .hero p {
+        .hero h1,
+        .hero p {
             position: relative;
             z-index: 2;
-            box-sizing: border-box;
         }
 
         .hero h1 {
+            font-family: 'Playfair Display', serif;
             font-size: 32px;
             margin-bottom: 10px;
-            box-sizing: border-box;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
         .hero .order-button {
             background-color: #eac4d5;
             color: #5a3e36;
-            padding: 6px 10px;
-            border-radius: 5px;
+            padding: 6px 15px;
+            border-radius: 25px;
             text-decoration: none;
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
             font-weight: bold;
             margin-top: 20px;
             display: inline-block;
             font-size: clamp(12px, 2vw, 16px);
-            box-sizing: border-box;
-            transition: color 0.3s ease;
-            position: relative;
-            z-index: 3;
+            transition: background 0.3s ease, transform 0.3s ease;
         }
 
         .hero .order-button:hover {
+            background-color: #c17c8a;
             color: white;
-            box-sizing: border-box;
+            transform: translateY(-3px);
         }
 
         nav {
@@ -97,32 +105,28 @@
             max-width: 900px;
             margin: 20px auto;
             border-radius: 10px;
-            gap: 5px;
-            box-sizing: border-box;
-            width: 90%;
+            gap: 10px;
         }
         
         nav a {
             text-decoration: none;
-            font-weight: bold;
+            font-family: 'EB Garamond', serif;
+            font-weight: 500;
             color: #5a3e36;
             font-size: clamp(12px, 2vw, 16px);
             transition: color 0.3s ease;
-            padding: 6px 10px;
+            padding: 6px 15px;
             white-space: nowrap;
             border-radius: 5px;
-            box-sizing: border-box;
         }
         
         nav a:hover {
-            color: white;
-            box-sizing: border-box;
+            color: #c17c8a;
         }
         
         nav a.disabled {
             pointer-events: none;
             color: grey;
-            box-sizing: border-box;
         }
         
         .content-section {
@@ -131,10 +135,8 @@
             margin-top: 20px;
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            box-sizing: border-box;
         }
         
-        /* Ensure uniform spacing and prevent overflow */
         .instagram-widget {
             width: 90%;
             max-width: 900px;
@@ -143,8 +145,7 @@
             background: #fff;
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            position: relative;
-            box-sizing: border-box;
+            overflow: hidden;
         }
         
         .elfsight-app {
@@ -153,25 +154,48 @@
             padding: 10px;
             display: flex;
             justify-content: center;
-            box-sizing: border-box;
         }
         
         .instagram-widget iframe {
             max-width: 100%;
             width: 100%;
             height: auto;
-            box-sizing: border-box;
         }
-        
-        @media (max-width: 768px) {
-            .instagram-widget {
-                padding: 15px 0;
-                box-sizing: border-box;
-            }
-            .elfsight-app {
-                width: 95% !important;
-                box-sizing: border-box;
-            }
+
+        details {
+            margin: 10px 0;
+            border: 1px solid #eac4d5;
+            border-radius: 5px;
+            background: #fef6f8;
+            padding: 10px;
+            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+
+        details[open] {
+            background: #eac4d5;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
+        }
+
+        details summary {
+            font-family: 'Playfair Display', serif;
+            font-weight: bold;
+            color: #5a3e36;
+            cursor: pointer;
+            list-style: none;
+            outline: none;
+            transition: color 0.3s ease;
+        }
+
+        details summary:hover {
+            color: #c17c8a;
+        }
+
+        details p {
+            margin: 10px 0;
+            color: #5a3e36;
+            font-family: 'EB Garamond', serif;
+            line-height: 1.6;
         }
     </style>
 </head>
@@ -184,33 +208,39 @@
     </div>
 
     <nav>
-        <a href="#" class="disabled">Home</a>
-        <a href="about.html">About Us</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="contact.html">Contact Us</a>
+        <a href="#" class="disabled">Welcome</a>
+        <a href="about.html">Our Story</a>
+        <a href="gallery.html">Creations</a>
+        <a href="contact.html">Connect</a>
     </nav>
 
     <div class="container instagram-widget">
         <script src="https://static.elfsight.com/platform/platform.js" async></script>
         <div class="elfsight-app-6b3d4c64-62f6-48b0-bd95-35fce2520756" data-elfsight-app-lazy></div>
     </div>
+    
+<div class="container content-section">
+    <h2>Our Cookies</h2>
+    <p>At Rebel Ribbon, every cookie is a masterpiece, crafted with passion and precision. We believe that the finest creations begin with the finest ingredients. That's why we use only premium, locally-sourced butter, pure cane sugar, and the richest vanilla to ensure each bite is a taste of perfection.</p>
+    <p>Our cookies are made in small batches to preserve their delicate flavors and tender crumb. Hand-cut and meticulously decorated, each piece is an edible work of art, designed to make your moments unforgettable. Whether it's a celebration or just because, our cookies bring a touch of sweetness and elegance to every occasion.</p>
+    <p>From the mixing bowl to your doorstep, we pour our hearts into every step, ensuring the highest quality and the most delightful experience. Taste the difference that love and artistry can make.</p>
+</div>
 
     <div class="container content-section">
-        <h2>Our Story</h2>
-        <p>Rebel Ribbon began as a passion project, transforming simple cookies into edible works of art. Founded by Alinka Chalker in 2017 and later joined by her sister Tabata in 2025, our brand blends craftsmanship, creativity, and heartfelt design.</p>
-        <p>Every cookie we create is more than just a treat—it's a personalized touch for life's special moments, from birthdays to weddings and beyond.</p>
-    </div>
+        <h2>The Magic Behind the Dough</h2>
+            <p>Rebel Ribbon didn’t just happen—it was baked from pure passion and a little bit of magic. In 2017, Alinka Chalker decided to turn her daydreams into dough, transforming simple cookies into edible works of art. Fast forward to 2025, her sister Tabata jumped in, bringing even more creativity (and maybe a little sisterly mischief) to the mix. Together, they’ve been crafting cookies that don’t just look good—they steal the show.</p>
+    
+    <p>At Rebel Ribbon, we don’t believe in ordinary. Our cookies are all about making statements and turning heads. Whether it’s a birthday bash, a wedding, or just a Wednesday that needs some sweetness, we’re here to elevate your moment. Hand-drawn designs, custom details, and the finest ingredients come together to create something that’s one-of-a-kind, just like you.</p>
+    
+    <p>Why do we do it? Because life’s too short for boring cookies. We’re here to make your celebrations unforgettable, one bite at a time. From the first sketch to the last sprinkle, we pour our hearts (and a bit of sass) into every order. At Rebel Ribbon, we don’t just make cookies—we create memories that stick around long after the crumbs are gone.</p>
+</div>
 
-   <div class="container content-section">
-        <h2>How to Place an Order</h2>
-        <p>1. Click 'Order Now' to begin your request.</p>
-        <p>2. Complete the form with your details and preferences.</p>
-        <p>3. Upload an inspiration image if available.</p>
-        <p>4. Submit your order, and we'll reply within 48 hours.</p>
-    </div>
+
+
+
 
     <div class="container content-section">
-    <h2>What Our Customers Say</h2>
+    <h2>Sweet Words from Happy Hearts</h2>
     <div class="swiper">
         <div class="swiper-wrapper" id="testimonial-container">
             <!-- Reviews will be injected here -->
@@ -261,15 +291,16 @@
             <p>Keep them in a cool, dry place in an airtight container to maintain freshness.</p>
         </details>
     </div>
-    <footer class="container" style="background: #eac4d5; padding: 10px; margin-top: 20px; border-radius: 5px; text-align: center; font-size: 14px;">
-        <p>&copy; 2025 Rebel Ribbon Cookies. All Rights Reserved.</p>
-        <p><a href="privacy.html" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Privacy Policy</a> | <a href="terms.html" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Terms of Service</a></p>
-        <p>Follow us on: 
-            <a href="https://www.instagram.com/rebel_ribbon/" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Instagram</a> 
-        </p>
-         
-         <iframe src="https://tally.so/embed/wokM7x?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" width="300" height="157" frameborder="0" marginheight="0" marginwidth="0" title="Newsletter Signup"></iframe>
-    </footer>
+<footer style="background: #eac4d5; padding: 20px; text-align: center; font-size: 14px; width: 100%; box-sizing: border-box;">
+    <p>&copy; 2025 Rebel Ribbon Cookies. All Rights Reserved.</p>
+    <p><a href="privacy.html" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Privacy Policy</a> | <a href="terms.html" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Terms of Service</a></p>
+    <p>Follow us on: 
+        <a href="https://www.instagram.com/rebel_ribbon/" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Instagram</a> 
+    </p>
+     
+    <iframe src="https://tally.so/embed/wokM7x?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" width="300" height="157" frameborder="0" marginheight="0" marginwidth="0" title="Newsletter Signup"></iframe>
+</footer>
+
 <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
 <script>
 async function loadReviews() {
