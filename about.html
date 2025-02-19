@@ -4,17 +4,27 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>About Us - Rebel Ribbon Cookies</title>
+
+    <!-- Importing Elegant Fonts -->
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Playfair+Display:wght@400;700&display=swap');
+
+        /* Global Reset */
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+
         body {
-            font-family: 'Georgia', serif;
+            font-family: 'EB Garamond', serif;
             text-align: center;
             background: #fef6f0;
             color: #5a3e36;
-            margin: 0;
-            padding: 0;
             overflow-x: hidden;
         }
-        .container, nav {
+
+        .container {
             width: 90%;
             max-width: 900px;
             margin: 20px auto;
@@ -22,9 +32,9 @@
             background: #fff;
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            position: relative;
-            box-sizing: border-box;
+            overflow: hidden;
         }
+
         .hero {
             display: flex;
             flex-direction: column;
@@ -35,6 +45,7 @@
             overflow: hidden;
             position: relative;
         }
+
         .hero img {
             position: absolute;
             top: 50%;
@@ -46,32 +57,42 @@
             z-index: 1;
             pointer-events: none;
         }
-        .hero h1, .hero p {
+
+        .hero h1,
+        .hero p {
             position: relative;
             z-index: 2;
         }
+
         .hero h1 {
+            font-family: 'Playfair Display', serif;
             font-size: 32px;
             margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
+
         .hero .order-button {
             background-color: #eac4d5;
             color: #5a3e36;
-            padding: 6px 10px;
-            border-radius: 5px;
+            padding: 6px 15px;
+            border-radius: 25px;
             text-decoration: none;
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
             font-weight: bold;
             margin-top: 20px;
             display: inline-block;
             font-size: clamp(12px, 2vw, 16px);
-            box-sizing: border-box;
-            transition: color 0.3s ease;
-            position: relative;
-            z-index: 3;
+            transition: background 0.3s ease, transform 0.3s ease;
         }
+
         .hero .order-button:hover {
+            background-color: #c17c8a;
             color: white;
+            transform: translateY(-3px);
         }
+
         nav {
             background: #eac4d5;
             padding: 10px;
@@ -82,75 +103,101 @@
             max-width: 900px;
             margin: 20px auto;
             border-radius: 10px;
-            gap: 5px;
-            box-sizing: border-box;
-            width: 90%;
+            gap: 10px;
         }
+        
         nav a {
             text-decoration: none;
-            font-weight: bold;
+            font-family: 'EB Garamond', serif;
+            font-weight: 500;
             color: #5a3e36;
             font-size: clamp(12px, 2vw, 16px);
             transition: color 0.3s ease;
-            padding: 6px 10px;
+            padding: 6px 15px;
             white-space: nowrap;
             border-radius: 5px;
-            box-sizing: border-box;
         }
+        
         nav a:hover {
-            color: white;
+            color: #c17c8a;
         }
+        
         nav a.disabled {
             pointer-events: none;
             color: grey;
         }
+
         .about-section {
             padding: 20px;
             background: white;
             margin-top: 20px;
             border-radius: 15px;
             box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            box-sizing: border-box;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .about-section h2 {
+            font-family: 'Playfair Display', serif;
+            color: #5a3e36;
+            font-size: 28px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        .about-section img {
+            width: 200px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .about-section div {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .about-section p {
+            font-family: 'EB Garamond', serif;
+            color: #5a3e36;
+            line-height: 1.8;
         }
     </style>
 </head>
 <body>
     <div class="container hero">
         <img src="Bowtrans.png" alt="Rebel Ribbon Logo">
-        <h1>About Us</h1>
+        <h1>Our Story</h1>
         <p>Our journey, our passion, and our cookies.</p>
         <a href="order.html" class="order-button">Order Now</a>
     </div>
 
     <nav>
-        <a href="index.html">Home</a>
-        <a href="#" class="disabled">About Us</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="contact.html">Contact Us</a>
+        <a href="index.html">Welcome</a>
+        <a href="#" class="disabled">Our Story</a>
+        <a href="gallery.html">Creations</a>
+        <a href="contact.html">Connect</a>
     </nav>
 
     <div class="container about-section">
-        <h2>Our Story</h2>
+        <h2>The Magic Behind the Dough</h2>
         <p>At Rebel Ribbon, we believe cookies should do more than taste good—they should tell a story, create connections, and leave a lasting impression.</p>
-        <div style="display: flex; align-items: center; gap: 20px;">
-            <img src="alinka.png" alt="Alinka Chalker" style="width: 200px; border-radius: 10px;">
-            <p>In 2017, Alinka turned her passion for baking and art into a creative outlet, founding Alinka's Custom Cookies. What started as a small, home-based business quickly became known for its intricate designs, attention to detail, and unwavering commitment to quality. With a deep love for both baking and design, she built her business on creativity, craftsmanship, and the joy of turning simple cookies into edible works of art. Over the years, her creations became more than just desserts—they became thoughtful, personalized gifts that made life's special moments even sweeter.</p>
+        <div>
+            <img src="alinka.png" alt="Alinka Chalker">
+            <p>In 2017, Alinka turned her passion for baking and art into a creative outlet, founding Alinka's Custom Cookies. What started as a small, home-based business quickly became known for its intricate designs and commitment to quality. In 2025, her sister Tabata joined, and together they rebranded as Rebel Ribbon, combining their creativity and sisterly bond into edible works of art.</p>
         </div>
         <div style="display: flex; align-items: center; gap: 20px; flex-direction: row-reverse;">
             <img src="tabata.png" alt="Tabata Santiago Kim" style="width: 200px; border-radius: 10px;">
-            <p>In 2025, her sister Tabata joined the journey, bringing new energy and vision. More than just business partners, they are lifelong confidantes—sisters who have always leaned on each other through every challenge and triumph. Together, they rebranded as Rebel Ribbon, a reflection of their shared creativity, strong bond, and passion for making life's moments more meaningful.</p>
+        <div>
+            <p>As a woman-owned small business, Rebel Ribbon is built on the belief that the smallest details make the biggest impact. From birthdays to weddings, we bring artistry and purpose to every cookie, meticulously designed and beautifully packaged to elevate any occasion.</p>
         </div>
-        <div style="display: flex; align-items: center; gap: 20px;">
-            <p>As a woman-owned small business, Rebel Ribbon is built on the belief that the smallest details make the biggest impact. From birthdays and weddings to corporate events and branded gifts, we bring artistry and purpose to every cookie. Whether it's a heartfelt gift, an elegant wedding favor, or a signature touch for a business, each cookie is meticulously designed, made with high-quality ingredients, and beautifully packaged to elevate any occasion.</p>
-        </div>
-        <p>But beyond our cookies, we care about the experience. From the moment you place an order to the first bite, every detail is crafted with intention. Our recipes are made with love, our designs are thoughtfully created, and our packaging is meant to bring joy.</p>
     </div>
-    <footer class="container" style="background: #eac4d5; padding: 10px; margin-top: 20px; border-radius: 5px; text-align: center; font-size: 14px;">
+
+    <footer style="background: #eac4d5; padding: 20px; text-align: center; font-size: 14px; width: 100%; box-sizing: border-box;">
         <p>&copy; 2025 Rebel Ribbon Cookies. All Rights Reserved.</p>
         <p><a href="privacy.html" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Privacy Policy</a> | <a href="terms.html" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Terms of Service</a></p>
-        <p>Follow us on: 
-            <a href="https://www.instagram.com/rebel_ribbon/" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Instagram</a> 
-        </p>
     </footer>
 </body>
 </html>
