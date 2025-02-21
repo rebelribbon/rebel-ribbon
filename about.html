@@ -6,9 +6,144 @@
     <title>About Us - Rebel Ribbon Cookies</title>
 
     <!-- Importing Elegant Fonts -->
-    <style>
+        <style>
         @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Playfair+Display:wght@400;700&display=swap');
 
+        /* Global Reset */
+        * {
+            box-sizing: border-box;
+            padding: 0;
+            margin: 0;
+        }
+
+        body {
+            font-family: 'EB Garamond', serif;
+            text-align: center;
+            background: #fef6f0;
+            color: #5a3e36;
+            overflow-x: hidden;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 900px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        .hero {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            height: 350px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .hero img {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50%;
+            max-width: 250px;
+            opacity: 0.15;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .hero h1,
+        .hero p {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hero .order-button {
+            background-color: #eac4d5;
+            color: #5a3e36;
+            padding: 6px 15px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
+            font-weight: bold;
+            margin-top: 20px;
+            display: inline-block;
+            font-size: clamp(12px, 2vw, 16px);
+            transition: background 0.3s ease, transform 0.3s ease;
+        }
+
+        .hero .order-button:hover {
+            background-color: #c17c8a;
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        nav {
+            background: #eac4d5;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            max-width: 900px;
+            margin: 20px auto;
+            border-radius: 10px;
+            gap: 10px;
+        }
+        
+        nav a {
+            text-decoration: none;
+            font-family: 'EB Garamond', serif;
+            font-weight: 500;
+            color: #5a3e36;
+            font-size: clamp(12px, 2vw, 16px);
+            transition: color 0.3s ease;
+            padding: 6px 15px;
+            white-space: nowrap;
+            border-radius: 5px;
+        }
+        
+        nav a:hover {
+            color: #c17c8a;
+        }
+        
+        nav a.disabled {
+            pointer-events: none;
+            color: grey;
+        }
+
+        .contact-section {
+            padding: 20px;
+            background: white;
+            margin-top: 20px;
+            border-radius: 15px;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+            line-height: 1.6;
+            text-align: center;
+        }
+
+        .contact-section h2 {
+            font-family: 'Playfair Display', serif;
+            color: #5a3e36;
+            font-size: 28px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
         /* Global Reset */
         * {
             box-sizing: border-box;
@@ -83,6 +218,7 @@
 </head>
 <body>
     <div class="container hero">
+        <img src="Bowtrans.png" alt="Rebel Ribbon Logo">
         <h1>Our Story</h1>
         <p>Our journey, our passion, and our cookies.</p>
     </div>
