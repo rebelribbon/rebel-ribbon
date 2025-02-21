@@ -1,13 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Add this in your head section -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Playfair+Display:wght@400;700&display=swap');
+
+        .popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 600px;
+            background: #fff;
+            border-radius: 15px;
+            box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.3);
+            padding: 20px;
+            z-index: 1000;
+            text-align: center;
+            overflow-y: auto;
+            max-height: 90vh;
+        }
+
+        .popup h2 {
+            font-family: 'Playfair Display', serif;
+            color: #5a3e36;
+            font-size: 28px;
+            margin-bottom: 15px;
+        }
+
+        .popup p {
+            color: #5a3e36;
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .popup a.button {
+            background-color: #eac4d5;
+            color: #5a3e36;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            font-family: 'EB Garamond', serif;
+            font-style: italic;
+            transition: background 0.3s ease;
+            display: inline-block;
+            margin-top: 10px;
+        }
+
+        .popup a.button:hover {
+            background-color: #c17c8a;
+            color: #fff;
+        }
+
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 28px;
+            color: #888;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #5a3e36;
+        }
+
+        .countdown {
+            font-size: 18px;
+            color: #5a3e36;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+ 
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rebel Ribbon</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css">
 
     <!-- Importing Elegant Fonts -->
-    <style>
+  
         @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Playfair+Display:wght@400;700&display=swap');
 
         /* Global Reset */
@@ -200,6 +276,22 @@ body {
     </style>
 </head>
 <body>
+    <div id="popup" class="popup">
+        <span class="close" onclick="hidePopup()">&times;</span>
+        <h2>Grand Opening Sale at Rebel Ribbon!</h2>
+        <p>To celebrate our rebrand and grand opening, we're giving you something sweet!</p>
+        <p>Order online between <strong>March 31st, 2025</strong> and enjoy <strong>15% off your entire purchase!</strong></p>
+        <p>Or... get <strong>6 free custom cookies</strong> with any order over <strong>$50!</strong></p>
+        <p>Don't miss out—place your order today and experience the deliciousness of Rebel Ribbon!</p>
+        <a href="order.html" class="button">Order Now at Rebel Ribbon</a>
+        <p><small>Offer valid from 3/31/2025</small></p>
+
+        <!-- Countdown Timer -->
+        <div class="countdown" id="countdown">
+            Sale ends in: <span id="days"></span> Days <span id="hours"></span> Hours <span id="minutes"></span> Minutes <span id="seconds"></span> Seconds
+        </div>
+    </div>
+
     <div class="container hero">
         <img src="Bowtrans.png" alt="Rebel Ribbon Logo">
         <h2>Welcome to</h2>
@@ -375,5 +467,43 @@ loadReviews();
 
 </script>
 
+<script>
+    function showPopup() {
+        document.getElementById('popup').style.display = 'block';
+    }
+
+    function hidePopup() {
+        document.getElementById('popup').style.display = 'none';
+    }
+
+    // Auto show the popup immediately when the page loads
+    window.onload = function() {
+        showPopup();
+    }
+
+    // Countdown Timer
+    const targetDate = new Date('2025-03-31T23:59:59').getTime();
+
+    const countdownInterval = setInterval(function() {
+        const now = new Date().getTime();
+        const timeLeft = targetDate - now;
+
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
+
+        document.getElementById('days').innerText = days;
+        document.getElementById('hours').innerText = hours;
+        document.getElementById('minutes').innerText = minutes;
+        document.getElementById('seconds').innerText = seconds;
+
+        if (timeLeft < 0) {
+            clearInterval(countdownInterval);
+            document.getElementById('countdown').innerText = "Sale has ended!";
+        }
+    }, 1000);
+</script>
 </body>
+
 </html>
