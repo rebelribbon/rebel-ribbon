@@ -142,13 +142,41 @@
             line-height: 1.8;
             overflow: auto;
         }
+         .image-left {
+            float: left;
+            margin: 0 20px 20px 0;
+            width: 180px;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .image-right {
+            float: right;
+            margin: 0 0 20px 20px;
+            width: 180px;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .about-section p {
+            text-align: justify;
+            line-height: 1.8;
+            overflow: auto;
+        }
+
+        @media (max-width: 600px) {
+            .image-left, .image-right {
+                float: none;
+                display: block;
+                margin: 0 auto 20px auto;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="container hero">
         <h1>Our Story</h1>
         <p>Our journey, our passion, and our cookies.</p>
-        <a href="order.html" class="order-button">Order Now</a>
     </div>
 
     <nav>
@@ -162,15 +190,15 @@
         <h2>The Magic Behind the Dough</h2>
         <p>At Rebel Ribbon, we believe cookies should do more than taste good—they should tell a story, create connections, and leave a lasting impression. Our journey is built on passion, creativity, and a sprinkle of magic. Every cookie is handcrafted with love, bringing artistry and flavor to every bite.</p>
 
-        <div class="flex-container">
-            <img src="alinka.png" alt="Alinka Chalker">
-            <p>In 2017, Alinka Chalker turned her passion for baking and art into a creative outlet, founding Alinka's Custom Cookies. She poured her heart into every design, crafting cookies that were not just treats but edible works of art. Her commitment to quality and eye for detail quickly gained a loyal following. What started as a small, home-based business rapidly grew into a sought-after brand known for its intricate designs and personalized touch.</p>
-        </div>
+        <p>
+            <img src="alinka.png" alt="Alinka Chalker" class="image-left">
+            In 2017, Alinka Chalker turned her passion for baking and art into a creative outlet, founding Alinka's Custom Cookies. She poured her heart into every design, crafting cookies that were not just treats but edible works of art. Her commitment to quality and eye for detail quickly gained a loyal following. What started as a small, home-based business rapidly grew into a sought-after brand known for its intricate designs and personalized touch.
+        </p>
 
-        <div class="flex-container">
-            <p>In 2025, her sister Tabata joined the adventure, bringing her creativity and fresh perspective to the mix. With their combined vision, they rebranded as Rebel Ribbon, a name that represents boldness, elegance, and the joy of celebration. Together, they infuse every order with their sisterly bond, crafting cookies that not only look beautiful but taste exceptional.</p>
-            <img src="tabata.png" alt="Tabata Santiago Kim">
-        </div>
+        <p>
+            <img src="tabata.png" alt="Tabata Santiago Kim" class="image-right">
+            In 2025, her sister Tabata joined the adventure, bringing her creativity and fresh perspective to the mix. With their combined vision, they rebranded as Rebel Ribbon, a name that represents boldness, elegance, and the joy of celebration. Together, they infuse every order with their sisterly bond, crafting cookies that not only look beautiful but taste exceptional.
+        </p>
 
         <p>As a woman-owned small business, Rebel Ribbon is built on the belief that the smallest details make the biggest impact. From birthdays to weddings, corporate events to just-because moments, we bring artistry and purpose to every cookie, meticulously designed and beautifully packaged to elevate any occasion. We don’t just make cookies—we create memories, one bite at a time.</p>
     </div>
