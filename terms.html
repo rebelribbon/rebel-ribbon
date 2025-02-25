@@ -1,193 +1,319 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Terms of Service - Rebel Ribbon Cookies</title>
-
-    <!-- Importing Elegant Fonts -->
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Playfair+Display:wght@400;700&display=swap');
-
-        /* Global Reset */
-        * {
-            box-sizing: border-box;
-            padding: 0;
-            margin: 0;
-        }
-
-        body {
-            font-family: 'EB Garamond', serif;
-            text-align: center;
-            background: #fef6f0;
-            color: #5a3e36;
-            overflow-x: hidden;
-        }
-
-        .container {
-            width: 90%;
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-
-        .hero {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            height: 350px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .hero img {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 50%;
-            max-width: 250px;
-            opacity: 0.15;
-            z-index: 1;
-            pointer-events: none;
-        }
-
-        .hero h1,
-        .hero p {
-            position: relative;
-            z-index: 2;
-        }
-
-        .hero h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 32px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        nav {
-            background: #eac4d5;
-            padding: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            max-width: 900px;
-            margin: 20px auto;
-            border-radius: 10px;
-            gap: 10px;
-        }
-        
-        nav a {
-            text-decoration: none;
-            font-family: 'EB Garamond', serif;
-            font-weight: 500;
-            color: #5a3e36;
-            font-size: clamp(12px, 2vw, 16px);
-            transition: color 0.3s ease;
-            padding: 6px 15px;
-            white-space: nowrap;
-            border-radius: 5px;
-        }
-        
-        nav a:hover {
-            color: #c17c8a;
-        }
-        
-        nav a.disabled {
-            pointer-events: none;
-            color: grey;
-        }
-
-        .content-section {
-            padding: 20px;
-            background: white;
-            margin-top: 20px;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            line-height: 1.6;
-            text-align: left;
-        }
-
-        .content-section h2 {
-            font-family: 'Playfair Display', serif;
-            color: #5a3e36;
-            font-size: 28px;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            text-align: center;
-        }
-
-        .content-section p {
-            font-family: 'EB Garamond', serif;
-            color: #5a3e36;
-            line-height: 1.8;
-        }
-
-        .content-section a {
-            color: #c17c8a;
-            text-decoration: none;
-        }
-
-        .content-section a:hover {
-            text-decoration: underline;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rebel Ribbon - Terms & Conditions</title>
+  <!-- Google Fonts: Playfair Display (elegant serif) + Open Sans (clean sans-serif) -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    /* Prevent horizontal scroll on all devices */
+    html, body {
+      overflow-x: hidden;
+    }
+    /* ==========================
+       Base & Reset
+       ========================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    :root {
+      --heading-font: 'Playfair Display', serif;
+      --body-font: 'Open Sans', sans-serif;
+      --pink: #FFC0CB;
+      --black: #000;
+      --dark-gray: #333;
+    }
+    body {
+      font-family: var(--body-font);
+      color: var(--dark-gray);
+      background: #fff;
+      line-height: 1.6;
+    }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    img {
+      max-width: 100%;
+      display: block;
+    }
+    /* ==========================
+       1. Header & Navigation
+       ========================== */
+    header {
+      background: #fff;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+    .logo img {
+      height: 50px;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+    }
+    nav li {
+      margin-left: 20px;
+    }
+    nav a {
+      font-size: 16px;
+      color: var(--black);
+      font-family: var(--body-font);
+      transition: color 0.3s;
+    }
+    nav a:hover {
+      color: var(--pink);
+      text-decoration: underline;
+    }
+    .hamburger {
+      display: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--black);
+      background: var(--pink);
+      padding: 10px;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      margin-left: auto;
+      margin-right: 10px;
+    }
+    @media (max-width:768px) {
+      header { padding: 15px; }
+      nav ul {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 70px;
+        left: 0;
+        right: 0;
+        background: #fff;
+        padding: 20px 0;
+        text-align: center;
+        z-index: 999;
+      }
+      nav li { margin: 10px 0; }
+      .hamburger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+    /* ==========================
+       2. Hero Section
+       ========================== */
+    .hero {
+      position: relative;
+      height: 30vh;
+      background: url('https://via.placeholder.com/1920x1080?text=Terms+%26+Conditions') center/cover no-repeat;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255,192,203,0.5);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      animation: fadeIn 1s ease-in;
+    }
+    .hero h1 {
+      font-size: 36px;
+      color: var(--black);
+      font-family: var(--heading-font);
+      margin-bottom: 10px;
+    }
+    .hero p {
+      font-size: 18px;
+      color: var(--black);
+      font-family: var(--body-font);
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    /* ==========================
+       3. Content Section
+       ========================== */
+    .content-section {
+      padding: 40px 20px;
+      max-width: 900px;
+      margin: 20px auto;
+      text-align: left;
+      font-size: 16px;
+      line-height: 1.8;
+    }
+    .content-section h2 {
+      font-family: var(--heading-font);
+      font-size: 28px;
+      color: var(--black);
+      margin-bottom: 20px;
+    }
+    .content-section h3 {
+      font-family: var(--heading-font);
+      font-size: 20px;
+      color: var(--black);
+      margin-top: 20px;
+      margin-bottom: 10px;
+    }
+    .content-section p {
+      margin-bottom: 20px;
+    }
+    /* ==========================
+       4. Footer
+       ========================== */
+    footer {
+      background: var(--pink);
+      color: var(--black);
+      padding: 30px 20px;
+    }
+    footer .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: space-between;
+    }
+    footer .footer-section {
+      flex: 1;
+      min-width: 200px;
+    }
+    footer h3 {
+      font-family: var(--heading-font);
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    footer p, footer a {
+      font-size: 14px;
+      color: var(--black);
+      font-family: var(--body-font);
+    }
+    footer a:hover { text-decoration: underline; }
+    .footer-section.newsletter { text-align: left; }
+    .newsletter iframe { width: 100%; border: 0; }
+  </style>
 </head>
 <body>
-    <div class="container hero">
-        <img src="Bowtrans.png" alt="Rebel Ribbon Logo">
-       <h2>  </h2>
-        <h1>Terms of Service</h1>
-        <p>Effective Date: 2/17/2025</p>
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <img src="horizontaltrans.png" alt="Rebel Ribbon Logo">
     </div>
-
+    <div class="hamburger" onclick="toggleMenu()">&#9776;</div>
     <nav>
-        <a href="index.html">Welcome</a>
-        <a href="about.html">Our Story</a>
-        <a href="gallery.html">Creations</a>
-        <a href="contact.html">Connect</a>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="ingredients.html">Ingredients</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="order.html">Order</a></li>
+      </ul>
     </nav>
-    
-    <div class="container content-section">
-        <h2>1. Acceptance of Terms</h2>
-        <p>By accessing and using our website, you agree to comply with these Terms of Service.</p>
-        
-        <h2>2. Orders and Payments</h2>
-        <p>All orders must be placed through our website. Payments must be made in full before processing begins.</p>
-        
-        <h2>3. Cancellations and Refunds</h2>
-        <p>Orders may be canceled within 24 hours of placement for a full refund. Custom orders are non-refundable once production begins.</p>
-        
-        <h2>4. Shipping and Delivery</h2>
-        <p>We offer local pickup and nationwide shipping for an additional fee. Delivery times vary based on location.</p>
-        
-        <h2>5. Product Quality</h2>
-        <p>Our cookies are made fresh with high-quality ingredients. Due to their handmade nature, slight variations in design may occur.</p>
-        
-        <h2>6. Limitation of Liability</h2>
-        <p>Rebel Ribbon Cookies is not responsible for any allergic reactions. Please review ingredient lists carefully before placing an order.</p>
-        
-        <h2>7. Intellectual Property</h2>
-        <p>All content, including images and branding, is the property of Rebel Ribbon Cookies and may not be used without permission.</p>
-        
-        <h2>8. Changes to Terms</h2>
-        <p>We may update these Terms of Service at any time. Continued use of our site implies acceptance of the revised terms.</p>
-        
-        <h2>9. Contact Us</h2>
-        <p>If you have any questions about these Terms of Service, please contact us at <a href="mailto:admin@rebelribbon.com">admin@rebelribbon.com</a>.</p>
+  </header>
+  
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Terms &amp; Conditions</h1>
+      <p>Last updated: March 2025</p>
     </div>
-
-    <footer style="background: #eac4d5; padding: 20px; text-align: center; font-size: 14px; width: 100%; box-sizing: border-box;">
-        <p>&copy; 2025 Rebel Ribbon Cookies. All Rights Reserved.</p>
-        <p><a href="privacy.html" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Privacy Policy</a> | <a href="terms.html" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Terms of Service</a></p>
-    </footer>
+  </section>
+  
+  <!-- Content Section: Terms & Conditions -->
+  <section class="content-section">
+    <h2>Terms and Conditions</h2>
+    <p>Welcome to Rebel Ribbon. These terms and conditions outline the rules and regulations for the use of our website.</p>
+    <p>By accessing this website we assume you accept these terms and conditions in full. Do not continue to use Rebel Ribbon's website if you do not agree to all the terms and conditions stated on this page.</p>
+    
+    <h3>License to Use Website</h3>
+    <p>Unless otherwise stated, Rebel Ribbon and/or its licensors own the intellectual property rights published on this website and materials used on Rebel Ribbon. Subject to the license below, all these intellectual property rights are reserved.</p>
+    
+    <h3>Acceptable Use</h3>
+    <p>You must not use this website in any way that causes, or may cause, damage to the website or impairment of the availability or accessibility of the website.</p>
+    
+    <h3>Limitation of Liability</h3>
+    <p>Rebel Ribbon will not be liable for any indirect, consequential, or incidental damages arising out of the use or inability to use this website.</p>
+    
+    <p>These terms and conditions may be updated from time to time without notice. Please review this page regularly for any changes.</p>
+    
+    <p>If you have any questions about these Terms, please contact us.</p>
+  </section>
+  
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Contact Us</h3>
+        <p>Email: <a href="mailto:info@rebelribboncookies.com">info@rebelribboncookies.com</a></p>
+        <p>Phone: <a href="tel:2102397471">(210) 239-7471</a></p>
+      </div>
+      <div class="footer-section">
+        <h3>Quick Links</h3>
+        <p><a href="index.html">Home</a></p>
+        <p><a href="about.html">About Us</a></p>
+        <p><a href="ingredients.html">Ingredients</a></p>
+        <p><a href="gallery.html">Gallery</a></p>
+        <p><a href="contact.html">Contact</a></p>
+        <p><a href="order.html">Order</a></p>
+      </div>
+      <div class="footer-section newsletter">
+        <h3>Newsletter</h3>
+        <!-- Tally Embed Code for Newsletter Signup -->
+        <iframe data-tally-src="https://tally.so/embed/wokM7x?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy" width="100%" height="157" frameborder="0" marginheight="0" marginwidth="0" title="Newsletter"></iframe>
+        <script>
+          var d = document,
+              w = "https://tally.so/widgets/embed.js",
+              v = function(){
+                if(typeof Tally !== "undefined"){
+                  Tally.loadEmbeds();
+                } else {
+                  d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function(e){
+                    e.src = e.dataset.tallySrc;
+                  });
+                }
+              };
+          if(typeof Tally !== "undefined"){
+            v();
+          } else if(d.querySelector('script[src="'+w+'"]') === null){
+            var s = d.createElement("script");
+            s.src = w;
+            s.onload = v;
+            s.onerror = v;
+            d.body.appendChild(s);
+          }
+        </script>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- Minimal JavaScript for Mobile Menu -->
+  <script>
+    function toggleMenu() {
+      var menu = document.getElementById('navMenu');
+      var currentDisplay = window.getComputedStyle(menu).display;
+      if (currentDisplay === 'none') {
+        menu.style.display = 'flex';
+        menu.style.flexDirection = 'column';
+      } else {
+        menu.style.display = 'none';
+      }
+    }
+  </script>
 </body>
 </html>
