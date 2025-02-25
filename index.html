@@ -1,509 +1,571 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Add this in your head section -->
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Playfair+Display:wght@400;700&display=swap');
-
-        .popup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90%;
-            max-width: 600px;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0px 15px 30px rgba(0, 0, 0, 0.3);
-            padding: 20px;
-            z-index: 1000;
-            text-align: center;
-            overflow-y: auto;
-            max-height: 90vh;
-        }
-
-        .popup h2 {
-            font-family: 'Playfair Display', serif;
-            color: #5a3e36;
-            font-size: 28px;
-            margin-bottom: 15px;
-        }
-
-        .popup p {
-            color: #5a3e36;
-            font-size: 16px;
-            line-height: 1.6;
-            margin-bottom: 15px;
-        }
-
-        .popup a.button {
-            background-color: #eac4d5;
-            color: #5a3e36;
-            padding: 10px 20px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: bold;
-            font-family: 'EB Garamond', serif;
-            font-style: italic;
-            transition: background 0.3s ease;
-            display: inline-block;
-            margin-top: 10px;
-        }
-
-        .popup a.button:hover {
-            background-color: #c17c8a;
-            color: #fff;
-        }
-
-        .close {
-            position: absolute;
-            top: 10px;
-            right: 15px;
-            font-size: 28px;
-            color: #888;
-            cursor: pointer;
-        }
-
-        .close:hover {
-            color: #5a3e36;
-        }
-
-        .countdown {
-            font-size: 18px;
-            color: #5a3e36;
-            font-weight: bold;
-            margin-top: 20px;
-        }
- 
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rebel Ribbon</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css">
-
-    <!-- Importing Elegant Fonts -->
-  
-        @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:wght@400;500&family=Playfair+Display:wght@400;700&display=swap');
-
-        /* Global Reset */
-        * {
-            box-sizing: border-box;
-            padding: 0;
-            margin: 0;
-        }
-
-body {
-    font-family: 'EB Garamond', serif;
-    text-align: center;
-    background: #fef6f0; /* Soft Beige Background */
-    color: #5a3e36;
-    overflow-x: hidden;
-}
-
-        
-        .container {
-            width: 90%;
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        
-        .hero {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            height: 350px;
-            overflow: hidden;
-            position: relative;
-        }
-        
-        .hero img {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 50%;
-            max-width: 250px;
-            opacity: 0.15;
-            z-index: 1;
-            pointer-events: none;
-        }
-        
-        .hero h1,
-        .hero p {
-            position: relative;
-            z-index: 2;
-        }
-
-        .hero h1 {
-            font-family: 'Playfair Display', serif;
-            font-size: 32px;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .hero .order-button {
-            background-color: #eac4d5;
-            color: #5a3e36;
-            padding: 6px 15px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-family: 'EB Garamond', serif;
-            font-style: italic;
-            font-weight: bold;
-            margin-top: 20px;
-            display: inline-block;
-            font-size: clamp(12px, 2vw, 16px);
-            transition: background 0.3s ease, transform 0.3s ease;
-        }
-
-        .hero .order-button:hover {
-            background-color: #c17c8a;
-            color: white;
-            transform: translateY(-3px);
-        }
-
-        nav {
-            background: #eac4d5;
-            padding: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            flex-wrap: wrap;
-            max-width: 900px;
-            margin: 20px auto;
-            border-radius: 10px;
-            gap: 10px;
-        }
-        
-        nav a {
-            text-decoration: none;
-            font-family: 'EB Garamond', serif;
-            font-weight: 500;
-            color: #5a3e36;
-            font-size: clamp(12px, 2vw, 16px);
-            transition: color 0.3s ease;
-            padding: 6px 15px;
-            white-space: nowrap;
-            border-radius: 5px;
-        }
-        
-        nav a:hover {
-            color: #c17c8a;
-        }
-        
-        nav a.disabled {
-            pointer-events: none;
-            color: grey;
-        }
-        
-        .content-section {
-            padding: 20px;
-            background: white;
-            margin-top: 20px;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-        }
-        
-        .instagram-widget {
-            width: 90%;
-            max-width: 900px;
-            margin: 20px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 15px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        
-        .elfsight-app {
-            max-width: 100% !important;
-            width: 100% !important;
-            padding: 10px;
-            display: flex;
-            justify-content: center;
-        }
-        
-        .instagram-widget iframe {
-            max-width: 100%;
-            width: 100%;
-            height: auto;
-        }
-
-        details {
-            margin: 10px 0;
-            border: 1px solid #eac4d5;
-            border-radius: 5px;
-            background: #fef6f8;
-            padding: 10px;
-            box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.1);
-            transition: all 0.3s ease;
-        }
-
-        details[open] {
-            background: #eac4d5;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.15);
-        }
-
-        details summary {
-            font-family: 'Playfair Display', serif;
-            font-weight: bold;
-            color: #5a3e36;
-            cursor: pointer;
-            list-style: none;
-            outline: none;
-            transition: color 0.3s ease;
-        }
-
-        details summary:hover {
-            color: #c17c8a;
-        }
-
-        details p {
-            margin: 10px 0;
-            color: #5a3e36;
-            font-family: 'EB Garamond', serif;
-            line-height: 1.6;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rebel Ribbon - Home</title>
+  <!-- Google Fonts: Playfair Display (elegant serif) + Open Sans (clean sans-serif) -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Swiper CSS for the carousel -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css">
+  <style>
+    /* Prevent horizontal scroll on all devices */
+    html, body {
+      overflow-x: hidden;
+    }
+    
+    /* ==========================
+       Base & Reset
+       ========================== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    :root {
+      --heading-font: 'Playfair Display', serif;
+      --body-font: 'Open Sans', sans-serif;
+      --pink: #FFC0CB;
+      --black: #000;
+      --dark-gray: #333;
+    }
+    body {
+      font-family: var(--body-font);
+      color: var(--dark-gray);
+      line-height: 1.6;
+      background-color: #fff;
+    }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    img {
+      max-width: 100%;
+      display: block;
+    }
+    
+    /* ==========================
+       1. Header & Navigation
+       ========================== */
+    header {
+      background: #fff;
+      padding: 20px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+    .logo img {
+      height: 50px;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+    }
+    nav li {
+      margin-left: 20px;
+    }
+    nav a {
+      font-size: 16px;
+      color: var(--black);
+      transition: color 0.3s;
+      font-family: var(--body-font);
+    }
+    nav a:hover {
+      color: var(--pink);
+      text-decoration: underline;
+    }
+    .hamburger {
+      display: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: var(--black);
+      background-color: var(--pink);
+      padding: 10px;
+      border-radius: 50%;
+      z-index: 1000;
+      margin-left: auto;
+      margin-right: 10px;
+      inline-size: 40px;
+      block-size: 40px;
+    }
+    @media (max-width: 768px) {
+      header {
+        padding: 15px 20px;
+      }
+      nav ul {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 70px; /* Adjust if needed */
+        left: 0;
+        right: 0;
+        width: 100%;
+        background: #fff;
+        padding: 20px 0;
+        z-index: 999;
+        text-align: center;
+      }
+      nav li {
+        margin: 10px 0;
+      }
+      .hamburger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+    }
+    
+    /* ==========================
+       2. Hero Section
+       ========================== */
+    .hero {
+      position: relative;
+      height: 60vh; /* Reduced for a more compact look */
+      background: url('https://via.placeholder.com/1920x1080?text=Signature+Cookie') center/cover no-repeat;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+    }
+    .hero::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(255, 192, 203, 0.5);
+    }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      animation: fadeIn 1s ease-in;
+    }
+    .hero h1 {
+      font-size: 36px;
+      color: var(--black);
+      margin-bottom: 20px;
+      font-family: var(--heading-font);
+    }
+    .hero p {
+      font-size: 18px;
+      color: var(--black);
+      margin-bottom: 30px;
+      font-family: var(--body-font);
+    }
+    .btn {
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 4px;
+      border: none;
+      cursor: pointer;
+      padding: 12px 20px;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      font-family: var(--body-font);
+    }
+    .btn-primary {
+      background-color: var(--pink);
+      color: #fff;
+    }
+    .btn-secondary {
+      background: transparent;
+      border: 2px solid var(--pink);
+      color: var(--pink);
+    }
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+    .btn-secondary:hover {
+      background-color: var(--pink);
+      color: #fff;
+    }
+    .btn-group {
+      display: inline-flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    .hero .btn-group .btn {
+      width: 240px;
+      height: 50px;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    
+    /* ==========================
+       3. Signature Creations Section (Elfsight Widget)
+       ========================== */
+    .signature-creations {
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .signature-creations h2 {
+      font-size: 28px;
+      color: var(--black);
+      margin-bottom: 20px;
+      font-family: var(--heading-font);
+    }
+    .elfsight-wrapper {
+      text-align: center;
+    }
+    .elfsight-app-b8dc1a76-5140-4c69-af16-0f092a4baf6a {
+      display: inline-block;
+      margin: 0 auto;
+    }
+    
+    /* ==========================
+       4. About Us Snapshot
+       ========================== */
+    .about-snapshot {
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .about-snapshot h2 {
+      font-size: 28px;
+      color: var(--black);
+      margin-bottom: 20px;
+      font-family: var(--heading-font);
+    }
+    .about-snapshot p {
+      font-size: 16px;
+      color: var(--dark-gray);
+      margin-bottom: 20px;
+      font-family: var(--body-font);
+    }
+    .about-snapshot a {
+      font-size: 16px;
+      color: var(--pink);
+      font-weight: bold;
+    }
+    
+    /* ==========================
+       5. Reviews Carousel Section
+       ========================== */
+    .container.content-section {
+      width: 90%;
+      max-width: 900px;
+      margin: 40px auto;
+      text-align: center;
+    }
+    .container.content-section h2 {
+      font-family: var(--heading-font);
+      font-size: 28px;
+      text-align: center;
+      margin-bottom: 30px;
+    }
+    /* Swiper container for reviews */
+    .swiper {
+      width: 100%;
+      padding-bottom: 20px;
+    }
+    .swiper-wrapper {
+      display: flex;
+    }
+    .swiper-slide {
+      font-size: 16px;
+      font-style: italic;
+      color: var(--dark-gray);
+      font-family: var(--body-font);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0 10px;
+    }
+    
+    /* ==========================
+       6. Instagram Feed Integration (Elfsight for Creations)
+       ========================== */
+    .instagram-feed {
+      padding: 40px 20px;
+      max-width: 1200px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    .elfsight-wrapper-insta { text-align: center; }
+    .elfsight-app-b1281bbe-f6d1-499a-b676-2534c366a481 {
+      display: inline-block;
+      margin: 0 auto;
+    }
+    
+    /* ==========================
+       7. Footer
+       ========================== */
+    footer {
+      background-color: var(--pink);
+      color: var(--black);
+      padding: 30px 20px;
+    }
+    footer .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: space-between;
+    }
+    footer .footer-section {
+      flex: 1;
+      min-width: 200px;
+    }
+    footer h3 {
+      margin-bottom: 10px;
+      font-size: 18px;
+      font-family: var(--heading-font);
+    }
+    footer p, footer a {
+      font-size: 14px;
+      color: var(--black);
+      font-family: var(--body-font);
+    }
+    footer a:hover { text-decoration: underline; }
+    /* Align Newsletter section to left */
+    .footer-section.newsletter {
+      text-align: left;
+    }
+    .newsletter input[type="email"] {
+      padding: 10px;
+      border: 1px solid var(--black);
+      border-radius: 20px;
+      width: 80%;
+      margin-right: 10px;
+    }
+    .newsletter button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 20px;
+      background-color: #fff;
+      color: var(--pink);
+      font-weight: bold;
+      cursor: pointer;
+      font-family: var(--body-font);
+    }
+    
+    /* ==========================
+       8. Mobile Refinements
+       ========================== */
+    @media (max-width: 768px) {
+      .hero h1 {
+        font-size: 24px;
+        margin-bottom: 8px;
+        line-height: 1.2;
+      }
+      .hero p {
+        font-size: 16px;
+        margin-bottom: 16px;
+      }
+      .btn-group { gap: 24px; }
+    }
+  </style>
 </head>
 <body>
-    <div id="popup" class="popup">
-        <span class="close" onclick="hidePopup()">&times;</span>
-        <h2>Grand Opening Sale at Rebel Ribbon!</h2>
-        <p>To celebrate our rebrand and grand opening, we're giving you something sweet!</p>
-        <p>Order online between <strong>March 31st, 2025</strong> and enjoy <strong>15% off your entire purchase!</strong></p>
-        <p>Or... get <strong>6 free custom cookies</strong> with any order over <strong>$50!</strong></p>
-        <p>Don't miss out—place your order today and experience the deliciousness of Rebel Ribbon!</p>
-        <a href="order.html" class="button">Order Now at Rebel Ribbon</a>
-        <p><small>Offer valid from 3/31/2025</small></p>
-
-        <!-- Countdown Timer -->
-        <div class="countdown" id="countdown">
-            Sale ends in: <span id="days"></span> Days <span id="hours"></span> Hours <span id="minutes"></span> Minutes <span id="seconds"></span> Seconds
-        </div>
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <img src="horizontaltrans.png" alt="Rebel Ribbon Logo">
     </div>
-
-    <div class="container hero">
-        <img src="Bowtrans.png" alt="Rebel Ribbon Logo">
-        <h2>Welcome to</h2>
-        <h1>Rebel Ribbon</h1>
-        <p>Delicious, homemade cookies crafted with love.</p>
-        <a href="order.html" class="order-button">Order Now</a>
-    </div>
-
+    <div class="hamburger" onclick="toggleMenu()">&#9776;</div>
     <nav>
-        <a href="#" class="disabled">Welcome</a>
-        <a href="about.html">Our Story</a>
-        <a href="gallery.html">Creations</a>
-        <a href="contact.html">Connect</a>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="ingredients.html">Ingredients</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="order.html">Order</a></li>
+      </ul>
     </nav>
-
-    <div class="container instagram-widget">
-        <script src="https://static.elfsight.com/platform/platform.js" async></script>
-        <div class="elfsight-app-6b3d4c64-62f6-48b0-bd95-35fce2520756" data-elfsight-app-lazy></div>
+  </header>
+  
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Your Inspiration, Our Creation</h1>
+      <p>Where every cookie becomes a custom work of art.</p>
+      <div class="btn-group">
+        <button class="btn btn-primary" onclick="location.href='order.html'">Request Your Cookies</button>
+        <button class="btn btn-secondary" onclick="location.href='gallery.html'">Explore Our Gallery</button>
+      </div>
     </div>
-    
-<div class="container content-section">
-    <h2>Our Cookies</h2>
-    <p>At Rebel Ribbon, every cookie is a masterpiece, crafted with passion and precision. We believe that the finest creations begin with the finest ingredients. That's why we use only premium, locally-sourced butter, pure cane sugar, and the richest vanilla to ensure each bite is a taste of perfection.</p>
-    <p>Our cookies are made in small batches to preserve their delicate flavors and tender crumb. Hand-cut and meticulously decorated, each piece is an edible work of art, designed to make your moments unforgettable. Whether it's a celebration or just because, our cookies bring a touch of sweetness and elegance to every occasion.</p>
-    <p>From the mixing bowl to your doorstep, we pour our hearts into every step, ensuring the highest quality and the most delightful experience. Taste the difference that love and artistry can make.</p>
-</div>
-
-    <div class="container content-section">
-        <h2>The Magic Behind the Dough</h2>
-            <p>Rebel Ribbon didn’t just happen—it was baked from pure passion and a little bit of magic. In 2017, Alinka Chalker decided to turn her daydreams into dough, transforming simple cookies into edible works of art. Fast forward to 2025, her sister Tabata jumped in, bringing even more creativity (and maybe a little sisterly mischief) to the mix. Together, they’ve been crafting cookies that don’t just look good—they steal the show.</p>
-    
-    <p>At Rebel Ribbon, we don’t believe in ordinary. Our cookies are all about making statements and turning heads. Whether it’s a birthday bash, a wedding, or just a Wednesday that needs some sweetness, we’re here to elevate your moment. Hand-drawn designs, custom details, and the finest ingredients come together to create something that’s one-of-a-kind, just like you.</p>
-    
-    <p>Why do we do it? Because life’s too short for boring cookies. We’re here to make your celebrations unforgettable, one bite at a time. From the first sketch to the last sprinkle, we pour our hearts (and a bit of sass) into every order. At Rebel Ribbon, we don’t just make cookies—we create memories that stick around long after the crumbs are gone.</p>
-</div>
-
-
-
-
-
-    <div class="container content-section">
+  </section>
+  
+  <!-- Signature Creations Section -->
+  <section class="signature-creations">
+    <h2>Our Signature Creations</h2>
+    <!-- Elfsight Instagram Feed | Signature Creations -->
+    <script src="https://static.elfsight.com/platform/platform.js" async></script>
+    <div class="elfsight-wrapper">
+      <div class="elfsight-app-b8dc1a76-5140-4c69-af16-0f092a4baf6a" data-elfsight-app-lazy></div>
+    </div>
+  </section>
+  
+  <!-- About Us Snapshot -->
+  <section class="about-snapshot">
+    <h2>Our Story</h2>
+    <p>Founded by two sisters with a passion for baking, our journey began in a small kitchen where creativity met tradition. Discover more about our story and what makes our cookies unique.</p>
+    <a href="about.html">Learn More About Us &rarr;</a>
+  </section>
+  
+  <!-- Reviews Carousel Section -->
+  <div class="container content-section">
     <h2>Sweet Words from Happy Hearts</h2>
+    <!-- Swiper Container for Reviews Carousel -->
     <div class="swiper">
-        <div class="swiper-wrapper" id="testimonial-container">
-            <!-- Reviews will be injected here -->
-        </div>
-        <div class="swiper-pagination"></div>
+      <div class="swiper-wrapper" id="testimonial-container">
+        <!-- Reviews will be injected here -->
+      </div>
+      <div class="swiper-pagination"></div>
     </div>
-</div>     
-       <div class="container content-section">
-        <h2>Frequently Asked Questions</h2>
-        <details>
-            <summary>How early should I place my order?</summary>
-            <p>We recommend placing your order at least two weeks in advance.</p>
-        </details>
-        <details>
-            <summary>Do you offer gluten-free or vegan options?</summary>
-            <p>Yes, we have gluten-free and vegan-friendly options upon request.</p>
-        </details>
-        <details>
-            <summary>Can I customize my order?</summary>
-            <p>Absolutely! We specialize in custom designs. Let us know your vision!</p>
-        </details>
-        <details>
-            <summary>Do you ship your cookies?</summary>
-            <p>Yes, we offer nationwide shipping for an additional fee.</p>
-        </details>
-        <details>
-            <summary>What payment methods do you accept?</summary>
-            <p>We accept credit/debit cards, PayPal, and Venmo.</p>
-        </details>
-        <details>
-            <summary>How long do the cookies stay fresh?</summary>
-            <p>Our cookies stay fresh for up to two weeks when stored in an airtight container.</p>
-        </details>
-        <details>
-            <summary>Can I request a bulk order?</summary>
-            <p>Yes! We accommodate bulk orders for events and corporate gifting.</p>
-        </details>
-        <details>
-            <summary>Do you offer gift packaging?</summary>
-            <p>Yes, we provide elegant gift packaging upon request.</p>
-        </details>
-        <details>
-            <summary>Do you offer cookie decorating classes?</summary>
-            <p>We occasionally host decorating workshops. Contact us for upcoming dates.</p>
-        </details>
-        <details>
-            <summary>How should I store my cookies?</summary>
-            <p>Keep them in a cool, dry place in an airtight container to maintain freshness.</p>
-        </details>
+  </div>
+  
+  <!-- Instagram Feed Integration (Elfsight for Creations) -->
+  <section class="instagram-feed">
+    <div class="elfsight-wrapper-insta">
+      <!-- Elfsight Instagram Feed | Creations -->
+      <script src="https://static.elfsight.com/platform/platform.js" async></script>
+      <div class="elfsight-app-b1281bbe-f6d1-499a-b676-2534c366a481" data-elfsight-app-lazy></div>
     </div>
-<footer style="background: #eac4d5; padding: 20px; text-align: center; font-size: 14px; width: 100%; box-sizing: border-box;">
-    <p>&copy; 2025 Rebel Ribbon Cookies. All Rights Reserved.</p>
-    <p><a href="privacy.html" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Privacy Policy</a> | <a href="terms.html" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Terms of Service</a></p>
-    <p>Follow us on: 
-        <a href="https://www.instagram.com/rebel_ribbon/" style="color: #5a3e36; text-decoration: none; font-weight: bold;">Instagram</a> 
-    </p>
-     
-    <iframe src="https://tally.so/embed/wokM7x?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" width="300" height="157" frameborder="0" marginheight="0" marginwidth="0" title="Newsletter Signup"></iframe>
-</footer>
-
-<script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
-<script>
-async function loadReviews() {
-    try {
-        const response = await fetch("https://docs.google.com/spreadsheets/d/1ONgf1I9011IpKLz2CtS_Mk-rBEZVhLRAvJHYMLoCOdo/gviz/tq?tqx=out:csv");
-        const data = await response.text();
-
-        console.log("Raw CSV Data:", data); // Debugging log
-
-        // Function to properly parse CSV, handling commas inside quotes
-        function parseCSV(str) {
-            const result = [];
-            let insideQuote = false;
-            let value = "";
-
-            for (let i = 0; i < str.length; i++) {
-                const char = str[i];
-
-                if (char === '"' && str[i + 1] === '"') {
-                    value += '"'; // Handle escaped double quotes
-                    i++;
-                } else if (char === '"') {
-                    insideQuote = !insideQuote; // Toggle inside quote state
-                } else if (char === "," && !insideQuote) {
-                    result.push(value.trim());
-                    value = "";
+  </section>
+  
+  <!-- Footer -->
+  <footer>
+    <div class="footer-content">
+      <div class="footer-section">
+        <h3>Contact Us</h3>
+        <p>Email: <a href="mailto:info@rebelribboncookies.com">info@rebelribboncookies.com</a></p>
+        <p>Phone: <a href="tel:2102397471">(210) 239-7471</a></p>
+      </div>
+      <div class="footer-section">
+        <h3>Quick Links</h3>
+        <p><a href="index.html">Home</a></p>
+        <p><a href="about.html">About Us</a></p>
+        <p><a href="ingredients.html">Ingredients</a></p>
+        <p><a href="gallery.html">Gallery</a></p>
+        <p><a href="contact.html">Contact</a></p>
+        <p><a href="order.html">Order</a></p>
+      </div>
+      <div class="footer-section newsletter">
+        <h3>Newsletter</h3>
+        <!-- Tally Embed Code for Newsletter Signup -->
+        <iframe data-tally-src="https://tally.so/embed/wokM7x?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy" width="100%" height="157" frameborder="0" marginheight="0" marginwidth="0" title="News Letter"></iframe>
+        <script>
+          var d=document,
+              w="https://tally.so/widgets/embed.js",
+              v=function(){
+                if(typeof Tally!="undefined"){
+                  Tally.loadEmbeds();
                 } else {
-                    value += char;
+                  d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function(e){
+                    e.src = e.dataset.tallySrc;
+                  });
                 }
-            }
+              };
+          if(typeof Tally!="undefined"){
+            v();
+          } else if(d.querySelector('script[src="'+w+'"]')==null){
+            var s=d.createElement("script");
+            s.src=w;
+            s.onload=v;
+            s.onerror=v;
+            d.body.appendChild(s);
+          }
+        </script>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- Minimal JavaScript for Mobile Menu -->
+  <script>
+    function toggleMenu() {
+      var menu = document.getElementById('navMenu');
+      var currentDisplay = window.getComputedStyle(menu).display;
+      if (currentDisplay === 'none') {
+        menu.style.display = 'flex';
+        menu.style.flexDirection = 'column';
+      } else {
+        menu.style.display = 'none';
+      }
+    }
+  </script>
+  
+  <!-- Swiper JS -->
+  <script src="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.js"></script>
+  <!-- Reviews Carousel: Fetch CSV from Google Sheets and initialize Swiper -->
+  <script>
+    async function loadReviews() {
+      try {
+        const response = await fetch("https://docs.google.com/spreadsheets/d/1ONgf1I9011IpKLz2CtS_Mk-rBEZVhLRAvJHYMLoCOdo/gviz/tq?tqx=out:csv");
+        const csvData = await response.text();
+        console.log("Raw CSV Data:", csvData);
 
-            result.push(value.trim()); // Add last value
-            return result;
+        // Function to properly parse CSV (handles commas inside quotes)
+        function parseCSV(str) {
+          const result = [];
+          let insideQuote = false;
+          let value = "";
+          for (let i = 0; i < str.length; i++) {
+            const char = str[i];
+            if (char === '"' && str[i + 1] === '"') {
+              value += '"';
+              i++;
+            } else if (char === '"') {
+              insideQuote = !insideQuote;
+            } else if (char === "," && !insideQuote) {
+              result.push(value.trim());
+              value = "";
+            } else {
+              value += char;
+            }
+          }
+          result.push(value.trim());
+          return result;
         }
 
-        let rows = data.split("\n").slice(1).map(row => parseCSV(row));
-
-        // ✅ Randomize the order of reviews
+        let rows = csvData.split("\n").slice(1).map(row => parseCSV(row));
+        // Randomize rows if desired
         rows = rows.sort(() => Math.random() - 0.5);
 
         let container = document.getElementById("testimonial-container");
         container.innerHTML = ""; // Clear existing content
 
+        // Columns: D => index 3, E => index 4, L => index 11.
         rows.forEach(columns => {
-            let reviewText = columns[11]; // Column L (Review)
-            let firstName = columns[3]; // Column D (First Name)
-            let lastInitial = columns[4]?.charAt(0); // Column E (Last Name Initial)
-
-            if (reviewText && firstName && lastInitial) {
-                let slide = document.createElement("div");
-                slide.classList.add("swiper-slide");
-                slide.innerHTML = `<p>"${reviewText}" - ${firstName} ${lastInitial}.</p>`;
-                container.appendChild(slide);
-            }
+          let reviewText = columns[11]; // Column L
+          let firstName = columns[3];   // Column D
+          let lastInitial = columns[4] ? columns[4].charAt(0) : "";
+          if (reviewText && firstName && lastInitial) {
+            let slide = document.createElement("div");
+            slide.classList.add("swiper-slide");
+            slide.innerHTML = `<p>"${reviewText}" - ${firstName} ${lastInitial}.</p>`;
+            container.appendChild(slide);
+          }
         });
 
         console.log("Reviews Loaded Successfully (Randomized)");
 
         new Swiper(".swiper", {
-            loop: true,
-            autoplay: { delay: 3000 },
-            });
+          loop: true,
+          autoplay: { delay: 3000 },
+        });
 
-    } catch (error) {
+      } catch (error) {
         console.error("Error fetching reviews:", error);
+      }
     }
-}
-
-loadReviews();
-
-
-</script>
-
-<script>
-    function showPopup() {
-        document.getElementById('popup').style.display = 'block';
-    }
-
-    function hidePopup() {
-        document.getElementById('popup').style.display = 'none';
-    }
-
-    // Auto show the popup immediately when the page loads
-    window.onload = function() {
-        showPopup();
-    }
-
-    // Countdown Timer
-    const targetDate = new Date('2025-03-31T23:59:59').getTime();
-
-    const countdownInterval = setInterval(function() {
-        const now = new Date().getTime();
-        const timeLeft = targetDate - now;
-
-        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
-        const seconds = Math.floor((timeLeft % (1000 * 60)) / 1000);
-
-        document.getElementById('days').innerText = days;
-        document.getElementById('hours').innerText = hours;
-        document.getElementById('minutes').innerText = minutes;
-        document.getElementById('seconds').innerText = seconds;
-
-        if (timeLeft < 0) {
-            clearInterval(countdownInterval);
-            document.getElementById('countdown').innerText = "Sale has ended!";
-        }
-    }, 1000);
-</script>
+    loadReviews();
+  </script>
 </body>
-
 </html>
