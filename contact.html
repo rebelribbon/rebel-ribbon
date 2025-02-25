@@ -8,9 +8,15 @@
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <style>
     /* Prevent horizontal scroll */
-    html, body { overflow-x: hidden; }
+    html, body {
+      overflow-x: hidden;
+    }
     /* Base & Reset */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     :root {
       --heading-font: 'Playfair Display', serif;
       --body-font: 'Open Sans', sans-serif;
@@ -24,8 +30,14 @@
       background: #fff;
       line-height: 1.6;
     }
-    a { text-decoration: none; color: inherit; }
-    img { max-width: 100%; display: block; }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    img {
+      max-width: 100%;
+      display: block;
+    }
     /* Header & Navigation */
     header {
       background: #fff;
@@ -35,29 +47,44 @@
       align-items: center;
       position: relative;
     }
-    .logo img { height: 50px; }
-    nav ul { list-style: none; display: flex; }
-    nav li { margin-left: 20px; }
+    .logo img {
+      height: 50px;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+    }
+    nav li {
+      margin-left: 20px;
+    }
     nav a {
       font-size: 16px;
       color: var(--black);
       font-family: var(--body-font);
       transition: color 0.3s;
     }
-    nav a:hover { color: var(--pink); text-decoration: underline; }
+    nav a:hover {
+      color: var(--pink);
+      text-decoration: underline;
+    }
     .hamburger {
       display: none;
       font-size: 24px;
       cursor: pointer;
       color: var(--black);
-      background: var(--pink);
+      background-color: var(--pink);
       padding: 10px;
       border-radius: 50%;
+      z-index: 1000;
       margin-left: auto;
       margin-right: 10px;
+      width: 40px;
+      height: 40px;
     }
-    @media (max-width:768px) {
-      header { padding: 15px; }
+    @media (max-width: 768px) {
+      header {
+        padding: 15px;
+      }
       nav ul {
         display: none;
         flex-direction: column;
@@ -70,8 +97,14 @@
         text-align: center;
         z-index: 999;
       }
-      nav li { margin: 10px 0; }
-      .hamburger { display: inline-flex; align-items: center; justify-content: center; }
+      nav li {
+        margin: 10px 0;
+      }
+      .hamburger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
     }
     /* Hero Section */
     .hero {
@@ -91,7 +124,10 @@
       height: 100%;
       background-color: rgba(255,192,203,0.5);
     }
-    .hero-content { position: relative; z-index: 1; }
+    .hero-content {
+      position: relative;
+      z-index: 1;
+    }
     .hero h1 {
       font-size: 36px;
       color: var(--black);
