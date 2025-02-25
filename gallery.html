@@ -3,16 +3,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rebel Ribbon - Gallery</title>
-  <!-- Google Fonts: Playfair Display (elegant serif) + Open Sans (clean sans-serif) -->
+  <title>Rebel Ribbon - Contact</title>
+  <!-- Google Fonts: Playfair Display + Open Sans -->
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
-  <!-- Swiper CSS (if needed for other pages) -->
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper/swiper-bundle.min.css">
   <style>
     /* Prevent horizontal scroll */
-    html, body { overflow-x: hidden; }
+    html, body {
+      overflow-x: hidden;
+    }
     /* Base & Reset */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
     :root {
       --heading-font: 'Playfair Display', serif;
       --body-font: 'Open Sans', sans-serif;
@@ -23,11 +27,17 @@
     body {
       font-family: var(--body-font);
       color: var(--dark-gray);
-      background-color: #fff;
+      background: #fff;
       line-height: 1.6;
     }
-    a { text-decoration: none; color: inherit; }
-    img { max-width: 100%; display: block; }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    img {
+      max-width: 100%;
+      display: block;
+    }
     /* Header & Navigation */
     header {
       background: #fff;
@@ -37,17 +47,26 @@
       align-items: center;
       position: relative;
     }
-    .logo { display: flex; align-items: center; }
-    .logo img { height: 50px; }
-    nav ul { list-style: none; display: flex; }
-    nav li { margin-left: 20px; }
+    .logo img {
+      height: 50px;
+    }
+    nav ul {
+      list-style: none;
+      display: flex;
+    }
+    nav li {
+      margin-left: 20px;
+    }
     nav a {
       font-size: 16px;
       color: var(--black);
       font-family: var(--body-font);
       transition: color 0.3s;
     }
-    nav a:hover { color: var(--pink); text-decoration: underline; }
+    nav a:hover {
+      color: var(--pink);
+      text-decoration: underline;
+    }
     .hamburger {
       display: none;
       font-size: 24px;
@@ -59,9 +78,13 @@
       z-index: 1000;
       margin-left: auto;
       margin-right: 10px;
+      width: 40px;
+      height: 40px;
     }
     @media (max-width: 768px) {
-      header { padding: 15px; }
+      header {
+        padding: 15px;
+      }
       nav ul {
         display: none;
         flex-direction: column;
@@ -71,17 +94,23 @@
         right: 0;
         background: #fff;
         padding: 20px 0;
-        z-index: 999;
         text-align: center;
+        z-index: 999;
       }
-      nav li { margin: 10px 0; }
-      .hamburger { display: inline-flex; align-items: center; justify-content: center; }
+      nav li {
+        margin: 10px 0;
+      }
+      .hamburger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
     }
     /* Hero Section */
     .hero {
       position: relative;
-      height: 40vh;
-      background: url('https://via.placeholder.com/1920x1080?text=Gallery') center/cover no-repeat;
+      height: 30vh;
+      background: url('https://via.placeholder.com/1920x1080?text=Contact+Us') center/cover no-repeat;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -90,47 +119,36 @@
     .hero::before {
       content: "";
       position: absolute;
-      top: 0;
-      left: 0;
+      top: 0; left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(255, 192, 203, 0.5);
+      background-color: rgba(255,192,203,0.5);
     }
     .hero-content {
       position: relative;
       z-index: 1;
-      animation: fadeIn 1s ease-in;
     }
     .hero h1 {
       font-size: 36px;
       color: var(--black);
-      margin-bottom: 10px;
       font-family: var(--heading-font);
+      margin-bottom: 10px;
     }
     .hero p {
       font-size: 18px;
       color: var(--black);
       font-family: var(--body-font);
     }
-    @keyframes fadeIn {
-      from { opacity: 0; } to { opacity: 1; }
-    }
-    /* Gallery Section */
-    .gallery-section {
+    /* Content Section */
+    .content-section {
       padding: 40px 20px;
-      max-width: 1200px;
-      margin: 0 auto;
+      max-width: 900px;
+      margin: 20px auto;
       text-align: center;
-    }
-    .gallery-section h2 {
-      font-family: var(--heading-font);
-      font-size: 28px;
-      color: var(--black);
-      margin-bottom: 20px;
     }
     /* Footer */
     footer {
-      background-color: var(--pink);
+      background: var(--pink);
       color: var(--black);
       padding: 30px 20px;
     }
@@ -144,9 +162,9 @@
     }
     footer .footer-section { flex: 1; min-width: 200px; }
     footer h3 {
-      margin-bottom: 10px;
-      font-size: 18px;
       font-family: var(--heading-font);
+      font-size: 18px;
+      margin-bottom: 10px;
     }
     footer p, footer a {
       font-size: 14px;
@@ -177,20 +195,42 @@
     </nav>
   </header>
   
-  <!-- Hero Section for Gallery -->
+  <!-- Hero Section for Contact Page -->
   <section class="hero">
     <div class="hero-content">
-      <h1>Gallery</h1>
-      <p>See our latest cookie creations and behind-the-scenes moments.</p>
+      <h1>Contact Us</h1>
+      <p>We'd love to hear from you!</p>
     </div>
   </section>
   
-  <!-- Gallery Section -->
-  <section class="gallery-section">
-    <h2>Our Instagram Gallery</h2>
-    <!-- Elfsight Instagram Feed | Gallery -->
-    <script src="https://static.elfsight.com/platform/platform.js" async></script>
-    <div class="elfsight-app-8c8d7c3b-2d79-4370-a4ec-ed7ae38f08bc" data-elfsight-app-lazy></div>
+  <!-- Contact Form Section -->
+  <section class="content-section">
+    <!-- Tally Embed Code for Contact Form -->
+    <iframe data-tally-src="https://tally.so/embed/3NRldB?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
+            loading="lazy" width="100%" height="600" frameborder="0" marginheight="0" marginwidth="0"
+            title="Contact Form"></iframe>
+    <script>
+      var d = document,
+          w = "https://tally.so/widgets/embed.js",
+          v = function(){
+            if(typeof Tally !== "undefined"){
+              Tally.loadEmbeds();
+            } else {
+              d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function(e){
+                e.src = e.dataset.tallySrc;
+              });
+            }
+          };
+      if(typeof Tally !== "undefined"){
+        v();
+      } else if(d.querySelector('script[src="'+w+'"]') === null){
+        var s = d.createElement("script");
+        s.src = w;
+        s.onload = v;
+        s.onerror = v;
+        d.body.appendChild(s);
+      }
+    </script>
   </section>
   
   <!-- Footer -->
@@ -198,7 +238,7 @@
     <div class="footer-content">
       <div class="footer-section">
         <h3>Contact Us</h3>
-        <p>Email: <a href="mailto:info@rebelribbon.com">info@rebelribbon.com</a></p>
+        <p>Email: <a href="mailto:info@rebelribboncookies.com">info@rebelribboncookies.com</a></p>
         <p>Phone: <a href="tel:2102397471">(210) 239-7471</a></p>
       </div>
       <div class="footer-section">
@@ -213,12 +253,14 @@
       <div class="footer-section newsletter">
         <h3>Newsletter</h3>
         <!-- Tally Embed Code for Newsletter Signup -->
-        <iframe data-tally-src="https://tally.so/embed/wokM7x?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1" loading="lazy" width="100%" height="157" frameborder="0" marginheight="0" marginwidth="0" title="News Letter"></iframe>
+        <iframe data-tally-src="https://tally.so/embed/wokM7x?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
+                loading="lazy" width="100%" height="157" frameborder="0" marginheight="0" marginwidth="0"
+                title="News Letter"></iframe>
         <script>
-          var d=document,
-              w="https://tally.so/widgets/embed.js",
-              v=function(){
-                if(typeof Tally!="undefined"){
+          var d = document,
+              w = "https://tally.so/widgets/embed.js",
+              v = function(){
+                if(typeof Tally !== "undefined"){
                   Tally.loadEmbeds();
                 } else {
                   d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function(e){
@@ -226,13 +268,13 @@
                   });
                 }
               };
-          if(typeof Tally!="undefined"){
+          if(typeof Tally !== "undefined"){
             v();
-          } else if(d.querySelector('script[src="'+w+'"]')==null){
-            var s=d.createElement("script");
-            s.src=w;
-            s.onload=v;
-            s.onerror=v;
+          } else if(d.querySelector('script[src="'+w+'"]') === null){
+            var s = d.createElement("script");
+            s.src = w;
+            s.onload = v;
+            s.onerror = v;
             d.body.appendChild(s);
           }
         </script>
