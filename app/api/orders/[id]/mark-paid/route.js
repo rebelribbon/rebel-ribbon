@@ -4,10 +4,11 @@ import { supabaseServer } from '@/lib/supabase';
 // Quick GET so we can verify this file is the one deployed
 export async function GET(_req, { params }) {
   return new Response(
-    JSON.stringify({ ok: true, route: 'mark-paid', orderId: params.id }),
+    JSON.stringify({ ok: true, route: 'mark-paid', orderId: params?.id ?? null }),
     { status: 200, headers: { 'Content-Type': 'application/json' } }
   );
 }
+
 
 export async function POST(req, { params }) {
   const orderId = params.id;
