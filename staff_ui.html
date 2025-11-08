@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Rebel Ribbon Staff UI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
@@ -12,37 +12,28 @@
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
-  <!-- Auth gate -->
-  <div id="authGate" class="min-h-screen grid place-items-center">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow p-6">
-      <h1 class="text-xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
+  <main class="max-w-7xl mx-auto p-6">
+    <!-- Login card -->
+    <section id="loginCard" class="max-w-md mx-auto bg-white rounded-2xl shadow p-6 hidden">
+      <h1 class="text-2xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
       <p class="text-sm text-gray-600 mb-4">Use your @rebelribbon.com email. We will send a magic link.</p>
-      <label class="block mb-2 text-sm">Email</label>
-      <input id="emailInput" type="email" placeholder="you@rebelribbon.com" class="w-full px-3 py-2 rounded-lg border mb-3" />
-      <button id="sendLinkBtn" class="w-full px-3 py-2 rounded-lg bg-blue-600 text-white">Send magic link</button>
-      <p id="authMsg" class="text-sm mt-3 text-gray-700"></p>
-      <hr class="my-4" />
-      <p class="text-xs text-gray-500">If the button does nothing, set SUPABASE_URL and SUPABASE_ANON_KEY in this file.</p>
-    </div>
-  </div>
+      <label class="block text-sm mb-1">Email</label>
+      <input id="email" type="email" class="w-full border rounded px-3 py-2 mb-3" placeholder="you@rebelribbon.com"/>
+      <button id="sendLink" class="w-full bg-blue-600 text-white rounded px-4 py-2">Send magic link</button>
+      <p id="loginMsg" class="text-sm mt-3 text-gray-600"></p>
+    </section>
 
-  <!-- App -->
-  <div id="app" class="hidden">
-    <div class="max-w-7xl mx-auto p-4 md:p-8">
-      <header class="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <div class="flex items-center gap-2">
-          <h1 class="text-2xl font-semibold">Rebel Ribbon Admin</h1>
-          <span id="envBanner" class="hidden text-xs px-2 py-1 rounded bg-yellow-100 text-yellow-800">Config not set</span>
-        </div>
+    <!-- App shell -->
+    <section id="app" class="hidden">
+      <header class="flex items-center justify-between mb-4">
         <div class="flex items-center gap-3">
-          <div class="flex items-center gap-2">
-            <input id="globalSearch" type="search" placeholder="Search current tab" class="px-3 py-2 rounded-lg border" />
-            <button id="refreshAll" class="px-3 py-2 rounded-lg border bg-white">Refresh</button>
-          </div>
-          <div class="flex items-center gap-2">
-            <span id="userEmail" class="text-sm text-gray-700"></span>
-            <button id="signOutBtn" class="px-3 py-2 rounded-lg bg-gray-900 text-white">Sign out</button>
-          </div>
+          <h1 class="text-2xl font-semibold">Rebel Ribbon Admin</h1>
+          <span id="who" class="text-sm text-gray-600"></span>
+        </div>
+        <div class="flex items-center gap-2">
+          <input id="globalSearch" type="search" placeholder="Search current tab" class="px-3 py-2 rounded-lg border"/>
+          <button id="refreshAll" class="px-3 py-2 rounded-lg border bg-white">Refresh</button>
+          <button id="signOut" class="px-3 py-2 rounded-lg border bg-white">Sign out</button>
         </div>
       </header>
 
@@ -62,137 +53,187 @@
         </div>
       </div>
 
-      <!-- Data table -->
+      <!-- Table -->
       <div class="overflow-auto rounded-xl border bg-white">
         <table class="min-w-full text-sm">
-          <thead class="bg-gray-100 text-gray-700">
-            <tr id="thead"></tr>
-          </thead>
+          <thead class="bg-gray-100 text-gray-700"><tr id="thead"></tr></thead>
           <tbody id="tbody"></tbody>
         </table>
       </div>
-    </div>
+    </section>
+  </main>
 
-    <!-- Editor modal -->
-    <dialog id="editor" class="rounded-2xl p-0 w-full max-w-3xl shadow-2xl">
-      <form method="dialog" class="p-0">
-        <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
-          <h2 id="editorTitle" class="text-lg font-semibold">Edit</h2>
-          <button value="close" class="p-2 rounded hover:bg-gray-200">✕</button>
-        </div>
-        <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
-        <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
-          <button id="deleteBtn" type="button" class="px-3 py-2 rounded-lg border text-red-700 border-red-300 hidden">Delete</button>
-          <button id="saveBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white">Save</button>
-        </div>
-      </form>
-    </dialog>
-  </div>
+  <!-- Editor modal -->
+  <dialog id="editor" class="rounded-2xl p-0 w-full max-w-3xl shadow-2xl">
+    <form method="dialog" class="p-0">
+      <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
+        <h2 id="editorTitle" class="text-lg font-semibold">Edit</h2>
+        <button value="close" class="p-2 rounded hover:bg-gray-200">✕</button>
+      </div>
+      <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+      <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
+        <button id="deleteBtn" type="button" class="px-3 py-2 rounded-lg border text-red-700 border-red-300 hidden">Delete</button>
+        <button id="saveBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white">Save</button>
+      </div>
+    </form>
+  </dialog>
 
   <script>
     // =============================
-    // 1) Supabase config
+    // 1) Supabase client
     // =============================
-const SUPABASE_URL = "https://zyntkwammltmjjvgelwg.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A";
+    const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A'; // paste your anon public key
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // =============================
+    // 2) Auth helpers
+    // =============================
+    const loginCard = document.getElementById('loginCard');
+    const app = document.getElementById('app');
+    const who = document.getElementById('who');
 
-
-    const DOMAIN_ALLOWED = 'rebelribbon.com';
-
-    function configNotSet() {
-      return (
-        !SUPABASE_URL ||
-        !SUPABASE_ANON_KEY ||
-        SUPABASE_URL.includes('YOUR-PROJECT-ref') ||
-        SUPABASE_ANON_KEY.includes('YOUR-ANON-KEY')
-      );
+    function show(view) {
+      loginCard.classList.add('hidden');
+      app.classList.add('hidden');
+      view.classList.remove('hidden');
     }
 
-    // =============================
-    // 2) Auth gate
-    // =============================
-    const authGate = document.getElementById('authGate');
-    const appRoot  = document.getElementById('app');
-    const emailInput = document.getElementById('emailInput');
-    const sendLinkBtn = document.getElementById('sendLinkBtn');
-    const authMsg = document.getElementById('authMsg');
-    const userEmail = document.getElementById('userEmail');
-    const signOutBtn = document.getElementById('signOutBtn');
-    const envBanner = document.getElementById('envBanner');
+    function parseHashTokens() {
+      // For magic link that returns access_token in URL hash
+      const hash = window.location.hash.replace('#','');
+      if (!hash) return null;
+      const params = Object.fromEntries(new URLSearchParams(hash).entries());
+      if (params.access_token && params.refresh_token) {
+        return { access_token: params.access_token, refresh_token: params.refresh_token };
+      }
+      return null;
+    }
 
-    if (configNotSet()) envBanner.classList.remove('hidden');
-
-    function showAuth() { authGate.classList.remove('hidden'); appRoot.classList.add('hidden'); }
-    function showApp()  { authGate.classList.add('hidden');    appRoot.classList.remove('hidden'); }
-
-    async function refreshSessionUI() {
+    async function handleAuthOnLoad() {
+      // If tokens in hash, set session
+      const t = parseHashTokens();
+      if (t) {
+        try {
+          await sb.auth.setSession({ access_token: t.access_token, refresh_token: t.refresh_token });
+          history.replaceState({}, document.title, window.location.pathname); // clean hash
+        } catch(e) {
+          console.error(e);
+        }
+      }
+      // Check session
       const { data: { session } } = await sb.auth.getSession();
-      if (!session) { showAuth(); return; }
-      const email = session.user?.email || '';
-      userEmail.textContent = email;
-
-      // Client-side domain gate
-      const domain = email.split('@')[1] || '';
-      if (domain.toLowerCase() !== DOMAIN_ALLOWED) {
-        await sb.auth.signOut();
-        showAuth();
-        authMsg.textContent = 'This app is limited to @' + DOMAIN_ALLOWED + ' emails.';
-        return;
+      if (session?.user?.email) {
+        // Restrict to company domain
+        if (!session.user.email.toLowerCase().endsWith('@rebelribbon.com')) {
+          await sb.auth.signOut();
+          document.getElementById('loginMsg').textContent = 'Only @rebelribbon.com emails are allowed.';
+          show(loginCard);
+          return;
+        }
+        who.textContent = session.user.email;
+        show(app);
+        renderTabs();
+        loadTable();
+      } else {
+        show(loginCard);
       }
-      showApp();
-      // when signed in, init app if not already
-      initRealtime();
-      renderTabs();
-      loadTable();
     }
 
-    sendLinkBtn.addEventListener('click', async () => {
-      authMsg.textContent = '';
-      const email = (emailInput.value || '').trim();
-      if (!email) { authMsg.textContent = 'Enter your email.'; return; }
-      const domain = email.split('@')[1] || '';
-      if (domain.toLowerCase() !== DOMAIN_ALLOWED) {
-        authMsg.textContent = 'Only @' + DOMAIN_ALLOWED + ' emails are allowed.';
+    document.getElementById('sendLink').addEventListener('click', async () => {
+      const email = document.getElementById('email').value.trim();
+      const msg = document.getElementById('loginMsg');
+      msg.textContent = '';
+      if (!email.endsWith('@rebelribbon.com')) {
+        msg.textContent = 'Use your @rebelribbon.com email.';
         return;
       }
-      sendLinkBtn.disabled = true;
-      sendLinkBtn.textContent = 'Sending...';
       try {
-        const { error } = await sb.auth.signInWithOtp({
-          email,
-          options: {
-            emailRedirectTo: window.location.origin + window.location.pathname
-          }
-        });
+        const redirectTo = `${location.origin}${location.pathname}`; // this page
+        const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
         if (error) throw error;
-        authMsg.textContent = 'Check your email for the magic link.';
+        msg.textContent = 'Magic link sent. Check your inbox.';
       } catch (e) {
-        authMsg.textContent = e.message || String(e);
-      } finally {
-        sendLinkBtn.disabled = false;
-        sendLinkBtn.textContent = 'Send magic link';
+        console.error(e);
+        msg.textContent = `Failed to fetch`;
       }
     });
 
-    signOutBtn.addEventListener('click', async () => {
+    document.getElementById('signOut').addEventListener('click', async () => {
       await sb.auth.signOut();
-      showAuth();
+      location.reload();
     });
-
-    sb.auth.onAuthStateChange((_event, _session) => {
-      // Handles return from magic link
-      refreshSessionUI();
-    });
-
-    // First load
-    refreshSessionUI();
 
     // =============================
-    // 3) Table configurations
+    // 3) Admin table configs
     // =============================
     const tables = {
+      customers: {
+        title: 'Customers',
+        table: 'customers',
+        cols: [
+          { key: 'first_name', label: 'First name', type: 'text', required: true },
+          { key: 'last_name', label: 'Last name', type: 'text', required: true },
+          { key: 'phone', label: 'Phone', type: 'text' },
+          { key: 'email', label: 'Email', type: 'email' },
+          { key: 'street_address', label: 'Street address', type: 'text' },
+          { key: 'street_address_cont', label: 'Street address cont', type: 'text' },
+          { key: 'city', label: 'City', type: 'text' },
+          { key: 'state', label: 'State', type: 'text' },
+          { key: 'zip', label: 'Zip', type: 'text' },
+          { key: 'customer_id', label: 'Customer ID', type: 'text' },
+          { key: 'referral_code_assigned', label: 'Referral code assigned', type: 'text' },
+          { key: 'order_id', label: 'Order ID', type: 'text' }
+        ]
+      },
+      orders: {
+        title: 'Orders',
+        table: 'orders',
+        cols: [
+          { key: 'order_id', label: 'Order ID', type: 'text' },
+          { key: 'customer_id', label: 'Customer', type: 'select-async', asyncOptions: async () => {
+              const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+              return (data||[]).map(c => ({ value: c.id, label: `${c.first_name} ${c.last_name}` }));
+            } },
+          { key: 'pickup_delivery_date', label: 'Pick up or delivery date', type: 'date' },
+          { key: 'event_date', label: 'Event date', type: 'date' },
+          { key: 'cookie_amount_dzns', label: 'Cookie amount (dzns)', type: 'number', step: '0.01' },
+          { key: 'flavor', label: 'Flavor', type: 'select-async', asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r => r.name) || [] },
+          { key: 'dietary_option', label: 'Dietary option', type: 'select-async', asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r => r.name) || [] },
+          { key: 'design_notes', label: 'Design notes', type: 'textarea' },
+          { key: 'design_inspiration_photo', label: 'Design inspiration photo URL', type: 'url' },
+          { key: 'gift_note', label: 'Gift note', type: 'checkbox' },
+          { key: 'gift_note_text', label: 'Gift note text', type: 'textarea' },
+          { key: 'consultation_requested', label: 'Consultation requested', type: 'checkbox' },
+          { key: 'discount_code_used', label: 'Discount code used', type: 'text' },
+          { key: 'referral_code_used', label: 'Referral code used', type: 'text' }
+        ]
+      },
+      discount_codes: {
+        title: 'Discount Codes',
+        table: 'discount_codes',
+        cols: [
+          { key: 'code', label: 'Code', type: 'text', required: true },
+          { key: 'type', label: 'Type', type: 'select', options: ['percent','fixed'], required: true },
+          { key: 'uses_allowed', label: 'Number of uses allowed', type: 'number' },
+          { key: 'email_allowed', label: 'Email allowed', type: 'email' },
+          { key: 'good_through_date', label: 'Good through date', type: 'date' }
+        ]
+      },
+      referral_codes: {
+        title: 'Referral Codes',
+        table: 'referral_codes',
+        cols: [
+          { key: 'code', label: 'Code', type: 'text', required: true },
+          { key: 'associated_customer_id', label: 'Associated customer', type: 'select-async', asyncOptions: async () => {
+              const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+              return (data||[]).map(c => ({ value: c.id, label: `${c.first_name} ${c.last_name}` }));
+            } },
+          { key: 'good_through_date', label: 'Good through date', type: 'date' },
+          { key: 'referrer_discount', label: 'Referrer discount %', type: 'number', step: '0.01' },
+          { key: 'referee_discount', label: 'Referee discount %', type: 'number', step: '0.01' }
+        ]
+      },
       flavors: {
         title: 'Flavors',
         table: 'flavors',
@@ -222,72 +263,6 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
           { key: 'amount', label: 'Amount', type: 'number', step: '0.01', required: true }
         ]
       },
-      customers: {
-        title: 'Customers',
-        table: 'customers',
-        cols: [
-          { key: 'first_name', label: 'First name', type: 'text', required: true },
-          { key: 'last_name', label: 'Last name', type: 'text', required: true },
-          { key: 'phone', label: 'Phone', type: 'text' },
-          { key: 'email', label: 'Email', type: 'email' },
-          { key: 'street_address', label: 'Street address', type: 'text' },
-          { key: 'street_address_cont', label: 'Street address cont', type: 'text' },
-          { key: 'city', label: 'City', type: 'text' },
-          { key: 'state', label: 'State', type: 'text' },
-          { key: 'zip', label: 'Zip', type: 'text' },
-          { key: 'customer_id', label: 'Customer ID', type: 'text' },
-          { key: 'referral_code_assigned', label: 'Referral code assigned', type: 'text', asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r => r.code) || [] },
-          { key: 'order_id', label: 'Order ID', type: 'text' }
-        ]
-      },
-      discount_codes: {
-        title: 'Discount Codes',
-        table: 'discount_codes',
-        cols: [
-          { key: 'code', label: 'Code', type: 'text', required: true },
-          { key: 'type', label: 'Type', type: 'select', options: ['percent','fixed'], required: true },
-          { key: 'uses_allowed', label: 'Number of uses allowed', type: 'number' },
-          { key: 'email_allowed', label: 'Email allowed', type: 'email' },
-          { key: 'good_through_date', label: 'Good through date', type: 'date' }
-        ]
-      },
-      referral_codes: {
-        title: 'Referral Codes',
-        table: 'referral_codes',
-        cols: [
-          { key: 'code', label: 'Code', type: 'text', required: true },
-          { key: 'associated_customer_id', label: 'Associated customer', type: 'select-async', asyncOptions: async () => {
-              const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
-              return (data||[]).map(c => ({ value: c.id, label: `${c.first_name} ${c.last_name}` }));
-            } },
-          { key: 'good_through_date', label: 'Good through date', type: 'date' },
-          { key: 'referrer_discount', label: 'Referrer discount %', type: 'number', step: '0.01' },
-          { key: 'referee_discount', label: 'Referee discount %', type: 'number', step: '0.01' }
-        ]
-      },
-      orders: {
-        title: 'Orders',
-        table: 'orders',
-        cols: [
-          { key: 'order_id', label: 'Order ID', type: 'text' },
-          { key: 'customer_id', label: 'Customer', type: 'select-async', asyncOptions: async () => {
-              const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
-              return (data||[]).map(c => ({ value: c.id, label: `${c.first_name} ${c.last_name}` }));
-            } },
-          { key: 'pickup_delivery_date', label: 'Pick up or delivery date', type: 'date' },
-          { key: 'event_date', label: 'Event date', type: 'date' },
-          { key: 'cookie_amount_dzns', label: 'Cookie amount (dzns)', type: 'number', step: '0.01' },
-          { key: 'flavor', label: 'Flavor', type: 'select-async', asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r => r.name) || [] },
-          { key: 'dietary_option', label: 'Dietary option', type: 'select-async', asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r => r.name) || [] },
-          { key: 'design_notes', label: 'Design notes', type: 'textarea' },
-          { key: 'design_inspiration_photo', label: 'Design inspiration photo URL', type: 'url' },
-          { key: 'gift_note', label: 'Gift note', type: 'checkbox' },
-          { key: 'gift_note_text', label: 'Gift note text', type: 'textarea' },
-          { key: 'consultation_requested', label: 'Consultation requested', type: 'checkbox' },
-          { key: 'discount_code_used', label: 'Discount code used', type: 'select-async', asyncOptions: async () => (await sb.from('discount_codes').select('code')).data?.map(r => r.code) || [] },
-          { key: 'referral_code_used', label: 'Referral code used', type: 'select-async', asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r => r.code) || [] }
-        ]
-      },
       surveys: {
         title: 'Surveys',
         table: 'surveys',
@@ -304,11 +279,10 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         ]
       }
     };
-
     const tabOrder = ['customers','orders','discount_codes','referral_codes','flavors','dietary_options','pricing','costs','surveys'];
 
     // =============================
-    // 4) State and helpers
+    // 4) Admin UI helpers
     // =============================
     let activeKey = tabOrder[0];
     const pageSize = 10;
@@ -318,7 +292,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     function el(tag, cls, html) { const e = document.createElement(tag); if (cls) e.className = cls; if (html!==undefined) e.innerHTML = html; return e; }
     function fmt(v) { if (v === null || v === undefined) return ''; if (typeof v === 'boolean') return v ? 'Yes' : 'No'; return String(v); }
     function dateInputValue(d) { if (!d) return ''; const dt = new Date(d); const tz = new Date(dt.getTime() - dt.getTimezoneOffset()*60000); return tz.toISOString().slice(0,10); }
-    function setLoading(is) { document.body.style.cursor = is ? 'progress' : 'default'; [...document.querySelectorAll('button,input,select,textarea')].forEach(b => b.disabled = is ? (b.id !== 'globalSearch') : false); }
+    function setLoading(is) { document.body.style.cursor = is ? 'progress' : 'default'; [...document.querySelectorAll('button,input,select,textarea')].forEach(b => b.disabled = is ? b.id !== 'globalSearch' : false); }
 
     function buildThead(conf) {
       const tr = el('tr');
@@ -332,8 +306,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       const csvRows = [headers.join(',')];
       for (const r of rows) {
         const vals = conf.cols.map(c => {
-          let v = r[c.key];
-          if (v === null || v === undefined) v = '';
+          let v = r[c.key]; if (v === null || v === undefined) v = '';
           const s = String(v).replaceAll('"','""');
           return '"' + s + '"';
         });
@@ -342,17 +315,11 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       return csvRows.join('\n');
     }
 
-    // =============================
-    // 5) Load and render table
-    // =============================
     async function loadTable() {
       const conf = tables[activeKey];
       const thead = document.getElementById('thead');
       thead.innerHTML = '';
       thead.appendChild(buildThead(conf));
-
-      const tbody = document.getElementById('tbody');
-      tbody.innerHTML = '';
 
       setLoading(true);
       let query = sb.from(conf.table).select('*', { count: 'exact' });
@@ -364,23 +331,13 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       }
 
       query = query.order('updated_at', { ascending: false }).range(page * pageSize, page * pageSize + pageSize - 1);
-
-      let data, error, count;
-      try {
-        ({ data, error, count } = await query);
-      } catch (e) {
-        setLoading(false);
-        tbody.appendChild(el('tr','',`<td colspan="99" class="p-4 text-red-700">Network error: ${e?.message || e}. Make sure this file is hosted over https and your Supabase URL is correct.</td>`));
-        return;
-      }
+      const { data, error, count } = await query;
       setLoading(false);
 
+      const tbody = document.getElementById('tbody');
+      tbody.innerHTML = '';
       if (error) {
-        const msg = error.message || String(error);
-        let hint = '';
-        if (/RLS|permission|policy|JWT|auth/i.test(msg)) hint = ' - RLS may be blocking reads. Sign in or adjust policies.';
-        if (/cors/i.test(msg)) hint = ' - CORS issue. Allow your GitHub Pages domain in Supabase.';
-        tbody.appendChild(el('tr','',`<td colspan="99" class="p-4 text-red-700">${msg}${hint}</td>`));
+        tbody.appendChild(el('tr','',`<td colspan="99" class="p-4 text-red-700">${error.message}</td>`));
         return;
       }
 
@@ -388,11 +345,6 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       document.getElementById('prev').disabled = page === 0;
       document.getElementById('next').disabled = (page + 1) * pageSize >= totalCount;
       document.getElementById('pageInfo').textContent = `${Math.min(totalCount, page * pageSize + (data?.length||0))} of ${totalCount}`;
-
-      if (!data || data.length === 0) {
-        tbody.appendChild(el('tr','',`<td colspan="99" class="p-4 text-gray-600">No rows. Click Add to create your first record.</td>`));
-        return;
-      }
 
       for (const row of data) {
         const tr = el('tr','border-b');
@@ -409,7 +361,6 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         tbody.appendChild(tr);
       }
 
-      // CSV export
       document.getElementById('exportBtn').onclick = async () => {
         const { data: allRows } = await sb.from(conf.table).select('*').order('updated_at', { ascending: false });
         const csv = toCSV(allRows || [], conf);
@@ -421,9 +372,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       };
     }
 
-    // =============================
-    // 6) Editor modal
-    // =============================
+    // Editor
     const dlg = document.getElementById('editor');
     const formBody = document.getElementById('formBody');
 
@@ -438,7 +387,7 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         input = el('input','h-4 w-4'); input.type = 'checkbox';
       } else if (col.type === 'select') {
         input = el('select','px-3 py-2 rounded-lg border w-full');
-        (col.options||[]).forEach(o => { const opt = el('option','',o); opt.value = o; input.appendChild(opt); });
+        ;(col.options||[]).forEach(o => { const opt = el('option','',o); opt.value = o; input.appendChild(opt); });
       } else if (col.type === 'select-async') {
         input = el('select','px-3 py-2 rounded-lg border w-full');
         const options = await col.asyncOptions();
@@ -461,7 +410,6 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       if (col.type === 'checkbox') input.checked = !!value;
       else if (col.type === 'date') input.value = dateInputValue(value);
       else input.value = value ?? '';
-
       wrap.appendChild(input);
       return wrap;
     }
@@ -470,10 +418,8 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       document.getElementById('editorTitle').textContent = row ? `Edit ${conf.title}` : `New ${conf.title}`;
       formBody.innerHTML = '';
       for (const c of conf.cols) formBody.appendChild(await optionEl(c, row?.[c.key]));
-
       const idHidden = el('input'); idHidden.type = 'hidden'; idHidden.id = 'row_id'; idHidden.value = row?.id || '';
       formBody.appendChild(idHidden);
-
       const delBtn = document.getElementById('deleteBtn');
       delBtn.classList.toggle('hidden', !row);
       delBtn.onclick = async () => {
@@ -483,10 +429,8 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const { error } = await sb.from(conf.table).delete().eq('id', row.id);
         setLoading(false);
         if (error) { alert(error.message); return; }
-        dlg.close();
-        loadTable();
+        dlg.close(); loadTable();
       };
-
       document.getElementById('saveBtn').onclick = async (e) => { e.preventDefault(); await saveRecord(conf); };
       dlg.showModal();
     }
@@ -506,13 +450,10 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       else resp = await sb.from(conf.table).insert(payload).select('*').single();
       setLoading(false);
       if (resp.error) { alert(resp.error.message); return; }
-      dlg.close();
-      loadTable();
+      dlg.close(); loadTable();
     }
 
-    // =============================
-    // 7) Tabs, pagination, search
-    // =============================
+    // Tabs, pagination, search
     function renderTabs() {
       const nav = document.getElementById('tabs'); nav.innerHTML = '';
       for (const key of tabOrder) {
@@ -530,19 +471,13 @@ const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     document.getElementById('globalSearch').addEventListener('keydown', (e) => { if (e.key === 'Enter') { page = 0; loadTable(); }});
     document.getElementById('refreshAll').addEventListener('click', () => loadTable());
 
-    // =============================
-    // 8) Realtime
-    // =============================
-    let channels = [];
-    function initRealtime() {
-      if (channels.length) return; // only once
-      for (const key of Object.keys(tables)) {
-        const ch = sb.channel(`${key}-changes`)
-          .on('postgres_changes', { event: '*', schema: 'public', table: tables[key].table }, () => { if (key === activeKey) loadTable(); })
-          .subscribe();
-        channels.push(ch);
-      }
+    // Realtime refresh
+    for (const key of Object.keys(tables)) {
+      sb.channel(`${key}-changes`).on('postgres_changes', { event: '*', schema: 'public', table: tables[key].table }, () => { if (key === activeKey) loadTable(); }).subscribe();
     }
+
+    // Boot
+    handleAuthOnLoad();
   </script>
 </body>
 </html>
