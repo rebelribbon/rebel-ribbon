@@ -1,172 +1,407 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
   <title>Rebel Ribbon Staff UI</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
-    body { font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    .card { max-width: 520px; }
-    .hidden { display: none; }
+    .tab-active { border-bottom: 2px solid #111; font-weight: 600; }
   </style>
 </head>
-<body class="bg-gray-50 text-gray-900 min-h-screen flex items-center justify-center p-4">
-
+<body class="bg-gray-50 text-gray-900">
   <!-- Sign in card -->
-  <div id="signinCard" class="card w-full rounded-2xl bg-white shadow p-6">
-    <h1 class="text-2xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
-    <p class="text-sm text-gray-600 mb-6">
-      Use your @rebelribbon.com email. We will send a magic link.
-    </p>
-
-    <label class="block text-sm mb-1" for="email">Email</label>
-    <input id="email" type="email" class="w-full border rounded-lg px-3 py-2 mb-4" placeholder="you@rebelribbon.com" />
-
-    <button id="sendLink" class="w-full bg-blue-600 text-white rounded-lg px-4 py-2 font-medium">
-      Send magic link
-    </button>
-
-    <p id="msg" class="text-sm mt-3 text-gray-700"></p>
-    <p id="err" class="text-sm mt-3 text-red-700"></p>
-
-    <p class="text-xs text-gray-500 mt-6">
-      If the button does nothing, set SUPABASE_URL and SUPABASE_ANON_KEY in this file.
-    </p>
+  <div id="signinCard" class="min-h-screen flex items-center justify-center p-4">
+    <div class="w-full max-w-md bg-white rounded-2xl shadow p-6">
+      <h1 class="text-2xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
+      <p class="text-sm text-gray-600 mb-4">Use your @rebelribbon.com email. We will send a magic link.</p>
+      <label class="block text-sm mb-2">Email</label>
+      <input id="email" type="email" placeholder="you@rebelribbon.com"
+             class="w-full px-3 py-2 rounded-lg border mb-4" />
+      <button id="sendLink" class="w-full px-4 py-2 rounded-lg bg-blue-600 text-white">Send magic link</button>
+      <p id="authMsg" class="text-sm text-red-600 mt-3"></p>
+      <p class="text-xs text-gray-500 mt-3">If the button does nothing, set SUPABASE_URL and SUPABASE_ANON_KEY in this file.</p>
+    </div>
   </div>
 
-  <!-- App card (shown after login) -->
-  <div id="appCard" class="card w-full rounded-2xl bg-white shadow p-6 hidden">
-    <div class="flex items-center justify-between mb-4">
-      <h2 class="text-xl font-semibold">Rebel Ribbon Admin</h2>
-      <button id="signOut" class="text-sm border rounded-lg px-3 py-1">Sign out</button>
+  <!-- App shell -->
+  <div id="app" class="hidden">
+    <div class="max-w-7xl mx-auto p-4 md:p-8">
+      <header class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl font-semibold">Rebel Ribbon Admin</h1>
+        <div class="flex gap-2 items-center">
+          <input id="globalSearch" type="search" placeholder="Search current tab" class="px-3 py-2 rounded-lg border" />
+          <button id="refreshAll" class="px-3 py-2 rounded-lg border bg-white">Refresh</button>
+          <span id="who" class="text-sm text-gray-600"></span>
+          <button id="logout" class="px-3 py-2 rounded-lg bg-gray-900 text-white">Sign out</button>
+        </div>
+      </header>
+
+      <!-- Tabs -->
+      <nav id="tabs" class="flex flex-wrap gap-4 border-b pb-2 mb-4"></nav>
+
+      <!-- Toolbar -->
+      <div class="flex items-center justify-between mb-2">
+        <div class="flex items-center gap-2">
+          <button id="addBtn" class="px-3 py-2 rounded-lg bg-blue-600 text-white">Add</button>
+          <button id="exportBtn" class="px-3 py-2 rounded-lg border bg-white">Export CSV</button>
+        </div>
+        <div class="flex items-center gap-2">
+          <button id="prev" class="px-3 py-2 rounded-lg border bg-white disabled:opacity-50">Prev</button>
+          <span id="pageInfo" class="text-sm text-gray-600"></span>
+          <button id="next" class="px-3 py-2 rounded-lg border bg-white disabled:opacity-50">Next</button>
+        </div>
+      </div>
+
+      <!-- Table -->
+      <div class="overflow-auto rounded-xl border bg-white">
+        <table class="min-w-full text-sm">
+          <thead class="bg-gray-100 text-gray-700"><tr id="thead"></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <p id="netHint" class="text-yellow-700 text-sm mt-3 hidden"></p>
     </div>
 
-    <p class="text-sm text-gray-700 mb-4">
-      Signed in as <span id="who"></span>
-    </p>
-
-    <div class="grid gap-3">
-      <a class="block text-center border rounded-lg px-4 py-2 hover:bg-gray-50"
-         href="admin.html">Open Admin UI</a>
-      <a class="block text-center border rounded-lg px-4 py-2 hover:bg-gray-50"
-         href="order.html">Public Order Form</a>
-    </div>
-
-    <p class="text-xs text-gray-500 mt-6">
-      If Admin UI shows “Failed to fetch”, verify your keys in that file and that RLS allows the authenticated role.
-    </p>
+    <!-- Editor dialog -->
+    <dialog id="editor" class="rounded-2xl p-0 w-full max-w-3xl shadow-2xl">
+      <form method="dialog" class="p-0">
+        <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
+          <h2 id="editorTitle" class="text-lg font-semibold">Edit</h2>
+          <button value="close" class="p-2 rounded hover:bg-gray-200">✕</button>
+        </div>
+        <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+        <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
+          <button id="deleteBtn" type="button" class="px-3 py-2 rounded-lg border text-red-700 border-red-300 hidden">Delete</button>
+          <button id="saveBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white">Save</button>
+        </div>
+      </form>
+    </dialog>
   </div>
 
-<script>
-  // ===== 1) Config: set these two lines =====
+  <script>
+    // 1) Supabase client
   const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
-  const SUPABASE_ANON_KEY = 'PASTE_YOUR_ANON_KEY_HERE';
-  // ===========================================
-
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
   const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-  const signinCard = document.getElementById('signinCard');
-  const appCard = document.getElementById('appCard');
-  const emailInput = document.getElementById('email');
-  const sendBtn = document.getElementById('sendLink');
-  const msg = document.getElementById('msg');
-  const err = document.getElementById('err');
-  const who = document.getElementById('who');
-  const signOutBtn = document.getElementById('signOut');
+    // 2) Email OTP sign in
+    const signinCard = document.getElementById('signinCard');
+    const app = document.getElementById('app');
+    const authMsg = document.getElementById('authMsg');
 
-  // Your GitHub Pages URL for redirect
-  const PAGES_BASE = 'https://rebelribbon.github.io/rebel-ribbon';
-  const REDIRECT_TO = `${PAGES_BASE}/staff_ui.html`;
-
-  // Simple domain guard
-  function isAllowedEmail(e) {
-    return typeof e === 'string' && e.toLowerCase().endsWith('@rebelribbon.com');
-  }
-
-  function showSignedIn(userEmail) {
-    who.textContent = userEmail || '(unknown)';
-    signinCard.classList.add('hidden');
-    appCard.classList.remove('hidden');
-  }
-
-  function showSignedOut() {
-    appCard.classList.add('hidden');
-    signinCard.classList.remove('hidden');
-  }
-
-  async function refreshSessionUI() {
-    const { data: { session } } = await sb.auth.getSession();
-    if (session && session.user) {
-      showSignedIn(session.user.email);
-    } else {
-      showSignedOut();
-    }
-  }
-
-  // 2) Handle magic link delivery
-  sendBtn.addEventListener('click', async () => {
-    msg.textContent = '';
-    err.textContent = '';
-
-    const email = emailInput.value.trim();
-    if (!isAllowedEmail(email)) {
-      err.textContent = 'Use your @rebelribbon.com address.';
-      return;
+    function onlyCompanyEmail(email) {
+      return /@rebelribbon\.com$/i.test(email);
     }
 
-    sendBtn.disabled = true;
-    sendBtn.textContent = 'Sending...';
-
-    try {
-      const { error } = await sb.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: REDIRECT_TO
-        }
-      });
-      if (error) throw error;
-      msg.textContent = 'Check your email for the magic link.';
-    } catch (e) {
-      err.textContent = e.message || 'Failed to fetch';
-    } finally {
-      sendBtn.disabled = false;
-      sendBtn.textContent = 'Send magic link';
-    }
-  });
-
-  // 3) Handle the return from the magic link
-  // Supabase places access_token etc in the hash. This will exchange it for a session.
-  (async function handleHash() {
-    // Supabase v2 handles it internally on getSession, but we also nudge it by reading the URL
-    try {
-      const hash = window.location.hash || '';
-      if (hash.includes('access_token') || hash.includes('error')) {
-        // Supabase auto-parses on first auth call
-        const { data: { session }, error } = await sb.auth.getSession();
-        if (error) throw error;
-        if (session && session.user) {
-          // Clean the hash so refresh does not re-parse
-          history.replaceState({}, document.title, window.location.pathname);
-        }
+    document.getElementById('sendLink').addEventListener('click', async () => {
+      authMsg.textContent = '';
+      const email = document.getElementById('email').value.trim();
+      if (!onlyCompanyEmail(email)) {
+        authMsg.textContent = 'Use your @rebelribbon.com address.';
+        return;
       }
-    } catch (e) {
-      console.error(e);
+      try {
+        // redirect back to this page
+        const redirectTo = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
+        const { error } = await sb.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: redirectTo }
+        });
+        if (error) throw error;
+        authMsg.classList.remove('text-red-600');
+        authMsg.classList.add('text-green-700');
+        authMsg.textContent = 'Magic link sent. Check your inbox.';
+      } catch (e) {
+        authMsg.classList.remove('text-green-700');
+        authMsg.classList.add('text-red-600');
+        authMsg.textContent = e.message || 'Failed to fetch';
+      }
+    });
+
+    // 3) Session bootstrap
+    async function bootstrap() {
+      // if the page was opened via magic link, supabase-js will read the hash automatically
+      const { data: { session }, error } = await sb.auth.getSession();
+      if (error) {
+        authMsg.textContent = error.message;
+        return;
+      }
+      if (!session) {
+        signinCard.classList.remove('hidden'); app.classList.add('hidden');
+        // show better hint if keys are not set
+        if (SUPABASE_URL.includes('YOUR-PROJECT') || SUPABASE_ANON_KEY.includes('PASTE_')) {
+          document.getElementById('netHint').classList.remove('hidden');
+          document.getElementById('netHint').textContent = 'Missing Supabase keys.';
+        }
+        return;
+      }
+      // domain guard in code
+      const email = session.user?.email || '';
+      if (!onlyCompanyEmail(email)) {
+        await sb.auth.signOut();
+        authMsg.textContent = 'This page is restricted to @rebelribbon.com';
+        return;
+      }
+      document.getElementById('who').textContent = email;
+      signinCard.classList.add('hidden'); app.classList.remove('hidden');
+      renderTabs(); loadTable(); wireRealtime(); // start app
     }
-  })();
 
-  // 4) Sign out
-  signOutBtn.addEventListener('click', async () => {
-    await sb.auth.signOut();
-    showSignedOut();
-  });
+    document.getElementById('logout').addEventListener('click', async () => {
+      await sb.auth.signOut();
+      location.href = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
+    });
 
-  // 5) Initial
-  refreshSessionUI();
-</script>
+    // 4) Admin UI config
+    const tables = {
+      flavors: { title: 'Flavors', table: 'flavors', cols: [ { key:'name', label:'Flavor name', type:'text', required:true } ] },
+      dietary_options: { title: 'Dietary Options', table: 'dietary_options', cols: [ { key:'name', label:'Dietary option', type:'text', required:true } ] },
+      pricing: { title: 'Pricing', table: 'pricing', cols: [
+        { key:'price_per_dozen', label:'Price per dozen', type:'number', step:'0.01' },
+        { key:'delivery_fee', label:'Delivery fee', type:'number', step:'0.01' },
+        { key:'consultation_fee', label:'Consultation fee', type:'number', step:'0.01' },
+        { key:'gift_note_fee', label:'Gift Note fee', type:'number', step:'0.01' },
+        { key:'rush_fee', label:'Rush fee', type:'number', step:'0.01' }
+      ]},
+      costs: { title:'Costs', table:'costs', cols:[
+        { key:'item_name', label:'Item name', type:'text', required:true },
+        { key:'amount', label:'Amount', type:'number', step:'0.01', required:true }
+      ]},
+      customers: { title:'Customers', table:'customers', cols:[
+        { key:'first_name', label:'First name', type:'text', required:true },
+        { key:'last_name', label:'Last name', type:'text', required:true },
+        { key:'phone', label:'Phone', type:'text' },
+        { key:'email', label:'Email', type:'email' },
+        { key:'street_address', label:'Street address', type:'text' },
+        { key:'street_address_cont', label:'Street address cont', type:'text' },
+        { key:'city', label:'City', type:'text' },
+        { key:'state', label:'State', type:'text' },
+        { key:'zip', label:'Zip', type:'text' },
+        { key:'customer_id', label:'Customer ID', type:'text' },
+        { key:'referral_code_assigned', label:'Referral code assigned', type:'text',
+          asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r => r.code) || [] },
+        { key:'order_id', label:'Order ID', type:'text' }
+      ]},
+      discount_codes: { title:'Discount Codes', table:'discount_codes', cols:[
+        { key:'code', label:'Code', type:'text', required:true },
+        { key:'type', label:'Type', type:'select', options:['percent','fixed'], required:true },
+        { key:'uses_allowed', label:'Number of uses allowed', type:'number' },
+        { key:'email_allowed', label:'Email allowed', type:'email' },
+        { key:'good_through_date', label:'Good through date', type:'date' }
+      ]},
+      referral_codes: { title:'Referral Codes', table:'referral_codes', cols:[
+        { key:'code', label:'Code', type:'text', required:true },
+        { key:'associated_customer_id', label:'Associated customer', type:'select-async',
+          asyncOptions: async () => {
+            const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+            return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+          } },
+        { key:'good_through_date', label:'Good through date', type:'date' },
+        { key:'referrer_discount', label:'Referrer discount %', type:'number', step:'0.01' },
+        { key:'referee_discount', label:'Referee discount %', type:'number', step:'0.01' }
+      ]},
+      orders: { title:'Orders', table:'orders', cols:[
+        { key:'order_id', label:'Order ID', type:'text' },
+        { key:'customer_id', label:'Customer', type:'select-async',
+          asyncOptions: async () => {
+            const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+            return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+          } },
+        { key:'pickup_delivery_date', label:'Pick up or delivery date', type:'date' },
+        { key:'event_date', label:'Event date', type:'date' },
+        { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', step:'0.01' },
+        { key:'flavor', label:'Flavor', type:'select-async', asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
+        { key:'dietary_option', label:'Dietary option', type:'select-async', asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[] },
+        { key:'design_notes', label:'Design notes', type:'textarea' },
+        { key:'design_inspiration_photo', label:'Design inspiration photo URL', type:'url' },
+        { key:'gift_note', label:'Gift note', type:'checkbox' },
+        { key:'gift_note_text', label:'Gift note text', type:'textarea' },
+        { key:'consultation_requested', label:'Consultation requested', type:'checkbox' },
+        { key:'discount_code_used', label:'Discount code used', type:'select-async', asyncOptions: async () => (await sb.from('discount_codes').select('code')).data?.map(r=>r.code)||[] },
+        { key:'referral_code_used', label:'Referral code used', type:'select-async', asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] }
+      ]},
+      surveys: { title:'Surveys', table:'surveys', cols:[
+        { key:'customer_id', label:'Customer', type:'select-async',
+          asyncOptions: async () => {
+            const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+            return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+          } },
+        { key:'cookies_stars', label:'Cookies 1 to 5', type:'number', min:1, max:5 },
+        { key:'service_stars', label:'Service 1 to 5', type:'number', min:1, max:5 },
+        { key:'recommend', label:'Recommend to family', type:'checkbox' },
+        { key:'improvements', label:'Improvements', type:'textarea' },
+        { key:'website_review', label:'Website review', type:'textarea' }
+      ]}
+    };
+    const tabOrder = ['customers','orders','discount_codes','referral_codes','flavors','dietary_options','pricing','costs','surveys'];
+
+    // 5) Admin UI logic
+    let activeKey = tabOrder[0];
+    const pageSize = 10;
+    let page = 0;
+    let totalCount = 0;
+
+    const el = (t,c,h) => { const e=document.createElement(t); if(c) e.className=c; if(h!==undefined) e.innerHTML=h; return e; };
+    const fmt = (v)=> v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
+    const dateInputValue=(d)=>{ if(!d) return ''; const dt=new Date(d); const tz=new Date(dt.getTime()-dt.getTimezoneOffset()*60000); return tz.toISOString().slice(0,10); };
+
+    function buildThead(conf) {
+      const tr = el('tr');
+      conf.cols.forEach(c => tr.appendChild(el('th','text-left p-3', c.label)));
+      tr.appendChild(el('th','text-right p-3','Actions'));
+      return tr;
+    }
+
+    function toCSV(rows, conf) {
+      const headers = conf.cols.map(c => c.label);
+      const csvRows = [headers.join(',')];
+      for (const r of rows) {
+        const vals = conf.cols.map(c => {
+          let v = r[c.key]; if (v == null) v = '';
+          const s = String(v).replaceAll('"','""');
+          return `"${s}"`;
+        });
+        csvRows.push(vals.join(','));
+      }
+      return csvRows.join('\n');
+    }
+
+    async function loadTable() {
+      const conf = tables[activeKey];
+      const thead = document.getElementById('thead'); thead.innerHTML = ''; thead.appendChild(buildThead(conf));
+      document.body.style.cursor = 'progress';
+      let query = sb.from(conf.table).select('*', { count:'exact' });
+      const q = document.getElementById('globalSearch').value?.trim();
+      if (q) {
+        const orParts = conf.cols.map(c => `${c.key}.ilike.%${q}%`).join(',');
+        if (orParts) query = query.or(orParts);
+      }
+      query = query.order('updated_at', { ascending:false }).range(page*pageSize, page*pageSize+pageSize-1);
+      const { data, error, count } = await query;
+      document.body.style.cursor = 'default';
+
+      const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
+      if (error) { tbody.appendChild(el('tr','',`<td colspan="99" class="p-4 text-red-700">${error.message}</td>`)); return; }
+
+      totalCount = count || 0;
+      document.getElementById('prev').disabled = page === 0;
+      document.getElementById('next').disabled = (page+1)*pageSize >= totalCount;
+      document.getElementById('pageInfo').textContent = `${Math.min(totalCount, page*pageSize+(data?.length||0))} of ${totalCount}`;
+
+      for (const row of data || []) {
+        const tr = el('tr','border-b');
+        for (const c of conf.cols) {
+          let val = row[c.key]; if (c.type === 'checkbox') val = !!val;
+          tr.appendChild(el('td','p-3', fmt(val)));
+        }
+        const td = el('td','p-3 text-right');
+        const edit = el('button','px-2 py-1 rounded border hover:bg-gray-100','Edit');
+        edit.addEventListener('click', () => openEditor(conf, row));
+        td.appendChild(edit);
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      }
+
+      document.getElementById('exportBtn').onclick = async () => {
+        const { data: allRows } = await sb.from(conf.table).select('*').order('updated_at', { ascending:false });
+        const csv = toCSV(allRows || [], conf);
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `${conf.table}.csv`; a.click();
+        URL.revokeObjectURL(url);
+      };
+    }
+
+    const dlg = document.getElementById('editor');
+    const formBody = document.getElementById('formBody');
+
+    async function optionEl(col, value) {
+      const wrap = el('label','block');
+      wrap.appendChild(el('span','text-sm block mb-1', col.label));
+      let input;
+      if (col.type === 'textarea') { input = el('textarea','px-3 py-2 rounded-lg border w-full'); input.rows = 4; }
+      else if (col.type === 'checkbox') { input = el('input','h-4 w-4'); input.type = 'checkbox'; }
+      else if (col.type === 'select') {
+        input = el('select','px-3 py-2 rounded-lg border w-full'); (col.options||[]).forEach(o => { const opt = el('option','',o); opt.value=o; input.appendChild(opt); });
+      } else if (col.type === 'select-async') {
+        input = el('select','px-3 py-2 rounded-lg border w-full'); const options = await col.asyncOptions();
+        for (const o of options) { const opt = document.createElement('option'); if (typeof o === 'string'){ opt.value=o; opt.textContent=o; } else { opt.value=o.value; opt.textContent=o.label; } input.appendChild(opt); }
+      } else {
+        input = el('input','px-3 py-2 rounded-lg border w-full');
+        input.type = col.type || 'text';
+        if (col.step) input.step = col.step;
+        if (col.min !== undefined) input.min = col.min;
+        if (col.max !== undefined) input.max = col.max;
+      }
+      input.id = `fld_${col.key}`;
+      if (col.required) input.required = true;
+      if (col.type === 'checkbox') input.checked = !!value; else if (col.type === 'date') input.value = dateInputValue(value); else input.value = value ?? '';
+      wrap.appendChild(input);
+      return wrap;
+    }
+
+    async function openEditor(conf, row) {
+      document.getElementById('editorTitle').textContent = row ? `Edit ${conf.title}` : `New ${conf.title}`;
+      formBody.innerHTML = '';
+      for (const c of conf.cols) formBody.appendChild(await optionEl(c, row?.[c.key]));
+      const idHidden = el('input'); idHidden.type='hidden'; idHidden.id='row_id'; idHidden.value=row?.id||''; formBody.appendChild(idHidden);
+
+      const delBtn = document.getElementById('deleteBtn');
+      delBtn.classList.toggle('hidden', !row);
+      delBtn.onclick = async () => {
+        if (!row?.id) return; if (!confirm('Delete this record?')) return;
+        const { error } = await sb.from(conf.table).delete().eq('id', row.id);
+        if (error) { alert(error.message); return; }
+        dlg.close(); loadTable();
+      };
+      document.getElementById('saveBtn').onclick = async (e) => { e.preventDefault(); await saveRecord(conf); };
+      dlg.showModal();
+    }
+
+    async function saveRecord(conf) {
+      const payload = {};
+      for (const c of conf.cols) {
+        const elx = document.getElementById(`fld_${c.key}`);
+        let val = (c.type === 'checkbox') ? elx.checked : elx.value || null;
+        if (c.type === 'number' && val !== null) val = elx.value === '' ? null : Number(val);
+        payload[c.key] = val;
+      }
+      const id = document.getElementById('row_id').value;
+      let resp;
+      if (id) resp = await sb.from(conf.table).update(payload).eq('id', id).select('*').single();
+      else resp = await sb.from(conf.table).insert(payload).select('*').single();
+      if (resp.error) { alert(resp.error.message); return; }
+      dlg.close(); loadTable();
+    }
+
+    function renderTabs() {
+      const nav = document.getElementById('tabs'); nav.innerHTML='';
+      for (const key of tabOrder) {
+        const conf = tables[key];
+        const a = el('button','pb-1', conf.title);
+        if (key === activeKey) a.classList.add('tab-active');
+        a.addEventListener('click', () => { activeKey = key; page = 0; renderTabs(); loadTable(); });
+        nav.appendChild(a);
+      }
+      document.getElementById('addBtn').onclick = () => openEditor(tables[activeKey], null);
+      document.getElementById('prev').onclick = () => { if (page>0) { page--; loadTable(); } };
+      document.getElementById('next').onclick = () => { if ((page+1)*pageSize < totalCount) { page++; loadTable(); } };
+      document.getElementById('globalSearch').addEventListener('keydown', (e) => { if (e.key === 'Enter') { page = 0; loadTable(); }});
+      document.getElementById('refreshAll').onclick = () => loadTable();
+    }
+
+    function wireRealtime() {
+      for (const key of Object.keys(tables)) {
+        sb.channel(`${key}-changes`)
+          .on('postgres_changes', { event:'*', schema:'public', table:tables[key].table },
+            () => { if (key === activeKey) loadTable(); })
+          .subscribe();
+      }
+    }
+
+    bootstrap();
+  </script>
 </body>
 </html>
