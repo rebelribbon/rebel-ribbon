@@ -8,6 +8,8 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
     .tab-active { border-bottom: 2px solid #111; font-weight: 600; }
+    .rowlink { cursor: pointer; }
+    .rowlink:hover { background: #f8fafc; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -82,71 +84,50 @@
 
   <script>
     // 1) Supabase client
-  const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
-  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
-  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // 2) Email OTP sign in
     const signinCard = document.getElementById('signinCard');
     const app = document.getElementById('app');
     const authMsg = document.getElementById('authMsg');
 
-    function onlyCompanyEmail(email) {
-      return /@rebelribbon\.com$/i.test(email);
-    }
+    function onlyCompanyEmail(email) { return /@rebelribbon\.com$/i.test(email); }
 
     document.getElementById('sendLink').addEventListener('click', async () => {
       authMsg.textContent = '';
       const email = document.getElementById('email').value.trim();
-      if (!onlyCompanyEmail(email)) {
-        authMsg.textContent = 'Use your @rebelribbon.com address.';
-        return;
-      }
+      if (!onlyCompanyEmail(email)) { authMsg.textContent = 'Use your @rebelribbon.com address.'; return; }
       try {
-        // redirect back to this page
         const redirectTo = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
-        const { error } = await sb.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: redirectTo }
-        });
+        const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
         if (error) throw error;
-        authMsg.classList.remove('text-red-600');
-        authMsg.classList.add('text-green-700');
+        authMsg.classList.remove('text-red-600'); authMsg.classList.add('text-green-700');
         authMsg.textContent = 'Magic link sent. Check your inbox.';
       } catch (e) {
-        authMsg.classList.remove('text-green-700');
-        authMsg.classList.add('text-red-600');
+        authMsg.classList.remove('text-green-700'); authMsg.classList.add('text-red-600');
         authMsg.textContent = e.message || 'Failed to fetch';
       }
     });
 
     // 3) Session bootstrap
     async function bootstrap() {
-      // if the page was opened via magic link, supabase-js will read the hash automatically
       const { data: { session }, error } = await sb.auth.getSession();
-      if (error) {
-        authMsg.textContent = error.message;
-        return;
-      }
+      if (error) { authMsg.textContent = error.message; return; }
       if (!session) {
         signinCard.classList.remove('hidden'); app.classList.add('hidden');
-        // show better hint if keys are not set
         if (SUPABASE_URL.includes('YOUR-PROJECT') || SUPABASE_ANON_KEY.includes('PASTE_')) {
           document.getElementById('netHint').classList.remove('hidden');
           document.getElementById('netHint').textContent = 'Missing Supabase keys.';
         }
         return;
       }
-      // domain guard in code
       const email = session.user?.email || '';
-      if (!onlyCompanyEmail(email)) {
-        await sb.auth.signOut();
-        authMsg.textContent = 'This page is restricted to @rebelribbon.com';
-        return;
-      }
+      if (!onlyCompanyEmail(email)) { await sb.auth.signOut(); authMsg.textContent = 'This page is restricted to @rebelribbon.com'; return; }
       document.getElementById('who').textContent = email;
       signinCard.classList.add('hidden'); app.classList.remove('hidden');
-      renderTabs(); loadTable(); wireRealtime(); // start app
+      renderTabs(); loadTable(); wireRealtime();
     }
 
     document.getElementById('logout').addEventListener('click', async () => {
@@ -156,6 +137,20 @@
 
     // 4) Admin UI config
     const tables = {
+      // New virtual tab for the combined list
+      order_list: {
+        title: 'Order List',
+        table: 'orders',   // base table for permissions
+        cols: [
+          { key: 'created_at', label: 'Date Submitted' },
+          { key: 'status', label: 'Status' },
+          { key: 'first_name', label: 'First name' },
+          { key: 'last_name', label: 'Last name' },
+          { key: 'cookie_amount_dzns', label: 'Cookie amount (dzns)' }
+        ],
+        isListView: true
+      },
+
       flavors: { title: 'Flavors', table: 'flavors', cols: [ { key:'name', label:'Flavor name', type:'text', required:true } ] },
       dietary_options: { title: 'Dietary Options', table: 'dietary_options', cols: [ { key:'name', label:'Dietary option', type:'text', required:true } ] },
       pricing: { title: 'Pricing', table: 'pricing', cols: [
@@ -220,7 +215,9 @@
         { key:'gift_note_text', label:'Gift note text', type:'textarea' },
         { key:'consultation_requested', label:'Consultation requested', type:'checkbox' },
         { key:'discount_code_used', label:'Discount code used', type:'select-async', asyncOptions: async () => (await sb.from('discount_codes').select('code')).data?.map(r=>r.code)||[] },
-        { key:'referral_code_used', label:'Referral code used', type:'select-async', asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] }
+        { key:'referral_code_used', label:'Referral code used', type:'select-async', asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] },
+        // NEW status field in UI
+        { key:'status', label:'Status', type:'select', options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'] }
       ]},
       surveys: { title:'Surveys', table:'surveys', cols:[
         { key:'customer_id', label:'Customer', type:'select-async',
@@ -235,7 +232,9 @@
         { key:'website_review', label:'Website review', type:'textarea' }
       ]}
     };
-    const tabOrder = ['customers','orders','discount_codes','referral_codes','flavors','dietary_options','pricing','costs','surveys'];
+
+    // Put Order List first
+    const tabOrder = ['order_list','customers','orders','discount_codes','referral_codes','flavors','dietary_options','pricing','costs','surveys'];
 
     // 5) Admin UI logic
     let activeKey = tabOrder[0];
@@ -268,7 +267,94 @@
       return csvRows.join('\n');
     }
 
+    // Custom loader for the Order List tab
+    async function loadOrderList() {
+      const thead = document.getElementById('thead'); thead.innerHTML = '';
+      thead.appendChild(buildThead(tables.order_list));
+
+      document.body.style.cursor = 'progress';
+      const q = document.getElementById('globalSearch').value?.trim();
+      // PostgREST embed: customers is embedded via FK customer_id
+      let query = sb.from('orders')
+        .select('id, created_at, status, cookie_amount_dzns, customers:customer_id ( first_name, last_name )', { count: 'exact' })
+        .order('created_at', { ascending: false })
+        .range(page*pageSize, page*pageSize + pageSize - 1);
+
+      if (q) {
+        // search on status or customer names
+        query = query.or(`status.ilike.%${q}%,customers.first_name.ilike.%${q}%,customers.last_name.ilike.%${q}%`);
+      }
+
+      const { data, error, count } = await query;
+      document.body.style.cursor = 'default';
+
+      const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
+      if (error) { tbody.appendChild(el('tr','',`<td colspan="99" class="p-4 text-red-700">${error.message}</td>`)); return; }
+
+      totalCount = count || 0;
+      document.getElementById('prev').disabled = page === 0;
+      document.getElementById('next').disabled = (page+1)*pageSize >= totalCount;
+      document.getElementById('pageInfo').textContent = `${Math.min(totalCount, page*pageSize+(data?.length||0))} of ${totalCount}`;
+
+      for (const row of data || []) {
+        const tr = el('tr','border-b rowlink');
+        const first = row.customers?.first_name || '';
+        const last = row.customers?.last_name || '';
+        const cells = [
+          new Date(row.created_at).toLocaleDateString(),
+          row.status || 'In Review',
+          first,
+          last,
+          row.cookie_amount_dzns ?? ''
+        ];
+        for (const v of cells) tr.appendChild(el('td','p-3', fmt(v)));
+
+        // Actions: open Orders editor
+        const actions = el('td','p-3 text-right');
+        const edit = el('button','px-2 py-1 rounded border hover:bg-gray-100','Open');
+        edit.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          const { data: fullOrder, error: oe } = await sb.from('orders').select('*').eq('id', row.id).single();
+          if (oe) { alert(oe.message); return; }
+          openEditor(tables.orders, fullOrder);
+        });
+        actions.appendChild(edit);
+        tr.appendChild(actions);
+
+        // Whole row clickable too
+        tr.addEventListener('click', async () => {
+          const { data: fullOrder, error: oe } = await sb.from('orders').select('*').eq('id', row.id).single();
+          if (oe) { alert(oe.message); return; }
+          openEditor(tables.orders, fullOrder);
+        });
+
+        tbody.appendChild(tr);
+      }
+
+      // export in list mode
+      document.getElementById('exportBtn').onclick = async () => {
+        const { data: allRows } = await sb.from('orders')
+          .select('created_at, status, cookie_amount_dzns, customers:customer_id ( first_name, last_name )')
+          .order('created_at', { ascending: false });
+        const flattened = (allRows||[]).map(r => ({
+          created_at: r.created_at,
+          status: r.status,
+          first_name: r.customers?.first_name || '',
+          last_name: r.customers?.last_name || '',
+          cookie_amount_dzns: r.cookie_amount_dzns
+        }));
+        const csv = toCSV(flattened, tables.order_list);
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `order_list.csv`; a.click();
+        URL.revokeObjectURL(url);
+      };
+    }
+
     async function loadTable() {
+      // Route to custom loader for Order List, else generic loader
+      if (activeKey === 'order_list') { await loadOrderList(); return; }
+
       const conf = tables[activeKey];
       const thead = document.getElementById('thead'); thead.innerHTML = ''; thead.appendChild(buildThead(conf));
       document.body.style.cursor = 'progress';
@@ -396,7 +482,7 @@
       for (const key of Object.keys(tables)) {
         sb.channel(`${key}-changes`)
           .on('postgres_changes', { event:'*', schema:'public', table:tables[key].table },
-            () => { if (key === activeKey) loadTable(); })
+            () => { if (key === activeKey || (activeKey === 'order_list' && key === 'orders')) loadTable(); })
           .subscribe();
       }
     }
