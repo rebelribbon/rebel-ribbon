@@ -7,7 +7,14 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
-    .tab-active { border-bottom: 2px solid #111; font-weight: 600; }
+    .tab-active{border-bottom:2px solid #111;font-weight:600}
+    .cell{padding:.75rem}
+    .thcell{padding:.75rem;font-weight:600}
+    .nowrap{white-space:nowrap}
+    .actions-col{width:88px}
+    /* keep header aligned with body during horizontal scroll */
+    .table-wrap{overflow:auto;border-radius:.75rem;border:1px solid #e5e7eb;background:#fff}
+    table{border-collapse:separate;border-spacing:0}
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -17,8 +24,7 @@
       <h1 class="text-2xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
       <p class="text-sm text-gray-600 mb-4">Use your @rebelribbon.com email. We will send a magic link.</p>
       <label class="block text-sm mb-2">Email</label>
-      <input id="email" type="email" placeholder="you@rebelribbon.com"
-             class="w-full px-3 py-2 rounded-lg border mb-4" />
+      <input id="email" type="email" placeholder="you@rebelribbon.com" class="w-full px-3 py-2 rounded-lg border mb-4"/>
       <button id="sendLink" class="w-full px-4 py-2 rounded-lg bg-blue-600 text-white">Send magic link</button>
       <p id="authMsg" class="text-sm text-red-600 mt-3"></p>
       <p class="text-xs text-gray-500 mt-3">If the button does nothing, set SUPABASE_URL and SUPABASE_ANON_KEY in this file.</p>
@@ -31,7 +37,7 @@
       <header class="flex items-center justify-between mb-4">
         <h1 class="text-2xl font-semibold">Rebel Ribbon Admin</h1>
         <div class="flex gap-2 items-center">
-          <input id="globalSearch" type="search" placeholder="Search current tab" class="px-3 py-2 rounded-lg border" />
+          <input id="globalSearch" type="search" placeholder="Search current tab" class="px-3 py-2 rounded-lg border"/>
           <button id="refreshAll" class="px-3 py-2 rounded-lg border bg-white">Refresh</button>
           <span id="who" class="text-sm text-gray-600"></span>
           <button id="logout" class="px-3 py-2 rounded-lg bg-gray-900 text-white">Sign out</button>
@@ -55,8 +61,9 @@
       </div>
 
       <!-- Table -->
-      <div class="overflow-auto rounded-xl border bg-white">
-        <table class="min-w-full text-sm">
+      <div class="table-wrap">
+        <table id="grid" class="min-w-full text-sm table-fixed">
+          <colgroup id="colgroup"></colgroup>
           <thead class="bg-gray-100 text-gray-700"><tr id="thead"></tr></thead>
           <tbody id="tbody"></tbody>
         </table>
@@ -81,445 +88,431 @@
   </div>
 
   <script>
-    // 1) Supabase client
-    const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // 1) Supabase client
+  const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // 2) Email OTP sign in
-    const signinCard = document.getElementById('signinCard');
-    const app = document.getElementById('app');
-    const authMsg = document.getElementById('authMsg');
+  // 2) Email OTP sign in
+  const signinCard = document.getElementById('signinCard');
+  const app = document.getElementById('app');
+  const authMsg = document.getElementById('authMsg');
 
-    function onlyCompanyEmail(email) {
-      return /@rebelribbon\.com$/i.test(email);
+  const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
+
+  document.getElementById('sendLink').addEventListener('click', async () => {
+    authMsg.textContent = '';
+    const email = document.getElementById('email').value.trim();
+    if (!onlyCompanyEmail(email)) { authMsg.textContent = 'Use your @rebelribbon.com address.'; return; }
+    try {
+      const redirectTo = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
+      const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
+      if (error) throw error;
+      authMsg.classList.remove('text-red-600'); authMsg.classList.add('text-green-700');
+      authMsg.textContent = 'Magic link sent. Check your inbox.';
+    } catch (e) {
+      authMsg.classList.remove('text-green-700'); authMsg.classList.add('text-red-600');
+      authMsg.textContent = e.message || 'Failed to fetch';
+    }
+  });
+
+  async function bootstrap(){
+    const { data: { session }, error } = await sb.auth.getSession();
+    if (error) { authMsg.textContent = error.message; return; }
+    if (!session) {
+      signinCard.classList.remove('hidden'); app.classList.add('hidden');
+      if (SUPABASE_URL.includes('YOUR-PROJECT') || SUPABASE_ANON_KEY.includes('PASTE_')) {
+        const hint = document.getElementById('netHint'); hint.classList.remove('hidden'); hint.textContent = 'Missing Supabase keys.';
+      }
+      return;
+    }
+    const email = session.user?.email || '';
+    if (!onlyCompanyEmail(email)) { await sb.auth.signOut(); authMsg.textContent = 'This page is restricted to @rebelribbon.com'; return; }
+    document.getElementById('who').textContent = email;
+    signinCard.classList.add('hidden'); app.classList.remove('hidden');
+    renderTabs(); loadTable(); wireRealtime();
+  }
+
+  document.getElementById('logout').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    location.href = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
+  });
+
+  // 3) Admin UI config
+  // NOTE: widths are %; the last column is added for Actions when not readOnly
+  const tables = {
+    order_list: { // READ-ONLY joined view from orders + customers
+      title: 'Order List',
+      table: 'orders',
+      readOnly: true,
+      customLoader: 'loadOrderList',
+      cols: [
+        { key:'created_at', label:'Date Submitted', type:'date', w: '18' },
+        { key:'status', label:'Status', type:'text', w: '14' },
+        { key:'first_name', label:'First name', type:'text', w: '18' },
+        { key:'last_name',  label:'Last name',  type:'text', w: '18' },
+        { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', w:'16' }
+      ]
+    },
+    customers: { title:'Customers', table:'customers', cols:[
+      { key:'first_name', label:'First name', type:'text', required:true, w:'14' },
+      { key:'last_name',  label:'Last name',  type:'text', required:true, w:'14' },
+      { key:'phone', label:'Phone', type:'text', w:'14' },
+      { key:'email', label:'Email', type:'email', w:'16' },
+      { key:'street_address', label:'Street address', type:'text', w:'16' },
+      { key:'street_address_cont', label:'Street address cont', type:'text', w:'16' },
+      { key:'city', label:'City', type:'text', w:'12' },
+      { key:'state', label:'State', type:'text', w:'10' },
+      { key:'zip', label:'Zip', type:'10', w:'10' },
+      { key:'customer_id', label:'Customer ID', type:'text', w:'14' },
+      { key:'referral_code_assigned', label:'Referral code assigned', type:'text', w:'18',
+        asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] },
+      { key:'order_id', label:'Order ID', type:'text', w:'12' }
+    ]},
+    orders: { title:'Orders', table:'orders', cols:[
+      { key:'order_id', label:'Order ID', type:'text', w:'12' },
+      { key:'customer_id', label:'Customer', type:'select-async', w:'20',
+        asyncOptions: async () => {
+          const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+          return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+        }},
+      { key:'pickup_delivery_date', label:'Pick up or delivery date', type:'date', w:'18' },
+      { key:'event_date', label:'Event date', type:'date', w:'14' },
+      { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', step:'0.01', w:'18' },
+      { key:'flavor', label:'Flavor', type:'select-async', w:'14', asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
+      { key:'dietary_option', label:'Dietary option', type:'select-async', w:'16', asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[] },
+      { key:'design_notes', label:'Design notes', type:'textarea', w:'20' },
+      { key:'design_inspiration_photo', label:'Design inspiration photo URL', type:'url', w:'20' },
+      { key:'gift_note', label:'Gift note', type:'checkbox', w:'10' },
+      { key:'gift_note_text', label:'Gift note text', type:'textarea', w:'16' },
+      { key:'consultation_requested', label:'Consultation requested', type:'checkbox', w:'20' },
+      { key:'discount_code_used', label:'Discount code used', type:'select-async', w:'16', asyncOptions: async () => (await sb.from('discount_codes').select('code')).data?.map(r=>r.code)||[] },
+      { key:'referral_code_used', label:'Referral code used', type:'select-async', w:'16', asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] },
+      { key:'status', label:'Status', type:'select', w:'14', options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'] }
+    ]},
+    discount_codes: { title:'Discount Codes', table:'discount_codes', cols:[
+      { key:'code', label:'Code', type:'text', required:true, w:'20' },
+      { key:'type', label:'Type', type:'select', options:['percent','fixed'], required:true, w:'14' },
+      { key:'uses_allowed', label:'Number of uses allowed', type:'number', w:'20' },
+      { key:'email_allowed', label:'Email allowed', type:'email', w:'18' },
+      { key:'good_through_date', label:'Good through date', type:'date', w:'18' }
+    ]},
+    referral_codes: { title:'Referral Codes', table:'referral_codes', cols:[
+      { key:'code', label:'Code', type:'text', required:true, w:'20' },
+      { key:'associated_customer_id', label:'Associated customer', type:'select-async', w:'22',
+        asyncOptions: async () => {
+          const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+          return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+        }},
+      { key:'good_through_date', label:'Good through date', type:'date', w:'18' },
+      { key:'referrer_discount', label:'Referrer discount %', type:'number', step:'0.01', w:'20' },
+      { key:'referee_discount', label:'Referee discount %', type:'number', step:'0.01', w:'20' }
+    ]},
+    flavors: { title:'Flavors', table:'flavors', cols:[
+      { key:'name', label:'Flavor name', type:'text', required:true, w:'40' }
+    ]},
+    dietary_options: { title:'Dietary Options', table:'dietary_options', cols:[
+      { key:'name', label:'Dietary option', type:'text', required:true, w:'40' }
+    ]},
+    pricing: { title:'Pricing', table:'pricing', cols:[
+      { key:'price_per_dozen', label:'Price per dozen', type:'number', step:'0.01', w:'20' },
+      { key:'delivery_fee', label:'Delivery fee', type:'number', step:'0.01', w:'20' },
+      { key:'consultation_fee', label:'Consultation fee', type:'number', step:'0.01', w:'20' },
+      { key:'gift_note_fee', label:'Gift Note fee', type:'number', step:'0.01', w:'20' },
+      { key:'rush_fee', label:'Rush fee', type:'number', step:'0.01', w:'20' }
+    ]},
+    costs: { title:'Costs', table:'costs', cols:[
+      { key:'item_name', label:'Item name', type:'text', required:true, w:'60' },
+      { key:'amount', label:'Amount', type:'number', step:'0.01', required:true, w:'40' }
+    ]},
+    surveys: { title:'Surveys', table:'surveys', cols:[
+      { key:'customer_id', label:'Customer', type:'select-async', w:'22',
+        asyncOptions: async () => {
+          const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+          return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+        }},
+      { key:'cookies_stars', label:'Cookies 1 to 5', type:'number', min:1, max:5, w:'18' },
+      { key:'service_stars', label:'Service 1 to 5', type:'number', min:1, max:5, w:'18' },
+      { key:'recommend', label:'Recommend to family', type:'checkbox', w:'22' },
+      { key:'improvements', label:'Improvements', type:'textarea', w:'30' },
+      { key:'website_review', label:'Website review', type:'textarea', w:'30' }
+    ]}
+  };
+
+  const tabOrder = [
+    'order_list','customers','orders','discount_codes','referral_codes','flavors','dietary_options','pricing','costs','surveys'
+  ];
+
+  // 4) Shared table helpers
+  let activeKey = tabOrder[0];
+  const pageSize = 10;
+  let page = 0;
+  let totalCount = 0;
+
+  const $ = (t,c,h)=>{ const e=document.createElement(t); if(c) e.className=c; if(h!==undefined) e.innerHTML=h; return e; };
+  const fmt = (v)=> v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
+  const dateInputValue=(d)=>{ if(!d) return ''; const dt=new Date(d); const tz=new Date(dt.getTime()-dt.getTimezoneOffset()*60000); return tz.toISOString().slice(0,10); };
+
+  function buildColGroup(conf){
+    const cg = document.getElementById('colgroup'); cg.innerHTML='';
+    const cols = conf.cols.slice();
+    if (!conf.readOnly) cols.push({key:'__actions', w:'8'});
+    const total = cols.reduce((s,c)=> s + (Number(c.w||0) || 0), 0) || 100;
+    for (const c of cols){
+      const col = document.createElement('col');
+      const pct = (Number(c.w||0)||0) / total * 100;
+      col.style.width = pct ? pct+'%' : 'auto';
+      cg.appendChild(col);
+    }
+  }
+
+  function buildThead(conf){
+    const tr = document.getElementById('thead'); tr.innerHTML='';
+    for (const c of conf.cols){
+      const th = $('th','thcell nowrap', c.label);
+      tr.appendChild(th);
+    }
+    if (!conf.readOnly) tr.appendChild($('th','thcell text-right nowrap','Actions'));
+  }
+
+  // 5) Loaders
+  async function loadTable(){
+    const conf = tables[activeKey];
+    buildColGroup(conf); buildThead(conf);
+
+    // hide Add on read-only order_list
+    document.getElementById('addBtn').classList.toggle('hidden', !!conf.readOnly);
+    // pagination for order_list uses standard controls too
+    const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
+
+    if (conf.customLoader === 'loadOrderList') { await loadOrderList(); return; }
+
+    document.body.style.cursor = 'progress';
+    let query = sb.from(conf.table).select('*', { count:'exact' });
+
+    const q = document.getElementById('globalSearch').value?.trim();
+    if (q) {
+      const orParts = conf.cols.map(c => `${c.key}.ilike.%${q}%`).join(',');
+      if (orParts) query = query.or(orParts);
+    }
+    query = query.order('updated_at', { ascending:false }).range(page*pageSize, page*pageSize+pageSize-1);
+
+    const { data, error, count } = await query;
+    document.body.style.cursor = 'default';
+
+    if (error) {
+      tbody.appendChild($('tr','',`<td class="cell text-red-700" colspan="99">${error.message}</td>`));
+      return;
+    }
+    totalCount = count || 0;
+    renderRows(conf, data || []);
+  }
+
+  // special loader for Order List (joined view)
+  async function loadOrderList(){
+    const conf = tables.order_list;
+    const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
+
+    document.body.style.cursor = 'progress';
+    let q = sb.from('orders').select('id, created_at, customer_id, cookie_amount_dzns, status', { count:'exact' })
+                .order('created_at', { ascending:false })
+                .range(page*pageSize, page*pageSize+pageSize-1);
+    const { data: orders, error, count } = await q;
+    document.body.style.cursor = 'default';
+
+    if (error) {
+      tbody.appendChild($('tr','',`<td class="cell text-red-700" colspan="99">${error.message}</td>`));
+      return;
+    }
+    totalCount = count || 0;
+
+    // pull customers in one shot
+    const ids = [...new Set((orders||[]).map(o => o.customer_id).filter(Boolean))];
+    let map = new Map();
+    if (ids.length){
+      const { data: cust } = await sb.from('customers').select('id, first_name, last_name').in('id', ids);
+      (cust||[]).forEach(c => map.set(c.id, c));
     }
 
-    document.getElementById('sendLink').addEventListener('click', async () => {
-      authMsg.textContent = '';
-      const email = document.getElementById('email').value.trim();
-      if (!onlyCompanyEmail(email)) {
-        authMsg.textContent = 'Use your @rebelribbon.com address.';
-        return;
+    const rows = (orders||[]).map(o => ({
+      id: o.id,
+      created_at: o.created_at,
+      status: o.status || 'In Review',
+      first_name: map.get(o.customer_id)?.first_name || '',
+      last_name:  map.get(o.customer_id)?.last_name  || '',
+      cookie_amount_dzns: o.cookie_amount_dzns
+    }));
+
+    // render rows (readOnly: no edit button, but provide Open link)
+    const tbodyEl = document.getElementById('tbody');
+    for (const r of rows){
+      const tr = $('tr','border-b');
+      for (const c of conf.cols){
+        let v = r[c.key];
+        if (c.type === 'date') v = dateInputValue(v);
+        tr.appendChild($('td','cell nowrap', fmt(v)));
       }
-      try {
-        const redirectTo = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
-        const { error } = await sb.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: redirectTo }
+      // Open button -> jump user to Orders tab pre-filtered on this id
+      const td = $('td','cell text-right nowrap');
+      const open = $('button','px-2 py-1 rounded border hover:bg-gray-100','Open');
+      open.addEventListener('click', ()=> {
+        activeKey = 'orders'; page = 0; renderTabs(); // load orders and scroll to row
+        loadTable().then(() => {
+          // optional: highlight row by order id if present
         });
-        if (error) throw error;
-        authMsg.classList.remove('text-red-600');
-        authMsg.classList.add('text-green-700');
-        authMsg.textContent = 'Magic link sent. Check your inbox.';
-      } catch (e) {
-        authMsg.classList.remove('text-green-700');
-        authMsg.classList.add('text-red-600');
-        authMsg.textContent = e.message || 'Failed to fetch';
-      }
-    });
-
-    // 3) Session bootstrap
-    async function bootstrap() {
-      const { data: { session }, error } = await sb.auth.getSession();
-      if (error) { authMsg.textContent = error.message; return; }
-      if (!session) {
-        signinCard.classList.remove('hidden'); app.classList.add('hidden');
-        if (SUPABASE_URL.includes('YOUR-PROJECT') || SUPABASE_ANON_KEY.includes('PASTE_')) {
-          const n = document.getElementById('netHint');
-          n.classList.remove('hidden'); n.textContent = 'Missing Supabase keys.';
-        }
-        return;
-      }
-      const email = session.user?.email || '';
-      if (!onlyCompanyEmail(email)) {
-        await sb.auth.signOut();
-        authMsg.textContent = 'This page is restricted to @rebelribbon.com';
-        return;
-      }
-      document.getElementById('who').textContent = email;
-      signinCard.classList.add('hidden'); app.classList.remove('hidden');
-      renderTabs(); loadTable(); wireRealtime();
+      });
+      td.appendChild(open);
+      tr.appendChild(td);
+      tbodyEl.appendChild(tr);
     }
+    updatePager();
+    // Export CSV for order list
+    document.getElementById('exportBtn').onclick = () => exportCSV(rows, conf);
+  }
 
-    document.getElementById('logout').addEventListener('click', async () => {
-      await sb.auth.signOut();
-      location.href = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
-    });
-
-    // 4) Admin UI config
-    // Special read-only "order_list" with a custom loader
-    const tables = {
-      order_list: {
-        title: 'Order List',
-        table: 'orders',
-        readOnly: true,
-        hasActions: false,
-        cols: [
-          { key: 'date_submitted', label: 'Date Submitted' },
-          { key: 'status', label: 'Status' },
-          { key: 'first_name', label: 'First name' },
-          { key: 'last_name', label: 'Last name' },
-          { key: 'cookie_amount_dzns', label: 'Cookie amount (dzns)' }
-        ],
-        loader: async ({ page, pageSize, q }) => {
-          let query = sb.from('orders')
-            .select('id, created_at, cookie_amount_dzns, status, customers:customer_id ( first_name, last_name )', { count: 'exact' })
-            .order('created_at', { ascending: false })
-            .range(page * pageSize, page * pageSize + pageSize - 1);
-
-          if (q) {
-            // search across first and last name
-            query = query.or(`customers.first_name.ilike.%${q}%,customers.last_name.ilike.%${q}%`);
-          }
-          const { data, error, count } = await query;
-          if (error) return { rows: [], count: 0, error };
-
-          const rows = (data || []).map(r => ({
-            id: r.id,
-            date_submitted: new Date(r.created_at).toLocaleDateString(),
-            status: r.status || 'In Review',
-            first_name: r.customers?.first_name || '',
-            last_name: r.customers?.last_name || '',
-            cookie_amount_dzns: r.cookie_amount_dzns ?? ''
-          }));
-          return { rows, count: count || 0 };
-        },
-        onRowClick: async (row) => {
-          // open Orders editor for the clicked order
-          const { data, error } = await sb.from('orders').select('*').eq('id', row.id).single();
-          if (error) return;
-          openEditor(tables.orders, data);
-        }
-      },
-
-      customers: {
-        title: 'Customers',
-        table: 'customers',
-        cols: [
-          { key: 'first_name', label: 'First name', type: 'text', required: true },
-          { key: 'last_name', label: 'Last name', type: 'text', required: true },
-          { key: 'phone', label: 'Phone', type: 'text' },
-          { key: 'email', label: 'Email', type: 'email' },
-          { key: 'street_address', label: 'Street address', type: 'text' },
-          { key: 'street_address_cont', label: 'Street address cont', type: 'text' },
-          { key: 'city', label: 'City', type: 'text' },
-          { key: 'state', label: 'State', type: 'text' },
-          { key: 'zip', label: 'Zip', type: 'text' },
-          { key: 'customer_id', label: 'Customer ID', type: 'text' },
-          { key: 'referral_code_assigned', label: 'Referral code assigned', type: 'text',
-            asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r => r.code) || [] },
-          { key: 'order_id', label: 'Order ID', type: 'text' }
-        ]
-      },
-
-      orders: {
-        title: 'Orders',
-        table: 'orders',
-        cols: [
-          { key: 'order_id', label: 'Order ID', type: 'text' },
-          { key: 'customer_id', label: 'Customer', type: 'select-async',
-            asyncOptions: async () => {
-              const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
-              return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
-            } },
-          { key: 'pickup_delivery_date', label: 'Pick up or delivery date', type: 'date' },
-          { key: 'event_date', label: 'Event date', type: 'date' },
-          { key: 'cookie_amount_dzns', label: 'Cookie amount (dzns)', type: 'number', step: '0.01' },
-          { key: 'flavor', label: 'Flavor', type: 'select-async', asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
-          { key: 'dietary_option', label: 'Dietary option', type: 'select-async', asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[] },
-          { key: 'design_notes', label: 'Design notes', type: 'textarea' },
-          { key: 'design_inspiration_photo', label: 'Design inspiration photo URL', type: 'url' },
-          { key: 'gift_note', label: 'Gift note', type: 'checkbox' },
-          { key: 'gift_note_text', label: 'Gift note text', type: 'textarea' },
-          { key: 'consultation_requested', label: 'Consultation requested', type: 'checkbox' },
-          { key: 'discount_code_used', label: 'Discount code used', type: 'select-async', asyncOptions: async () => (await sb.from('discount_codes').select('code')).data?.map(r=>r.code)||[] },
-          { key: 'referral_code_used', label: 'Referral code used', type: 'select-async', asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] },
-          { key: 'status', label: 'Status', type: 'select', options: ['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'] }
-        ]
-      },
-
-      discount_codes: {
-        title:'Discount Codes', table:'discount_codes',
-        cols:[
-          { key:'code', label:'Code', type:'text', required:true },
-          { key:'type', label:'Type', type:'select', options:['percent','fixed'], required:true },
-          { key:'uses_allowed', label:'Number of uses allowed', type:'number' },
-          { key:'email_allowed', label:'Email allowed', type:'email' },
-          { key:'good_through_date', label:'Good through date', type:'date' }
-        ]
-      },
-
-      referral_codes: {
-        title:'Referral Codes', table:'referral_codes',
-        cols:[
-          { key:'code', label:'Code', type:'text', required:true },
-          { key:'associated_customer_id', label:'Associated customer', type:'select-async',
-            asyncOptions: async () => {
-              const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
-              return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
-            } },
-          { key:'good_through_date', label:'Good through date', type:'date' },
-          { key:'referrer_discount', label:'Referrer discount %', type:'number', step:'0.01' },
-          { key:'referee_discount', label:'Referee discount %', type:'number', step:'0.01' }
-        ]
-      },
-
-      flavors: { title: 'Flavors', table: 'flavors',
-        cols: [ { key: 'name', label: 'Flavor name', type: 'text', required: true } ]
-      },
-
-      dietary_options: { title:'Dietary Options', table:'dietary_options',
-        cols:[ { key:'name', label:'Dietary option', type:'text', required:true } ]
-      },
-
-      pricing: {
-        title:'Pricing', table:'pricing',
-        cols: [
-          { key:'price_per_dozen', label:'Price per dozen', type:'number', step:'0.01' },
-          { key:'delivery_fee', label:'Delivery fee', type:'number', step:'0.01' },
-          { key:'consultation_fee', label:'Consultation fee', type:'number', step:'0.01' },
-          { key:'gift_note_fee', label:'Gift Note fee', type:'number', step:'0.01' },
-          { key:'rush_fee', label:'Rush fee', type:'number', step:'0.01' }
-        ],
-        // mark as singleton behavior
-        singleton: true
-      },
-
-      costs: { title:'Costs', table:'costs',
-        cols:[
-          { key:'item_name', label:'Item name', type:'text', required:true },
-          { key:'amount', label:'Amount', type:'number', step:'0.01', required:true }
-        ]
-      },
-
-      surveys: { title:'Surveys', table:'surveys',
-        cols:[
-          { key:'customer_id', label:'Customer', type:'select-async',
-            asyncOptions: async () => {
-              const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
-              return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
-            } },
-          { key:'cookies_stars', label:'Cookies 1 to 5', type:'number', min:1, max:5 },
-          { key:'service_stars', label:'Service 1 to 5', type:'number', min:1, max:5 },
-          { key:'recommend', label:'Recommend to family', type:'checkbox' },
-          { key:'improvements', label:'Improvements', type:'textarea' },
-          { key:'website_review', label:'Website review', type:'textarea' }
-        ]
+  function renderRows(conf, data){
+    const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
+    for (const row of data){
+      const tr = $('tr','border-b');
+      for (const c of conf.cols){
+        let val = row[c.key];
+        if (c.type === 'checkbox') val = !!val;
+        if (c.type === 'date') val = dateInputValue(val);
+        tr.appendChild($('td','cell nowrap', fmt(val)));
       }
+      const td = $('td','cell text-right nowrap');
+      const edit = $('button','px-2 py-1 rounded border hover:bg-gray-100','Edit');
+      edit.addEventListener('click', () => openEditor(conf, row));
+      td.appendChild(edit);
+      if (!conf.readOnly) tr.appendChild(td);
+      tbody.appendChild(tr);
+    }
+    updatePager();
+    // export
+    document.getElementById('exportBtn').onclick = async () => {
+      const { data: allRows } = await sb.from(conf.table).select('*').order('updated_at',{ascending:false});
+      exportCSV(allRows||[], conf);
     };
+  }
 
-    const tabOrder = ['order_list','customers','orders','discount_codes','referral_codes','flavors','dietary_options','pricing','costs','surveys'];
-
-    // 5) Admin UI logic
-    let activeKey = tabOrder[0];
-    const pageSize = 10;
-    let page = 0;
-    let totalCount = 0;
-
-    const el = (t,c,h) => { const e=document.createElement(t); if(c) e.className=c; if(h!==undefined) e.innerHTML=h; return e; };
-    const fmt = (v)=> v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
-    const dateInputValue=(d)=>{ if(!d) return ''; const dt=new Date(d); const tz=new Date(dt.getTime()-dt.getTimezoneOffset()*60000); return tz.toISOString().slice(0,10); };
-
-    function buildThead(conf) {
-      const tr = el('tr');
-      conf.cols.forEach(c => tr.appendChild(el('th','text-left p-3', c.label)));
-      if (conf.hasActions !== false) tr.appendChild(el('th','text-right p-3','Actions'));
-      return tr;
+  function exportCSV(rows, conf){
+    const headers = conf.cols.map(c => c.label);
+    const csvRows = [headers.join(',')];
+    for (const r of rows){
+      const vals = conf.cols.map(c => {
+        let v = r[c.key]; if (v == null) v = '';
+        const s = String(v).replaceAll('"','""');
+        return `"${s}"`;
+      });
+      csvRows.push(vals.join(','));
     }
+    const csv = csvRows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${conf.title.replace(/\s+/g,'_')}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  }
 
-    function toCSV(rows, conf) {
-      const headers = conf.cols.map(c => c.label);
-      const csvRows = [headers.join(',')];
-      for (const r of rows) {
-        const vals = conf.cols.map(c => {
-          let v = r[c.key]; if (v == null) v = '';
-          const s = String(v).replaceAll('"','""');
-          return `"${s}"`;
-        });
-        csvRows.push(vals.join(','));
-      }
-      return csvRows.join('\n');
+  function updatePager(){
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+    prev.disabled = page === 0;
+    next.disabled = (page + 1) * pageSize >= totalCount;
+    document.getElementById('pageInfo').textContent = `${Math.min(totalCount, page*pageSize + Math.min(pageSize,totalCount - page*pageSize))} of ${totalCount}`;
+  }
+
+  // 6) Editor
+  const dlg = document.getElementById('editor');
+  const formBody = document.getElementById('formBody');
+
+  async function optionEl(col, value){
+    const wrap = $('label','block');
+    wrap.appendChild($('span','text-sm block mb-1', col.label));
+    let input;
+    if (col.type === 'textarea'){ input = $('textarea','px-3 py-2 rounded-lg border w-full'); input.rows = 4; }
+    else if (col.type === 'checkbox'){ input = $('input','h-4 w-4'); input.type='checkbox'; }
+    else if (col.type === 'select'){
+      input = $('select','px-3 py-2 rounded-lg border w-full');
+      (col.options||[]).forEach(o => { const opt = $('option','',o); opt.value=o; input.appendChild(opt); });
+    } else if (col.type === 'select-async'){
+      input = $('select','px-3 py-2 rounded-lg border w-full');
+      const options = await col.asyncOptions();
+      for (const o of options){ const opt = document.createElement('option'); if (typeof o === 'string'){ opt.value=o; opt.textContent=o; } else { opt.value=o.value; opt.textContent=o.label; } input.appendChild(opt); }
+    } else {
+      input = $('input','px-3 py-2 rounded-lg border w-full');
+      input.type = col.type || 'text';
+      if (col.step) input.step = col.step;
+      if (col.min !== undefined) input.min = col.min;
+      if (col.max !== undefined) input.max = col.max;
     }
+    input.id = `fld_${col.key}`;
+    if (col.required) input.required = true;
+    if (col.type === 'checkbox') input.checked = !!value; else if (col.type === 'date') input.value = dateInputValue(value); else input.value = value ?? '';
+    wrap.appendChild(input);
+    return wrap;
+  }
 
-    async function loadTable() {
-      const conf = tables[activeKey];
-      const thead = document.getElementById('thead'); thead.innerHTML = ''; thead.appendChild(buildThead(conf));
-      document.body.style.cursor = 'progress';
+  async function openEditor(conf, row){
+    document.getElementById('editorTitle').textContent = row ? `Edit ${conf.title}` : `New ${conf.title}`;
+    formBody.innerHTML = '';
+    for (const c of conf.cols) formBody.appendChild(await optionEl(c, row?.[c.key]));
+    const idHidden = document.createElement('input'); idHidden.type='hidden'; idHidden.id='row_id'; idHidden.value=row?.id||''; formBody.appendChild(idHidden);
 
-      const q = document.getElementById('globalSearch').value?.trim();
-
-      let rows = [], error = null, count = 0;
-
-      if (conf.loader) {
-        const out = await conf.loader({ page, pageSize, q });
-        rows = out.rows; count = out.count; error = out.error || null;
-      } else {
-        let query = sb.from(conf.table).select('*', { count:'exact' });
-        if (q) {
-          const orParts = conf.cols.map(c => `${c.key}.ilike.%${q}%`).join(',');
-          if (orParts) query = query.or(orParts);
-        }
-        query = query.order('updated_at', { ascending:false }).range(page*pageSize, page*pageSize+pageSize-1);
-        const resp = await query;
-        rows = resp.data || []; error = resp.error || null; count = resp.count || 0;
-      }
-
-      document.body.style.cursor = 'default';
-
-      const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
-      if (error) {
-        tbody.appendChild(el('tr','',`<td colspan="99" class="p-4 text-red-700">${error.message}</td>`));
-      } else {
-        totalCount = count;
-        document.getElementById('prev').disabled = page === 0;
-        document.getElementById('next').disabled = (page+1)*pageSize >= totalCount;
-        document.getElementById('pageInfo').textContent = `${Math.min(totalCount, page*pageSize+(rows.length||0))} of ${totalCount}`;
-
-        for (const row of rows) {
-          const tr = el('tr','border-b hover:bg-gray-50');
-          for (const c of conf.cols) {
-            let val = row[c.key];
-            if (c.type === 'checkbox') val = !!val;
-            const td = el('td','p-3', fmt(val));
-            tr.appendChild(td);
-          }
-
-          if (conf.hasActions !== false) {
-            const td = el('td','p-3 text-right');
-            const edit = el('button','px-2 py-1 rounded border hover:bg-gray-100','Edit');
-            edit.addEventListener('click', () => openEditor(conf, row));
-            td.appendChild(edit);
-            tr.appendChild(td);
-          } else {
-            // clickable row for order_list
-            tr.style.cursor = 'pointer';
-            tr.addEventListener('click', () => conf.onRowClick && conf.onRowClick(row));
-          }
-
-          tbody.appendChild(tr);
-        }
-      }
-
-      // Export
-      document.getElementById('exportBtn').onclick = async () => {
-        if (conf.loader) {
-          // export all rows (pull first 5000)
-          const out = await conf.loader({ page: 0, pageSize: 5000, q: document.getElementById('globalSearch').value?.trim() });
-          const csv = toCSV(out.rows || [], conf);
-          const blob = new Blob([csv], { type: 'text/csv' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a'); a.href = url; a.download = `${conf.title.replace(/\s+/g,'_').toLowerCase()}.csv`; a.click();
-          URL.revokeObjectURL(url);
-        } else {
-          const { data: allRows } = await sb.from(conf.table).select('*').order('updated_at', { ascending:false });
-          const csv = toCSV(allRows || [], conf);
-          const blob = new Blob([csv], { type: 'text/csv' });
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement('a'); a.href = url; a.download = `${conf.table}.csv`; a.click();
-          URL.revokeObjectURL(url);
-        }
-      };
-
-      // Toolbar visibility tweaks
-      const addBtn = document.getElementById('addBtn');
-      // hide Add for read-only tabs
-      addBtn.classList.toggle('hidden', !!conf.readOnly);
-      // for pricing singleton, hide Add if a row already exists
-      if (conf.singleton) addBtn.classList.toggle('hidden', (rows.length || 0) > 0);
-    }
-
-    // ========== Editor ==========
-    const dlg = document.getElementById('editor');
-    const formBody = document.getElementById('formBody');
-
-    async function optionEl(col, value) {
-      const wrap = el('label','block');
-      wrap.appendChild(el('span','text-sm block mb-1', col.label));
-      let input;
-      if (col.type === 'textarea') { input = el('textarea','px-3 py-2 rounded-lg border w-full'); input.rows = 4; }
-      else if (col.type === 'checkbox') { input = el('input','h-4 w-4'); input.type = 'checkbox'; }
-      else if (col.type === 'select') {
-        input = el('select','px-3 py-2 rounded-lg border w-full'); (col.options||[]).forEach(o => { const opt = el('option','',o); opt.value=o; input.appendChild(opt); });
-      } else if (col.type === 'select-async') {
-        input = el('select','px-3 py-2 rounded-lg border w-full'); const options = await col.asyncOptions();
-        for (const o of options) { const opt = document.createElement('option'); if (typeof o === 'string'){ opt.value=o; opt.textContent=o; } else { opt.value=o.value; opt.textContent=o.label; } input.appendChild(opt); }
-      } else {
-        input = el('input','px-3 py-2 rounded-lg border w-full');
-        input.type = col.type || 'text';
-        if (col.step) input.step = col.step;
-        if (col.min !== undefined) input.min = col.min;
-        if (col.max !== undefined) input.max = col.max;
-      }
-      input.id = `fld_${col.key}`;
-      if (col.required) input.required = true;
-      if (col.type === 'checkbox') input.checked = !!value; else if (col.type === 'date') input.value = dateInputValue(value); else input.value = value ?? '';
-      wrap.appendChild(input);
-      return wrap;
-    }
-
-    async function openEditor(conf, row) {
-      document.getElementById('editorTitle').textContent = row ? `Edit ${conf.title}` : `New ${conf.title}`;
-      formBody.innerHTML = '';
-      for (const c of conf.cols) formBody.appendChild(await optionEl(c, row?.[c.key]));
-      const idHidden = el('input'); idHidden.type='hidden'; idHidden.id='row_id'; idHidden.value=row?.id||''; formBody.appendChild(idHidden);
-
-      const delBtn = document.getElementById('deleteBtn');
-      delBtn.classList.toggle('hidden', !row);
-      delBtn.onclick = async () => {
-        if (!row?.id) return; if (!confirm('Delete this record?')) return;
-        const { error } = await sb.from(conf.table).delete().eq('id', row.id);
-        if (error) { alert(error.message); return; }
-        dlg.close(); loadTable();
-      };
-      document.getElementById('saveBtn').onclick = async (e) => { e.preventDefault(); await saveRecord(conf); };
-      dlg.showModal();
-    }
-
-    async function saveRecord(conf) {
-      const payload = {};
-      for (const c of conf.cols) {
-        const elx = document.getElementById(`fld_${c.key}`);
-        let val = (c.type === 'checkbox') ? elx.checked : elx.value || null;
-        if (c.type === 'number' && val !== null) val = elx.value === '' ? null : Number(val);
-        payload[c.key] = val;
-      }
-      const id = document.getElementById('row_id').value;
-      let resp;
-      if (id) resp = await sb.from(conf.table).update(payload).eq('id', id).select('*').single();
-      else resp = await sb.from(conf.table).insert(payload).select('*').single();
-      if (resp.error) { alert(resp.error.message); return; }
+    const delBtn = document.getElementById('deleteBtn');
+    delBtn.classList.toggle('hidden', !row || !!conf.readOnly);
+    delBtn.onclick = async () => {
+      if (!row?.id) return; if (!confirm('Delete this record?')) return;
+      const { error } = await sb.from(conf.table).delete().eq('id', row.id);
+      if (error) { alert(error.message); return; }
       dlg.close(); loadTable();
-    }
+    };
+    document.getElementById('saveBtn').onclick = async (e) => { e.preventDefault(); await saveRecord(conf); };
+    dlg.showModal();
+  }
 
-    // ========== Tabs, pagination, realtime ==========
-    function renderTabs() {
-      const nav = document.getElementById('tabs'); nav.innerHTML='';
-      for (const key of tabOrder) {
-        const conf = tables[key];
-        const a = el('button','pb-1', conf.title);
-        if (key === activeKey) a.classList.add('tab-active');
-        a.addEventListener('click', () => { activeKey = key; page = 0; renderTabs(); loadTable(); });
-        nav.appendChild(a);
-      }
-      document.getElementById('addBtn').onclick = () => openEditor(tables[activeKey], null);
-      document.getElementById('prev').onclick = () => { if (page>0) { page--; loadTable(); } };
-      document.getElementById('next').onclick = () => { if ((page+1)*pageSize < totalCount) { page++; loadTable(); } };
-      document.getElementById('globalSearch').addEventListener('keydown', (e) => { if (e.key === 'Enter') { page = 0; loadTable(); }});
-      document.getElementById('refreshAll').onclick = () => loadTable();
+  async function saveRecord(conf){
+    const payload = {};
+    for (const c of conf.cols){
+      const elx = document.getElementById(`fld_${c.key}`);
+      let val = (c.type === 'checkbox') ? elx.checked : elx.value || null;
+      if (c.type === 'number' && val !== null) val = elx.value === '' ? null : Number(val);
+      payload[c.key] = val;
     }
+    const id = document.getElementById('row_id').value;
+    let resp;
+    if (id) resp = await sb.from(conf.table).update(payload).eq('id', id).select('*').single();
+    else   resp = await sb.from(conf.table).insert(payload).select('*').single();
+    if (resp.error) { alert(resp.error.message); return; }
+    dlg.close(); loadTable();
+  }
 
-    function wireRealtime() {
-      for (const key of Object.keys(tables)) {
-        if (key === 'order_list') continue; // read-only virtual
-        sb.channel(`${key}-changes`)
-          .on('postgres_changes', { event:'*', schema:'public', table:tables[key].table },
-            () => { if (key === activeKey) loadTable(); })
-          .subscribe();
-      }
+  // 7) Tabs, search, pager, realtime
+  function renderTabs(){
+    const nav = document.getElementById('tabs'); nav.innerHTML='';
+    for (const key of tabOrder){
+      const conf = tables[key];
+      const a = $('button','pb-1', conf.title);
+      if (key === activeKey) a.classList.add('tab-active');
+      a.addEventListener('click', ()=>{ activeKey = key; page = 0; renderTabs(); loadTable(); });
+      nav.appendChild(a);
     }
+    document.getElementById('addBtn').onclick = () => openEditor(tables[activeKey], null);
+    document.getElementById('prev').onclick = () => { if (page>0) { page--; loadTable(); } };
+    document.getElementById('next').onclick = () => { if ((page+1)*pageSize < totalCount) { page++; loadTable(); } };
+    document.getElementById('globalSearch').onkeydown = (e)=>{ if (e.key==='Enter'){ page=0; loadTable(); } };
+    document.getElementById('refreshAll').onclick = () => loadTable();
+  }
 
-    bootstrap();
+  function wireRealtime(){
+    for (const key of Object.keys(tables)){
+      sb.channel(`${key}-changes`)
+        .on('postgres_changes', { event:'*', schema:'public', table: (key==='order_list'?'orders':tables[key].table) },
+          () => { if (key === activeKey) loadTable(); })
+        .subscribe();
+    }
+  }
+
+  bootstrap();
   </script>
 </body>
 </html>
