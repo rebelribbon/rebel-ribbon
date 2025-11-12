@@ -12,14 +12,18 @@
     .thcell{padding:.75rem;font-weight:600}
     .nowrap{white-space:nowrap}
     .table-wrap{overflow:auto;border-radius:.75rem;border:1px solid #e5e7eb;background:#fff}
-    table{border-collapse:separate;border-spacing:0}
-    .link-row{cursor:pointer}
-    .link-row:hover{background:#f8fafc}
+    table{border-collapse:separate;border-spacing:0;table-layout:fixed}
+    #orderPanel::backdrop{background:rgba(0,0,0,.35)}
+    .btn{padding:.5rem .75rem;border-radius:.5rem;border:1px solid #e5e7eb;background:#fff}
+    .btn-primary{background:#2563eb;color:#fff;border-color:#2563eb}
+    .btn-danger{border-color:#ef4444;color:#b91c1c}
+    .btn-ghost{background:transparent;border-color:transparent}
+    .input{padding:.5rem .75rem;border:1px solid #e5e7eb;border-radius:.5rem}
+    .card{border:1px solid #e5e7eb;border-radius:.75rem;background:#fff}
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
-
-  <!-- Sign in -->
+  <!-- Sign in card -->
   <div id="signinCard" class="min-h-screen flex items-center justify-center p-4">
     <div class="w-full max-w-md bg-white rounded-2xl shadow p-6">
       <h1 class="text-2xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
@@ -27,771 +31,763 @@
       <label class="block text-sm mb-2">Email</label>
       <input id="email" type="email" placeholder="you@rebelribbon.com" class="w-full px-3 py-2 rounded-lg border mb-4"/>
       <button id="sendLink" type="button" class="w-full px-4 py-2 rounded-lg bg-blue-600 text-white">Send magic link</button>
-      <p id="authMsg" class="text-sm text-red-600 mt-3"></p>
+      <p id="authMsg" class="text-sm mt-3"></p>
       <p class="text-xs text-gray-500 mt-3">If the button does nothing, set SUPABASE_URL and SUPABASE_ANON_KEY in this file.</p>
     </div>
   </div>
 
-  <!-- App -->
+  <!-- App shell -->
   <div id="app" class="hidden">
     <div class="max-w-7xl mx-auto p-4 md:p-8">
       <header class="flex items-center justify-between mb-4">
         <h1 class="text-2xl font-semibold">Rebel Ribbon Admin</h1>
         <div class="flex gap-2 items-center">
-          <input id="globalSearch" type="search" placeholder="Search current tab" class="px-3 py-2 rounded-lg border"/>
-          <button id="refreshAll" class="px-3 py-2 rounded-lg border bg-white">Refresh</button>
+          <input id="globalSearch" type="search" placeholder="Search current tab" class="input"/>
+          <button id="refreshAll" class="btn">Refresh</button>
           <span id="who" class="text-sm text-gray-600"></span>
-          <button id="logout" class="px-3 py-2 rounded-lg bg-gray-900 text-white">Sign out</button>
+          <button id="logout" class="btn btn-primary">Sign out</button>
         </div>
       </header>
 
+      <!-- Tabs -->
       <nav id="tabs" class="flex flex-wrap gap-4 border-b pb-2 mb-4"></nav>
 
       <!-- Toolbar -->
       <div class="flex items-center justify-between mb-2">
         <div class="flex items-center gap-2">
-          <button id="addBtn" class="px-3 py-2 rounded-lg bg-blue-600 text-white">Add</button>
-          <button id="exportBtn" class="px-3 py-2 rounded-lg border bg-white">Export CSV</button>
+          <button id="addBtn" class="btn btn-primary">Add</button>
+          <button id="exportBtn" class="btn">Export CSV</button>
         </div>
         <div class="flex items-center gap-2">
-          <button id="prev" class="px-3 py-2 rounded-lg border bg-white disabled:opacity-50">Prev</button>
+          <button id="prev" class="btn disabled:opacity-50">Prev</button>
           <span id="pageInfo" class="text-sm text-gray-600"></span>
-          <button id="next" class="px-3 py-2 rounded-lg border bg-white disabled:opacity-50">Next</button>
+          <button id="next" class="btn disabled:opacity-50">Next</button>
         </div>
       </div>
 
       <!-- Table -->
       <div class="table-wrap">
-        <table id="grid" class="min-w-full text-sm table-fixed">
+        <table id="grid" class="min-w-full text-sm">
           <colgroup id="colgroup"></colgroup>
-          <thead class="bg-gray-100 text-gray-700">
-            <tr id="thead"></tr>
-          </thead>
+          <thead class="bg-gray-100 text-gray-700"><tr id="thead"></tr></thead>
           <tbody id="tbody"></tbody>
         </table>
       </div>
       <p id="netHint" class="text-yellow-700 text-sm mt-3 hidden"></p>
     </div>
 
-    <!-- Generic editor -->
-    <dialog id="editor" class="rounded-2xl p-0 w-full max-w-3xl shadow-2xl">
+    <!-- Order Detail Panel -->
+    <dialog id="orderPanel" class="w-full max-w-5xl rounded-2xl p-0">
       <form method="dialog" class="p-0">
-        <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
-          <h2 id="editorTitle" class="text-lg font-semibold">Edit</h2>
-          <button value="close" class="p-2 rounded hover:bg-gray-200">✕</button>
+        <div class="flex items-center justify-between p-4 border-b bg-gray-50">
+          <h2 id="orderPanelTitle" class="text-lg font-semibold">Order</h2>
+          <button class="btn btn-ghost" value="close" title="Close">✕</button>
         </div>
-        <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+
+        <div id="orderPanelBody" class="p-4 space-y-4">
+          <!-- Filled at runtime -->
+        </div>
+
         <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
-          <button id="deleteBtn" type="button" class="px-3 py-2 rounded-lg border text-red-700 border-red-300 hidden">Delete</button>
-          <button id="saveBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white">Save</button>
+          <button class="btn" value="close">Close</button>
         </div>
       </form>
     </dialog>
 
-    <!-- Order View panel -->
-    <dialog id="orderView" class="rounded-2xl p-0 w-full max-w-5xl shadow-2xl">
+    <!-- Editor dialog (generic add/edit) -->
+    <dialog id="editor" class="rounded-2xl p-0 w-full max-w-3xl shadow-2xl">
       <form method="dialog" class="p-0">
         <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
-          <h2 id="ov_title" class="text-lg font-semibold">Order</h2>
-          <button value="close" class="p-2 rounded hover:bg-gray-200">✕</button>
+          <h2 id="editorTitle" class="text-lg font-semibold">Edit</h2>
+          <button value="close" class="btn btn-ghost">✕</button>
         </div>
-
-        <div class="p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <!-- Left column: details -->
-          <div class="lg:col-span-2 space-y-3">
-            <div class="bg-white rounded-xl border p-4">
-              <div class="grid grid-cols-2 gap-y-2">
-                <div class="text-gray-600">Submitted</div><div id="ov_submitted"></div>
-                <div class="text-gray-600">Status</div><div id="ov_status_text"></div>
-                <div class="text-gray-600">Flavor</div><div id="ov_flavor"></div>
-                <div class="text-gray-600">Dietary</div><div id="ov_dietary"></div>
-                <div class="text-gray-600">Cookie dzns</div><div id="ov_dzns"></div>
-                <div class="text-gray-600">Event date</div><div id="ov_event"></div>
-                <div class="text-gray-600">Pickup or delivery</div><div id="ov_pickup"></div>
-                <div class="text-gray-600">Discount code</div><div id="ov_discount_code"></div>
-                <div class="text-gray-600">Referral code</div><div id="ov_referral_code"></div>
-                <div class="text-gray-600">Gift note</div><div id="ov_giftnote"></div>
-                <div class="text-gray-600">Gift note text</div><div id="ov_giftnote_text" class="whitespace-pre-wrap"></div>
-                <div class="text-gray-600">Design notes</div><div id="ov_design_notes" class="whitespace-pre-wrap"></div>
-                <div class="text-gray-600">Inspiration photo</div>
-                <div id="ov_photo_cell">
-                  <img id="ov_photo" alt="" class="max-h-40 rounded border hidden"/>
-                  <div class="text-xs text-gray-500" id="ov_photo_msg"></div>
-                  <div class="mt-2 flex items-center gap-2">
-                    <input id="ov_photo_file" type="file" accept="image/*" class="text-sm"/>
-                    <button id="ov_upload_btn" type="button" class="px-3 py-1 rounded bg-blue-600 text-white text-sm">Upload</button>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="bg-white rounded-xl border p-4">
-              <label class="block text-sm mb-1">Status</label>
-              <div class="flex items-center gap-2">
-                <select id="ov_status" class="px-3 py-2 rounded-lg border">
-                  <option>In Review</option>
-                  <option>Approved</option>
-                  <option>Paid</option>
-                  <option>Production Complete</option>
-                  <option>Fulfilled</option>
-                  <option>Canceled</option>
-                </select>
-                <button id="ov_save_status" type="button" class="px-3 py-2 rounded-lg bg-blue-600 text-white">Save Status</button>
-              </div>
-            </div>
-
-            <div class="bg-white rounded-xl border p-4">
-              <div class="flex items-center gap-2">
-                <button id="ov_edit_order" type="button" class="px-3 py-2 rounded-lg border">Edit order fields</button>
-                <button id="ov_add_fee" type="button" class="px-3 py-2 rounded-lg border">Add fee</button>
-                <button id="ov_add_discount" type="button" class="px-3 py-2 rounded-lg border">Add discount</button>
-                <button id="ov_invoice" type="button" class="px-3 py-2 rounded-lg bg-gray-900 text-white">View/Save invoice</button>
-              </div>
-              <p id="ov_adjustments_help" class="text-xs text-red-700 mt-3 hidden"></p>
-            </div>
-          </div>
-
-          <!-- Right column: totals + customer -->
-          <div class="space-y-3">
-            <div class="bg-white rounded-xl border p-4">
-              <h3 class="font-semibold mb-2">Totals (est.)</h3>
-              <div class="text-sm space-y-1">
-                <div><span class="text-gray-600">Price/dozen:</span> <span id="ov_price_per_dozen"></span></div>
-                <div><span class="text-gray-600">Base:</span> <span id="ov_base"></span></div>
-                <div><span class="text-gray-600">Consult fee:</span> <span id="ov_consult"></span></div>
-                <div><span class="text-gray-600">Gift note fee:</span> <span id="ov_giftnote_fee"></span></div>
-                <div class="pt-2 border-t"><span class="text-gray-600">Adjustments:</span></div>
-                <div id="ov_adjustments_list" class="text-xs"></div>
-                <div class="pt-2 border-t font-semibold"><span>Estimated total:</span> <span id="ov_total"></span></div>
-              </div>
-            </div>
-
-            <div class="bg-white rounded-xl border p-4">
-              <h3 class="font-semibold mb-2">Customer</h3>
-              <div id="ov_customer" class="text-sm space-y-1"></div>
-            </div>
-          </div>
+        <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+        <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
+          <button id="deleteBtn" type="button" class="btn btn-danger hidden">Delete</button>
+          <button id="saveBtn" class="btn btn-primary">Save</button>
         </div>
       </form>
     </dialog>
   </div>
 
   <script>
-  document.addEventListener('DOMContentLoaded', () => {
+  // Supabase
+  const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // Supabase client
-    const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  // UI elements
+  const signinCard = document.getElementById('signinCard');
+  const app = document.getElementById('app');
+  const authMsg = document.getElementById('authMsg');
+  const orderPanel = document.getElementById('orderPanel');
+  const orderPanelBody = document.getElementById('orderPanelBody');
+  const orderPanelTitle = document.getElementById('orderPanelTitle');
 
-    // Sign in
-    const signinCard = document.getElementById('signinCard');
-    const app = document.getElementById('app');
-    const authMsg = document.getElementById('authMsg');
-    const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
+  // helpers
+  const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
+  const $ = (t,c,h)=>{ const e=document.createElement(t); if(c) e.className=c; if(h!==undefined) e.innerHTML=h; return e; };
+  const fmt = (v)=> v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
+  const dateYMD=(d)=>{ if(!d) return ''; const dt=new Date(d); const tz=new Date(dt.getTime()-dt.getTimezoneOffset()*60000); return tz.toISOString().slice(0,10); };
 
-    document.getElementById('sendLink').addEventListener('click', async () => {
-      authMsg.textContent = '';
-      const email = document.getElementById('email').value.trim();
-      if (!onlyCompanyEmail(email)) { authMsg.textContent = 'Use your @rebelribbon.com address.'; return; }
-      try {
-        const { error } = await sb.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html' }
-        });
-        if (error) throw error;
-        authMsg.classList.remove('text-red-600');
-        authMsg.classList.add('text-green-700');
-        authMsg.textContent = 'Magic link sent. Check your inbox.';
-      } catch (e) {
-        authMsg.classList.remove('text-green-700');
-        authMsg.classList.add('text-red-600');
-        authMsg.textContent = e.message || 'Failed to fetch';
-      }
-    });
-
-    bootstrap();
-
-    async function bootstrap(){
-      const { data: { session }, error } = await sb.auth.getSession();
-      if (error) { authMsg.textContent = error.message; return; }
-      if (!session) {
-        signinCard.classList.remove('hidden'); app.classList.add('hidden');
-        return;
-      }
-      const email = session.user?.email || '';
-      if (!onlyCompanyEmail(email)) { await sb.auth.signOut(); authMsg.textContent = 'This page is restricted to @rebelribbon.com'; return; }
-      document.getElementById('who').textContent = email;
-      signinCard.classList.add('hidden'); app.classList.remove('hidden');
-      renderTabs(); loadTable(); wireRealtime();
+  // Magic link
+  const sendBtn = document.getElementById('sendLink');
+  sendBtn.addEventListener('click', async () => {
+    authMsg.textContent = '';
+    authMsg.className = 'text-sm';
+    const email = document.getElementById('email').value.trim();
+    if (!onlyCompanyEmail(email)) {
+      authMsg.classList.add('text-red-600');
+      authMsg.textContent = 'Use your @rebelribbon.com address.';
+      return;
     }
+    try {
+      const redirectTo = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
+      const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo }});
+      if (error) throw error;
+      authMsg.classList.add('text-green-700');
+      authMsg.textContent = 'Magic link sent. Check your inbox.';
+    } catch (e) {
+      authMsg.classList.add('text-red-600');
+      authMsg.textContent = e.message || 'Failed to send';
+    }
+  });
 
-    document.getElementById('logout').addEventListener('click', async () => {
+  // Session bootstrap
+  async function bootstrap() {
+    const { data: { session }, error } = await sb.auth.getSession();
+    if (error) { authMsg.textContent = error.message; return; }
+    if (!session) {
+      signinCard.classList.remove('hidden'); app.classList.add('hidden');
+      return;
+    }
+    const email = session.user?.email || '';
+    if (!onlyCompanyEmail(email)) {
       await sb.auth.signOut();
-      location.href = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
-    });
-
-    // Config
-    const tables = {
-      order_list: {
-        title: 'Order List',
-        table: 'orders',
-        readOnly: true,
-        customLoader: 'loadOrderList',
-        cols: [
-          { key:'created_at', label:'Date Submitted', type:'date', w:'18' },
-          { key:'status', label:'Status', type:'text', w:'14' },
-          { key:'first_name', label:'First name', type:'text', w:'18' },
-          { key:'last_name', label:'Last name', type:'text', w:'18' },
-          { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', w:'16' }
-        ]
-      },
-      customers: { title:'Customers', table:'customers', cols:[
-        { key:'first_name', label:'First name', type:'text', required:true, w:'14' },
-        { key:'last_name',  label:'Last name',  type:'text', required:true, w:'14' },
-        { key:'phone', label:'Phone', type:'text', w:'14' },
-        { key:'email', label:'Email', type:'email', w:'16' },
-        { key:'street_address', label:'Street address', type:'text', w:'16' },
-        { key:'street_address_cont', label:'Street address cont', type:'text', w:'16' },
-        { key:'city', label:'City', type:'text', w:'12' },
-        { key:'state', label:'State', type:'text', w:'10' },
-        { key:'zip', label:'Zip', type:'text', w:'10' },
-        { key:'customer_id', label:'Customer ID', type:'text', w:'14' },
-        { key:'referral_code_assigned', label:'Referral code assigned', type:'text', w:'18',
-          asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] },
-        { key:'order_id', label:'Order ID', type:'text', w:'12' }
-      ]},
-      orders: { title:'Orders', table:'orders', cols:[
-        { key:'order_id', label:'Order ID', type:'text', w:'10' },
-        { key:'customer_id', label:'Customer', type:'select-async', w:'18',
-          asyncOptions: async () => {
-            const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
-            return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
-          }},
-        { key:'pickup_delivery_date', label:'Pick up or delivery date', type:'date', w:'16' },
-        { key:'event_date', label:'Event date', type:'date', w:'14' },
-        { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', step:'0.01', w:'14' },
-        { key:'flavor', label:'Flavor', type:'select-async', w:'12', asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
-        { key:'dietary_option', label:'Dietary option', type:'select-async', w:'14', asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[] },
-        { key:'design_notes', label:'Design notes', type:'textarea', w:'18' },
-        { key:'design_inspiration_photo', label:'Design inspiration photo URL', type:'url', w:'18' },
-        { key:'gift_note', label:'Gift note', type:'checkbox', w:'10' },
-        { key:'gift_note_text', label:'Gift note text', type:'textarea', w:'18' },
-        { key:'consultation_requested', label:'Consultation requested', type:'checkbox', w:'14' },
-        { key:'discount_code_used', label:'Discount code used', type:'select-async', w:'14', asyncOptions: async () => (await sb.from('discount_codes').select('code')).data?.map(r=>r.code)||[] },
-        { key:'referral_code_used', label:'Referral code used', type:'select-async', w:'14', asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] },
-        { key:'status', label:'Status', type:'select', w:'14', options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'] }
-      ]},
-      discount_codes: { title:'Discount Codes', table:'discount_codes', cols:[
-        { key:'code', label:'Code', type:'text', required:true, w:'20' },
-        { key:'type', label:'Type', type:'select', options:['percent','fixed'], required:true, w:'14' },
-        { key:'uses_allowed', label:'Number of uses allowed', type:'number', w:'20' },
-        { key:'email_allowed', label:'Email allowed', type:'email', w:'18' },
-        { key:'good_through_date', label:'Good through date', type:'date', w:'18' }
-      ]},
-      referral_codes: { title:'Referral Codes', table:'referral_codes', cols:[
-        { key:'code', label:'Code', type:'text', required:true, w:'20' },
-        { key:'associated_customer_id', label:'Associated customer', type:'select-async', w:'22',
-          asyncOptions: async () => {
-            const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
-            return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
-          }},
-        { key:'good_through_date', label:'Good through date', type:'date', w:'18' },
-        { key:'referrer_discount', label:'Referrer discount %', type:'number', step:'0.01', w:'20' },
-        { key:'referee_discount', label:'Referee discount %', type:'number', step:'0.01', w:'20' }
-      ]},
-      flavors: { title:'Flavors', table:'flavors', cols:[
-        { key:'name', label:'Flavor name', type:'text', required:true, w:'40' }
-      ]},
-      dietary_options: { title:'Dietary Options', table:'dietary_options', cols:[
-        { key:'name', label:'Dietary option', type:'text', required:true, w:'40' }
-      ]},
-      pricing: { title:'Pricing', table:'pricing', cols:[
-        { key:'price_per_dozen', label:'Price per dozen', type:'number', step:'0.01', w:'20' },
-        { key:'delivery_fee', label:'Delivery fee', type:'number', step:'0.01', w:'20' },
-        { key:'consultation_fee', label:'Consultation fee', type:'number', step:'0.01', w:'20' },
-        { key:'gift_note_fee', label:'Gift note fee', type:'number', step:'0.01', w:'20' },
-        { key:'rush_fee', label:'Rush fee', type:'number', step:'0.01', w:'20' }
-      ]},
-      costs: { title:'Costs', table:'costs', cols:[
-        { key:'item_name', label:'Item name', type:'text', required:true, w:'60' },
-        { key:'amount', label:'Amount', type:'number', step:'0.01', required:true, w:'40' }
-      ]},
-      surveys: { title:'Surveys', table:'surveys', cols:[
-        { key:'customer_id', label:'Customer', type:'select-async', w:'22',
-          asyncOptions: async () => {
-            const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
-            return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
-          }},
-        { key:'cookies_stars', label:'Cookies 1 to 5', type:'number', min:1, max:5, w:'18' },
-        { key:'service_stars', label:'Service 1 to 5', type:'number', min:1, max:5, w:'18' },
-        { key:'recommend', label:'Recommend to family', type:'checkbox', w:'22' },
-        { key:'improvements', label:'Improvements', type:'textarea', w:'30' },
-        { key:'website_review', label:'Website review', type:'textarea', w:'30' }
-      ]}
-    };
-
-    const tabOrder = ['order_list','customers','orders','discount_codes','referral_codes','flavors','dietary_options','pricing','costs','surveys'];
-
-    // State
-    let activeKey = tabOrder[0];
-    const pageSize = 10;
-    let page = 0;
-    let totalCount = 0;
-
-    // Helpers
-    const $ = (t,c,h)=>{ const e=document.createElement(t); if(c) e.className=c; if(h!==undefined) e.innerHTML=h; return e; };
-    const fmt = (v)=> v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
-    const dateValue=(d)=>{ if(!d) return ''; const dt=new Date(d); const tz=new Date(dt.getTime()-dt.getTimezoneOffset()*60000); return tz.toISOString().slice(0,10); };
-    const money=(n)=> isFinite(n) ? `$${Number(n).toFixed(2)}` : '$0.00';
-
-    function buildColGroup(conf){
-      const cg = document.getElementById('colgroup'); cg.innerHTML='';
-      const cols = conf.cols.slice();
-      if (!conf.readOnly) cols.push({key:'__actions', w:'10'});
-      const total = cols.reduce((s,c)=> s + (Number(c.w||0) || 0), 0) || 100;
-      for (const c of cols){
-        const col = document.createElement('col');
-        const pct = (Number(c.w||0)||0) / total * 100;
-        col.style.width = pct ? pct+'%' : 'auto';
-        cg.appendChild(col);
-      }
+      authMsg.textContent = 'This page is restricted to @rebelribbon.com';
+      return;
     }
+    document.getElementById('who').textContent = email;
+    signinCard.classList.add('hidden'); app.classList.remove('hidden');
+    renderTabs(); loadTable(); wireRealtime();
+  }
 
-    function buildThead(conf){
-      const tr = document.getElementById('thead'); tr.innerHTML='';
-      for (const c of conf.cols){
-        const th = $('th','thcell nowrap text-center', c.label);
-        tr.appendChild(th);
-      }
-      if (!conf.readOnly) tr.appendChild($('th','thcell text-center nowrap','Actions'));
+  document.getElementById('logout').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    location.href = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
+  });
+
+  // Table configs
+  const tables = {
+    order_list: {
+      title: 'Order List',
+      table: 'orders',
+      readOnly: true,
+      customLoader: 'loadOrderList',
+      cols: [
+        { key:'created_at', label:'Date Submitted', type:'date', w:'18' },
+        { key:'status', label:'Status', type:'text', w:'14' },
+        { key:'first_name', label:'First name', type:'text', w:'18' },
+        { key:'last_name', label:'Last name', type:'text', w:'18' },
+        { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', w:'16' }
+      ]
+    },
+    customers: { title:'Customers', table:'customers', cols:[
+      { key:'first_name', label:'First name', type:'text', required:true, w:'14' },
+      { key:'last_name', label:'Last name', type:'text', required:true, w:'14' },
+      { key:'phone', label:'Phone', type:'text', w:'14' },
+      { key:'email', label:'Email', type:'email', w:'16' },
+      { key:'street_address', label:'Street address', type:'text', w:'16' },
+      { key:'street_address_cont', label:'Street address cont', type:'text', w:'16' },
+      { key:'city', label:'City', type:'text', w:'12' },
+      { key:'state', label:'State', type:'text', w:'10' },
+      { key:'zip', label:'Zip', type:'text', w:'10' },
+      { key:'customer_id', label:'Customer ID', type:'text', w:'14' },
+      { key:'referral_code_assigned', label:'Referral code assigned', type:'text', w:'18' },
+      { key:'order_id', label:'Order ID', type:'text', w:'12' }
+    ]},
+    orders: { title:'Orders', table:'orders', cols:[
+      { key:'order_id', label:'Order ID', type:'text', w:'12' },
+      { key:'customer_id', label:'Customer', type:'select-async', w:'20',
+        asyncOptions: async () => {
+          const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+          return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+        }},
+      { key:'pickup_delivery_date', label:'Pick up or delivery date', type:'date', w:'18' },
+      { key:'event_date', label:'Event date', type:'date', w:'14' },
+      { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', step:'0.01', w:'18' },
+      { key:'flavor', label:'Flavor', type:'select-async', w:'14', asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
+      { key:'dietary_option', label:'Dietary option', type:'select-async', w:'16', asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[] },
+      { key:'design_notes', label:'Design notes', type:'textarea', w:'20' },
+      { key:'design_inspiration_photo', label:'Design inspiration photo', type:'file', w:'20' },
+      { key:'gift_note', label:'Gift note', type:'checkbox', w:'10' },
+      { key:'gift_note_text', label:'Gift note text', type:'textarea', w:'16' },
+      { key:'consultation_requested', label:'Consultation requested', type:'checkbox', w:'20' },
+      { key:'discount_code_used', label:'Discount code used', type:'text', w:'16' },
+      { key:'referral_code_used', label:'Referral code used', type:'text', w:'16' },
+      { key:'status', label:'Status', type:'select', w:'14', options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'] }
+    ]},
+    discount_codes: { title:'Discount Codes', table:'discount_codes', cols:[
+      { key:'code', label:'Code', type:'text', required:true, w:'20' },
+      { key:'type', label:'Type', type:'select', options:['percent','fixed'], required:true, w:'14' },
+      { key:'uses_allowed', label:'Number of uses allowed', type:'number', w:'20' },
+      { key:'email_allowed', label:'Email allowed', type:'email', w:'18' },
+      { key:'good_through_date', label:'Good through date', type:'date', w:'18' }
+    ]},
+    referral_codes: { title:'Referral Codes', table:'referral_codes', cols:[
+      { key:'code', label:'Code', type:'text', required:true, w:'20' },
+      { key:'associated_customer_id', label:'Associated customer', type:'select-async', w:'22',
+        asyncOptions: async () => {
+          const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+          return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+        }},
+      { key:'good_through_date', label:'Good through date', type:'date', w:'18' },
+      { key:'referrer_discount', label:'Referrer discount %', type:'number', step:'0.01', w:'20' },
+      { key:'referee_discount', label:'Referee discount %', type:'number', step:'0.01', w:'20' }
+    ]},
+    flavors: { title:'Flavors', table:'flavors', cols:[
+      { key:'name', label:'Flavor name', type:'text', required:true, w:'40' }
+    ]},
+    dietary_options: { title:'Dietary Options', table:'dietary_options', cols:[
+      { key:'name', label:'Dietary option', type:'text', required:true, w:'40' }
+    ]},
+    pricing: { title:'Pricing', table:'pricing', cols:[
+      { key:'price_per_dozen', label:'Price per dozen', type:'number', step:'0.01', w:'20' },
+      { key:'delivery_fee', label:'Delivery fee', type:'number', step:'0.01', w:'20' },
+      { key:'consultation_fee', label:'Consultation fee', type:'number', step:'0.01', w:'20' },
+      { key:'gift_note_fee', label:'Gift Note fee', type:'number', step:'0.01', w:'20' },
+      { key:'rush_fee', label:'Rush fee', type:'number', step:'0.01', w:'20' }
+    ]},
+    costs: { title:'Costs', table:'costs', cols:[
+      { key:'item_name', label:'Item name', type:'text', required:true, w:'60' },
+      { key:'amount', label:'Amount', type:'number', step:'0.01', required:true, w:'40' }
+    ]},
+    surveys: { title:'Surveys', table:'surveys', cols:[
+      { key:'customer_id', label:'Customer', type:'select-async', w:'22',
+        asyncOptions: async () => {
+          const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+          return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+        }},
+      { key:'cookies_stars', label:'Cookies 1 to 5', type:'number', min:1, max:5, w:'18' },
+      { key:'service_stars', label:'Service 1 to 5', type:'number', min:1, max:5, w:'18' },
+      { key:'recommend', label:'Recommend to family', type:'checkbox', w:'22' },
+      { key:'improvements', label:'Improvements', type:'textarea', w:'30' },
+      { key:'website_review', label:'Website review', type:'textarea', w:'30' }
+    ]}
+  };
+
+  const tabOrder = ['order_list','customers','orders','discount_codes','referral_codes','flavors','dietary_options','pricing','costs','surveys'];
+
+  // state
+  let activeKey = tabOrder[0];
+  const pageSize = 10;
+  let page = 0;
+  let totalCount = 0;
+
+  // build table header and widths
+  function buildColGroup(conf){
+    const cg = document.getElementById('colgroup'); cg.innerHTML='';
+    const cols = conf.cols.slice();
+    if (!conf.readOnly) cols.push({key:'__actions', w:'10'});
+    const total = cols.reduce((s,c)=> s + (Number(c.w||0) || 0), 0) || 100;
+    for (const c of cols){
+      const col = document.createElement('col');
+      const pct = (Number(c.w||0)||0) / total * 100;
+      col.style.width = pct ? pct+'%' : 'auto';
+      cg.appendChild(col);
     }
-
-    // Loaders
-    async function loadTable(){
-      const conf = tables[activeKey];
-      buildColGroup(conf); buildThead(conf);
-
-      document.getElementById('addBtn').classList.toggle('hidden', !!conf.readOnly);
-
-      if (conf.customLoader === 'loadOrderList') { await loadOrderList(); return; }
-
-      const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
-      document.body.style.cursor = 'progress';
-      let query = sb.from(conf.table).select('*', { count:'exact' });
-
-      const q = document.getElementById('globalSearch').value?.trim();
-      if (q) {
-        const orParts = conf.cols.map(c => `${c.key}.ilike.%${q}%`).join(',');
-        if (orParts) query = query.or(orParts);
-      }
-      query = query.order('updated_at', { ascending:false }).range(page*pageSize, page*pageSize+pageSize-1);
-
-      const { data, error, count } = await query;
-      document.body.style.cursor = 'default';
-
-      if (error) {
-        tbody.appendChild($('tr','',`<td class="cell text-red-700 text-center" colspan="99">${error.message}</td>`));
-        return;
-      }
-      totalCount = count || 0;
-      renderRows(conf, data || []);
+  }
+  function buildThead(conf){
+    const tr = document.getElementById('thead'); tr.innerHTML='';
+    for (const c of conf.cols){
+      const th = $('th','thcell nowrap text-center', c.label);
+      tr.appendChild(th);
     }
+    if (!conf.readOnly) tr.appendChild($('th','thcell nowrap text-center','Actions'));
+  }
 
-    async function loadOrderList(){
-      const conf = tables.order_list;
-      const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
-      document.body.style.cursor = 'progress';
-      let q = sb.from('orders').select('id, created_at, customer_id, cookie_amount_dzns, status', { count:'exact' })
+  // load current tab
+  async function loadTable(){
+    const conf = tables[activeKey];
+    buildColGroup(conf); buildThead(conf);
+
+    // hide Add when read-only
+    document.getElementById('addBtn').classList.toggle('hidden', !!conf.readOnly);
+
+    const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
+
+    if (conf.customLoader === 'loadOrderList') { await loadOrderList(); return; }
+
+    document.body.style.cursor = 'progress';
+    let query = sb.from(conf.table).select('*', { count:'exact' });
+    const q = document.getElementById('globalSearch').value?.trim();
+    if (q) {
+      const orParts = conf.cols.map(c => `${c.key}.ilike.%${q}%`).join(',');
+      if (orParts) query = query.or(orParts);
+    }
+    query = query.order('updated_at', { ascending:false }).range(page*pageSize, page*pageSize+pageSize-1);
+    const { data, error, count } = await query;
+    document.body.style.cursor = 'default';
+
+    if (error) {
+      tbody.appendChild($('tr','',`<td class="cell text-red-700 text-center" colspan="99">${error.message}</td>`));
+      return;
+    }
+    totalCount = count || 0;
+    renderRows(conf, data || []);
+  }
+
+  // order list loader without joins
+  async function loadOrderList(){
+    const conf = tables.order_list;
+    const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
+
+    document.body.style.cursor = 'progress';
+    let q = sb.from('orders').select('id, created_at, customer_id, cookie_amount_dzns, status', { count:'exact' })
                 .order('created_at', { ascending:false })
                 .range(page*pageSize, page*pageSize+pageSize-1);
-      const { data: orders, error, count } = await q;
-      document.body.style.cursor = 'default';
+    const { data: orders, error, count } = await q;
+    document.body.style.cursor = 'default';
 
-      if (error) {
-        tbody.appendChild($('tr','',`<td class="cell text-red-700 text-center" colspan="99">${error.message}</td>`));
-        return;
-      }
-      totalCount = count || 0;
+    if (error) {
+      tbody.appendChild($('tr','',`<td class="cell text-red-700 text-center" colspan="99">${error.message}</td>`));
+      return;
+    }
+    totalCount = count || 0;
 
-      const ids = [...new Set((orders||[]).map(o => o.customer_id).filter(Boolean))];
-      let map = new Map();
-      if (ids.length){
-        const { data: cust } = await sb.from('customers').select('id, first_name, last_name').in('id', ids);
-        (cust||[]).forEach(c => map.set(c.id, c));
-      }
-
-      for (const o of orders||[]){
-        const row = {
-          id: o.id,
-          created_at: dateValue(o.created_at),
-          status: o.status || 'In Review',
-          first_name: map.get(o.customer_id)?.first_name || '',
-          last_name:  map.get(o.customer_id)?.last_name  || '',
-          cookie_amount_dzns: o.cookie_amount_dzns
-        };
-        const tr = $('tr','border-b link-row');
-        for (const c of conf.cols){
-          tr.appendChild($('td','cell nowrap text-center', fmt(row[c.key])));
-        }
-        tr.addEventListener('click', () => openOrderView(o.id));
-        tbody.appendChild(tr);
-      }
-      updatePager();
-      document.getElementById('exportBtn').onclick = async () => {
-        const rows = [];
-        for (const tr of tbody.querySelectorAll('tr')){
-          const cells = [...tr.children].map(td => td.textContent);
-          rows.push(cells);
-        }
-        const headers = conf.cols.map(c => c.label);
-        const csvRows = [headers.join(',')].concat(rows.map(r => r.map(v => `"${String(v).replaceAll('"','""')}"`).join(',')));
-        const csv = csvRows.join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = 'Order_List.csv'; a.click();
-        URL.revokeObjectURL(url);
-      };
+    const ids = [...new Set((orders||[]).map(o => o.customer_id).filter(Boolean))];
+    let map = new Map();
+    if (ids.length){
+      const { data: cust } = await sb.from('customers').select('id, first_name, last_name').in('id', ids);
+      (cust||[]).forEach(c => map.set(c.id, c));
     }
 
-    function renderRows(conf, data){
-      const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
-      for (const row of data){
-        const tr = $('tr','border-b');
-        for (const c of conf.cols){
-          let val = row[c.key];
-          if (c.type === 'checkbox') val = !!val;
-          if (c.type === 'date') val = dateValue(val);
-          tr.appendChild($('td','cell nowrap text-center', fmt(val)));
-        }
-        if (!conf.readOnly){
-          const td = $('td','cell text-center nowrap');
-          const edit = $('button','px-2 py-1 rounded border hover:bg-gray-100','Edit');
-          edit.addEventListener('click', (ev) => { ev.stopPropagation(); openEditor(conf, row); });
-          td.appendChild(edit);
-          tr.appendChild(td);
-        }
-        tbody.appendChild(tr);
-      }
-      updatePager();
-      document.getElementById('exportBtn').onclick = async () => {
-        const { data: allRows } = await sb.from(conf.table).select('*').order('updated_at',{ascending:false});
-        exportCSV(allRows||[], conf);
-      };
-    }
+    const rows = (orders||[]).map(o => ({
+      id: o.id,
+      created_at: o.created_at,
+      status: o.status || 'In Review',
+      first_name: map.get(o.customer_id)?.first_name || '',
+      last_name:  map.get(o.customer_id)?.last_name  || '',
+      cookie_amount_dzns: o.cookie_amount_dzns
+    }));
 
-    function exportCSV(rows, conf){
-      const headers = conf.cols.map(c => c.label);
-      const csvRows = [headers.join(',')];
-      for (const r of rows){
-        const vals = conf.cols.map(c => {
-          let v = r[c.key]; if (v == null) v = '';
-          const s = String(v).replaceAll('"','""');
-          return `"${s}"`;
-        });
-        csvRows.push(vals.join(','));
-      }
-      const csv = csvRows.join('\n');
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = `${conf.title.replace(/\s+/g,'_')}.csv`; a.click();
-      URL.revokeObjectURL(url);
-    }
-
-    function updatePager(){
-      const prev = document.getElementById('prev');
-      const next = document.getElementById('next');
-      prev.disabled = page === 0;
-      next.disabled = (page + 1) * pageSize >= totalCount;
-      const end = Math.min(totalCount, page*pageSize + Math.min(pageSize,totalCount - page*pageSize));
-      document.getElementById('pageInfo').textContent = `${end} of ${totalCount}`;
-    }
-
-    // Generic editor
-    const dlg = document.getElementById('editor');
-    const formBody = document.getElementById('formBody');
-
-    async function optionEl(col, value){
-      const wrap = $('label','block');
-      wrap.appendChild($('span','text-sm block mb-1', col.label));
-      let input;
-      if (col.type === 'textarea'){ input = $('textarea','px-3 py-2 rounded-lg border w-full'); input.rows = 4; }
-      else if (col.type === 'checkbox'){ input = $('input','h-4 w-4'); input.type='checkbox'; }
-      else if (col.type === 'select'){
-        input = $('select','px-3 py-2 rounded-lg border w-full');
-        (col.options||[]).forEach(o => { const opt = $('option','',o); opt.value=o; input.appendChild(opt); });
-      } else if (col.type === 'select-async'){
-        input = $('select','px-3 py-2 rounded-lg border w-full');
-        const options = await col.asyncOptions();
-        for (const o of options){ const opt = document.createElement('option'); if (typeof o === 'string'){ opt.value=o; opt.textContent=o; } else { opt.value=o.value; opt.textContent=o.label; } input.appendChild(opt); }
-      } else {
-        input = $('input','px-3 py-2 rounded-lg border w-full');
-        input.type = col.type || 'text';
-        if (col.step) input.step = col.step;
-        if (col.min !== undefined) input.min = col.min;
-        if (col.max !== undefined) input.max = col.max;
-      }
-      input.id = `fld_${col.key}`;
-      if (col.required) input.required = true;
-      if (col.type === 'checkbox') input.checked = !!value; else if (col.type === 'date') input.value = dateValue(value); else input.value = value ?? '';
-      wrap.appendChild(input);
-      return wrap;
-    }
-
-    async function openEditor(conf, row){
-      document.getElementById('editorTitle').textContent = row ? `Edit ${conf.title}` : `New ${conf.title}`;
-      formBody.innerHTML = '';
-      for (const c of conf.cols) formBody.appendChild(await optionEl(c, row?.[c.key]));
-      const idHidden = document.createElement('input'); idHidden.type='hidden'; idHidden.id='row_id'; idHidden.value=row?.id||''; formBody.appendChild(idHidden);
-
-      const delBtn = document.getElementById('deleteBtn');
-      delBtn.classList.toggle('hidden', !row || !!conf.readOnly);
-      delBtn.onclick = async () => {
-        if (!row?.id) return; if (!confirm('Delete this record?')) return;
-        const { error } = await sb.from(conf.table).delete().eq('id', row.id);
-        if (error) { alert(error.message); return; }
-        dlg.close(); loadTable();
-      };
-      document.getElementById('saveBtn').onclick = async (e) => { e.preventDefault(); await saveRecord(conf); };
-      dlg.showModal();
-    }
-
-    async function saveRecord(conf){
-      const payload = {};
+    for (const r of rows){
+      const tr = $('tr','border-b hover:bg-gray-50 cursor-pointer');
+      tr.addEventListener('click', () => openOrderPanel(r.id));
       for (const c of conf.cols){
-        const elx = document.getElementById(`fld_${c.key}`);
-        let val = (c.type === 'checkbox') ? elx.checked : elx.value || null;
-        if (c.type === 'number' && val !== null) val = elx.value === '' ? null : Number(val);
-        payload[c.key] = val;
+        let v = r[c.key];
+        if (c.type === 'date') v = dateYMD(v);
+        tr.appendChild($('td','cell nowrap text-center', fmt(v)));
       }
-      const id = document.getElementById('row_id').value;
-      let resp;
-      if (id) resp = await sb.from(conf.table).update(payload).eq('id', id).select('*').single();
-      else   resp = await sb.from(conf.table).insert(payload).select('*').single();
-      if (resp.error) { alert(resp.error.message); return; }
+      tbody.appendChild(tr);
+    }
+    updatePager();
+    document.getElementById('exportBtn').onclick = () => exportCSV(rows, conf);
+  }
+
+  // generic renderer
+  function renderRows(conf, data){
+    const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
+    for (const row of data){
+      const tr = $('tr','border-b');
+      for (const c of conf.cols){
+        let val = row[c.key];
+        if (c.type === 'checkbox') val = !!val;
+        if (c.type === 'date') val = dateYMD(val);
+        tr.appendChild($('td','cell nowrap text-center', fmt(val)));
+      }
+      if (!conf.readOnly){
+        const td = $('td','cell text-center');
+        const edit = $('button','btn','Edit');
+        edit.addEventListener('click', () => openEditor(conf, row));
+        td.appendChild(edit);
+        tr.appendChild(td);
+      }
+      tbody.appendChild(tr);
+    }
+    updatePager();
+
+    document.getElementById('exportBtn').onclick = async () => {
+      const { data: allRows } = await sb.from(conf.table).select('*').order('updated_at',{ascending:false});
+      exportCSV(allRows||[], conf);
+    };
+  }
+
+  function exportCSV(rows, conf){
+    const headers = conf.cols.map(c => c.label);
+    const csvRows = [headers.join(',')];
+    for (const r of rows){
+      const vals = conf.cols.map(c => {
+        let v = r[c.key]; if (v == null) v = '';
+        const s = String(v).replaceAll('"','""');
+        return `"${s}"`;
+      });
+      csvRows.push(vals.join(','));
+    }
+    const csv = csvRows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${conf.title.replace(/\s+/g,'_')}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  function updatePager(){
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+    prev.disabled = page === 0;
+    next.disabled = (page + 1) * pageSize >= totalCount;
+    const shown = Math.min(totalCount, page*pageSize + Math.min(pageSize, totalCount - page*pageSize));
+    document.getElementById('pageInfo').textContent = `${shown} of ${totalCount}`;
+  }
+
+  // Editor (generic)
+  const dlg = document.getElementById('editor');
+  const formBody = document.getElementById('formBody');
+
+  async function optionEl(col, value){
+    const wrap = $('label','block');
+    wrap.appendChild($('span','text-sm block mb-1', col.label));
+    let input;
+    if (col.type === 'textarea'){ input = $('textarea','input w-full'); input.rows = 4; }
+    else if (col.type === 'checkbox'){ input = $('input',''); input.type='checkbox'; }
+    else if (col.type === 'select'){
+      input = $('select','input w-full');
+      (col.options||[]).forEach(o => { const opt = $('option','',o); opt.value=o; input.appendChild(opt); });
+    } else if (col.type === 'select-async'){
+      input = $('select','input w-full');
+      const options = await col.asyncOptions();
+      for (const o of options){ const opt = document.createElement('option'); if (typeof o === 'string'){ opt.value=o; opt.textContent=o; } else { opt.value=o.value; opt.textContent=o.label; } input.appendChild(opt); }
+    } else if (col.type === 'file'){
+      input = $('input','input w-full'); input.type='file';
+    } else {
+      input = $('input','input w-full');
+      input.type = col.type || 'text';
+      if (col.step) input.step = col.step;
+      if (col.min !== undefined) input.min = col.min;
+      if (col.max !== undefined) input.max = col.max;
+    }
+    input.id = `fld_${col.key}`;
+    if (col.required) input.required = true;
+    if (col.type === 'checkbox') input.checked = !!value;
+    else if (col.type === 'date') input.value = dateYMD(value);
+    else if (col.type !== 'file') input.value = value ?? '';
+    wrap.appendChild(input);
+    return wrap;
+  }
+
+  async function openEditor(conf, row){
+    document.getElementById('editorTitle').textContent = row ? `Edit ${conf.title}` : `New ${conf.title}`;
+    formBody.innerHTML = '';
+    for (const c of conf.cols) formBody.appendChild(await optionEl(c, row?.[c.key]));
+    const idHidden = document.createElement('input'); idHidden.type='hidden'; idHidden.id='row_id'; idHidden.value=row?.id||''; formBody.appendChild(idHidden);
+
+    const delBtn = document.getElementById('deleteBtn');
+    delBtn.classList.toggle('hidden', !row || !!conf.readOnly);
+    delBtn.onclick = async () => {
+      if (!row?.id) return; if (!confirm('Delete this record?')) return;
+      const { error } = await sb.from(conf.table).delete().eq('id', row.id);
+      if (error) { alert(error.message); return; }
       dlg.close(); loadTable();
-    }
-
-    // Tabs, search, realtime
-    function renderTabs(){
-      const nav = document.getElementById('tabs'); nav.innerHTML='';
-      for (const key of tabOrder){
-        const conf = tables[key];
-        const a = $('button','pb-1', conf.title);
-        if (key === activeKey) a.classList.add('tab-active');
-        a.addEventListener('click', ()=>{ activeKey = key; page = 0; renderTabs(); loadTable(); });
-        nav.appendChild(a);
-      }
-      document.getElementById('addBtn').onclick = () => openEditor(tables[activeKey], null);
-      document.getElementById('prev').onclick = () => { if (page>0) { page--; loadTable(); } };
-      document.getElementById('next').onclick = () => { if ((page+1)*pageSize < totalCount) { page++; loadTable(); } };
-      document.getElementById('globalSearch').onkeydown = (e)=>{ if (e.key==='Enter'){ page=0; loadTable(); } };
-      document.getElementById('refreshAll').onclick = () => loadTable();
-    }
-
-    function wireRealtime(){
-      for (const key of Object.keys(tables)){
-        sb.channel(`${key}-changes`)
-          .on('postgres_changes', { event:'*', schema:'public', table: (key==='order_list'?'orders':tables[key].table) },
-            () => { if (key === activeKey) loadTable(); })
-          .subscribe();
-      }
-    }
-
-    // ---------- ORDER VIEW ----------
-    const ov = {
-      dlg: document.getElementById('orderView'),
-      title: document.getElementById('ov_title'),
-      submitted: document.getElementById('ov_submitted'),
-      statusText: document.getElementById('ov_status_text'),
-      flavor: document.getElementById('ov_flavor'),
-      dietary: document.getElementById('ov_dietary'),
-      dzns: document.getElementById('ov_dzns'),
-      event: document.getElementById('ov_event'),
-      pickup: document.getElementById('ov_pickup'),
-      discount_code: document.getElementById('ov_discount_code'),
-      referral_code: document.getElementById('ov_referral_code'),
-      giftnote: document.getElementById('ov_giftnote'),
-      giftnote_text: document.getElementById('ov_giftnote_text'),
-      design_notes: document.getElementById('ov_design_notes'),
-      photo: document.getElementById('ov_photo'),
-      photoMsg: document.getElementById('ov_photo_msg'),
-      photoFile: document.getElementById('ov_photo_file'),
-      uploadBtn: document.getElementById('ov_upload_btn'),
-      statusSel: document.getElementById('ov_status'),
-      saveStatus: document.getElementById('ov_save_status'),
-      editBtn: document.getElementById('ov_edit_order'),
-      addFee: document.getElementById('ov_add_fee'),
-      addDiscount: document.getElementById('ov_add_discount'),
-      invoice: document.getElementById('ov_invoice'),
-      pricePerDozen: document.getElementById('ov_price_per_dozen'),
-      base: document.getElementById('ov_base'),
-      consult: document.getElementById('ov_consult'),
-      giftnoteFee: document.getElementById('ov_giftnote_fee'),
-      adjList: document.getElementById('ov_adjustments_list'),
-      total: document.getElementById('ov_total'),
-      cust: document.getElementById('ov_customer'),
-      adjustmentsHelp: document.getElementById('ov_adjustments_help'),
-      current: null
     };
 
-    async function openOrderView(orderId){
-      // order with customer
-      const { data: order, error } = await sb
-        .from('orders')
-        .select('*, customer:customer_id(*), pricing:pricing(*)')
-        .eq('id', orderId)
-        .single();
+    document.getElementById('saveBtn').onclick = async (e) => {
+      e.preventDefault();
+      await saveRecord(conf);
+    };
+    dlg.showModal();
+  }
 
-      if (error){ alert(error.message); return; }
-      ov.current = order;
+  async function uploadOrderFile(orderId, file){
+    const ext = file.name.split('.').pop();
+    const path = `${orderId}/${crypto.randomUUID()}.${ext}`;
+    const { error } = await sb.storage.from('order_uploads').upload(path, file, { upsert:false });
+    if (error) throw error;
+    const { data: { publicUrl } } = sb.storage.from('order_uploads').getPublicUrl(path);
+    return { path, publicUrl };
+  }
 
-      ov.title.textContent = `Order — ${order.customer?.first_name || ''} ${order.customer?.last_name || ''}`;
-      ov.submitted.textContent = dateValue(order.created_at) || '';
-      ov.statusText.textContent = order.status || 'In Review';
-      ov.statusSel.value = order.status || 'In Review';
-      ov.flavor.textContent = order.flavor || '';
-      ov.dietary.textContent = order.dietary_option || '';
-      ov.dzns.textContent = order.cookie_amount_dzns ?? '';
-      ov.event.textContent = dateValue(order.event_date) || '';
-      ov.pickup.textContent = dateValue(order.pickup_delivery_date) || '';
-      ov.discount_code.textContent = order.discount_code_used || '';
-      ov.referral_code.textContent = order.referral_code_used || '';
-      ov.giftnote.textContent = order.gift_note ? 'Yes' : 'No';
-      ov.giftnote_text.textContent = order.gift_note_text || '';
-      ov.design_notes.textContent = order.design_notes || '';
-
-      if (order.design_inspiration_photo){
-        ov.photo.src = order.design_inspiration_photo;
-        ov.photo.classList.remove('hidden');
-        ov.photoMsg.textContent = '';
-      } else {
-        ov.photo.classList.add('hidden');
-        ov.photoMsg.textContent = 'No photo on file';
+  async function saveRecord(conf){
+    const payload = {};
+    for (const c of conf.cols){
+      const elx = document.getElementById(`fld_${c.key}`);
+      if (!elx) continue;
+      if (c.type === 'file'){
+        // handled only when editing orders
+        continue;
       }
+      let val = (c.type === 'checkbox') ? elx.checked : elx.value || null;
+      if (c.type === 'number' && val !== null) val = elx.value === '' ? null : Number(val);
+      payload[c.key] = val;
+    }
+    const id = document.getElementById('row_id').value;
+    let resp;
+    if (id) resp = await sb.from(conf.table).update(payload).eq('id', id).select('*').single();
+    else   resp = await sb.from(conf.table).insert(payload).select('*').single();
+    if (resp.error) { alert(resp.error.message); return; }
 
-      // customer card
-      const c = order.customer || {};
-      ov.cust.innerHTML = [
-        `${c.first_name || ''} ${c.last_name || ''}`,
-        c.email || '',
-        c.phone || '',
-        [c.street_address, c.street_address_cont].filter(Boolean).join(' ') || '',
-        [c.city, c.state, c.zip].filter(Boolean).join(', ')
-      ].filter(Boolean).map(x => `<div>${x}</div>`).join('');
-
-      // totals
-      const { data: pricingRow } = await sb.from('pricing').select('*').limit(1).single();
-      const pricePerDozen = pricingRow?.price_per_dozen ?? 0;
-      const consultFee = order.consultation_requested ? (pricingRow?.consultation_fee ?? 0) : 0;
-      const giftNoteFee = order.gift_note ? (pricingRow?.gift_note_fee ?? 0) : 0;
-      const base = Number(order.cookie_amount_dzns || 0) * Number(pricePerDozen || 0);
-
-      ov.pricePerDozen.textContent = money(pricePerDozen);
-      ov.base.textContent = money(base);
-      ov.consult.textContent = money(consultFee);
-      ov.giftnoteFee.textContent = money(giftNoteFee);
-
-      // adjustments
-      const { data: adjs, error: adjErr } = await sb.from('order_adjustments')
-        .select('id, kind, label, amount')
-        .eq('order_id', order.id)
-        .order('created_at', { ascending: true });
-
-      ov.adjList.innerHTML = '';
-      let adjTotal = 0;
-      if (!adjErr && adjs?.length){
-        for (const a of adjs){
-          const sign = a.kind === 'discount' ? '-' : '+';
-          adjTotal += (a.kind === 'discount' ? -1 : 1) * Number(a.amount || 0);
-          const row = document.createElement('div');
-          row.className = 'flex justify-between';
-          row.innerHTML = `<span>${a.label}</span><span>${sign}${money(Math.abs(a.amount || 0))}</span>`;
-          ov.adjList.appendChild(row);
-        }
-      } else if (adjErr && String(adjErr.message || '').includes('relation')){
-        ov.adjustmentsHelp.classList.remove('hidden');
-        ov.adjustmentsHelp.innerHTML = `
-          Missing table <strong>order_adjustments</strong>. Create it with this SQL in Supabase:
-<pre class="bg-gray-50 p-2 rounded border overflow-auto text-[11px]">
-create table public.order_adjustments (
-  id uuid primary key default gen_random_uuid(),
-  order_id uuid not null references public.orders(id) on delete cascade,
-  kind text not null check (kind in ('fee','discount')),
-  label text not null,
-  amount numeric not null,
-  created_at timestamptz default now()
-);
-alter table public.order_adjustments enable row level security;
-create policy "order_adjustments read for auth"
-  on public.order_adjustments for select
-  to authenticated using (true);
-create policy "order_adjustments write for auth"
-  on public.order_adjustments for insert with check (true);
-</pre>`;
-      } else {
-        ov.adjustmentsHelp.classList.add('hidden');
-      }
-
-      const total = base + consultFee + giftNoteFee + adjTotal;
-      ov.total.textContent = money(total);
-
-      // actions
-      ov.saveStatus.onclick = async () => {
-        const newStatus = ov.statusSel.value;
-        const { error } = await sb.from('orders').update({ status: newStatus }).eq('id', order.id);
-        if (error) { alert(error.message); return; }
-        ov.statusText.textContent = newStatus;
-        loadTable();
-      };
-
-      ov.editBtn.onclick = () => openEditor(tables.orders, order);
-
-      ov.addFee.onclick = () => promptAdjustment('fee', order.id);
-      ov.addDiscount.onclick = () => promptAdjustment('discount', order.id);
-
-      ov.invoice.onclick = () => {
-        alert('Invoice generation placeholder. You can hook this to a PDF generator later.');
-      };
-
-      ov.uploadBtn.onclick = async () => {
-        const f = ov.photoFile.files?.[0];
-        if (!f){ alert('Choose a file first.'); return; }
+    // if file input present and a file chosen, upload and patch the order with storage path
+    if (conf.table === 'orders'){
+      const fileInput = document.getElementById('fld_design_inspiration_photo');
+      if (fileInput && fileInput.files && fileInput.files[0]){
         try{
-          const path = `order_uploads/${order.id}/${Date.now()}_${f.name}`;
-          const { error: upErr } = await sb.storage.from('order_uploads').upload(path, f, { upsert: true });
-          if (upErr) throw upErr;
-          const { data: pub } = sb.storage.from('order_uploads').getPublicUrl(path);
-          const url = pub?.publicUrl;
-          if (!url) throw new Error('Could not get public URL');
-          const { error: upOrderErr } = await sb.from('orders').update({ design_inspiration_photo: url }).eq('id', order.id);
-          if (upOrderErr) throw upOrderErr;
-          ov.photo.src = url; ov.photo.classList.remove('hidden'); ov.photoMsg.textContent = 'Uploaded';
-          loadTable();
-        }catch(e){
-          ov.photoMsg.textContent = (e && e.message) ? e.message : 'Upload failed';
-        }
-      };
-
-      ov.dlg.showModal();
-    }
-
-    async function promptAdjustment(kind, orderId){
-      const label = prompt(kind === 'fee' ? 'Fee label' : 'Discount label');
-      if (!label) return;
-      const amtStr = prompt(kind === 'fee' ? 'Fee amount' : 'Discount amount');
-      if (!amtStr) return;
-      const amount = Number(amtStr);
-      if (!isFinite(amount)) { alert('Enter a valid number'); return; }
-      const { error } = await sb.from('order_adjustments').insert({ order_id: orderId, kind, label, amount });
-      if (error){
-        alert(error.message);
-        return;
+          const { path } = await uploadOrderFile(resp.data.id, fileInput.files[0]);
+          await sb.from('orders').update({ design_inspiration_photo: path }).eq('id', resp.data.id);
+        }catch(e){ alert('Upload failed: ' + e.message); }
       }
-      openOrderView(orderId);
     }
 
-  }); // DOMContentLoaded
+    dlg.close(); loadTable();
+  }
+
+  // Tabs, search, realtime
+  function renderTabs(){
+    const nav = document.getElementById('tabs'); nav.innerHTML='';
+    for (const key of tabOrder){
+      const conf = tables[key];
+      const a = $('button','pb-1', conf.title);
+      if (key === activeKey) a.classList.add('tab-active');
+      a.addEventListener('click', ()=>{ activeKey = key; page = 0; renderTabs(); loadTable(); });
+      nav.appendChild(a);
+    }
+    document.getElementById('addBtn').onclick = () => openEditor(tables[activeKey], null);
+    document.getElementById('prev').onclick = () => { if (page>0) { page--; loadTable(); } };
+    document.getElementById('next').onclick = () => { if ((page+1)*pageSize < totalCount) { page++; loadTable(); } };
+    document.getElementById('globalSearch').onkeydown = (e)=>{ if (e.key==='Enter'){ page=0; loadTable(); } };
+    document.getElementById('refreshAll').onclick = () => loadTable();
+  }
+
+  function wireRealtime(){
+    for (const key of Object.keys(tables)){
+      const tableName = key==='order_list' ? 'orders' : tables[key].table;
+      sb.channel(`${key}-changes`)
+        .on('postgres_changes', { event:'*', schema:'public', table: tableName },
+          () => { if (key === activeKey) loadTable(); })
+        .subscribe();
+    }
+    // also listen for adjustments
+    sb.channel('order_adjustments_changes')
+      .on('postgres_changes', { event:'*', schema:'public', table: 'order_adjustments' },
+        () => { if (activeKey==='order_list') loadTable(); })
+      .subscribe();
+  }
+
+  // Order panel
+  async function openOrderPanel(orderId){
+    // fetch order, customer, pricing, adjustments, plus optional public image url
+    const [{ data: order }, { data: adjustments }, { data: pricingRows }] = await Promise.all([
+      sb.from('orders').select('*').eq('id', orderId).single(),
+      sb.from('order_adjustments').select('*').eq('order_id', orderId).order('created_at', { ascending:true }),
+      sb.from('pricing').select('*').order('updated_at', { ascending:false }).limit(1)
+    ]);
+
+    if (!order) return;
+
+    const customer = order.customer_id
+      ? (await sb.from('customers').select('*').eq('id', order.customer_id).single()).data
+      : null;
+
+    let photoUrl = '';
+    if (order.design_inspiration_photo){
+      const { data: { publicUrl } } = sb.storage.from('order_uploads').getPublicUrl(order.design_inspiration_photo);
+      photoUrl = publicUrl;
+    }
+
+    const pricing = pricingRows && pricingRows[0] ? pricingRows[0] : {
+      price_per_dozen: 36, delivery_fee: 0, consultation_fee: 0, gift_note_fee: 0, rush_fee: 0
+    };
+
+    // estimate
+    const base = Number(order.cookie_amount_dzns || 0) * Number(pricing.price_per_dozen || 0);
+    let estTotal = base;
+    if (order.consultation_requested) estTotal += Number(pricing.consultation_fee || 0);
+    if (order.gift_note) estTotal += Number(pricing.gift_note_fee || 0);
+
+    const extraFees = (adjustments||[]).filter(a => a.kind==='fee').reduce((s,a)=> s+Number(a.amount||0),0);
+    const extraDiscounts = (adjustments||[]).filter(a => a.kind==='discount').reduce((s,a)=> s+Number(a.amount||0),0);
+    const grand = estTotal + extraFees - extraDiscounts;
+
+    // build panel
+    orderPanelTitle.textContent = `Order — ${customer ? `${customer.first_name} ${customer.last_name}` : 'Unknown customer'}`;
+
+    const left = document.createElement('div');
+    left.className = 'space-y-2 flex-1';
+    left.innerHTML = `
+      <div class="card p-4">
+        <div class="text-sm"><span class="font-semibold">Submitted:</span> ${dateYMD(order.created_at)}</div>
+        <div class="text-sm"><span class="font-semibold">Status:</span> ${fmt(order.status || 'In Review')}</div>
+        <div class="text-sm"><span class="font-semibold">Flavor:</span> ${fmt(order.flavor)}</div>
+        <div class="text-sm"><span class="font-semibold">Dietary:</span> ${fmt(order.dietary_option)}</div>
+        <div class="text-sm"><span class="font-semibold">Cookie dzns:</span> ${fmt(order.cookie_amount_dzns)}</div>
+        <div class="text-sm"><span class="font-semibold">Discount code:</span> ${fmt(order.discount_code_used)}</div>
+        <div class="text-sm"><span class="font-semibold">Referral code:</span> ${fmt(order.referral_code_used)}</div>
+        <div class="text-sm"><span class="font-semibold">Gift note:</span> ${order.gift_note ? 'Yes' : 'No'}</div>
+        ${order.gift_note_text ? `<div class="text-sm"><span class="font-semibold">Gift note text:</span> ${order.gift_note_text}</div>`:''}
+        ${order.design_notes ? `<div class="text-sm"><span class="font-semibold">Design notes:</span> ${order.design_notes}</div>`:''}
+        ${photoUrl ? `<div class="mt-3"><img src="${photoUrl}" alt="Inspiration" class="max-h-48 rounded-md border"/></div>`:''}
+      </div>
+
+      <div class="card p-4">
+        <label class="block text-sm font-semibold mb-2">Status</label>
+        <div class="flex gap-2 items-center">
+          <select id="orderStatus" class="input">
+            ${['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'].map(s=>`<option ${order.status===s?'selected':''}>${s}</option>`).join('')}
+          </select>
+          <button id="saveStatusBtn" class="btn btn-primary" type="button">Save Status</button>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <button id="editOrderBtn" class="btn" type="button">Edit order fields</button>
+        <button id="addFeeBtn" class="btn" type="button">Add fee</button>
+        <button id="addDiscountBtn" class="btn" type="button">Add discount</button>
+        <button id="uploadPhotoBtn" class="btn" type="button">Upload inspiration photo</button>
+        <button id="viewInvoiceBtn" class="btn" type="button">View/Save invoice</button>
+      </div>
+
+      <div class="card p-4">
+        <h3 class="font-semibold mb-2">Adjustments</h3>
+        <div id="adjList" class="space-y-1 text-sm">${(adjustments||[]).length ? '' : '<div class="text-gray-500">No adjustments yet.</div>'}</div>
+      </div>
+    `;
+
+    const adjList = left.querySelector('#adjList');
+    (adjustments||[]).forEach(a => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center justify-between';
+      row.innerHTML = `<span>${a.kind === 'fee' ? 'Fee' : 'Discount'} — ${a.label}</span><span>${Number(a.amount).toFixed(2)}</span>`;
+      adjList.appendChild(row);
+    });
+
+    const right = document.createElement('div');
+    right.className = 'space-y-4 w-full md:w-80';
+    right.innerHTML = `
+      <div class="card p-4">
+        <h3 class="font-semibold mb-2">Totals (est.)</h3>
+        <div class="text-sm">Price/dozen: $${Number(pricing.price_per_dozen||0).toFixed(2)}</div>
+        <div class="text-sm">Base: $${base.toFixed(2)}</div>
+        <div class="text-sm">Consult fee: $${Number(order.consultation_requested ? pricing.consultation_fee||0 : 0).toFixed(2)}</div>
+        <div class="text-sm">Gift note fee: $${Number(order.gift_note ? pricing.gift_note_fee||0 : 0).toFixed(2)}</div>
+        <div class="text-sm mt-1">Extra fees: $${extraFees.toFixed(2)}</div>
+        <div class="text-sm">Extra discounts: $${extraDiscounts.toFixed(2)}</div>
+        <hr class="my-2"/>
+        <div class="text-base font-semibold">Estimated total: $${grand.toFixed(2)}</div>
+      </div>
+
+      <div class="card p-4">
+        <h3 class="font-semibold mb-2">Customer</h3>
+        <div class="text-sm">${customer ? `
+          <div>${customer.first_name} ${customer.last_name}</div>
+          <div>${customer.email || ''}</div>
+          <div>${customer.phone || ''}</div>
+          <div class="mt-1">${[customer.street_address, customer.street_address_cont].filter(Boolean).join(' ')}</div>
+          <div>${[customer.city, customer.state, customer.zip].filter(Boolean).join(', ')}</div>
+        ` : 'Unknown customer'}</div>
+      </div>
+    `;
+
+    orderPanelBody.innerHTML = '';
+    const container = document.createElement('div');
+    container.className = 'flex flex-col md:flex-row gap-4';
+    container.appendChild(left);
+    container.appendChild(right);
+    orderPanelBody.appendChild(container);
+
+    // wire actions
+    left.querySelector('#saveStatusBtn').onclick = async () => {
+      const newStatus = left.querySelector('#orderStatus').value;
+      const { error } = await sb.from('orders').update({ status: newStatus }).eq('id', orderId);
+      if (error) return alert(error.message);
+      await loadTable();
+      alert('Status saved');
+    };
+    left.querySelector('#editOrderBtn').onclick = async () => {
+      const conf = tables.orders;
+      openEditor(conf, order);
+    };
+    left.querySelector('#addFeeBtn').onclick = () => promptAdjustment(orderId, 'fee');
+    left.querySelector('#addDiscountBtn').onclick = () => promptAdjustment(orderId, 'discount');
+    left.querySelector('#uploadPhotoBtn').onclick = async () => {
+      const file = await pickFile();
+      if (!file) return;
+      try{
+        const { path } = await uploadOrderFile(orderId, file);
+        await sb.from('orders').update({ design_inspiration_photo: path }).eq('id', orderId);
+        await openOrderPanel(orderId); // refresh panel
+      }catch(e){ alert('Upload failed: '+e.message); }
+    };
+    left.querySelector('#viewInvoiceBtn').onclick = () => openInvoiceView(order, customer, pricing, adjustments||[], grand);
+
+    orderPanel.showModal();
+  }
+
+  async function promptAdjustment(orderId, kind){
+    const label = prompt(kind==='fee' ? 'Fee label' : 'Discount label');
+    if (!label) return;
+    const amtStr = prompt(kind==='fee' ? 'Fee amount (number)' : 'Discount amount (number)');
+    if (!amtStr) return;
+    const amount = Number(amtStr);
+    if (Number.isNaN(amount)) { alert('Invalid amount'); return; }
+    const { error } = await sb.from('order_adjustments').insert({ order_id: orderId, kind, label, amount });
+    if (error) return alert(error.message);
+    await openOrderPanel(orderId);
+  }
+
+  function pickFile(){
+    return new Promise(resolve=>{
+      const input = document.createElement('input');
+      input.type='file';
+      input.accept='image/*';
+      input.onchange = ()=> resolve(input.files[0] || null);
+      input.click();
+    });
+  }
+
+  function openInvoiceView(order, customer, pricing, adjustments, grand){
+    const win = window.open('', '_blank');
+    const base = Number(order.cookie_amount_dzns||0) * Number(pricing.price_per_dozen||0);
+    const consult = order.consultation_requested ? Number(pricing.consultation_fee||0) : 0;
+    const gift = order.gift_note ? Number(pricing.gift_note_fee||0) : 0;
+    const fees = (adjustments||[]).filter(a=>a.kind==='fee').reduce((s,a)=>s+Number(a.amount||0),0);
+    const discounts = (adjustments||[]).filter(a=>a.kind==='discount').reduce((s,a)=>s+Number(a.amount||0),0);
+
+    const html = `
+      <html><head><title>Invoice</title>
+      <style>
+        body{font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;padding:24px}
+        .row{display:flex;justify-content:space-between;margin:.25rem 0}
+        .card{border:1px solid #e5e7eb;border-radius:12px;padding:16px;margin-top:12px}
+        .h{font-weight:600}
+      </style></head><body>
+        <h2>Rebel Ribbon — Invoice</h2>
+        <div>${customer ? `${customer.first_name} ${customer.last_name}`:''}</div>
+        <div>${customer?.email || ''}</div>
+        <div>${customer?.phone || ''}</div>
+
+        <div class="card">
+          <div class="row"><span class="h">Order ID</span><span>${order.order_id || order.id}</span></div>
+          <div class="row"><span class="h">Date</span><span>${dateYMD(order.created_at)}</span></div>
+          <div class="row"><span class="h">Status</span><span>${order.status || 'In Review'}</span></div>
+        </div>
+
+        <div class="card">
+          <div class="row"><span>Base</span><span>$${base.toFixed(2)}</span></div>
+          <div class="row"><span>Consultation</span><span>$${consult.toFixed(2)}</span></div>
+          <div class="row"><span>Gift note</span><span>$${gift.toFixed(2)}</span></div>
+          <div class="row"><span>Extra fees</span><span>$${fees.toFixed(2)}</span></div>
+          <div class="row"><span>Discounts</span><span>-$${discounts.toFixed(2)}</span></div>
+          <hr/>
+          <div class="row h"><span>Total</span><span>$${grand.toFixed(2)}</span></div>
+        </div>
+
+        <script>window.print()</script>
+      </body></html>
+    `;
+    win.document.write(html);
+    win.document.close();
+  }
+
+  // init
+  bootstrap();
   </script>
 </body>
 </html>
