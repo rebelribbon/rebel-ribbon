@@ -12,9 +12,19 @@
     .thcell{padding:.75rem;font-weight:600}
     .nowrap{white-space:nowrap}
     .actions-col{width:88px}
-    /* keep header aligned with body during horizontal scroll */
     .table-wrap{overflow:auto;border-radius:.75rem;border:1px solid #e5e7eb;background:#fff}
     table{border-collapse:separate;border-spacing:0}
+    /* center all header and body cells by default */
+    thead th, tbody td { text-align:center; }
+    /* clickable rows */
+    .rowlink { cursor:pointer; }
+    .badge{display:inline-block;padding:.125rem .5rem;border-radius:.5rem;font-size:.75rem}
+    .badge-gray{background:#f3f4f6;color:#111827}
+    .badge-amber{background:#fef3c7;color:#92400e}
+    .badge-green{background:#dcfce7;color:#065f46}
+    .badge-blue{background:#dbeafe;color:#1e3a8a}
+    .badge-red{background:#fee2e2;color:#991b1b}
+    .badge-slate{background:#e2e8f0;color:#0f172a}
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -85,6 +95,80 @@
         </div>
       </form>
     </dialog>
+
+    <!-- Order Control Panel dialog -->
+    <dialog id="orderPanel" class="rounded-2xl p-0 w-full max-w-4xl shadow-2xl">
+      <form method="dialog" class="p-0">
+        <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
+          <h2 class="text-lg font-semibold">Order Control Panel</h2>
+          <button value="close" class="p-2 rounded hover:bg-gray-200">✕</button>
+        </div>
+
+        <div class="p-4 grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <!-- Column 1: Summary -->
+          <div class="lg:col-span-2 space-y-3">
+            <div class="rounded-xl border p-3">
+              <div class="flex items-center justify-between">
+                <div>
+                  <div id="ocpOrderId" class="text-sm text-gray-600"></div>
+                  <div id="ocpCustomer" class="text-base font-medium"></div>
+                  <div id="ocpDates" class="text-sm text-gray-600"></div>
+                </div>
+                <div>
+                  <span id="ocpStatusBadge" class="badge badge-gray">In Review</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-xl border p-3">
+              <h3 class="font-semibold mb-2">Amounts</h3>
+              <div class="grid grid-cols-2 gap-2 text-sm">
+                <div>Dozens</div><div id="ocpDozens" class="text-right"></div>
+                <div>Flavor</div><div id="ocpFlavor" class="text-right"></div>
+                <div>Dietary</div><div id="ocpDiet" class="text-right"></div>
+                <div>Consultation</div><div id="ocpConsult" class="text-right"></div>
+                <div>Delivery</div><div id="ocpDelivery" class="text-right"></div>
+                <div>Gift note</div><div id="ocpGift" class="text-right"></div>
+                <div class="font-semibold">Subtotal</div><div id="ocpSubtotal" class="text-right font-semibold"></div>
+                <div>Extra fees</div><div id="ocpFees" class="text-right"></div>
+                <div>Extra discounts</div><div id="ocpDiscounts" class="text-right"></div>
+                <div class="font-bold">Estimated total</div><div id="ocpTotal" class="text-right font-bold"></div>
+              </div>
+            </div>
+
+            <div class="rounded-xl border p-3">
+              <h3 class="font-semibold mb-2">Design</h3>
+              <div id="ocpDesign" class="text-sm whitespace-pre-wrap"></div>
+              <div id="ocpPhotoWrap" class="mt-2"></div>
+            </div>
+          </div>
+
+          <!-- Column 2: Actions -->
+          <div class="space-y-3">
+            <div class="rounded-xl border p-3">
+              <h3 class="font-semibold mb-2">Manage</h3>
+              <div class="grid gap-2">
+                <button id="ocpEditOrder" type="button" class="px-3 py-2 rounded-lg border bg-white">Edit order</button>
+                <button id="ocpAddFee" type="button" class="px-3 py-2 rounded-lg border bg-white">Add fee</button>
+                <button id="ocpAddDiscount" type="button" class="px-3 py-2 rounded-lg border bg-white">Add discount</button>
+                <button id="ocpChangeStatus" type="button" class="px-3 py-2 rounded-lg border bg-white">Change status</button>
+                <button id="ocpInvoice" type="button" class="px-3 py-2 rounded-lg bg-blue-600 text-white">Invoice preview</button>
+              </div>
+              <p id="ocpWarn" class="text-xs text-amber-700 mt-2 hidden"></p>
+            </div>
+
+            <div class="rounded-xl border p-3">
+              <h3 class="font-semibold mb-2">Notes</h3>
+              <div id="ocpGiftNote" class="text-sm whitespace-pre-wrap"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-4 border-t bg-gray-50 text-right">
+          <button value="close" class="px-3 py-2 rounded-lg border bg-white">Close</button>
+        </div>
+      </form>
+    </dialog>
   </div>
 
   <script>
@@ -147,11 +231,11 @@
       readOnly: true,
       customLoader: 'loadOrderList',
       cols: [
-        { key:'created_at', label:'Date Submitted', type:'date', w: '18' },
-        { key:'status', label:'Status', type:'text', w: '14' },
-        { key:'first_name', label:'First name', type:'text', w: '18' },
-        { key:'last_name',  label:'Last name',  type:'text', w: '18' },
-        { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', w:'16' }
+        { key:'created_at', label:'Date Submitted', type:'date', w:'20' },
+        { key:'status', label:'Status', type:'text', w:'16' },
+        { key:'first_name', label:'First name', type:'text', w:'22' },
+        { key:'last_name',  label:'Last name',  type:'text', w:'22' },
+        { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', w:'20' }
       ]
     },
     customers: { title:'Customers', table:'customers', cols:[
@@ -163,7 +247,7 @@
       { key:'street_address_cont', label:'Street address cont', type:'text', w:'16' },
       { key:'city', label:'City', type:'text', w:'12' },
       { key:'state', label:'State', type:'text', w:'10' },
-      { key:'zip', label:'Zip', type:'10', w:'10' },
+      { key:'zip', label:'Zip', type:'text', w:'10' },
       { key:'customer_id', label:'Customer ID', type:'text', w:'14' },
       { key:'referral_code_assigned', label:'Referral code assigned', type:'text', w:'18',
         asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] },
@@ -272,7 +356,7 @@
       const th = $('th','thcell nowrap', c.label);
       tr.appendChild(th);
     }
-    if (!conf.readOnly) tr.appendChild($('th','thcell text-right nowrap','Actions'));
+    if (!conf.readOnly) tr.appendChild($('th','thcell nowrap','Actions'));
   }
 
   // 5) Loaders
@@ -280,9 +364,9 @@
     const conf = tables[activeKey];
     buildColGroup(conf); buildThead(conf);
 
-    // hide Add on read-only order_list
+    // Hide Add on read-only Order List
     document.getElementById('addBtn').classList.toggle('hidden', !!conf.readOnly);
-    // pagination for order_list uses standard controls too
+
     const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
 
     if (conf.customLoader === 'loadOrderList') { await loadOrderList(); return; }
@@ -343,30 +427,18 @@
       cookie_amount_dzns: o.cookie_amount_dzns
     }));
 
-    // render rows (readOnly: no edit button, but provide Open link)
-    const tbodyEl = document.getElementById('tbody');
     for (const r of rows){
-      const tr = $('tr','border-b');
+      const tr = $('tr','border-b rowlink');
+      tr.addEventListener('click', ()=> openOrderPanel(r.id));
       for (const c of conf.cols){
         let v = r[c.key];
         if (c.type === 'date') v = dateInputValue(v);
         tr.appendChild($('td','cell nowrap', fmt(v)));
       }
-      // Open button -> jump user to Orders tab pre-filtered on this id
-      const td = $('td','cell text-right nowrap');
-      const open = $('button','px-2 py-1 rounded border hover:bg-gray-100','Open');
-      open.addEventListener('click', ()=> {
-        activeKey = 'orders'; page = 0; renderTabs(); // load orders and scroll to row
-        loadTable().then(() => {
-          // optional: highlight row by order id if present
-        });
-      });
-      td.appendChild(open);
-      tr.appendChild(td);
-      tbodyEl.appendChild(tr);
+      tbody.appendChild(tr);
     }
     updatePager();
-    // Export CSV for order list
+
     document.getElementById('exportBtn').onclick = () => exportCSV(rows, conf);
   }
 
@@ -380,15 +452,16 @@
         if (c.type === 'date') val = dateInputValue(val);
         tr.appendChild($('td','cell nowrap', fmt(val)));
       }
-      const td = $('td','cell text-right nowrap');
-      const edit = $('button','px-2 py-1 rounded border hover:bg-gray-100','Edit');
-      edit.addEventListener('click', () => openEditor(conf, row));
-      td.appendChild(edit);
-      if (!conf.readOnly) tr.appendChild(td);
+      if (!conf.readOnly) {
+        const td = $('td','cell nowrap');
+        const edit = $('button','px-2 py-1 rounded border hover:bg-gray-100','Edit');
+        edit.addEventListener('click', () => openEditor(conf, row));
+        td.appendChild(edit);
+        tr.appendChild(td);
+      }
       tbody.appendChild(tr);
     }
     updatePager();
-    // export
     document.getElementById('exportBtn').onclick = async () => {
       const { data: allRows } = await sb.from(conf.table).select('*').order('updated_at',{ascending:false});
       exportCSV(allRows||[], conf);
@@ -453,13 +526,14 @@
   }
 
   async function openEditor(conf, row){
+    if (conf.readOnly) return;
     document.getElementById('editorTitle').textContent = row ? `Edit ${conf.title}` : `New ${conf.title}`;
     formBody.innerHTML = '';
     for (const c of conf.cols) formBody.appendChild(await optionEl(c, row?.[c.key]));
     const idHidden = document.createElement('input'); idHidden.type='hidden'; idHidden.id='row_id'; idHidden.value=row?.id||''; formBody.appendChild(idHidden);
 
     const delBtn = document.getElementById('deleteBtn');
-    delBtn.classList.toggle('hidden', !row || !!conf.readOnly);
+    delBtn.classList.toggle('hidden', !row);
     delBtn.onclick = async () => {
       if (!row?.id) return; if (!confirm('Delete this record?')) return;
       const { error } = await sb.from(conf.table).delete().eq('id', row.id);
@@ -496,7 +570,11 @@
       a.addEventListener('click', ()=>{ activeKey = key; page = 0; renderTabs(); loadTable(); });
       nav.appendChild(a);
     }
-    document.getElementById('addBtn').onclick = () => openEditor(tables[activeKey], null);
+    document.getElementById('addBtn').onclick = () => {
+      const conf = tables[activeKey];
+      if (conf.readOnly) return;
+      openEditor(conf, null);
+    };
     document.getElementById('prev').onclick = () => { if (page>0) { page--; loadTable(); } };
     document.getElementById('next').onclick = () => { if ((page+1)*pageSize < totalCount) { page++; loadTable(); } };
     document.getElementById('globalSearch').onkeydown = (e)=>{ if (e.key==='Enter'){ page=0; loadTable(); } };
@@ -510,6 +588,204 @@
           () => { if (key === activeKey) loadTable(); })
         .subscribe();
     }
+  }
+
+  // 8) Order Control Panel
+  const panel = document.getElementById('orderPanel');
+  let panelOrderId = null;
+
+  function statusBadgeClass(status){
+    const s = (status||'').toLowerCase();
+    if (s === 'in review') return 'badge badge-amber';
+    if (s === 'approved') return 'badge badge-blue';
+    if (s === 'paid') return 'badge badge-green';
+    if (s === 'production complete') return 'badge badge-slate';
+    if (s === 'fulfilled') return 'badge badge-green';
+    if (s === 'canceled') return 'badge badge-red';
+    return 'badge badge-gray';
+    }
+
+  async function openOrderPanel(orderId){
+    panelOrderId = orderId;
+    // fetch order
+    const { data: order, error: oerr } = await sb.from('orders').select('*').eq('id', orderId).single();
+    if (oerr || !order) { alert(oerr?.message || 'Order not found'); return; }
+    // fetch customer
+    let customer = null;
+    if (order.customer_id){
+      const { data: cust } = await sb.from('customers').select('first_name,last_name,phone,email,street_address,city,state,zip').eq('id', order.customer_id).single();
+      customer = cust || null;
+    }
+    // pricing singleton
+    const { data: pricing } = await sb.from('pricing').select('*').order('updated_at',{ascending:false}).limit(1).maybeSingle();
+    // adjustments if table exists
+    const adjustments = await safeLoadAdjustments(orderId);
+
+    hydratePanel(order, customer, pricing, adjustments);
+    panel.showModal();
+
+    // wire buttons
+    document.getElementById('ocpEditOrder').onclick = () => {
+      activeKey = 'orders'; renderTabs();
+      // open editor with this row
+      sb.from('orders').select('*').eq('id', orderId).single().then(({data})=>{
+        if (data) openEditor(tables.orders, data);
+      });
+    };
+    document.getElementById('ocpAddFee').onclick = async () => {
+      const label = prompt('Fee label?'); if (!label) return;
+      const val = prompt('Fee amount? Number only'); if (val===null) return;
+      const amt = Number(val); if (Number.isNaN(amt)) return alert('Not a number');
+      const ok = await safeInsertAdjustment(orderId, 'fee', label, amt);
+      if (!ok) return;
+      const adj = await safeLoadAdjustments(orderId);
+      hydratePanel(order, customer, pricing, adj);
+    };
+    document.getElementById('ocpAddDiscount').onclick = async () => {
+      const label = prompt('Discount label?'); if (!label) return;
+      const val = prompt('Discount amount? Number only'); if (val===null) return;
+      const amt = Number(val); if (Number.isNaN(amt)) return alert('Not a number');
+      const ok = await safeInsertAdjustment(orderId, 'discount', label, amt);
+      if (!ok) return;
+      const adj = await safeLoadAdjustments(orderId);
+      hydratePanel(order, customer, pricing, adj);
+    };
+    document.getElementById('ocpChangeStatus').onclick = async () => {
+      const choices = ['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'];
+      const next = prompt('New status: ' + choices.join(', '), order.status || 'In Review');
+      if (!next) return;
+      const { error } = await sb.from('orders').update({ status: next }).eq('id', orderId);
+      if (error) return alert(error.message);
+      // refresh order and panel
+      const { data: newOrder } = await sb.from('orders').select('*').eq('id', orderId).single();
+      hydratePanel(newOrder, customer, pricing, await safeLoadAdjustments(orderId));
+      // also refresh list if viewing order_list
+      if (activeKey === 'order_list') loadTable();
+    };
+    document.getElementById('ocpInvoice').onclick = () => {
+      renderInvoice(order, customer, pricing, adjustments);
+    };
+  }
+
+  function hydratePanel(order, customer, pricing, adjustments){
+    const pd = pricing || { price_per_dozen:60, delivery_fee:15, consultation_fee:5, gift_note_fee:3, rush_fee:25 };
+
+    const dozens = Number(order.cookie_amount_dzns || 0);
+    const isGF = (order.dietary_option || '').toLowerCase().includes('gluten');
+    const basePerDozen = isGF ? (Number(pd.price_per_dozen||0) + 10) : Number(pd.price_per_dozen||0);
+    let subtotal = dozens * basePerDozen;
+    if (order.consultation_requested) subtotal += Number(pd.consultation_fee||0);
+    if (order.gift_note) subtotal += Number(pd.gift_note_fee||0);
+    // Estimate delivery if order has delivery via your earlier UI: if pickup vs delivery field not present, we assume delivery when street is set
+    // You can replace this heuristic once you add a fulfillment field to orders
+    if ((customer?.street_address||'').trim()) subtotal += Number(pd.delivery_fee||0);
+
+    const fees = (adjustments||[]).filter(a=>a.kind==='fee').reduce((s,a)=> s + Number(a.amount||0), 0);
+    const discounts = (adjustments||[]).filter(a=>a.kind==='discount').reduce((s,a)=> s + Number(a.amount||0), 0);
+    const total = subtotal + fees - discounts;
+
+    document.getElementById('ocpOrderId').textContent = `Order: ${order.order_id || order.id}`;
+    const fn = customer?.first_name || '';
+    const ln = customer?.last_name || '';
+    document.getElementById('ocpCustomer').textContent = fn || ln ? `${fn} ${ln}`.trim() : 'No customer linked';
+    const ev = order.event_date ? dateInputValue(order.event_date) : 'n/a';
+    const pdDate = order.pickup_delivery_date ? dateInputValue(order.pickup_delivery_date) : 'n/a';
+    document.getElementById('ocpDates').textContent = `Submitted ${dateInputValue(order.created_at)} • Event ${ev} • Fulfillment ${pdDate}`;
+
+    const sbadge = document.getElementById('ocpStatusBadge');
+    sbadge.className = statusBadgeClass(order.status || 'In Review');
+    sbadge.textContent = order.status || 'In Review';
+
+    document.getElementById('ocpDozens').textContent = dozens.toFixed(2);
+    document.getElementById('ocpFlavor').textContent = order.flavor || '';
+    document.getElementById('ocpDiet').textContent = order.dietary_option || 'Regular';
+    document.getElementById('ocpConsult').textContent = order.consultation_requested ? `$${Number(pd.consultation_fee||0).toFixed(2)}` : '$0.00';
+    document.getElementById('ocpDelivery').textContent = (customer?.street_address||'').trim() ? `$${Number(pd.delivery_fee||0).toFixed(2)}` : '$0.00';
+    document.getElementById('ocpGift').textContent = order.gift_note ? `$${Number(pd.gift_note_fee||0).toFixed(2)}` : '$0.00';
+    document.getElementById('ocpSubtotal').textContent = `$${subtotal.toFixed(2)}`;
+    document.getElementById('ocpFees').textContent = `$${fees.toFixed(2)}`;
+    document.getElementById('ocpDiscounts').textContent = `$${discounts.toFixed(2)}`;
+    document.getElementById('ocpTotal').textContent = `$${total.toFixed(2)}`;
+
+    document.getElementById('ocpDesign').textContent = order.design_notes || '';
+    const photoWrap = document.getElementById('ocpPhotoWrap');
+    photoWrap.innerHTML = '';
+    if (order.design_inspiration_photo){
+      const a = document.createElement('a');
+      a.href = order.design_inspiration_photo; a.target = '_blank'; a.rel='noopener';
+      a.className = 'text-blue-700 underline text-sm';
+      a.textContent = 'Open inspiration photo';
+      photoWrap.appendChild(a);
+    }
+    document.getElementById('ocpGiftNote').textContent = order.gift_note ? (order.gift_note_text || '(gift note selected, no text)') : 'No gift note';
+
+    // show warning if order_adjustments table is missing
+    const warn = document.getElementById('ocpWarn');
+    warn.classList.toggle('hidden', !!adjustments.__ok);
+    if (!adjustments.__ok){
+      warn.textContent = 'Extra fees and discounts require a table named public.order_adjustments (id uuid pk, order_id uuid, kind text, label text, amount numeric, created_at timestamptz).';
+    }
+  }
+
+  async function safeLoadAdjustments(orderId){
+    try{
+      const { data, error } = await sb.from('order_adjustments').select('id, kind, label, amount').eq('order_id', orderId);
+      if (error) throw error;
+      const arr = data || [];
+      arr.__ok = true;
+      return arr;
+    } catch(e){
+      return { __ok:false };
+    }
+  }
+
+  async function safeInsertAdjustment(orderId, kind, label, amount){
+    try{
+      const { error } = await sb.from('order_adjustments').insert({ order_id: orderId, kind, label, amount });
+      if (error) throw error;
+      return true;
+    } catch(e){
+      alert('The table public.order_adjustments is not defined. Add it to enable adjustments.');
+      return false;
+    }
+  }
+
+  function renderInvoice(order, customer, pricing, adjustments){
+    const pd = pricing || {};
+    const fees = (adjustments&&adjustments.__ok) ? adjustments.filter(a=>a.kind==='fee') : [];
+    const disc = (adjustments&&adjustments.__ok) ? adjustments.filter(a=>a.kind==='discount') : [];
+    const win = window.open('', '_blank');
+    const html = `
+      <html><head><title>Invoice ${order.order_id||order.id}</title>
+      <meta charset="utf-8"/>
+      <style>
+        body{font-family:Arial,Helvetica,sans-serif; padding:24px; color:#111}
+        h1{font-size:20px;margin:0 0 8px}
+        h2{font-size:16px;margin:16px 0 8px}
+        table{width:100%;border-collapse:collapse}
+        th,td{border:1px solid #e5e7eb;padding:8px;text-align:left}
+        .right{text-align:right}
+      </style></head>
+      <body>
+        <h1>Rebel Ribbon Invoice</h1>
+        <div>Invoice for order ${order.order_id||order.id}</div>
+        <h2>Bill To</h2>
+        <div>${(customer?.first_name||'')+' '+(customer?.last_name||'')}</div>
+        <div>${customer?.email||''}</div>
+        <div>${customer?.street_address||''} ${customer?.city||''} ${customer?.state||''} ${customer?.zip||''}</div>
+
+        <h2>Details</h2>
+        <table>
+          <tr><th>Description</th><th class="right">Amount</th></tr>
+          <tr><td>${Number(order.cookie_amount_dzns||0).toFixed(2)} dozen cookies</td><td class="right">see Staff UI</td></tr>
+          ${fees.map(f=>`<tr><td>Fee: ${f.label}</td><td class="right">$${Number(f.amount||0).toFixed(2)}</td></tr>`).join('')}
+          ${disc.map(d=>`<tr><td>Discount: ${d.label}</td><td class="right">-$${Number(d.amount||0).toFixed(2)}</td></tr>`).join('')}
+        </table>
+
+        <p style="margin-top:12px">For exact subtotal and total, use the Staff UI pricing card. You can replace this template with a PDF generator later.</p>
+        <script>window.print()</script>
+      </body></html>`;
+    win.document.open(); win.document.write(html); win.document.close();
   }
 
   bootstrap();
