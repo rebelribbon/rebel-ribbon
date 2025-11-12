@@ -8,8 +8,6 @@
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
     .tab-active { border-bottom: 2px solid #111; font-weight: 600; }
-    .rowlink { cursor: pointer; }
-    .rowlink:hover { background: #f8fafc; }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -93,20 +91,30 @@
     const app = document.getElementById('app');
     const authMsg = document.getElementById('authMsg');
 
-    function onlyCompanyEmail(email) { return /@rebelribbon\.com$/i.test(email); }
+    function onlyCompanyEmail(email) {
+      return /@rebelribbon\.com$/i.test(email);
+    }
 
     document.getElementById('sendLink').addEventListener('click', async () => {
       authMsg.textContent = '';
       const email = document.getElementById('email').value.trim();
-      if (!onlyCompanyEmail(email)) { authMsg.textContent = 'Use your @rebelribbon.com address.'; return; }
+      if (!onlyCompanyEmail(email)) {
+        authMsg.textContent = 'Use your @rebelribbon.com address.';
+        return;
+      }
       try {
         const redirectTo = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
-        const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
+        const { error } = await sb.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: redirectTo }
+        });
         if (error) throw error;
-        authMsg.classList.remove('text-red-600'); authMsg.classList.add('text-green-700');
+        authMsg.classList.remove('text-red-600');
+        authMsg.classList.add('text-green-700');
         authMsg.textContent = 'Magic link sent. Check your inbox.';
       } catch (e) {
-        authMsg.classList.remove('text-green-700'); authMsg.classList.add('text-red-600');
+        authMsg.classList.remove('text-green-700');
+        authMsg.classList.add('text-red-600');
         authMsg.textContent = e.message || 'Failed to fetch';
       }
     });
@@ -118,13 +126,17 @@
       if (!session) {
         signinCard.classList.remove('hidden'); app.classList.add('hidden');
         if (SUPABASE_URL.includes('YOUR-PROJECT') || SUPABASE_ANON_KEY.includes('PASTE_')) {
-          document.getElementById('netHint').classList.remove('hidden');
-          document.getElementById('netHint').textContent = 'Missing Supabase keys.';
+          const n = document.getElementById('netHint');
+          n.classList.remove('hidden'); n.textContent = 'Missing Supabase keys.';
         }
         return;
       }
       const email = session.user?.email || '';
-      if (!onlyCompanyEmail(email)) { await sb.auth.signOut(); authMsg.textContent = 'This page is restricted to @rebelribbon.com'; return; }
+      if (!onlyCompanyEmail(email)) {
+        await sb.auth.signOut();
+        authMsg.textContent = 'This page is restricted to @rebelribbon.com';
+        return;
+      }
       document.getElementById('who').textContent = email;
       signinCard.classList.add('hidden'); app.classList.remove('hidden');
       renderTabs(); loadTable(); wireRealtime();
@@ -136,104 +148,167 @@
     });
 
     // 4) Admin UI config
+    // Special read-only "order_list" with a custom loader
     const tables = {
-      // New virtual tab for the combined list
       order_list: {
         title: 'Order List',
-        table: 'orders',   // base table for permissions
+        table: 'orders',
+        readOnly: true,
+        hasActions: false,
         cols: [
-          { key: 'created_at', label: 'Date Submitted' },
+          { key: 'date_submitted', label: 'Date Submitted' },
           { key: 'status', label: 'Status' },
           { key: 'first_name', label: 'First name' },
           { key: 'last_name', label: 'Last name' },
           { key: 'cookie_amount_dzns', label: 'Cookie amount (dzns)' }
         ],
-        isListView: true
+        loader: async ({ page, pageSize, q }) => {
+          let query = sb.from('orders')
+            .select('id, created_at, cookie_amount_dzns, status, customers:customer_id ( first_name, last_name )', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range(page * pageSize, page * pageSize + pageSize - 1);
+
+          if (q) {
+            // search across first and last name
+            query = query.or(`customers.first_name.ilike.%${q}%,customers.last_name.ilike.%${q}%`);
+          }
+          const { data, error, count } = await query;
+          if (error) return { rows: [], count: 0, error };
+
+          const rows = (data || []).map(r => ({
+            id: r.id,
+            date_submitted: new Date(r.created_at).toLocaleDateString(),
+            status: r.status || 'In Review',
+            first_name: r.customers?.first_name || '',
+            last_name: r.customers?.last_name || '',
+            cookie_amount_dzns: r.cookie_amount_dzns ?? ''
+          }));
+          return { rows, count: count || 0 };
+        },
+        onRowClick: async (row) => {
+          // open Orders editor for the clicked order
+          const { data, error } = await sb.from('orders').select('*').eq('id', row.id).single();
+          if (error) return;
+          openEditor(tables.orders, data);
+        }
       },
 
-      flavors: { title: 'Flavors', table: 'flavors', cols: [ { key:'name', label:'Flavor name', type:'text', required:true } ] },
-      dietary_options: { title: 'Dietary Options', table: 'dietary_options', cols: [ { key:'name', label:'Dietary option', type:'text', required:true } ] },
-      pricing: { title: 'Pricing', table: 'pricing', cols: [
-        { key:'price_per_dozen', label:'Price per dozen', type:'number', step:'0.01' },
-        { key:'delivery_fee', label:'Delivery fee', type:'number', step:'0.01' },
-        { key:'consultation_fee', label:'Consultation fee', type:'number', step:'0.01' },
-        { key:'gift_note_fee', label:'Gift Note fee', type:'number', step:'0.01' },
-        { key:'rush_fee', label:'Rush fee', type:'number', step:'0.01' }
-      ]},
-      costs: { title:'Costs', table:'costs', cols:[
-        { key:'item_name', label:'Item name', type:'text', required:true },
-        { key:'amount', label:'Amount', type:'number', step:'0.01', required:true }
-      ]},
-      customers: { title:'Customers', table:'customers', cols:[
-        { key:'first_name', label:'First name', type:'text', required:true },
-        { key:'last_name', label:'Last name', type:'text', required:true },
-        { key:'phone', label:'Phone', type:'text' },
-        { key:'email', label:'Email', type:'email' },
-        { key:'street_address', label:'Street address', type:'text' },
-        { key:'street_address_cont', label:'Street address cont', type:'text' },
-        { key:'city', label:'City', type:'text' },
-        { key:'state', label:'State', type:'text' },
-        { key:'zip', label:'Zip', type:'text' },
-        { key:'customer_id', label:'Customer ID', type:'text' },
-        { key:'referral_code_assigned', label:'Referral code assigned', type:'text',
-          asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r => r.code) || [] },
-        { key:'order_id', label:'Order ID', type:'text' }
-      ]},
-      discount_codes: { title:'Discount Codes', table:'discount_codes', cols:[
-        { key:'code', label:'Code', type:'text', required:true },
-        { key:'type', label:'Type', type:'select', options:['percent','fixed'], required:true },
-        { key:'uses_allowed', label:'Number of uses allowed', type:'number' },
-        { key:'email_allowed', label:'Email allowed', type:'email' },
-        { key:'good_through_date', label:'Good through date', type:'date' }
-      ]},
-      referral_codes: { title:'Referral Codes', table:'referral_codes', cols:[
-        { key:'code', label:'Code', type:'text', required:true },
-        { key:'associated_customer_id', label:'Associated customer', type:'select-async',
-          asyncOptions: async () => {
-            const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
-            return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
-          } },
-        { key:'good_through_date', label:'Good through date', type:'date' },
-        { key:'referrer_discount', label:'Referrer discount %', type:'number', step:'0.01' },
-        { key:'referee_discount', label:'Referee discount %', type:'number', step:'0.01' }
-      ]},
-      orders: { title:'Orders', table:'orders', cols:[
-        { key:'order_id', label:'Order ID', type:'text' },
-        { key:'customer_id', label:'Customer', type:'select-async',
-          asyncOptions: async () => {
-            const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
-            return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
-          } },
-        { key:'pickup_delivery_date', label:'Pick up or delivery date', type:'date' },
-        { key:'event_date', label:'Event date', type:'date' },
-        { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', step:'0.01' },
-        { key:'flavor', label:'Flavor', type:'select-async', asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
-        { key:'dietary_option', label:'Dietary option', type:'select-async', asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[] },
-        { key:'design_notes', label:'Design notes', type:'textarea' },
-        { key:'design_inspiration_photo', label:'Design inspiration photo URL', type:'url' },
-        { key:'gift_note', label:'Gift note', type:'checkbox' },
-        { key:'gift_note_text', label:'Gift note text', type:'textarea' },
-        { key:'consultation_requested', label:'Consultation requested', type:'checkbox' },
-        { key:'discount_code_used', label:'Discount code used', type:'select-async', asyncOptions: async () => (await sb.from('discount_codes').select('code')).data?.map(r=>r.code)||[] },
-        { key:'referral_code_used', label:'Referral code used', type:'select-async', asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] },
-        // NEW status field in UI
-        { key:'status', label:'Status', type:'select', options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'] }
-      ]},
-      surveys: { title:'Surveys', table:'surveys', cols:[
-        { key:'customer_id', label:'Customer', type:'select-async',
-          asyncOptions: async () => {
-            const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
-            return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
-          } },
-        { key:'cookies_stars', label:'Cookies 1 to 5', type:'number', min:1, max:5 },
-        { key:'service_stars', label:'Service 1 to 5', type:'number', min:1, max:5 },
-        { key:'recommend', label:'Recommend to family', type:'checkbox' },
-        { key:'improvements', label:'Improvements', type:'textarea' },
-        { key:'website_review', label:'Website review', type:'textarea' }
-      ]}
+      customers: {
+        title: 'Customers',
+        table: 'customers',
+        cols: [
+          { key: 'first_name', label: 'First name', type: 'text', required: true },
+          { key: 'last_name', label: 'Last name', type: 'text', required: true },
+          { key: 'phone', label: 'Phone', type: 'text' },
+          { key: 'email', label: 'Email', type: 'email' },
+          { key: 'street_address', label: 'Street address', type: 'text' },
+          { key: 'street_address_cont', label: 'Street address cont', type: 'text' },
+          { key: 'city', label: 'City', type: 'text' },
+          { key: 'state', label: 'State', type: 'text' },
+          { key: 'zip', label: 'Zip', type: 'text' },
+          { key: 'customer_id', label: 'Customer ID', type: 'text' },
+          { key: 'referral_code_assigned', label: 'Referral code assigned', type: 'text',
+            asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r => r.code) || [] },
+          { key: 'order_id', label: 'Order ID', type: 'text' }
+        ]
+      },
+
+      orders: {
+        title: 'Orders',
+        table: 'orders',
+        cols: [
+          { key: 'order_id', label: 'Order ID', type: 'text' },
+          { key: 'customer_id', label: 'Customer', type: 'select-async',
+            asyncOptions: async () => {
+              const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+              return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+            } },
+          { key: 'pickup_delivery_date', label: 'Pick up or delivery date', type: 'date' },
+          { key: 'event_date', label: 'Event date', type: 'date' },
+          { key: 'cookie_amount_dzns', label: 'Cookie amount (dzns)', type: 'number', step: '0.01' },
+          { key: 'flavor', label: 'Flavor', type: 'select-async', asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
+          { key: 'dietary_option', label: 'Dietary option', type: 'select-async', asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[] },
+          { key: 'design_notes', label: 'Design notes', type: 'textarea' },
+          { key: 'design_inspiration_photo', label: 'Design inspiration photo URL', type: 'url' },
+          { key: 'gift_note', label: 'Gift note', type: 'checkbox' },
+          { key: 'gift_note_text', label: 'Gift note text', type: 'textarea' },
+          { key: 'consultation_requested', label: 'Consultation requested', type: 'checkbox' },
+          { key: 'discount_code_used', label: 'Discount code used', type: 'select-async', asyncOptions: async () => (await sb.from('discount_codes').select('code')).data?.map(r=>r.code)||[] },
+          { key: 'referral_code_used', label: 'Referral code used', type: 'select-async', asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] },
+          { key: 'status', label: 'Status', type: 'select', options: ['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'] }
+        ]
+      },
+
+      discount_codes: {
+        title:'Discount Codes', table:'discount_codes',
+        cols:[
+          { key:'code', label:'Code', type:'text', required:true },
+          { key:'type', label:'Type', type:'select', options:['percent','fixed'], required:true },
+          { key:'uses_allowed', label:'Number of uses allowed', type:'number' },
+          { key:'email_allowed', label:'Email allowed', type:'email' },
+          { key:'good_through_date', label:'Good through date', type:'date' }
+        ]
+      },
+
+      referral_codes: {
+        title:'Referral Codes', table:'referral_codes',
+        cols:[
+          { key:'code', label:'Code', type:'text', required:true },
+          { key:'associated_customer_id', label:'Associated customer', type:'select-async',
+            asyncOptions: async () => {
+              const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+              return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+            } },
+          { key:'good_through_date', label:'Good through date', type:'date' },
+          { key:'referrer_discount', label:'Referrer discount %', type:'number', step:'0.01' },
+          { key:'referee_discount', label:'Referee discount %', type:'number', step:'0.01' }
+        ]
+      },
+
+      flavors: { title: 'Flavors', table: 'flavors',
+        cols: [ { key: 'name', label: 'Flavor name', type: 'text', required: true } ]
+      },
+
+      dietary_options: { title:'Dietary Options', table:'dietary_options',
+        cols:[ { key:'name', label:'Dietary option', type:'text', required:true } ]
+      },
+
+      pricing: {
+        title:'Pricing', table:'pricing',
+        cols: [
+          { key:'price_per_dozen', label:'Price per dozen', type:'number', step:'0.01' },
+          { key:'delivery_fee', label:'Delivery fee', type:'number', step:'0.01' },
+          { key:'consultation_fee', label:'Consultation fee', type:'number', step:'0.01' },
+          { key:'gift_note_fee', label:'Gift Note fee', type:'number', step:'0.01' },
+          { key:'rush_fee', label:'Rush fee', type:'number', step:'0.01' }
+        ],
+        // mark as singleton behavior
+        singleton: true
+      },
+
+      costs: { title:'Costs', table:'costs',
+        cols:[
+          { key:'item_name', label:'Item name', type:'text', required:true },
+          { key:'amount', label:'Amount', type:'number', step:'0.01', required:true }
+        ]
+      },
+
+      surveys: { title:'Surveys', table:'surveys',
+        cols:[
+          { key:'customer_id', label:'Customer', type:'select-async',
+            asyncOptions: async () => {
+              const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+              return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+            } },
+          { key:'cookies_stars', label:'Cookies 1 to 5', type:'number', min:1, max:5 },
+          { key:'service_stars', label:'Service 1 to 5', type:'number', min:1, max:5 },
+          { key:'recommend', label:'Recommend to family', type:'checkbox' },
+          { key:'improvements', label:'Improvements', type:'textarea' },
+          { key:'website_review', label:'Website review', type:'textarea' }
+        ]
+      }
     };
 
-    // Put Order List first
     const tabOrder = ['order_list','customers','orders','discount_codes','referral_codes','flavors','dietary_options','pricing','costs','surveys'];
 
     // 5) Admin UI logic
@@ -249,7 +324,7 @@
     function buildThead(conf) {
       const tr = el('tr');
       conf.cols.forEach(c => tr.appendChild(el('th','text-left p-3', c.label)));
-      tr.appendChild(el('th','text-right p-3','Actions'));
+      if (conf.hasActions !== false) tr.appendChild(el('th','text-right p-3','Actions'));
       return tr;
     }
 
@@ -267,139 +342,94 @@
       return csvRows.join('\n');
     }
 
-    // Custom loader for the Order List tab
-    async function loadOrderList() {
-      const thead = document.getElementById('thead'); thead.innerHTML = '';
-      thead.appendChild(buildThead(tables.order_list));
-
-      document.body.style.cursor = 'progress';
-      const q = document.getElementById('globalSearch').value?.trim();
-      // PostgREST embed: customers is embedded via FK customer_id
-      let query = sb.from('orders')
-        .select('id, created_at, status, cookie_amount_dzns, customers:customer_id ( first_name, last_name )', { count: 'exact' })
-        .order('created_at', { ascending: false })
-        .range(page*pageSize, page*pageSize + pageSize - 1);
-
-      if (q) {
-        // search on status or customer names
-        query = query.or(`status.ilike.%${q}%,customers.first_name.ilike.%${q}%,customers.last_name.ilike.%${q}%`);
-      }
-
-      const { data, error, count } = await query;
-      document.body.style.cursor = 'default';
-
-      const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
-      if (error) { tbody.appendChild(el('tr','',`<td colspan="99" class="p-4 text-red-700">${error.message}</td>`)); return; }
-
-      totalCount = count || 0;
-      document.getElementById('prev').disabled = page === 0;
-      document.getElementById('next').disabled = (page+1)*pageSize >= totalCount;
-      document.getElementById('pageInfo').textContent = `${Math.min(totalCount, page*pageSize+(data?.length||0))} of ${totalCount}`;
-
-      for (const row of data || []) {
-        const tr = el('tr','border-b rowlink');
-        const first = row.customers?.first_name || '';
-        const last = row.customers?.last_name || '';
-        const cells = [
-          new Date(row.created_at).toLocaleDateString(),
-          row.status || 'In Review',
-          first,
-          last,
-          row.cookie_amount_dzns ?? ''
-        ];
-        for (const v of cells) tr.appendChild(el('td','p-3', fmt(v)));
-
-        // Actions: open Orders editor
-        const actions = el('td','p-3 text-right');
-        const edit = el('button','px-2 py-1 rounded border hover:bg-gray-100','Open');
-        edit.addEventListener('click', async (e) => {
-          e.stopPropagation();
-          const { data: fullOrder, error: oe } = await sb.from('orders').select('*').eq('id', row.id).single();
-          if (oe) { alert(oe.message); return; }
-          openEditor(tables.orders, fullOrder);
-        });
-        actions.appendChild(edit);
-        tr.appendChild(actions);
-
-        // Whole row clickable too
-        tr.addEventListener('click', async () => {
-          const { data: fullOrder, error: oe } = await sb.from('orders').select('*').eq('id', row.id).single();
-          if (oe) { alert(oe.message); return; }
-          openEditor(tables.orders, fullOrder);
-        });
-
-        tbody.appendChild(tr);
-      }
-
-      // export in list mode
-      document.getElementById('exportBtn').onclick = async () => {
-        const { data: allRows } = await sb.from('orders')
-          .select('created_at, status, cookie_amount_dzns, customers:customer_id ( first_name, last_name )')
-          .order('created_at', { ascending: false });
-        const flattened = (allRows||[]).map(r => ({
-          created_at: r.created_at,
-          status: r.status,
-          first_name: r.customers?.first_name || '',
-          last_name: r.customers?.last_name || '',
-          cookie_amount_dzns: r.cookie_amount_dzns
-        }));
-        const csv = toCSV(flattened, tables.order_list);
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `order_list.csv`; a.click();
-        URL.revokeObjectURL(url);
-      };
-    }
-
     async function loadTable() {
-      // Route to custom loader for Order List, else generic loader
-      if (activeKey === 'order_list') { await loadOrderList(); return; }
-
       const conf = tables[activeKey];
       const thead = document.getElementById('thead'); thead.innerHTML = ''; thead.appendChild(buildThead(conf));
       document.body.style.cursor = 'progress';
-      let query = sb.from(conf.table).select('*', { count:'exact' });
+
       const q = document.getElementById('globalSearch').value?.trim();
-      if (q) {
-        const orParts = conf.cols.map(c => `${c.key}.ilike.%${q}%`).join(',');
-        if (orParts) query = query.or(orParts);
+
+      let rows = [], error = null, count = 0;
+
+      if (conf.loader) {
+        const out = await conf.loader({ page, pageSize, q });
+        rows = out.rows; count = out.count; error = out.error || null;
+      } else {
+        let query = sb.from(conf.table).select('*', { count:'exact' });
+        if (q) {
+          const orParts = conf.cols.map(c => `${c.key}.ilike.%${q}%`).join(',');
+          if (orParts) query = query.or(orParts);
+        }
+        query = query.order('updated_at', { ascending:false }).range(page*pageSize, page*pageSize+pageSize-1);
+        const resp = await query;
+        rows = resp.data || []; error = resp.error || null; count = resp.count || 0;
       }
-      query = query.order('updated_at', { ascending:false }).range(page*pageSize, page*pageSize+pageSize-1);
-      const { data, error, count } = await query;
+
       document.body.style.cursor = 'default';
 
       const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
-      if (error) { tbody.appendChild(el('tr','',`<td colspan="99" class="p-4 text-red-700">${error.message}</td>`)); return; }
+      if (error) {
+        tbody.appendChild(el('tr','',`<td colspan="99" class="p-4 text-red-700">${error.message}</td>`));
+      } else {
+        totalCount = count;
+        document.getElementById('prev').disabled = page === 0;
+        document.getElementById('next').disabled = (page+1)*pageSize >= totalCount;
+        document.getElementById('pageInfo').textContent = `${Math.min(totalCount, page*pageSize+(rows.length||0))} of ${totalCount}`;
 
-      totalCount = count || 0;
-      document.getElementById('prev').disabled = page === 0;
-      document.getElementById('next').disabled = (page+1)*pageSize >= totalCount;
-      document.getElementById('pageInfo').textContent = `${Math.min(totalCount, page*pageSize+(data?.length||0))} of ${totalCount}`;
+        for (const row of rows) {
+          const tr = el('tr','border-b hover:bg-gray-50');
+          for (const c of conf.cols) {
+            let val = row[c.key];
+            if (c.type === 'checkbox') val = !!val;
+            const td = el('td','p-3', fmt(val));
+            tr.appendChild(td);
+          }
 
-      for (const row of data || []) {
-        const tr = el('tr','border-b');
-        for (const c of conf.cols) {
-          let val = row[c.key]; if (c.type === 'checkbox') val = !!val;
-          tr.appendChild(el('td','p-3', fmt(val)));
+          if (conf.hasActions !== false) {
+            const td = el('td','p-3 text-right');
+            const edit = el('button','px-2 py-1 rounded border hover:bg-gray-100','Edit');
+            edit.addEventListener('click', () => openEditor(conf, row));
+            td.appendChild(edit);
+            tr.appendChild(td);
+          } else {
+            // clickable row for order_list
+            tr.style.cursor = 'pointer';
+            tr.addEventListener('click', () => conf.onRowClick && conf.onRowClick(row));
+          }
+
+          tbody.appendChild(tr);
         }
-        const td = el('td','p-3 text-right');
-        const edit = el('button','px-2 py-1 rounded border hover:bg-gray-100','Edit');
-        edit.addEventListener('click', () => openEditor(conf, row));
-        td.appendChild(edit);
-        tr.appendChild(td);
-        tbody.appendChild(tr);
       }
 
+      // Export
       document.getElementById('exportBtn').onclick = async () => {
-        const { data: allRows } = await sb.from(conf.table).select('*').order('updated_at', { ascending:false });
-        const csv = toCSV(allRows || [], conf);
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `${conf.table}.csv`; a.click();
-        URL.revokeObjectURL(url);
+        if (conf.loader) {
+          // export all rows (pull first 5000)
+          const out = await conf.loader({ page: 0, pageSize: 5000, q: document.getElementById('globalSearch').value?.trim() });
+          const csv = toCSV(out.rows || [], conf);
+          const blob = new Blob([csv], { type: 'text/csv' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a'); a.href = url; a.download = `${conf.title.replace(/\s+/g,'_').toLowerCase()}.csv`; a.click();
+          URL.revokeObjectURL(url);
+        } else {
+          const { data: allRows } = await sb.from(conf.table).select('*').order('updated_at', { ascending:false });
+          const csv = toCSV(allRows || [], conf);
+          const blob = new Blob([csv], { type: 'text/csv' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a'); a.href = url; a.download = `${conf.table}.csv`; a.click();
+          URL.revokeObjectURL(url);
+        }
       };
+
+      // Toolbar visibility tweaks
+      const addBtn = document.getElementById('addBtn');
+      // hide Add for read-only tabs
+      addBtn.classList.toggle('hidden', !!conf.readOnly);
+      // for pricing singleton, hide Add if a row already exists
+      if (conf.singleton) addBtn.classList.toggle('hidden', (rows.length || 0) > 0);
     }
 
+    // ========== Editor ==========
     const dlg = document.getElementById('editor');
     const formBody = document.getElementById('formBody');
 
@@ -462,6 +492,7 @@
       dlg.close(); loadTable();
     }
 
+    // ========== Tabs, pagination, realtime ==========
     function renderTabs() {
       const nav = document.getElementById('tabs'); nav.innerHTML='';
       for (const key of tabOrder) {
@@ -480,9 +511,10 @@
 
     function wireRealtime() {
       for (const key of Object.keys(tables)) {
+        if (key === 'order_list') continue; // read-only virtual
         sb.channel(`${key}-changes`)
           .on('postgres_changes', { event:'*', schema:'public', table:tables[key].table },
-            () => { if (key === activeKey || (activeKey === 'order_list' && key === 'orders')) loadTable(); })
+            () => { if (key === activeKey) loadTable(); })
           .subscribe();
       }
     }
