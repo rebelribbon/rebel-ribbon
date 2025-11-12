@@ -7,17 +7,16 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <style>
-    .tab-active{border-bottom:2px solid #111;font-weight:600}
-    .cell{padding:.75rem}
-    .thcell{padding:.75rem;font-weight:600}
-    .nowrap{white-space:nowrap}
-    .actions-col{width:88px}
-    .table-wrap{overflow:auto;border-radius:.75rem;border:1px solid #e5e7eb;background:#fff}
-    table{border-collapse:separate;border-spacing:0}
-    /* center everything in the grid */
-    #grid th, #grid td { text-align:center; }
-    tr.clickable { cursor: pointer; }
-    dialog::backdrop { background: rgba(0,0,0,.3); }
+    .tab-active { border-bottom: 2px solid #111; font-weight: 600; }
+    .table-wrap { overflow:auto; border-radius: 0.75rem; border: 1px solid #e5e7eb; background:#fff; }
+    table { border-collapse: separate; border-spacing: 0; }
+    th, td { padding: .75rem; text-align: center; } /* center all cells */
+    .nowrap { white-space: nowrap; }
+    .btn { @apply px-3 py-2 rounded-lg border bg-white; }
+    .btn-primary { @apply px-3 py-2 rounded-lg bg-blue-600 text-white; }
+    .btn-danger { @apply px-3 py-2 rounded-lg bg-red-600 text-white; }
+    .btn-ghost { @apply px-2 py-1 rounded border hover:bg-gray-100; }
+    dialog::backdrop { background: rgba(0,0,0,.35); }
   </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -27,7 +26,8 @@
       <h1 class="text-2xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
       <p class="text-sm text-gray-600 mb-4">Use your @rebelribbon.com email. We will send a magic link.</p>
       <label class="block text-sm mb-2">Email</label>
-      <input id="email" type="email" placeholder="you@rebelribbon.com" class="w-full px-3 py-2 rounded-lg border mb-4"/>
+      <input id="email" type="email" placeholder="you@rebelribbon.com"
+             class="w-full px-3 py-2 rounded-lg border mb-4"/>
       <button id="sendLink" type="button" class="w-full px-4 py-2 rounded-lg bg-blue-600 text-white">Send magic link</button>
       <p id="authMsg" class="text-sm text-red-600 mt-3"></p>
       <p class="text-xs text-gray-500 mt-3">If the button does nothing, set SUPABASE_URL and SUPABASE_ANON_KEY in this file.</p>
@@ -41,7 +41,7 @@
         <h1 class="text-2xl font-semibold">Rebel Ribbon Admin</h1>
         <div class="flex gap-2 items-center">
           <input id="globalSearch" type="search" placeholder="Search current tab" class="px-3 py-2 rounded-lg border"/>
-          <button id="refreshAll" class="px-3 py-2 rounded-lg border bg-white">Refresh</button>
+          <button id="refreshAll" class="btn">Refresh</button>
           <span id="who" class="text-sm text-gray-600"></span>
           <button id="logout" class="px-3 py-2 rounded-lg bg-gray-900 text-white">Sign out</button>
         </div>
@@ -53,13 +53,13 @@
       <!-- Toolbar -->
       <div class="flex items-center justify-between mb-2">
         <div class="flex items-center gap-2">
-          <button id="addBtn" class="px-3 py-2 rounded-lg bg-blue-600 text-white">Add</button>
-          <button id="exportBtn" class="px-3 py-2 rounded-lg border bg-white">Export CSV</button>
+          <button id="addBtn" class="btn-primary">Add</button>
+          <button id="exportBtn" class="btn">Export CSV</button>
         </div>
         <div class="flex items-center gap-2">
-          <button id="prev" class="px-3 py-2 rounded-lg border bg-white disabled:opacity-50">Prev</button>
+          <button id="prev" class="btn disabled:opacity-50">Prev</button>
           <span id="pageInfo" class="text-sm text-gray-600"></span>
-          <button id="next" class="px-3 py-2 rounded-lg border bg-white disabled:opacity-50">Next</button>
+          <button id="next" class="btn disabled:opacity-50">Next</button>
         </div>
       </div>
 
@@ -74,169 +74,210 @@
       <p id="netHint" class="text-yellow-700 text-sm mt-3 hidden"></p>
     </div>
 
-    <!-- Editor dialog -->
+    <!-- Generic editor dialog (for standard tabs) -->
     <dialog id="editor" class="rounded-2xl p-0 w-full max-w-3xl shadow-2xl">
       <form method="dialog" class="p-0">
         <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
           <h2 id="editorTitle" class="text-lg font-semibold">Edit</h2>
-          <button value="close" class="p-2 rounded hover:bg-gray-200">✕</button>
+          <button value="close" class="p-2 rounded hover:bg-gray-200" type="button" onclick="document.getElementById('editor').close()">✕</button>
         </div>
         <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
         <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
           <button id="deleteBtn" type="button" class="px-3 py-2 rounded-lg border text-red-700 border-red-300 hidden">Delete</button>
-          <button id="saveBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white">Save</button>
+          <button id="saveBtn" class="btn-primary">Save</button>
         </div>
       </form>
     </dialog>
 
-    <!-- Order Control Panel dialog -->
-    <dialog id="orderPanel" class="rounded-2xl p-0 w-full max-w-4xl shadow-2xl">
-      <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
-        <h2 id="orderPanelTitle" class="text-lg font-semibold">Order</h2>
-        <button id="orderPanelClose" class="p-2 rounded hover:bg-gray-200">✕</button>
-      </div>
-      <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="md:col-span-2">
-          <div id="orderSummary" class="space-y-2 text-sm"></div>
-          <div class="mt-4">
-            <label class="block text-sm font-medium mb-1">Status</label>
-            <select id="orderStatus" class="px-3 py-2 rounded-lg border w-full md:w-1/2">
-              <option>In Review</option>
-              <option>Approved</option>
-              <option>Paid</option>
-              <option>Production Complete</option>
-              <option>Fulfilled</option>
-              <option>Canceled</option>
-            </select>
-            <button id="saveStatus" class="mt-2 px-3 py-2 rounded-lg bg-blue-600 text-white">Save Status</button>
+    <!-- Order control panel dialog -->
+    <dialog id="orderPanel" class="rounded-2xl p-0 w-full max-w-5xl shadow-2xl">
+      <div class="p-0">
+        <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
+          <h2 id="opTitle" class="text-lg font-semibold">Order</h2>
+          <button class="p-2 rounded hover:bg-gray-200" type="button"
+                  onclick="document.getElementById('orderPanel').close()">✕</button>
+        </div>
+
+        <div class="p-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Left: details -->
+          <div class="md:col-span-2 space-y-3">
+            <div>
+              <p class="text-sm"><span class="font-semibold">Submitted:</span> <span id="opSubmitted"></span></p>
+              <p class="text-sm"><span class="font-semibold">Status:</span> <span id="opStatusText"></span></p>
+              <p class="text-sm"><span class="font-semibold">Flavor:</span> <span id="opFlavor"></span></p>
+              <p class="text-sm"><span class="font-semibold">Dietary:</span> <span id="opDietary"></span></p>
+              <p class="text-sm"><span class="font-semibold">Cookie dzns:</span> <span id="opDzns"></span></p>
+              <p class="text-sm"><span class="font-semibold">Discount code:</span> <span id="opDiscountCode"></span></p>
+              <p class="text-sm"><span class="font-semibold">Referral code:</span> <span id="opReferralCode"></span></p>
+              <p class="text-sm"><span class="font-semibold">Gift note:</span> <span id="opGiftNote"></span></p>
+              <p class="text-sm"><span class="font-semibold">Gift note text:</span> <span id="opGiftText"></span></p>
+              <p class="text-sm"><span class="font-semibold">Consultation requested:</span> <span id="opConsult"></span></p>
+
+              <div class="mt-3">
+                <p class="text-sm font-semibold mb-1">Inspiration photo</p>
+                <div class="flex items-center gap-3">
+                  <img id="opPhoto" src="" alt="Inspiration" class="max-h-28 rounded border hidden">
+                  <input id="opUpload" type="file" accept="image/*" class="block text-sm"/>
+                  <button id="opUploadBtn" type="button" class="btn">Upload</button>
+                </div>
+                <p id="opUploadMsg" class="text-xs mt-1 text-gray-600"></p>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <label class="block text-sm font-medium mb-1">Status</label>
+              <div class="flex items-center gap-2">
+                <select id="opStatus" class="px-3 py-2 rounded-lg border">
+                  <option>In Review</option>
+                  <option>Approved</option>
+                  <option>Paid</option>
+                  <option>Production Complete</option>
+                  <option>Fulfilled</option>
+                  <option>Canceled</option>
+                </select>
+                <button id="opSaveStatus" type="button" class="btn">Save Status</button>
+              </div>
+            </div>
+
+            <div class="flex flex-wrap gap-2 mt-4">
+              <button id="opEditOrder" type="button" class="btn">Edit order fields</button>
+              <button id="opAddFee" type="button" class="btn">Add fee</button>
+              <button id="opAddDiscount" type="button" class="btn">Add discount</button>
+              <button id="opInvoice" type="button" class="btn">View/Save invoice</button>
+            </div>
+
+            <!-- Adjustments table -->
+            <div class="mt-4">
+              <h3 class="font-semibold mb-1 text-sm">Adjustments</h3>
+              <div class="table-wrap">
+                <table class="min-w-full text-sm">
+                  <thead class="bg-gray-100">
+                    <tr>
+                      <th>Type</th>
+                      <th>Label</th>
+                      <th>Amount</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="opAdjBody"></tbody>
+                </table>
+              </div>
+            </div>
           </div>
-          <div class="mt-6 flex flex-wrap gap-2">
-            <button id="editOrder" class="px-3 py-2 rounded-lg border bg-white">Edit order fields</button>
-            <button id="addFee" class="px-3 py-2 rounded-lg border bg-white">Add fee</button>
-            <button id="addDiscount" class="px-3 py-2 rounded-lg border bg-white">Add discount</button>
-            <button id="viewInvoice" class="px-3 py-2 rounded-lg border bg-white">View/Save invoice</button>
+
+          <!-- Right: totals + customer -->
+          <div class="space-y-4">
+            <div class="rounded-xl border p-3">
+              <p class="font-semibold mb-2">Totals (est.)</p>
+              <div class="text-sm space-y-1">
+                <p>Price/dozen: <span id="opPricePerDozen">$0.00</span></p>
+                <p>Base: <span id="opBase">$0.00</span></p>
+                <p>Consult fee: <span id="opConsultFee">$0.00</span></p>
+                <p>Gift note fee: <span id="opGiftFee">$0.00</span></p>
+                <p>Rush fee: <span id="opRushFee">$0.00</span></p>
+                <p>Delivery fee: <span id="opDeliveryFee">$0.00</span></p>
+                <p>Adj (fees): <span id="opAdjFees">$0.00</span></p>
+                <p>Adj (discounts): <span id="opAdjDiscs">-$0.00</span></p>
+                <hr class="my-2">
+                <p class="font-semibold">Estimated total: <span id="opTotal">$0.00</span></p>
+              </div>
+            </div>
+
+            <div class="rounded-xl border p-3">
+              <p class="font-semibold mb-2">Customer</p>
+              <div class="text-sm space-y-1">
+                <p id="opCustName"></p>
+                <p id="opCustEmail"></p>
+                <p id="opCustPhone"></p>
+                <p id="opCustAddr1"></p>
+                <p id="opCustAddr2"></p>
+                <p id="opCustCityStZip"></p>
+              </div>
+            </div>
           </div>
         </div>
-        <div>
-          <div class="border rounded-xl p-3">
-            <h3 class="font-semibold mb-2">Totals (est.)</h3>
-            <div id="orderTotals" class="text-sm space-y-1"></div>
-          </div>
-          <div class="border rounded-xl p-3 mt-3">
-            <h3 class="font-semibold mb-2">Customer</h3>
-            <div id="orderCustomer" class="text-sm space-y-1"></div>
-          </div>
+
+        <div class="p-4 border-t bg-gray-50 flex items-center justify-end">
+          <button class="btn" type="button" onclick="document.getElementById('orderPanel').close()">Close</button>
         </div>
       </div>
     </dialog>
   </div>
 
   <script>
-  window.addEventListener('DOMContentLoaded', () => {
-    // 1) Supabase client
-    const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
+  // ====== 1) Supabase client ======
+  const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
+  const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    if (!window.supabase) {
-      console.error('Supabase library failed to load.');
-      const m = document.getElementById('authMsg');
-      if (m) m.textContent = 'Could not load Supabase library from CDN.';
+  // ====== 2) Auth (fix: explicit type=button, loading state, logs) ======
+  const signinCard = document.getElementById('signinCard');
+  const app = document.getElementById('app');
+  const authMsg = document.getElementById('authMsg');
+
+  const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
+
+  document.getElementById('sendLink').addEventListener('click', async () => {
+    try {
+      authMsg.textContent = '';
+      const btn = document.getElementById('sendLink');
+      const email = document.getElementById('email').value.trim();
+      if (!onlyCompanyEmail(email)) { authMsg.textContent = 'Use your @rebelribbon.com address.'; return; }
+      btn.disabled = true; btn.textContent = 'Sending...';
+      const redirectTo = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
+      const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
+      if (error) throw error;
+      authMsg.classList.remove('text-red-600'); authMsg.classList.add('text-green-700');
+      authMsg.textContent = 'Magic link sent. Check your inbox.';
+    } catch (e) {
+      console.error(e);
+      authMsg.classList.remove('text-green-700'); authMsg.classList.add('text-red-600');
+      authMsg.textContent = e.message || 'Failed to fetch';
+    } finally {
+      const btn = document.getElementById('sendLink');
+      btn.disabled = false; btn.textContent = 'Send magic link';
+    }
+  });
+
+  async function bootstrap() {
+    const { data: { session }, error } = await sb.auth.getSession();
+    if (error) { authMsg.textContent = error.message; return; }
+    if (!session) {
+      signinCard.classList.remove('hidden'); app.classList.add('hidden');
+      if (SUPABASE_URL.includes('YOUR-PROJECT') || SUPABASE_ANON_KEY.includes('PASTE_')) {
+        const hint = document.getElementById('netHint'); hint.classList.remove('hidden'); hint.textContent = 'Missing Supabase keys.';
+      }
       return;
     }
+    const email = session.user?.email || '';
+    if (!onlyCompanyEmail(email)) { await sb.auth.signOut(); authMsg.textContent = 'This page is restricted to @rebelribbon.com'; return; }
+    document.getElementById('who').textContent = email;
+    signinCard.classList.add('hidden'); app.classList.remove('hidden');
+    renderTabs(); loadTable(); wireRealtime();
+  }
+  document.getElementById('logout').addEventListener('click', async () => {
+    await sb.auth.signOut();
+    location.href = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
+  });
 
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    console.log('Supabase client created:', !!sb);
-
-    // 2) Email OTP sign in
-    const signinCard = document.getElementById('signinCard');
-    const app = document.getElementById('app');
-    const authMsg = document.getElementById('authMsg');
-
-    const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
-
-    const sendLinkBtn = document.getElementById('sendLink');
-    if (sendLinkBtn) {
-      sendLinkBtn.addEventListener('click', async () => {
-        console.log('Send magic link clicked');
-        authMsg.textContent = '';
-        const email = document.getElementById('email').value.trim();
-        if (!onlyCompanyEmail(email)) {
-          authMsg.textContent = 'Use your @rebelribbon.com address.';
-          return;
-        }
-        try {
-          const redirectTo = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
-          const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
-          if (error) throw error;
-          authMsg.classList.remove('text-red-600'); authMsg.classList.add('text-green-700');
-          authMsg.textContent = 'Magic link sent. Check your inbox.';
-        } catch (e) {
-          console.error(e);
-          authMsg.classList.remove('text-green-700'); authMsg.classList.add('text-red-600');
-          authMsg.textContent = e.message || 'Failed to send link';
-        }
-      });
-    }
-
-    // Listen for session changes (handles magic link on GitHub Pages)
-    sb.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state change:', event, !!session);
-      if (session && onlyCompanyEmail(session.user?.email || '')) {
-        bootApp(session);
-      }
-    });
-
-    // Initial bootstrap
-    (async function bootstrap(){
-      const { data: { session }, error } = await sb.auth.getSession();
-      if (error) {
-        console.error(error);
-        if (authMsg) authMsg.textContent = error.message;
-        return;
-      }
-      if (!session) {
-        signinCard.classList.remove('hidden'); app.classList.add('hidden');
-        if (SUPABASE_URL.includes('YOUR-PROJECT') || SUPABASE_ANON_KEY.includes('PASTE_')) {
-          const hint = document.getElementById('netHint'); hint.classList.remove('hidden'); hint.textContent = 'Missing Supabase keys.';
-        }
-        return;
-      }
-      bootApp(session);
-    })();
-
-    async function bootApp(session) {
-      const email = session.user?.email || '';
-      if (!onlyCompanyEmail(email)) {
-        await sb.auth.signOut();
-        if (authMsg) authMsg.textContent = 'This page is restricted to @rebelribbon.com';
-        return;
-      }
-      document.getElementById('who').textContent = email;
-      signinCard.classList.add('hidden'); app.classList.remove('hidden');
-      renderTabs(); loadTable(); wireRealtime();
-    }
-
-    document.getElementById('logout').addEventListener('click', async () => {
-      await sb.auth.signOut();
-      location.href = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
-    });
-
-    // 3) Admin UI config
-    const tables = {
-      order_list: { // READ-ONLY joined view from orders + customers
-        title: 'Order List',
-        table: 'orders',
-        readOnly: true,
-        customLoader: 'loadOrderList',
-        cols: [
-          { key:'created_at', label:'Date Submitted', type:'date', w:'18' },
-          { key:'status', label:'Status', type:'text', w:'14' },
-          { key:'first_name', label:'First name', type:'text', w:'18' },
-          { key:'last_name',  label:'Last name',  type:'text', w:'18' },
-          { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', w:'16' }
-        ]
-      },
-      customers: { title:'Customers', table:'customers', cols:[
+  // ====== 3) Tables config ======
+  const tables = {
+    order_list: {
+      title: 'Order List',
+      table: 'orders',
+      readOnly: true,
+      customLoader: 'loadOrderList',
+      cols: [
+        { key:'created_at', label:'Date Submitted', type:'date', w:'18' },
+        { key:'status', label:'Status', type:'text', w:'14' },
+        { key:'first_name', label:'First name', type:'text', w:'18' },
+        { key:'last_name', label:'Last name', type:'text', w:'18' },
+        { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', w:'16' }
+      ]
+    },
+    customers: {
+      title:'Customers', table:'customers',
+      cols:[
         { key:'first_name', label:'First name', type:'text', required:true, w:'14' },
         { key:'last_name',  label:'Last name',  type:'text', required:true, w:'14' },
         { key:'phone', label:'Phone', type:'text', w:'14' },
@@ -250,8 +291,11 @@
         { key:'referral_code_assigned', label:'Referral code assigned', type:'text', w:'18',
           asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] },
         { key:'order_id', label:'Order ID', type:'text', w:'12' }
-      ]},
-      orders: { title:'Orders', table:'orders', cols:[
+      ]
+    },
+    orders: {
+      title:'Orders', table:'orders',
+      cols:[
         { key:'order_id', label:'Order ID', type:'text', w:'12' },
         { key:'customer_id', label:'Customer', type:'select-async', w:'20',
           asyncOptions: async () => {
@@ -261,25 +305,36 @@
         { key:'pickup_delivery_date', label:'Pick up or delivery date', type:'date', w:'18' },
         { key:'event_date', label:'Event date', type:'date', w:'14' },
         { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', step:'0.01', w:'18' },
-        { key:'flavor', label:'Flavor', type:'select-async', w:'14', asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
-        { key:'dietary_option', label:'Dietary option', type:'select-async', w:'16', asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[] },
+        { key:'flavor', label:'Flavor', type:'select-async', w:'14',
+          asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
+        { key:'dietary_option', label:'Dietary option', type:'select-async', w:'16',
+          asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[] },
         { key:'design_notes', label:'Design notes', type:'textarea', w:'20' },
-        { key:'design_inspiration_photo', label:'Design inspiration photo URL', type:'url', w:'20' },
+        { key:'design_inspiration_photo', label:'Design inspiration photo PATH', type:'text', w:'20' },
         { key:'gift_note', label:'Gift note', type:'checkbox', w:'10' },
         { key:'gift_note_text', label:'Gift note text', type:'textarea', w:'16' },
         { key:'consultation_requested', label:'Consultation requested', type:'checkbox', w:'20' },
-        { key:'discount_code_used', label:'Discount code used', type:'select-async', w:'16', asyncOptions: async () => (await sb.from('discount_codes').select('code')).data?.map(r=>r.code)||[] },
-        { key:'referral_code_used', label:'Referral code used', type:'select-async', w:'16', asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] },
-        { key:'status', label:'Status', type:'select', w:'14', options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'] }
-      ]},
-      discount_codes: { title:'Discount Codes', table:'discount_codes', cols:[
+        { key:'discount_code_used', label:'Discount code used', type:'select-async', w:'16',
+          asyncOptions: async () => (await sb.from('discount_codes').select('code')).data?.map(r=>r.code)||[] },
+        { key:'referral_code_used', label:'Referral code used', type:'select-async', w:'16',
+          asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] },
+        { key:'status', label:'Status', type:'select', w:'14',
+          options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'] }
+      ]
+    },
+    discount_codes: {
+      title:'Discount Codes', table:'discount_codes',
+      cols:[
         { key:'code', label:'Code', type:'text', required:true, w:'20' },
         { key:'type', label:'Type', type:'select', options:['percent','fixed'], required:true, w:'14' },
         { key:'uses_allowed', label:'Number of uses allowed', type:'number', w:'20' },
         { key:'email_allowed', label:'Email allowed', type:'email', w:'18' },
         { key:'good_through_date', label:'Good through date', type:'date', w:'18' }
-      ]},
-      referral_codes: { title:'Referral Codes', table:'referral_codes', cols:[
+      ]
+    },
+    referral_codes: {
+      title:'Referral Codes', table:'referral_codes',
+      cols:[
         { key:'code', label:'Code', type:'text', required:true, w:'20' },
         { key:'associated_customer_id', label:'Associated customer', type:'select-async', w:'22',
           asyncOptions: async () => {
@@ -289,25 +344,30 @@
         { key:'good_through_date', label:'Good through date', type:'date', w:'18' },
         { key:'referrer_discount', label:'Referrer discount %', type:'number', step:'0.01', w:'20' },
         { key:'referee_discount', label:'Referee discount %', type:'number', step:'0.01', w:'20' }
-      ]},
-      flavors: { title:'Flavors', table:'flavors', cols:[
-        { key:'name', label:'Flavor name', type:'text', required:true, w:'40' }
-      ]},
-      dietary_options: { title:'Dietary Options', table:'dietary_options', cols:[
-        { key:'name', label:'Dietary option', type:'text', required:true, w:'40' }
-      ]},
-      pricing: { title:'Pricing', table:'pricing', cols:[
+      ]
+    },
+    flavors: { title:'Flavors', table:'flavors', cols:[ { key:'name', label:'Flavor name', type:'text', required:true, w:'40' } ] },
+    dietary_options: { title:'Dietary Options', table:'dietary_options', cols:[ { key:'name', label:'Dietary option', type:'text', required:true, w:'40' } ] },
+    pricing: {
+      title:'Pricing', table:'pricing',
+      cols:[
         { key:'price_per_dozen', label:'Price per dozen', type:'number', step:'0.01', w:'20' },
         { key:'delivery_fee', label:'Delivery fee', type:'number', step:'0.01', w:'20' },
         { key:'consultation_fee', label:'Consultation fee', type:'number', step:'0.01', w:'20' },
         { key:'gift_note_fee', label:'Gift Note fee', type:'number', step:'0.01', w:'20' },
         { key:'rush_fee', label:'Rush fee', type:'number', step:'0.01', w:'20' }
-      ]},
-      costs: { title:'Costs', table:'costs', cols:[
+      ]
+    },
+    costs: {
+      title:'Costs', table:'costs',
+      cols:[
         { key:'item_name', label:'Item name', type:'text', required:true, w:'60' },
         { key:'amount', label:'Amount', type:'number', step:'0.01', required:true, w:'40' }
-      ]},
-      surveys: { title:'Surveys', table:'surveys', cols:[
+      ]
+    },
+    surveys: {
+      title:'Surveys', table:'surveys',
+      cols:[
         { key:'customer_id', label:'Customer', type:'select-async', w:'22',
           asyncOptions: async () => {
             const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
@@ -318,361 +378,455 @@
         { key:'recommend', label:'Recommend to family', type:'checkbox', w:'22' },
         { key:'improvements', label:'Improvements', type:'textarea', w:'30' },
         { key:'website_review', label:'Website review', type:'textarea', w:'30' }
-      ]}
-    };
+      ]
+    }
+  };
 
-    const tabOrder = [
-      'order_list','customers','orders','discount_codes','referral_codes','flavors','dietary_options','pricing','costs','surveys'
-    ];
+  const tabOrder = ['order_list','customers','orders','discount_codes','referral_codes','flavors','dietary_options','pricing','costs','surveys'];
 
-    // 4) Shared table helpers
-    let activeKey = tabOrder[0];
-    const pageSize = 10;
-    let page = 0;
-    let totalCount = 0;
+  // ====== 4) Shared helpers ======
+  let activeKey = tabOrder[0];
+  const pageSize = 10;
+  let page = 0;
+  let totalCount = 0;
 
-    const $ = (t,c,h)=>{ const e=document.createElement(t); if(c) e.className=c; if(h!==undefined) e.innerHTML=h; return e; };
-    const fmt = (v)=> v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
-    const dateInputValue=(d)=>{ if(!d) return ''; const dt=new Date(d); const tz=new Date(dt.getTime()-dt.getTimezoneOffset()*60000); return tz.toISOString().slice(0,10); };
+  const $ = (t,c,h)=>{ const e=document.createElement(t); if(c) e.className=c; if(h!==undefined) e.innerHTML=h; return e; };
+  const fmt = (v)=> v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
+  const money = (n)=> isFinite(n) ? `$${(+n).toFixed(2)}` : '$0.00';
+  const dateInputValue=(d)=>{ if(!d) return ''; const dt=new Date(d); const tz=new Date(dt.getTime()-dt.getTimezoneOffset()*60000); return tz.toISOString().slice(0,10); };
 
-    function buildColGroup(conf){
-      const cg = document.getElementById('colgroup'); cg.innerHTML='';
-      const cols = conf.cols.slice();
-      if (!conf.readOnly) cols.push({key:'__actions', w:'8'});
-      const total = cols.reduce((s,c)=> s + (Number(c.w||0) || 0), 0) || 100;
-      for (const c of cols){
-        const col = document.createElement('col');
-        const pct = (Number(c.w||0)||0) / total * 100;
-        col.style.width = pct ? pct+'%' : 'auto';
-        cg.appendChild(col);
-      }
+  function buildColGroup(conf) {
+    const cg = document.getElementById('colgroup'); cg.innerHTML='';
+    const cols = conf.cols.slice(); // no actions col for center alignment
+    const total = cols.reduce((s,c)=> s + (Number(c.w||0) || 0), 0) || 100;
+    for (const c of cols) {
+      const col = document.createElement('col');
+      const pct = (Number(c.w||0)||0) / total * 100;
+      col.style.width = pct ? pct+'%' : 'auto';
+      cg.appendChild(col);
+    }
+  }
+  function buildThead(conf) {
+    const tr = document.getElementById('thead'); tr.innerHTML='';
+    for (const c of conf.cols) tr.appendChild($('th','nowrap', c.label));
+  }
+
+  // ====== 5) Loaders ======
+  async function loadTable() {
+    const conf = tables[activeKey];
+    buildColGroup(conf); buildThead(conf);
+    document.getElementById('addBtn').classList.toggle('hidden', !!conf.readOnly);
+    const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
+
+    if (conf.customLoader === 'loadOrderList') { await loadOrderList(); return; }
+
+    document.body.style.cursor = 'progress';
+    let query = sb.from(conf.table).select('*', { count:'exact' });
+    const q = document.getElementById('globalSearch').value?.trim();
+    if (q) {
+      const orParts = conf.cols.map(c => `${c.key}.ilike.%${q}%`).join(',');
+      if (orParts) query = query.or(orParts);
+    }
+    query = query.order('updated_at', { ascending:false }).range(page*pageSize, page*pageSize+pageSize-1);
+    const { data, error, count } = await query;
+    document.body.style.cursor = 'default';
+
+    if (error) { tbody.appendChild($('tr','',`<td class="text-red-700 p-3" colspan="99">${error.message}</td>`)); return; }
+    totalCount = count || 0;
+    renderRows(conf, data || []);
+  }
+
+  // Special loader for Order List (joined with customers)
+  async function loadOrderList() {
+    const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
+    document.body.style.cursor = 'progress';
+    const { data: orders, error, count } = await sb
+      .from('orders')
+      .select('id, created_at, customer_id, cookie_amount_dzns, status', { count:'exact' })
+      .order('created_at', { ascending:false })
+      .range(page*pageSize, page*pageSize+pageSize-1);
+    document.body.style.cursor = 'default';
+    if (error) { tbody.appendChild($('tr','',`<td class="text-red-700 p-3" colspan="99">${error.message}</td>`)); return; }
+    totalCount = count || 0;
+
+    const ids = [...new Set((orders||[]).map(o => o.customer_id).filter(Boolean))];
+    let map = new Map();
+    if (ids.length){
+      const { data: cust } = await sb.from('customers').select('id, first_name, last_name').in('id', ids);
+      (cust||[]).forEach(c => map.set(c.id, c));
     }
 
-    function buildThead(conf){
-      const tr = document.getElementById('thead'); tr.innerHTML='';
-      for (const c of conf.cols){
-        const th = $('th','thcell nowrap', c.label);
-        tr.appendChild(th);
-      }
-      if (!conf.readOnly) tr.appendChild($('th','thcell text-center nowrap','Actions'));
-    }
+    const rows = (orders||[]).map(o => ({
+      id: o.id,
+      created_at: o.created_at,
+      status: o.status || 'In Review',
+      first_name: map.get(o.customer_id)?.first_name || '',
+      last_name:  map.get(o.customer_id)?.last_name  || '',
+      cookie_amount_dzns: o.cookie_amount_dzns
+    }));
 
-    // 5) Loaders
-    async function loadTable(){
-      const conf = tables[activeKey];
-      buildColGroup(conf); buildThead(conf);
-
-      document.getElementById('addBtn').classList.toggle('hidden', !!conf.readOnly);
-      const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
-
-      if (conf.customLoader === 'loadOrderList') { await loadOrderList(); return; }
-
-      document.body.style.cursor = 'progress';
-      let query = sb.from(conf.table).select('*', { count:'exact' });
-
-      const q = document.getElementById('globalSearch').value?.trim();
-      if (q) {
-        const orParts = conf.cols.map(c => `${c.key}.ilike.%${q}%`).join(',');
-        if (orParts) query = query.or(orParts);
-      }
-      query = query.order('updated_at', { ascending:false }).range(page*pageSize, page*pageSize+pageSize-1);
-
-      const { data, error, count } = await query;
-      document.body.style.cursor = 'default';
-
-      if (error) {
-        tbody.appendChild($('tr','',`<td class="cell text-red-700 text-center" colspan="99">${error.message}</td>`));
-        return;
-      }
-      totalCount = count || 0;
-      renderRows(conf, data || []);
-    }
-
-    // special loader for Order List (joined view)
-    async function loadOrderList(){
+    // Render rows — entire row is a link to open the Order Control Panel
+    for (const r of rows) {
+      const tr = $('tr','border-b hover:bg-gray-50 cursor-pointer');
+      tr.addEventListener('click', () => openOrderPanel(r.id));
       const conf = tables.order_list;
-      const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
-
-      document.body.style.cursor = 'progress';
-      let q = sb.from('orders').select('id, created_at, customer_id, cookie_amount_dzns, status, flavor, dietary_option, discount_code_used, consultation_requested, gift_note', { count:'exact' })
-                  .order('created_at', { ascending:false })
-                  .range(page*pageSize, page*pageSize+pageSize-1);
-      const { data: orders, error, count } = await q;
-      document.body.style.cursor = 'default';
-
-      if (error) {
-        tbody.appendChild($('tr','',`<td class="cell text-red-700 text-center" colspan="99">${error.message}</td>`));
-        return;
+      for (const c of conf.cols) {
+        let v = r[c.key];
+        if (c.type === 'date') v = dateInputValue(v);
+        tr.appendChild($('td','nowrap', fmt(v)));
       }
-      totalCount = count || 0;
-
-      // pull customers in one shot
-      const ids = [...new Set((orders||[]).map(o => o.customer_id).filter(Boolean))];
-      let map = new Map();
-      if (ids.length){
-        const { data: cust } = await sb.from('customers').select('id, first_name, last_name, email, phone').in('id', ids);
-        (cust||[]).forEach(c => map.set(c.id, c));
-      }
-
-      const rows = (orders||[]).map(o => ({
-        id: o.id,
-        created_at: o.created_at,
-        status: o.status || 'In Review',
-        first_name: map.get(o.customer_id)?.first_name || '',
-        last_name:  map.get(o.customer_id)?.last_name  || '',
-        cookie_amount_dzns: o.cookie_amount_dzns,
-        customer: map.get(o.customer_id) || {},
-        raw: o
-      }));
-
-      for (const r of rows){
-        const tr = $('tr','border-b clickable');
-        tr.addEventListener('click', ()=> openOrderPanel(r));
-        for (const c of conf.cols){
-          let v = r[c.key];
-          if (c.type === 'date') v = dateInputValue(v);
-          tr.appendChild($('td','cell nowrap', fmt(v)));
-        }
-        tbody.appendChild(tr);
-      }
-      updatePager();
-
-      document.getElementById('exportBtn').onclick = () => exportCSV(rows, conf);
+      tbody.appendChild(tr);
     }
+    updatePager();
+    // CSV export for this view
+    document.getElementById('exportBtn').onclick = () => exportCSV(rows, tables.order_list);
+  }
 
-    function renderRows(conf, data){
-      const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
-      for (const row of data){
-        const tr = $('tr','border-b');
-        for (const c of conf.cols){
-          let val = row[c.key];
-          if (c.type === 'checkbox') val = !!val;
-          if (c.type === 'date') val = dateInputValue(val);
-          tr.appendChild($('td','cell nowrap', fmt(val)));
-        }
-        if (!conf.readOnly) {
-          const td = $('td','cell text-center nowrap');
-          const edit = $('button','px-2 py-1 rounded border hover:bg-gray-100','Edit');
-          edit.addEventListener('click', () => openEditor(conf, row));
-          td.appendChild(edit);
-          tr.appendChild(td);
-        }
-        tbody.appendChild(tr);
+  function renderRows(conf, data) {
+    const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
+    for (const row of data) {
+      const tr = $('tr','border-b');
+      for (const c of conf.cols) {
+        let val = row[c.key];
+        if (c.type === 'checkbox') val = !!val;
+        if (c.type === 'date') val = dateInputValue(val);
+        tr.appendChild($('td','nowrap', fmt(val)));
       }
-      updatePager();
-      document.getElementById('exportBtn').onclick = async () => {
-        const { data: allRows } = await sb.from(conf.table).select('*').order('updated_at',{ascending:false});
-        exportCSV(allRows||[], conf);
-      };
+      tbody.appendChild(tr);
     }
+    updatePager();
+    document.getElementById('exportBtn').onclick = async () => {
+      const { data: allRows } = await sb.from(conf.table).select('*').order('updated_at',{ascending:false});
+      exportCSV(allRows||[], conf);
+    };
+  }
 
-    function exportCSV(rows, conf){
-      const headers = conf.cols.map(c => c.label);
-      const csvRows = [headers.join(',')];
-      for (const r of rows){
-        const vals = conf.cols.map(c => {
-          let v = r[c.key]; if (v == null) v = '';
-          const s = String(v).replaceAll('"','""');
-          return `"${s}"`;
-        });
-        csvRows.push(vals.join(','));
-      }
-      const csv = csvRows.join('\n');
-      const blob = new Blob([csv], { type: 'text/csv' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a'); a.href = url; a.download = `${conf.title.replace(/\s+/g,'_')}.csv`; a.click();
-      URL.revokeObjectURL(url);
+  function exportCSV(rows, conf){
+    const headers = conf.cols.map(c => c.label);
+    const csvRows = [headers.join(',')];
+    for (const r of rows){
+      const vals = conf.cols.map(c => {
+        let v = r[c.key]; if (v == null) v = '';
+        const s = String(v).replaceAll('"','""');
+        return `"${s}"`;
+      });
+      csvRows.push(vals.join(','));
     }
+    const csv = csvRows.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = `${conf.title.replace(/\s+/g,'_')}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  }
 
-    function updatePager(){
-      const prev = document.getElementById('prev');
-      const next = document.getElementById('next');
-      prev.disabled = page === 0;
-      next.disabled = (page + 1) * pageSize >= totalCount;
-      const shownEnd = Math.min(totalCount, page*pageSize + Math.min(pageSize, Math.max(0, totalCount - page*pageSize)));
-      document.getElementById('pageInfo').textContent = `${shownEnd} of ${totalCount}`;
+  function updatePager(){
+    const prev = document.getElementById('prev');
+    const next = document.getElementById('next');
+    prev.disabled = page === 0;
+    next.disabled = (page + 1) * pageSize >= totalCount;
+    const shown = Math.min(totalCount, page*pageSize + Math.min(pageSize,totalCount - page*pageSize));
+    document.getElementById('pageInfo').textContent = `${shown} of ${totalCount}`;
+  }
+
+  // ====== 6) Generic Editor (non-order-list tabs) ======
+  const dlg = document.getElementById('editor');
+  const formBody = document.getElementById('formBody');
+
+  async function optionEl(col, value){
+    const wrap = $('label','block');
+    wrap.appendChild($('span','text-sm block mb-1', col.label));
+    let input;
+    if (col.type === 'textarea'){ input = $('textarea','px-3 py-2 rounded-lg border w-full'); input.rows = 4; }
+    else if (col.type === 'checkbox'){ input = $('input','h-4 w-4'); input.type='checkbox'; }
+    else if (col.type === 'select'){
+      input = $('select','px-3 py-2 rounded-lg border w-full');
+      (col.options||[]).forEach(o => { const opt = $('option','',o); opt.value=o; input.appendChild(opt); });
+    } else if (col.type === 'select-async'){
+      input = $('select','px-3 py-2 rounded-lg border w-full');
+      const options = await col.asyncOptions();
+      for (const o of options){ const opt = document.createElement('option'); if (typeof o === 'string'){ opt.value=o; opt.textContent=o; } else { opt.value=o.value; opt.textContent=o.label; } input.appendChild(opt); }
+    } else {
+      input = $('input','px-3 py-2 rounded-lg border w-full');
+      input.type = col.type || 'text';
+      if (col.step) input.step = col.step;
+      if (col.min !== undefined) input.min = col.min;
+      if (col.max !== undefined) input.max = col.max;
     }
+    input.id = `fld_${col.key}`;
+    if (col.required) input.required = true;
+    if (col.type === 'checkbox') input.checked = !!value; else if (col.type === 'date') input.value = dateInputValue(value); else input.value = value ?? '';
+    wrap.appendChild(input);
+    return wrap;
+  }
 
-    // 6) Editor
-    const dlg = document.getElementById('editor');
-    const formBody = document.getElementById('formBody');
+  async function openEditor(conf, row){
+    document.getElementById('editorTitle').textContent = row ? `Edit ${conf.title}` : `New ${conf.title}`;
+    formBody.innerHTML = '';
+    for (const c of conf.cols) formBody.appendChild(await optionEl(c, row?.[c.key]));
+    const idHidden = document.createElement('input'); idHidden.type='hidden'; idHidden.id='row_id'; idHidden.value=row?.id||''; formBody.appendChild(idHidden);
 
-    async function optionEl(col, value){
-      const wrap = $('label','block');
-      wrap.appendChild($('span','text-sm block mb-1', col.label));
-      let input;
-      if (col.type === 'textarea'){ input = $('textarea','px-3 py-2 rounded-lg border w-full'); input.rows = 4; }
-      else if (col.type === 'checkbox'){ input = $('input','h-4 w-4'); input.type='checkbox'; }
-      else if (col.type === 'select'){
-        input = $('select','px-3 py-2 rounded-lg border w-full');
-        (col.options||[]).forEach(o => { const opt = $('option','',o); opt.value=o; input.appendChild(opt); });
-      } else if (col.type === 'select-async'){
-        input = $('select','px-3 py-2 rounded-lg border w-full');
-        const options = await col.asyncOptions();
-        for (const o of options){ const opt = document.createElement('option'); if (typeof o === 'string'){ opt.value=o; opt.textContent=o; } else { opt.value=o.value; opt.textContent=o.label; } input.appendChild(opt); }
-      } else {
-        input = $('input','px-3 py-2 rounded-lg border w-full');
-        input.type = col.type || 'text';
-        if (col.step) input.step = col.step;
-        if (col.min !== undefined) input.min = col.min;
-        if (col.max !== undefined) input.max = col.max;
-      }
-      input.id = `fld_${col.key}`;
-      if (col.required) input.required = true;
-      if (col.type === 'checkbox') input.checked = !!value; else if (col.type === 'date') input.value = dateInputValue(value); else input.value = value ?? '';
-      wrap.appendChild(input);
-      return wrap;
+    const delBtn = document.getElementById('deleteBtn');
+    delBtn.classList.add('hidden'); // keep destructive out by default
+    document.getElementById('saveBtn').onclick = async (e) => { e.preventDefault(); await saveRecord(conf); };
+    dlg.showModal();
+  }
+
+  async function saveRecord(conf){
+    const payload = {};
+    for (const c of conf.cols){
+      const elx = document.getElementById(`fld_${c.key}`);
+      let val = (c.type === 'checkbox') ? elx.checked : elx.value || null;
+      if (c.type === 'number' && val !== null) val = elx.value === '' ? null : Number(val);
+      payload[c.key] = val;
     }
+    const id = document.getElementById('row_id').value;
+    let resp;
+    if (id) resp = await sb.from(conf.table).update(payload).eq('id', id).select('*').single();
+    else   resp = await sb.from(conf.table).insert(payload).select('*').single();
+    if (resp.error) { alert(resp.error.message); return; }
+    dlg.close(); loadTable();
+  }
 
-    async function openEditor(conf, row){
-      document.getElementById('editorTitle').textContent = row ? `Edit ${conf.title}` : `New ${conf.title}`;
-      formBody.innerHTML = '';
-      for (const c of conf.cols) formBody.appendChild(await optionEl(c, row?.[c.key]));
-      const idHidden = document.createElement('input'); idHidden.type='hidden'; idHidden.id='row_id'; idHidden.value=row?.id||''; formBody.appendChild(idHidden);
+  // ====== 7) Tabs, search, realtime ======
+  function renderTabs(){
+    const nav = document.getElementById('tabs'); nav.innerHTML='';
+    for (const key of tabOrder){
+      const conf = tables[key];
+      const a = $('button','pb-1', conf.title);
+      if (key === activeKey) a.classList.add('tab-active');
+      a.addEventListener('click', ()=>{ activeKey = key; page = 0; renderTabs(); loadTable(); });
+      nav.appendChild(a);
+    }
+    document.getElementById('addBtn').onclick = () => openEditor(tables[activeKey], null);
+    document.getElementById('prev').onclick = () => { if (page>0) { page--; loadTable(); } };
+    document.getElementById('next').onclick = () => { if ((page+1)*pageSize < totalCount) { page++; loadTable(); } };
+    document.getElementById('globalSearch').onkeydown = (e)=>{ if (e.key==='Enter'){ page=0; loadTable(); } };
+    document.getElementById('refreshAll').onclick = () => loadTable();
+  }
 
-      const delBtn = document.getElementById('deleteBtn');
-      delBtn.classList.toggle('hidden', !row || !!conf.readOnly);
-      delBtn.onclick = async () => {
-        if (!row?.id) return; if (!confirm('Delete this record?')) return;
-        const { error } = await sb.from(conf.table).delete().eq('id', row.id);
+  function wireRealtime(){
+    for (const key of Object.keys(tables)){
+      sb.channel(`${key}-changes`)
+        .on('postgres_changes', { event:'*', schema:'public', table: (key==='order_list'?'orders':tables[key].table) },
+          () => { if (key === activeKey) loadTable(); })
+        .subscribe();
+    }
+  }
+
+  // ====== 8) ORDER CONTROL PANEL ======
+  const op = {
+    dlg: document.getElementById('orderPanel'),
+    id: null,
+    order: null,
+    customer: null,
+    pricing: null,
+    adjustments: [],
+  };
+
+  async function openOrderPanel(orderId){
+    op.id = orderId;
+    // fetch order + customer
+    const { data: order, error: e1 } = await sb.from('orders').select('*').eq('id', orderId).single();
+    if (e1) { alert(e1.message); return; }
+    op.order = order;
+    const { data: cust } = await sb.from('customers').select('*').eq('id', order.customer_id).maybeSingle();
+    op.customer = cust || null;
+    // pricing row
+    const { data: priceRow } = await sb.from('pricing').select('*').limit(1).maybeSingle();
+    op.pricing = priceRow || {};
+    // adjustments
+    const { data: adjs } = await sb.from('order_adjustments').select('*').eq('order_id', orderId).order('created_at',{ascending:true});
+    op.adjustments = adjs || [];
+
+    // fill UI
+    fillOrderPanel();
+    op.dlg.showModal();
+  }
+
+  function fillOrderPanel(){
+    const o = op.order, c = op.customer || {}, p = op.pricing || {};
+    // title
+    document.getElementById('opTitle').textContent = `Order — ${c.first_name||''} ${c.last_name||''}`.trim();
+    // basics
+    document.getElementById('opSubmitted').textContent = dateInputValue(o.created_at);
+    document.getElementById('opStatusText').textContent = o.status || 'In Review';
+    document.getElementById('opFlavor').textContent = o.flavor || '';
+    document.getElementById('opDietary').textContent = o.dietary_option || '';
+    document.getElementById('opDzns').textContent = o.cookie_amount_dzns ?? '';
+    document.getElementById('opDiscountCode').textContent = o.discount_code_used || '';
+    document.getElementById('opReferralCode').textContent = o.referral_code_used || '';
+    document.getElementById('opGiftNote').textContent = o.gift_note ? 'Yes' : 'No';
+    document.getElementById('opGiftText').textContent = o.gift_note_text || '';
+    document.getElementById('opConsult').textContent = o.consultation_requested ? 'Yes' : 'No';
+    // photo
+    const img = document.getElementById('opPhoto');
+    const path = o.design_inspiration_photo || '';
+    if (path) {
+      const { data } = sb.storage.from('order_uploads').getPublicUrl(path);
+      img.src = data?.publicUrl || '';
+      img.classList.toggle('hidden', !data?.publicUrl);
+    } else {
+      img.classList.add('hidden');
+      img.src = '';
+    }
+    document.getElementById('opUploadMsg').textContent = path ? path : 'No file uploaded';
+
+    // status select
+    document.getElementById('opStatus').value = o.status || 'In Review';
+
+    // customer box
+    document.getElementById('opCustName').textContent = `${c.first_name||''} ${c.last_name||''}`.trim();
+    document.getElementById('opCustEmail').textContent = c.email || '';
+    document.getElementById('opCustPhone').textContent = c.phone || '';
+    document.getElementById('opCustAddr1').textContent = c.street_address || '';
+    document.getElementById('opCustAddr2').textContent = c.street_address_cont || '';
+    document.getElementById('opCustCityStZip').textContent = [c.city,c.state,c.zip].filter(Boolean).join(', ');
+
+    // pricing labels
+    document.getElementById('opPricePerDozen').textContent = money(p.price_per_dozen || 0);
+    // render adjustments table
+    renderAdjustments();
+    // compute totals
+    computeTotals();
+  }
+
+  function renderAdjustments(){
+    const body = document.getElementById('opAdjBody'); body.innerHTML = '';
+    if (!op.adjustments.length) {
+      body.appendChild($('tr','', '<td colspan="4" class="p-3 text-gray-500">No adjustments yet</td>'));
+      return;
+    }
+    for (const a of op.adjustments) {
+      const tr = $('tr','border-b');
+      tr.appendChild($('td','', a.type));
+      tr.appendChild($('td','', a.label || ''));
+      tr.appendChild($('td','', money(a.amount || 0)));
+      const td = $('td','');
+      const del = $('button','btn-ghost','Delete');
+      del.addEventListener('click', async ()=>{
+        const { error } = await sb.from('order_adjustments').delete().eq('id', a.id);
         if (error) { alert(error.message); return; }
-        dlg.close(); loadTable();
-      };
-      document.getElementById('saveBtn').onclick = async (e) => { e.preventDefault(); await saveRecord(conf); };
-      dlg.showModal();
+        // reload list
+        const { data: adjs } = await sb.from('order_adjustments').select('*').eq('order_id', op.id).order('created_at',{ascending:true});
+        op.adjustments = adjs || [];
+        renderAdjustments(); computeTotals();
+      });
+      td.appendChild(del); tr.appendChild(td);
+      body.appendChild(tr);
     }
+  }
 
-    async function saveRecord(conf){
-      const payload = {};
-      for (const c of conf.cols){
-        const elx = document.getElementById(`fld_${c.key}`);
-        let val = (c.type === 'checkbox') ? elx.checked : elx.value || null;
-        if (c.type === 'number' && val !== null) val = elx.value === '' ? null : Number(val);
-        payload[c.key] = val;
-      }
-      const id = document.getElementById('row_id').value;
-      let resp;
-      if (id) resp = await sb.from(conf.table).update(payload).eq('id', id).select('*').single();
-      else   resp = await sb.from(conf.table).insert(payload).select('*').single();
-      if (resp.error) { alert(resp.error.message); return; }
-      dlg.close(); loadTable();
+  function computeTotals(){
+    const o = op.order, p = op.pricing || {};
+    const pricePerDozen = +p.price_per_dozen || 0;
+    const base = pricePerDozen * (+o.cookie_amount_dzns || 0);
+    const consult = o.consultation_requested ? (+p.consultation_fee || 0) : 0;
+    const giftFee = o.gift_note ? (+p.gift_note_fee || 0) : 0;
+    const rush = +p.rush_fee || 0;  // if you later add "rush" flag, wire it here
+    const delivery = +p.delivery_fee || 0;
+
+    const fees = op.adjustments.filter(a=>a.type==='fee').reduce((s,a)=> s + (+a.amount||0), 0);
+    const discounts = op.adjustments.filter(a=>a.type==='discount').reduce((s,a)=> s + (+a.amount||0), 0);
+
+    const total = base + consult + giftFee + rush + delivery + fees - discounts;
+
+    document.getElementById('opBase').textContent = money(base);
+    document.getElementById('opConsultFee').textContent = money(consult);
+    document.getElementById('opGiftFee').textContent = money(giftFee);
+    document.getElementById('opRushFee').textContent = money(rush);
+    document.getElementById('opDeliveryFee').textContent = money(delivery);
+    document.getElementById('opAdjFees').textContent = money(fees);
+    document.getElementById('opAdjDiscs').textContent = `-${money(discounts).replace('$','')}`;
+    document.getElementById('opTotal').textContent = money(total);
+  }
+
+  // Handlers inside panel
+  document.getElementById('opSaveStatus').addEventListener('click', async ()=>{
+    const s = document.getElementById('opStatus').value;
+    const { error } = await sb.from('orders').update({ status: s }).eq('id', op.id);
+    if (error) { alert(error.message); return; }
+    op.order.status = s;
+    document.getElementById('opStatusText').textContent = s;
+    loadTable(); // refresh list status
+  });
+
+  // Add fee
+  document.getElementById('opAddFee').addEventListener('click', async ()=>{
+    const label = prompt('Fee label (e.g., “Rush”, “Custom packaging”)');
+    if (!label) return;
+    const amt = +prompt('Fee amount (e.g., 15.00)');
+    if (!isFinite(amt)) return;
+    const { error } = await sb.from('order_adjustments').insert({ order_id: op.id, type:'fee', label, amount: amt });
+    if (error) { alert(error.message); return; }
+    const { data: adjs } = await sb.from('order_adjustments').select('*').eq('order_id', op.id).order('created_at',{ascending:true});
+    op.adjustments = adjs || []; renderAdjustments(); computeTotals();
+  });
+  // Add discount
+  document.getElementById('opAddDiscount').addEventListener('click', async ()=>{
+    const label = prompt('Discount label (e.g., “Referral”, “Manual adj”)');
+    if (!label) return;
+    const amt = +prompt('Discount amount (e.g., 10.00)');
+    if (!isFinite(amt)) return;
+    const { error } = await sb.from('order_adjustments').insert({ order_id: op.id, type:'discount', label, amount: amt });
+    if (error) { alert(error.message); return; }
+    const { data: adjs } = await sb.from('order_adjustments').select('*').eq('order_id', op.id).order('created_at',{ascending:true});
+    op.adjustments = adjs || []; renderAdjustments(); computeTotals();
+  });
+
+  // Upload inspiration photo to Storage (bucket: order_uploads), save path to order.design_inspiration_photo
+  document.getElementById('opUploadBtn').addEventListener('click', async ()=>{
+    const fileInput = document.getElementById('opUpload');
+    const file = fileInput.files?.[0];
+    if (!file) { alert('Choose a file first.'); return; }
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `orders/${op.id}/inspiration.${ext}`;
+    document.getElementById('opUploadBtn').disabled = true;
+    document.getElementById('opUploadBtn').textContent = 'Uploading...';
+    try {
+      // remove previous if exists
+      await sb.storage.from('order_uploads').remove([path]).catch(()=>{});
+      const { error: upErr } = await sb.storage.from('order_uploads').upload(path, file, { upsert: true });
+      if (upErr) throw upErr;
+      const { error: dbErr } = await sb.from('orders').update({ design_inspiration_photo: path }).eq('id', op.id);
+      if (dbErr) throw dbErr;
+      op.order.design_inspiration_photo = path;
+      fillOrderPanel(); // refresh preview + label
+    } catch (e) {
+      alert(e.message || 'Upload failed');
+    } finally {
+      document.getElementById('opUploadBtn').disabled = false;
+      document.getElementById('opUploadBtn').textContent = 'Upload';
     }
+  });
 
-    // 7) Tabs, search, pager, realtime
-    function renderTabs(){
-      const nav = document.getElementById('tabs'); nav.innerHTML='';
-      for (const key of tabOrder){
-        const conf = tables[key];
-        const a = $('button','pb-1', conf.title);
-        if (key === activeKey) a.classList.add('tab-active');
-        a.addEventListener('click', ()=>{ activeKey = key; page = 0; renderTabs(); loadTable(); });
-        nav.appendChild(a);
-      }
-      document.getElementById('addBtn').onclick = () => openEditor(tables[activeKey], null);
-      document.getElementById('prev').onclick = () => { if (page>0) { page--; loadTable(); } };
-      document.getElementById('next').onclick = () => { if ((page+1)*pageSize < totalCount) { page++; loadTable(); } };
-      document.getElementById('globalSearch').onkeydown = (e)=>{ if (e.key==='Enter'){ page=0; loadTable(); } };
-      document.getElementById('refreshAll').onclick = () => loadTable();
-    }
+  // Edit order fields (opens generic editor prefilled for Orders table)
+  document.getElementById('opEditOrder').addEventListener('click', async ()=>{
+    const { data: full } = await sb.from('orders').select('*').eq('id', op.id).single();
+    openEditor(tables.orders, full);
+  });
 
-    function wireRealtime(){
-      for (const key of Object.keys(tables)){
-        sb.channel(`${key}-changes`)
-          .on('postgres_changes', { event:'*', schema:'public', table: (key==='order_list'?'orders':tables[key].table) },
-            () => { if (key === activeKey) loadTable(); })
-          .subscribe();
-      }
-    }
+  // “Invoice” quick preview — CSV download of the priced breakdown (lightweight)
+  document.getElementById('opInvoice').addEventListener('click', ()=>{
+    const lines = [
+      ['Item','Amount'],
+      ['Base', document.getElementById('opBase').textContent],
+      ['Consult fee', document.getElementById('opConsultFee').textContent],
+      ['Gift note fee', document.getElementById('opGiftFee').textContent],
+      ['Rush fee', document.getElementById('opRushFee').textContent],
+      ['Delivery fee', document.getElementById('opDeliveryFee').textContent],
+      ['Adj (fees)', document.getElementById('opAdjFees').textContent],
+      ['Adj (discounts)', document.getElementById('opAdjDiscs').textContent.startsWith('-')?document.getElementById('opAdjDiscs').textContent:`-${document.getElementById('opAdjDiscs').textContent}`],
+      ['Total', document.getElementById('opTotal').textContent],
+    ];
+    const csv = lines.map(r=>r.join(',')).join('\n');
+    const blob = new Blob([csv], { type:'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href=url; a.download=`invoice_${op.id}.csv`; a.click();
+    URL.revokeObjectURL(url);
+  });
 
-    // -------------------------
-    // Order Control Panel
-    // -------------------------
-    const orderPanel = document.getElementById('orderPanel');
-    const orderPanelTitle = document.getElementById('orderPanelTitle');
-    const orderSummary = document.getElementById('orderSummary');
-    const orderTotals = document.getElementById('orderTotals');
-    const orderCustomer = document.getElementById('orderCustomer');
-    const orderStatusSel = document.getElementById('orderStatus');
-    const saveStatusBtn = document.getElementById('saveStatus');
-    const orderPanelClose = document.getElementById('orderPanelClose');
-
-    let currentOrderFull = null;
-
-    orderPanelClose.addEventListener('click', ()=> orderPanel.close());
-    document.getElementById('editOrder').addEventListener('click', async () => {
-      if (!currentOrderFull) return;
-      activeKey = 'orders'; renderTabs();
-      // open editor on this order:
-      const { data, error } = await sb.from('orders').select('*').eq('id', currentOrderFull.raw.id).single();
-      if (!error && data) openEditor(tables.orders, data);
-      orderPanel.close();
-    });
-
-    document.getElementById('addFee').addEventListener('click', () => {
-      alert('Add Fee UI not wired to a table yet. Add a fees table to persist this.');
-    });
-    document.getElementById('addDiscount').addEventListener('click', () => {
-      alert('Add Discount UI not wired to a table yet. Use discount_codes to apply codes on the order.');
-    });
-    document.getElementById('viewInvoice').addEventListener('click', () => {
-      alert('Invoice preview/save can be added once you confirm the exact layout. For now totals are shown on the right.');
-    });
-
-    saveStatusBtn.addEventListener('click', async () => {
-      if (!currentOrderFull) return;
-      const status = orderStatusSel.value;
-      const { error } = await sb.from('orders').update({ status }).eq('id', currentOrderFull.raw.id);
-      if (error) { alert(error.message); return; }
-      await loadTable();
-      alert('Status updated.');
-    });
-
-    async function openOrderPanel(rowObj){
-      // rowObj has: id, created_at, status, names, cookie_amount_dzns, customer, raw
-      currentOrderFull = rowObj;
-      orderPanelTitle.textContent = `Order — ${rowObj.first_name} ${rowObj.last_name}`;
-      // fetch latest pricing row
-      const { data: pricing } = await sb.from('pricing').select('*').order('updated_at', { ascending:false }).limit(1).maybeSingle();
-      // compute est totals
-      const pricePerDozen = Number(pricing?.price_per_dozen || 0);
-      const consultFee = rowObj.raw.consultation_requested ? Number(pricing?.consultation_fee||0) : 0;
-      const giftFee = rowObj.raw.gift_note ? Number(pricing?.gift_note_fee||0) : 0;
-      const base = (Number(rowObj.cookie_amount_dzns||0) * pricePerDozen);
-      const est = base + consultFee + giftFee;
-
-      orderSummary.innerHTML = `
-        <div><span class="font-medium">Submitted:</span> ${dateInputValue(rowObj.created_at)}</div>
-        <div><span class="font-medium">Status:</span> ${rowObj.status}</div>
-        <div><span class="font-medium">Flavor:</span> ${rowObj.raw.flavor || ''}</div>
-        <div><span class="font-medium">Dietary:</span> ${rowObj.raw.dietary_option || ''}</div>
-        <div><span class="font-medium">Cookie dzns:</span> ${rowObj.cookie_amount_dzns ?? ''}</div>
-        <div><span class="font-medium">Discount code:</span> ${rowObj.raw.discount_code_used || ''}</div>
-      `;
-
-      orderTotals.innerHTML = `
-        <div>Price/dozen: $${pricePerDozen.toFixed(2)}</div>
-        <div>Base: $${base.toFixed(2)}</div>
-        <div>Consult fee: $${consultFee.toFixed(2)}</div>
-        <div>Gift note fee: $${giftFee.toFixed(2)}</div>
-        <hr class="my-2">
-        <div class="font-semibold">Estimated total: $${est.toFixed(2)}</div>
-      `;
-
-      orderCustomer.innerHTML = `
-        <div>${rowObj.first_name} ${rowObj.last_name}</div>
-        <div>${rowObj.customer.email || ''}</div>
-        <div>${rowObj.customer.phone || ''}</div>
-      `;
-
-      // preset status selector
-      orderStatusSel.value = rowObj.status || 'In Review';
-      orderPanel.showModal();
-    }
-
-    // Expose for row click handler
-    window.openOrderPanel = openOrderPanel;
-
-  }); // DOMContentLoaded
+  // ====== Boot ======
+  bootstrap();
   </script>
 </body>
 </html>
