@@ -319,10 +319,11 @@
     const authMsg = document.getElementById('authMsg');
     
     // Renamed button and input elements for new functionality
-    const signInButton = document.getElementById('signInButton');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
+// Located near the top of the <script> block
+
+const signInButton = document.getElementById('signInButton'); // This must find the button
+const emailInput = document.getElementById('email');           // This must find the email input
+const passwordInput = document.getElementById('password');     // This must find the password input
 
     // *** NEW LOGIC: Email and Password Sign-In ***
     signInButton.addEventListener('click', async () => {
