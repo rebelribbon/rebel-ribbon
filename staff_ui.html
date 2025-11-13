@@ -11,6 +11,20 @@
         body { margin: 0; display: flex; min-height: 100vh; }
         #app-wrapper { display: flex; width: 100%; }
 
+        /* FIX 1: Ensure signin card takes full screen and app wrapper is absolutely hidden initially */
+        #signinCard { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            z-index: 1000; /* Ensure it stays on top */
+            background-color: #f9fafb; /* bg-gray-50 */
+        }
+        #app-wrapper.hidden {
+            display: none;
+        }
+
         /* Sidebar Navigation */
         #sidebar { width: 200px; background-color: #1f2937; color: white; flex-shrink: 0; padding: 1rem 0; }
         .nav-item { display: block; padding: 0.75rem 1rem; cursor: pointer; transition: background-color 0.15s; }
@@ -59,7 +73,7 @@
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
-    <div id="signinCard" class="min-h-screen flex items-center justify-center p-4">
+    <div id="signinCard" class="flex items-center justify-center p-4">
         <div class="w-full max-w-md bg-white rounded-2xl shadow p-6">
             <h1 class="text-2xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
             <p class="text-sm text-gray-600 mb-4">Use your @rebelribbon.com email. We’ll send a magic link.</p>
@@ -297,23 +311,39 @@
     const signinCard = document.getElementById('signinCard');
     const appWrapper = document.getElementById('app-wrapper');
     const authMsg = document.getElementById('authMsg');
+    const sendLinkBtn = document.getElementById('sendLink');
+    const emailInput = document.getElementById('email');
     const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
 
-    document.getElementById('sendLink').addEventListener('click', async () => {
+    // FIX 2: Intermittent button—Added disabling/enabling and cursor feedback
+    sendLinkBtn.addEventListener('click', async () => {
         try {
             authMsg.textContent = '';
-            const email = document.getElementById('email').value.trim();
+            const email = emailInput.value.trim();
+            
             if (!onlyCompanyEmail(email)) {
                 authMsg.textContent = 'Use your @rebelribbon.com address.'; return;
             }
+            
+            // Disable button and change cursor immediately upon click
+            sendLinkBtn.disabled = true;
+            document.body.style.cursor = 'progress';
+
             const redirectTo = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
             const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
+            
             if (error) throw error;
+            
             authMsg.classList.remove('text-red-600'); authMsg.classList.add('text-green-700');
             authMsg.textContent = 'Magic link sent. Check your inbox.';
+
         } catch (e) {
             authMsg.classList.remove('text-green-700'); authMsg.classList.add('text-red-600');
             authMsg.textContent = e.message || 'Failed to fetch';
+        } finally {
+            // Re-enable button and reset cursor (essential for intermittent fix)
+            sendLinkBtn.disabled = false;
+            document.body.style.cursor = 'default';
         }
     });
 
@@ -322,7 +352,9 @@
         if (error) { authMsg.textContent = error.message; return; }
 
         if (!session) {
-            signinCard.classList.remove('hidden'); appWrapper.classList.add('hidden');
+            // FIX: Ensure the sign-in card is fixed and visible, and app wrapper is hidden
+            signinCard.classList.remove('hidden'); 
+            appWrapper.classList.add('hidden');
             if (SUPABASE_URL.includes('YOUR-PROJECT') || SUPABASE_ANON_KEY.includes('PASTE_')) {
                 const hint = document.getElementById('netHint'); hint.classList.remove('hidden'); hint.textContent = 'Missing Supabase keys.';
             }
@@ -334,7 +366,9 @@
             authMsg.textContent = 'This page is restricted to @rebelribbon.com'; return;
         }
         document.getElementById('who').textContent = email;
-        signinCard.classList.add('hidden'); appWrapper.classList.remove('hidden');
+        // FIX: Hide the sign-in card and show the app wrapper
+        signinCard.classList.add('hidden'); 
+        appWrapper.classList.remove('hidden');
 
         // Initialize state
         activeKey = 'order_list';
