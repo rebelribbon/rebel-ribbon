@@ -47,6 +47,15 @@
         .status-canceled { background-color: #f3f4f6; color: #6b7280; }
         .urgent-date { color: #dc2626; font-weight: 700; }
         .info-card { background-color: #fff; border-radius: 0.75rem; border: 1px solid #e5e7eb; padding: 1rem; }
+
+        /* Custom Button Styles */
+        .btn-primary { background-color: #3b82f6; color: white; transition: background-color 0.15s; }
+        .btn-primary:hover { background-color: #2563eb; }
+        .btn-secondary { background-color: white; color: #374151; border: 1px solid #d1d5db; transition: background-color 0.15s; }
+        .btn-secondary:hover { background-color: #f3f4f6; }
+        .btn-success { background-color: #10b981; color: white; transition: background-color 0.15s; }
+        .btn-success:hover { background-color: #059669; }
+        .btn-icon { padding: 0.5rem; border-radius: 0.5rem; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -56,7 +65,7 @@
             <p class="text-sm text-gray-600 mb-4">Use your @rebelribbon.com email. We’ll send a magic link.</p>
             <label class="block text-sm mb-2">Email</label>
             <input id="email" type="email" placeholder="you@rebelribbon.com" class="w-full px-3 py-2 rounded-lg border mb-4"/>
-            <button id="sendLink" class="w-full px-4 py-2 rounded-lg bg-blue-600 text-white">Send magic link</button>
+            <button id="sendLink" class="w-full px-4 py-2 rounded-lg btn-primary">Send magic link</button>
             <p id="authMsg" class="text-sm text-red-600 mt-3"></p>
             <p class="text-xs text-gray-500 mt-3">If the button does nothing, set SUPABASE_URL and SUPABASE_ANON_KEY in this file.</p>
         </div>
@@ -92,7 +101,7 @@
                 <h2 id="pageTitle" class="text-3xl font-bold">Orders</h2>
                 <div class="flex gap-4 items-center">
                     <input id="globalSearch" type="search" placeholder="Search customer, ID, date" class="px-4 py-2 rounded-lg border w-72 shadow-sm"/>
-                    <button id="refreshAll" class="px-3 py-2 rounded-lg border bg-white shadow-sm hover:bg-gray-100">Refresh</button>
+                    <button id="refreshAll" class="px-3 py-2 rounded-lg btn-secondary shadow-sm">Refresh</button>
                 </div>
             </header>
 
@@ -107,13 +116,13 @@
 
             <div class="flex items-center justify-between mb-2">
                 <div class="flex items-center gap-2">
-                    <button id="addBtn" class="px-3 py-2 rounded-lg bg-blue-600 text-white shadow-md">Add New</button>
-                    <button id="exportBtn" class="px-3 py-2 rounded-lg border bg-white shadow-sm hover:bg-gray-100">Export CSV</button>
+                    <button id="addBtn" class="px-3 py-2 rounded-lg btn-primary shadow-md">Add New</button>
+                    <button id="exportBtn" class="px-3 py-2 rounded-lg btn-secondary shadow-sm">Export CSV</button>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button id="prev" class="px-3 py-2 rounded-lg border bg-white disabled:opacity-50 hover:bg-gray-100">Prev</button>
+                    <button id="prev" class="px-3 py-2 rounded-lg btn-secondary disabled:opacity-50">Prev</button>
                     <span id="pageInfo" class="text-sm text-gray-600"></span>
-                    <button id="next" class="px-3 py-2 rounded-lg border bg-white disabled:opacity-50 hover:bg-gray-100">Next</button>
+                    <button id="next" class="px-3 py-2 rounded-lg btn-secondary disabled:opacity-50">Next</button>
                 </div>
             </div>
 
@@ -137,7 +146,7 @@
             <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
                 <button id="deleteBtn" type="button" class="px-3 py-2 rounded-lg border text-red-700 border-red-300 hidden hover:bg-red-50">Delete</button>
-                <button id="saveBtn" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Save</button>
+                <button id="saveBtn" class="px-4 py-2 rounded-lg btn-primary">Save</button>
             </div>
         </form>
     </dialog>
@@ -146,11 +155,11 @@
         <div class="p-0">
             <div class="sticky top-0 z-10 p-4 border-b bg-white flex items-center justify-between shadow-sm">
                 <div class="flex items-center gap-4">
-                    <button value="close" id="backToOrders" class="text-xl p-2 rounded hover:bg-gray-100">← Back to Orders</button>
+                    <button value="close" id="backToOrders" class="text-xl p-2 rounded hover:bg-gray-100 btn-icon">← Back to Orders</button>
                     <h2 id="drawerTitle" class="text-xl font-semibold">Order #XXXX</h2>
                 </div>
                 <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-2">
+                    <div class="flex items-center gap-2 p-1 border rounded-lg bg-gray-50">
                         <label class="font-medium text-sm">Status:</label>
                         <select id="statusSelect" class="px-3 py-2 rounded-lg border shadow-sm">
                             <option value="In Review">In Review</option>
@@ -160,10 +169,10 @@
                             <option value="Fulfilled">Fulfilled</option>
                             <option value="Canceled">Canceled</option>
                         </select>
-                        <button id="saveStatus" type="button" class="px-3 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Save Status</button>
+                        <button id="saveStatus" type="button" class="px-4 py-2 rounded-lg btn-success">Save Status</button>
                     </div>
-                    <button id="editFields" type="button" class="px-3 py-2 rounded-lg border bg-white hover:bg-gray-100">Edit All Fields</button>
-                    <button id="viewInvoice" type="button" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow-md">Generate Invoice / Payment Link</button>
+                    <button id="editFields" type="button" class="px-4 py-2 rounded-lg btn-secondary font-medium">Edit All Fields</button>
+                    <button id="viewInvoice" type="button" class="px-4 py-2 rounded-lg btn-primary shadow-md font-medium">Generate Invoice / Payment Link</button>
                 </div>
             </div>
 
@@ -221,14 +230,14 @@
                     <div class="info-card bg-white shadow-xl border-blue-200 border-2">
                         <h3 class="text-lg font-bold mb-3">💰 Estimated Totals</h3>
                         <div class="text-sm space-y-2">
-                            <div class="flex justify-between"><span>Price/dozen:</span> $<span id="t_price"></span></div>
-                            <div class="flex justify-between"><span>Base Subtotal:</span> $<span id="t_base"></span></div>
-                            <div class="flex justify-between"><span>Consult Fee:</span> $<span id="t_consult"></span></div>
-                            <div class="flex justify-between"><span>Gift Note Fee:</span> $<span id="t_gift"></span></div>
-                            <div class="flex justify-between"><span>Additional Fees:</span> $<span id="t_adj_fees" class="text-green-700"></span></div>
-                            <div class="flex justify-between"><span>Discounts:</span> -$<span id="t_adj_disc" class="text-red-700"></span></div>
+                            <div class="flex justify-between"><span>Price/dozen:</span> <span id="t_price"></span></div>
+                            <div class="flex justify-between"><span>Base Subtotal:</span> <span id="t_base"></span></div>
+                            <div class="flex justify-between"><span>Consult Fee:</span> <span id="t_consult"></span></div>
+                            <div class="flex justify-between"><span>Gift Note Fee:</span> <span id="t_gift"></span></div>
+                            <div class="flex justify-between"><span>Additional Fees:</span> <span id="t_adj_fees" class="text-green-700"></span></div>
+                            <div class="flex justify-between"><span>Discounts:</span> <span id="t_adj_disc" class="text-red-700"></span></div>
                             <hr class="my-2"/>
-                            <div class="font-extrabold text-xl flex justify-between">Total Due: $<span id="t_total"></span></div>
+                            <div class="font-extrabold text-xl flex justify-between">Total Due: <span id="t_total"></span></div>
                         </div>
                     </div>
 
@@ -236,8 +245,8 @@
                         <h3 class="text-lg font-semibold mb-3">👤 Customer & Logistics</h3>
                         <div class="text-sm space-y-1">
                             <div class="font-medium text-base" id="cust_name"></div>
-                            <div id="cust_email" class="break-all text-blue-600 hover:underline cursor-pointer" onclick="window.location.href='mailto:' + this.textContent"></div>
-                            <div id="cust_phone"></div>
+                            <a id="cust_email" class="break-all text-blue-600 hover:underline cursor-pointer"></a>
+                            <a id="cust_phone_link" class="text-blue-600 hover:underline cursor-pointer"></a>
                             <hr class="my-2"/>
                             <h4 class="font-medium">Pickup / Delivery Address:</h4>
                             <div id="cust_addr1"></div>
@@ -374,6 +383,27 @@
             { key:'order_id', label:'Order ID', type:'text', w:'12' }
         ]},
         // NOTE: The 'orders' table tab is functionally replaced by the dedicated Order Manager in 'order_list' view.
+        orders: { title:'Orders', table:'orders', cols:[
+            { key:'order_id', label:'Order ID', type:'text', w:'12' },
+            { key:'customer_id', label:'Customer', type:'select-async', w:'20',
+                asyncOptions: async () => {
+                    const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+                    return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+                }},
+            { key:'pickup_delivery_date', label:'Pick up or delivery date', type:'date', w:'18' },
+            { key:'event_date', label:'Event date', type:'date', w:'14' },
+            { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', step:'0.01', w:'18' },
+            { key:'flavor', label:'Flavor', type:'select-async', w:'14', asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
+            { key:'dietary_option', label:'Dietary option', type:'select-async', w:'16', asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[] },
+            { key:'design_notes', label:'Design notes', type:'textarea', w:'20' },
+            { key:'design_inspiration_photo', label:'Design inspiration photo URL', type:'url', w:'20' },
+            { key:'gift_note', label:'Gift note', type:'checkbox', w:'10' },
+            { key:'gift_note_text', label:'Gift note text', type:'textarea', w:'16' },
+            { key:'consultation_requested', label:'Consultation requested', type:'checkbox', w:'20' },
+            { key:'discount_code_used', label:'Discount code used', type:'text', w:'16' },
+            { key:'referral_code_used', label:'Referral code used', type:'text', w:'16' },
+            { key:'status', label:'Status', type:'select', w:'14', options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'] }
+        ]},
         discount_codes: { title:'Discount Codes', table:'discount_codes', isSettings:true, cols:[
             { key:'code', label:'Code', type:'text', required:true, w:'20' },
             { key:'type', label:'Type', type:'select', options:['percent','fixed'], required:true, w:'14' },
@@ -797,7 +827,19 @@
         return (data||[]).map(r => ({...r, amount: Number(r.amount||0)}));
     }
 
-    function money(n){ return (Number(n||0)).toFixed(2); }
+    // 1. UPDATED: Currency formatting
+    function money(n){ return '$' + (Number(n||0)).toFixed(2); }
+
+    // 2. NEW: Phone number formatting
+    function formatPhone(phone){
+        if (!phone) return '';
+        const cleaned = ('' + phone).replace(/\D/g, '');
+        const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+        if (match) {
+            return `(${match[1]}) ${match[2]}-${match[3]}`;
+        }
+        return phone;
+    }
 
     function computeTotals(){
         const ppd = pricing?.price_per_dozen || 0;
@@ -808,12 +850,14 @@
         const discSum = adjustments.filter(a=>a.kind==='discount').reduce((s,a)=>s+a.amount,0);
         const total = base + consult + gift + feeSum - discSum;
 
+        // 1. UPDATED: Removed static $ signs in HTML, now the function includes them
         document.getElementById('t_price').textContent = money(ppd);
         document.getElementById('t_base').textContent = money(base);
         document.getElementById('t_consult').textContent = money(consult);
         document.getElementById('t_gift').textContent = money(gift);
         document.getElementById('t_adj_fees').textContent = money(feeSum);
-        document.getElementById('t_adj_disc').textContent = money(discSum);
+        // Discounts should display as a negative/subtraction visually
+        document.getElementById('t_adj_disc').textContent = '- ' + money(discSum).replace('$', '$'); // Keep $ prefix, add space
         document.getElementById('t_total').textContent = money(total);
     }
 
@@ -828,7 +872,9 @@
             tr.appendChild($('td','p-2 text-xs', new Date(a.created_at).toLocaleDateString()));
             tr.appendChild($('td','p-2 text-xs', a.kind));
             tr.appendChild($('td','p-2', a.label||''));
-            tr.appendChild($('td',`p-2 text-right ${a.kind === 'discount' ? 'text-red-600' : 'text-green-600'}`, (a.kind === 'discount' ? '-' : '') + money(a.amount)));
+            // Use the money function for amount
+            const amountText = a.kind === 'discount' ? '-' + money(a.amount) : money(a.amount);
+            tr.appendChild($('td',`p-2 text-right ${a.kind === 'discount' ? 'text-red-600' : 'text-green-600'}`, amountText));
             tb.appendChild(tr);
         }
     }
@@ -838,6 +884,7 @@
         const currentStatus = o?.status || 'In Review';
         const isGiftNote = o?.gift_note || false;
         const isConsultation = o?.consultation_requested || false;
+        const rawPhone = c?.phone || '';
 
         document.getElementById('drawerTitle').textContent = `Order #${o.id} — ${c ? `${c.first_name||''} ${c.last_name||''}`.trim() : ''}`;
 
@@ -870,8 +917,18 @@
 
         // Right Column (Customer & Logistics)
         document.getElementById('cust_name').textContent = c ? `${c.first_name||''} ${c.last_name||''}`.trim() : 'N/A';
-        document.getElementById('cust_email').textContent = c?.email || 'N/A';
-        document.getElementById('cust_phone').textContent = c?.phone || 'N/A';
+        
+        // 2. UPDATED: Email link setup
+        const custEmailEl = document.getElementById('cust_email');
+        custEmailEl.textContent = c?.email || 'N/A';
+        custEmailEl.href = `mailto:${c?.email}`;
+
+        // 2. UPDATED: Phone number link and formatting setup
+        const custPhoneEl = document.getElementById('cust_phone_link');
+        custPhoneEl.textContent = formatPhone(rawPhone) || 'N/A';
+        custPhoneEl.href = `tel:${rawPhone.replace(/\D/g, '')}`;
+
+
         document.getElementById('cust_addr1').textContent = c?.street_address || '—';
         document.getElementById('cust_addr2').textContent = c?.street_address_cont || '';
         const cityStZip = [c?.city, c?.state, c?.zip].filter(Boolean).join(', ');
@@ -880,6 +937,7 @@
         document.getElementById('mapLocation').onclick = () => {
             const address = [c?.street_address, c?.street_address_cont, c?.city, c?.state, c?.zip].filter(Boolean).join(', ');
             if (address) {
+                // Use HTTPS and open in new tab
                 window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
             } else {
                 alert('No full address available to map.');
@@ -928,11 +986,11 @@
         loadTable();
     });
 
+    // 4. UPDATED: "Edit All Fields" button functionality is made explicit here
     document.getElementById('editFields').addEventListener('click', ()=>{
-        // Get the full 'orders' column definition (which has more fields than the limited order_list view)
-        const ordersConfig = tables.orders;
-        // re-use generic editor with Orders config and active row
-        openEditor(ordersConfig, activeOrder);
+        if (!activeOrder) return;
+        // Re-use generic editor with the full 'orders' config and the currently active order data
+        openEditor(tables.orders, activeOrder);
     });
 
     document.getElementById('backToOrders').addEventListener('click', (e) => {
