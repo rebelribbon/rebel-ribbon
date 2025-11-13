@@ -11,7 +11,7 @@
         body { margin: 0; display: flex; min-height: 100vh; }
         #app-wrapper { display: flex; width: 100%; }
 
-        /* FIX 1: Ensure signin card takes full screen and app wrapper is absolutely hidden initially */
+        /* FIX: Ensure signin card takes full screen and app wrapper is absolutely hidden initially */
         #signinCard { 
             position: fixed; 
             top: 0; 
@@ -303,6 +303,7 @@
 
     <script>
     // ---- Supabase client ----
+    // You must verify these keys manually in your Supabase Project Settings
     const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -315,7 +316,6 @@
     const emailInput = document.getElementById('email');
     const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
 
-    // FIX 2: Intermittent button—Added disabling/enabling and cursor feedback
     sendLinkBtn.addEventListener('click', async () => {
         try {
             authMsg.textContent = '';
@@ -325,7 +325,7 @@
                 authMsg.textContent = 'Use your @rebelribbon.com address.'; return;
             }
             
-            // Disable button and change cursor immediately upon click
+            // Disable button and change cursor immediately upon click (FIX for intermittency)
             sendLinkBtn.disabled = true;
             document.body.style.cursor = 'progress';
 
@@ -341,7 +341,7 @@
             authMsg.classList.remove('text-green-700'); authMsg.classList.add('text-red-600');
             authMsg.textContent = e.message || 'Failed to fetch';
         } finally {
-            // Re-enable button and reset cursor (essential for intermittent fix)
+            // Re-enable button and reset cursor 
             sendLinkBtn.disabled = false;
             document.body.style.cursor = 'default';
         }
