@@ -196,7 +196,7 @@
                                 <img id="ov_photo" class="w-40 h-40 object-cover rounded border shadow-sm" alt="Inspiration"/>
                                 <label class="block mt-3 text-sm">
                                     <span class="font-medium">Replace photo:</span>
-                                    <input id="uploadPhoto" type="file" accept="image/*" class="block mt-1 text-sm"/>
+                                    <input id="uploadPhoto" type="file" accept="image/jpeg,image/png,image/gif,image/webp" class="block mt-1 text-sm"/>
                                 </label>
                                 <button id="btnUploadPhoto" type="button" class="mt-2 w-full px-3 py-1.5 text-sm rounded bg-gray-900 text-white hover:bg-gray-700">Upload</button>
                             </div>
@@ -275,7 +275,8 @@
                                         <th class="text-left p-2">Kind</th>
                                         <th class="text-left p-2">Label</th>
                                         <th class="text-right p-2">Amount</th>
-                                        <th class="text-right p-2">Remove</th> </tr>
+                                        <th class="text-right p-2">Remove</th>
+                                    </tr>
                                 </thead>
                                 <tbody id="adjTbody"></tbody>
                             </table>
@@ -813,6 +814,17 @@
     let pricing = null;
     let adjustments = [];
 
+    // NEW MIME TYPE VALIDATION HELPER
+    function isValidMimeType(mimeType) {
+        const allowedMimeTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp'
+        ];
+        return allowedMimeTypes.includes(mimeType);
+    }
+    
     async function fetchPricing(){
         const { data } = await sb.from('pricing').select('*').limit(1);
         const p = (data && data[0]) || {};
@@ -1047,13 +1059,26 @@
     document.getElementById('btnUploadPhoto').addEventListener('click', async ()=>{
         const file = document.getElementById('uploadPhoto').files?.[0];
         if (!file) { alert('Choose an image file first.'); return; }
+        
+        // --- MIME TYPE VALIDATION ---
+        if (!isValidMimeType(file.type)) {
+            alert('Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.');
+            document.getElementById('uploadPhoto').value = ''; // Clear file input
+            return;
+        }
+        // --------------------------
+
         document.body.style.cursor = 'progress';
         const ext = file.name.split('.').pop();
         const path = `${activeOrder.id}/inspiration_${Date.now()}.${ext}`;
+        
         // Ensure bucket exists and public policy allows read; RLS on Storage should allow authenticated upload
         const { data, error } = await sb.storage.from('order_uploads').upload(path, file, { upsert:true, contentType:file.type });
         document.body.style.cursor = 'default';
-        if (error) { alert(error.message + '\n\nMake sure Storage bucket "order_uploads" exists and allows authenticated uploads.'); return; }
+        if (error) { 
+            alert(error.message + '\n\nMake sure Storage bucket "order_uploads" exists and allows authenticated uploads.'); 
+            return; 
+        }
         const { data: publicUrl } = sb.storage.from('order_uploads').getPublicUrl(data.path);
         const url = publicUrl?.publicUrl;
         const { error: upErr } = await sb.from('orders').update({ design_inspiration_photo: url }).eq('id', activeOrder.id);
