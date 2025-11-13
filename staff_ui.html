@@ -275,7 +275,7 @@
                                         <th class="text-left p-2">Kind</th>
                                         <th class="text-left p-2">Label</th>
                                         <th class="text-right p-2">Amount</th>
-                                    </tr>
+                                        <th class="text-right p-2">Remove</th> </tr>
                                 </thead>
                                 <tbody id="adjTbody"></tbody>
                             </table>
@@ -826,11 +826,30 @@
         const { data } = await sb.from('order_adjustments').select('*').eq('order_id', order_id).order('created_at',{ascending:false});
         return (data||[]).map(r => ({...r, amount: Number(r.amount||0)}));
     }
+    
+    // NEW FUNCTION: Handles the deletion of a specific adjustment
+    async function deleteAdjustment(adjustmentId){
+        if (!confirm('Are you sure you want to remove this adjustment?')) return;
+        
+        document.body.style.cursor = 'progress';
+        const { error } = await sb.from('order_adjustments').delete().eq('id', adjustmentId);
+        document.body.style.cursor = 'default';
 
-    // 1. UPDATED: Currency formatting
+        if (error) {
+            alert(error.message + '\n\nMake sure the Supabase table has a DELETE RLS policy for authenticated users.');
+            return;
+        }
+
+        // Update local list
+        adjustments = adjustments.filter(a => a.id !== adjustmentId);
+        
+        // Re-render the drawer to update totals and the list
+        fillDrawer();
+        loadTable(); // Refresh main list in case it's visible
+    }
+
     function money(n){ return '$' + (Number(n||0)).toFixed(2); }
 
-    // 2. NEW: Phone number formatting
     function formatPhone(phone){
         if (!phone) return '';
         const cleaned = ('' + phone).replace(/\D/g, '');
@@ -850,31 +869,37 @@
         const discSum = adjustments.filter(a=>a.kind==='discount').reduce((s,a)=>s+a.amount,0);
         const total = base + consult + gift + feeSum - discSum;
 
-        // 1. UPDATED: Removed static $ signs in HTML, now the function includes them
         document.getElementById('t_price').textContent = money(ppd);
         document.getElementById('t_base').textContent = money(base);
         document.getElementById('t_consult').textContent = money(consult);
         document.getElementById('t_gift').textContent = money(gift);
         document.getElementById('t_adj_fees').textContent = money(feeSum);
-        // Discounts should display as a negative/subtraction visually
-        document.getElementById('t_adj_disc').textContent = '- ' + money(discSum).replace('$', '$'); // Keep $ prefix, add space
+        document.getElementById('t_adj_disc').textContent = '- ' + money(discSum).replace('$', '$'); 
         document.getElementById('t_total').textContent = money(total);
     }
 
     function renderAdjustments(){
         const tb = document.getElementById('adjTbody'); tb.innerHTML='';
         if (adjustments.length === 0) {
-            tb.innerHTML = '<tr><td colspan="4" class="p-2 text-center text-gray-500">No adjustments yet.</td></tr>';
+            tb.innerHTML = '<tr><td colspan="5" class="p-2 text-center text-gray-500">No adjustments yet.</td></tr>';
             return;
         }
         for (const a of adjustments){
             const tr = $('tr','border-b');
+            const amountText = a.kind === 'discount' ? '-' + money(a.amount) : money(a.amount);
+
             tr.appendChild($('td','p-2 text-xs', new Date(a.created_at).toLocaleDateString()));
             tr.appendChild($('td','p-2 text-xs', a.kind));
             tr.appendChild($('td','p-2', a.label||''));
-            // Use the money function for amount
-            const amountText = a.kind === 'discount' ? '-' + money(a.amount) : money(a.amount);
             tr.appendChild($('td',`p-2 text-right ${a.kind === 'discount' ? 'text-red-600' : 'text-green-600'}`, amountText));
+            
+            // NEW COLUMN: Remove Button
+            const removeCell = $('td', 'p-2 text-right');
+            const removeBtn = $('button', 'text-red-500 hover:text-red-700 text-sm font-medium', 'Remove');
+            removeBtn.onclick = () => deleteAdjustment(a.id);
+            removeCell.appendChild(removeBtn);
+            tr.appendChild(removeCell);
+
             tb.appendChild(tr);
         }
     }
@@ -918,12 +943,12 @@
         // Right Column (Customer & Logistics)
         document.getElementById('cust_name').textContent = c ? `${c.first_name||''} ${c.last_name||''}`.trim() : 'N/A';
         
-        // 2. UPDATED: Email link setup
+        // Email link setup
         const custEmailEl = document.getElementById('cust_email');
         custEmailEl.textContent = c?.email || 'N/A';
         custEmailEl.href = `mailto:${c?.email}`;
 
-        // 2. UPDATED: Phone number link and formatting setup
+        // Phone number link and formatting setup
         const custPhoneEl = document.getElementById('cust_phone_link');
         custPhoneEl.textContent = formatPhone(rawPhone) || 'N/A';
         custPhoneEl.href = `tel:${rawPhone.replace(/\D/g, '')}`;
@@ -986,7 +1011,7 @@
         loadTable();
     });
 
-    // 4. UPDATED: "Edit All Fields" button functionality is made explicit here
+    // "Edit All Fields" button functionality 
     document.getElementById('editFields').addEventListener('click', ()=>{
         if (!activeOrder) return;
         // Re-use generic editor with the full 'orders' config and the currently active order data
