@@ -1093,7 +1093,7 @@
         document.getElementById('uploadPhoto').value = ''; // Clear file input
     });
 
-    // UPDATED: Invoice button now opens a placeholder URL with order info
+// UPDATED: Invoice button now opens the new tab BEFORE the alert to bypass pop-up blockers
     document.getElementById('viewInvoice').addEventListener('click', ()=>{
         if (!activeOrder) { alert("Please load an order first."); return; }
 
@@ -1104,9 +1104,10 @@
 
         const externalInvoiceUrl = `https://invoicing.placeholder.com/create?order=${orderId}&customer=${encodeURIComponent(customerName)}&email=${encodeURIComponent(customerEmail)}&amount=${totalDue}`;
         
-        // Open a new tab for the staff member to proceed with external invoicing
+        // 1. **CRITICAL CHANGE: Open the new tab first.**
         window.open(externalInvoiceUrl, '_blank');
         
+        // 2. Display the alert afterward.
         alert(`Invoice flow initiated. A new tab opened to create an invoice for:\n\nOrder ID: #${orderId}\nCustomer: ${customerName}\nAmount: ${totalDue}\n\nPlease finalize the invoice details in the external system.`);
     });
 
