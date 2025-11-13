@@ -814,7 +814,7 @@
     let pricing = null;
     let adjustments = [];
 
-    // NEW MIME TYPE VALIDATION HELPER
+    // MIME TYPE VALIDATION HELPER
     function isValidMimeType(mimeType) {
         const allowedMimeTypes = [
             'image/jpeg',
@@ -1041,8 +1041,13 @@
         const kind = document.getElementById('adjKind').value;
         if (!label || !amount || amount <= 0) { alert('Enter a valid label and positive amount'); return; }
         const payload = { order_id: activeOrder.id, label, amount, kind };
+        
+        // This is the action that triggers the RLS error if the INSERT policy is missing/incorrect
         const { data, error } = await sb.from('order_adjustments').insert(payload).select('*').single();
-        if (error) { alert(error.message + '\n\nMake sure table "order_adjustments" exists with RLS allowing inserts.'); return; }
+        if (error) { 
+            alert(error.message + '\n\nFix the RLS policy for INSERT on the "order_adjustments" table in Supabase.'); 
+            return; 
+        }
 
         // Update list
         adjustments.unshift({...data, amount: Number(data.amount||0)});
@@ -1088,9 +1093,21 @@
         document.getElementById('uploadPhoto').value = ''; // Clear file input
     });
 
-    // Stub invoice button
+    // UPDATED: Invoice button now opens a placeholder URL with order info
     document.getElementById('viewInvoice').addEventListener('click', ()=>{
-        alert('Invoice generation not implemented. Use the estimated totals above to create an external invoice.');
+        if (!activeOrder) { alert("Please load an order first."); return; }
+
+        const totalDue = document.getElementById('t_total').textContent.replace('$', '').trim();
+        const customerName = document.getElementById('cust_name').textContent.trim();
+        const customerEmail = document.getElementById('cust_email').textContent.trim();
+        const orderId = activeOrder.id;
+
+        const externalInvoiceUrl = `https://invoicing.placeholder.com/create?order=${orderId}&customer=${encodeURIComponent(customerName)}&email=${encodeURIComponent(customerEmail)}&amount=${totalDue}`;
+        
+        // Open a new tab for the staff member to proceed with external invoicing
+        window.open(externalInvoiceUrl, '_blank');
+        
+        alert(`Invoice flow initiated. A new tab opened to create an invoice for:\n\nOrder ID: #${orderId}\nCustomer: ${customerName}\nAmount: ${totalDue}\n\nPlease finalize the invoice details in the external system.`);
     });
 
     // init
