@@ -76,12 +76,17 @@
     <div id="signinCard" class="flex items-center justify-center p-4">
         <div class="w-full max-w-md bg-white rounded-2xl shadow p-6">
             <h1 class="text-2xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
-            <p class="text-sm text-gray-600 mb-4">Use your @rebelribbon.com email. We’ll send a magic link.</p>
+            <p class="text-sm text-gray-600 mb-4">Use your @rebelribbon.com email and password.</p>
+            
             <label class="block text-sm mb-2">Email</label>
             <input id="email" type="email" placeholder="you@rebelribbon.com" class="w-full px-3 py-2 rounded-lg border mb-4"/>
-            <button id="sendLink" class="w-full px-4 py-2 rounded-lg btn-primary">Send magic link</button>
+            
+            <label class="block text-sm mb-2">Password</label>
+            <input id="password" type="password" placeholder="Password" class="w-full px-3 py-2 rounded-lg border mb-4"/>
+            
+            <button id="signInButton" class="w-full px-4 py-2 rounded-lg btn-primary">Sign In</button>
             <p id="authMsg" class="text-sm text-red-600 mt-3"></p>
-            <p class="text-xs text-gray-500 mt-3">If the button does nothing, set SUPABASE_URL and SUPABASE_ANON_KEY in this file.</p>
+            <p class="text-xs text-gray-500 mt-3">If the button does nothing, check Supabase keys and ensure Email/Password provider is enabled.</p>
         </div>
     </div>
 
@@ -303,51 +308,62 @@
 
     <script>
     // ---- Supabase client ----
-    // You must verify these keys manually in your Supabase Project Settings
+    // *** MANUAL CHECK REQUIRED ***: Verify these keys in your Supabase Project Settings
     const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ---- Auth (email OTP) ----
+    // ---- Auth (Email & Password) ----
     const signinCard = document.getElementById('signinCard');
     const appWrapper = document.getElementById('app-wrapper');
     const authMsg = document.getElementById('authMsg');
-    const sendLinkBtn = document.getElementById('sendLink');
+    // Renamed button and input elements for new functionality
+    const signInButton = document.getElementById('signInButton');
     const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
     const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
 
-    sendLinkBtn.addEventListener('click', async () => {
+    // *** NEW LOGIC: Email and Password Sign-In ***
+    signInButton.addEventListener('click', async () => {
         try {
             authMsg.textContent = '';
             const email = emailInput.value.trim();
-            
+            const password = passwordInput.value.trim();
+
             if (!onlyCompanyEmail(email)) {
-                authMsg.textContent = 'Use your @rebelribbon.com address.'; return;
+                authMsg.textContent = 'Access denied. Use your @rebelribbon.com address.'; return;
+            }
+            if (!password) {
+                authMsg.textContent = 'Password is required.'; return;
             }
             
-            // Disable button and change cursor immediately upon click (FIX for intermittency)
-            sendLinkBtn.disabled = true;
+            // Disable button and change cursor immediately upon click
+            signInButton.disabled = true;
             document.body.style.cursor = 'progress';
 
-            const redirectTo = 'https://rebelribbon.github.io/rebel-ribbon/staff_ui.html';
-            const { error } = await sb.auth.signInWithOtp({ email, options: { emailRedirectTo: redirectTo } });
+            const { data, error } = await sb.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
             
             if (error) throw error;
             
-            authMsg.classList.remove('text-red-600'); authMsg.classList.add('text-green-700');
-            authMsg.textContent = 'Magic link sent. Check your inbox.';
+            // If successful, bootstrap will handle the UI change via getSession()
 
         } catch (e) {
-            authMsg.classList.remove('text-green-700'); authMsg.classList.add('text-red-600');
-            authMsg.textContent = e.message || 'Failed to fetch';
+            authMsg.classList.remove('text-green-700'); 
+            authMsg.classList.add('text-red-600');
+            authMsg.textContent = e.message || 'Sign in failed. Check credentials.';
+
         } finally {
             // Re-enable button and reset cursor 
-            sendLinkBtn.disabled = false;
+            signInButton.disabled = false;
             document.body.style.cursor = 'default';
         }
     });
 
     async function bootstrap() {
+        // We call getSession only once on load to determine login state
         const { data: { session }, error } = await sb.auth.getSession();
         if (error) { authMsg.textContent = error.message; return; }
 
@@ -360,11 +376,19 @@
             }
             return;
         }
+        
         const email = session.user?.email || '';
+        
+        // Final check: Ensure the signed-in user belongs to the required domain
         if (!onlyCompanyEmail(email)) {
             await sb.auth.signOut();
-            authMsg.textContent = 'This page is restricted to @rebelribbon.com'; return;
+            authMsg.textContent = 'Access restricted. Please use your @rebelribbon.com account.'; 
+            // Re-show signin card manually for immediate feedback
+            signinCard.classList.remove('hidden'); 
+            appWrapper.classList.add('hidden');
+            return;
         }
+        
         document.getElementById('who').textContent = email;
         // FIX: Hide the sign-in card and show the app wrapper
         signinCard.classList.add('hidden'); 
@@ -1127,7 +1151,7 @@
         document.getElementById('uploadPhoto').value = ''; // Clear file input
     });
 
-    // *** CRITICAL CHANGE: Invoice button generates a printable pop-up window ***
+    // *** Invoice button generates a printable pop-up window ***
     document.getElementById('viewInvoice').addEventListener('click', ()=>{
         if (!activeOrder || !activeCustomer) { 
             alert("Please load a complete order first to generate the invoice."); 
