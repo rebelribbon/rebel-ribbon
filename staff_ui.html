@@ -172,7 +172,7 @@
                         <button id="saveStatus" type="button" class="px-4 py-2 rounded-lg btn-success">Save Status</button>
                     </div>
                     <button id="editFields" type="button" class="px-4 py-2 rounded-lg btn-secondary font-medium">Edit All Fields</button>
-                    <button id="viewInvoice" type="button" class="px-4 py-2 rounded-lg btn-primary shadow-md font-medium">Generate Invoice / Payment Link</button>
+                    <button id="viewInvoice" type="button" class="px-4 py-2 rounded-lg btn-primary shadow-md font-medium">Generate Invoice / Save PDF</button>
                 </div>
             </div>
 
@@ -1093,22 +1093,106 @@
         document.getElementById('uploadPhoto').value = ''; // Clear file input
     });
 
-// UPDATED: Invoice button now opens the new tab BEFORE the alert to bypass pop-up blockers
+    // *** CRITICAL CHANGE: Invoice button generates a printable pop-up window ***
     document.getElementById('viewInvoice').addEventListener('click', ()=>{
-        if (!activeOrder) { alert("Please load an order first."); return; }
+        if (!activeOrder || !activeCustomer) { 
+            alert("Please load a complete order first to generate the invoice."); 
+            return; 
+        }
 
-        const totalDue = document.getElementById('t_total').textContent.replace('$', '').trim();
-        const customerName = document.getElementById('cust_name').textContent.trim();
-        const customerEmail = document.getElementById('cust_email').textContent.trim();
+        const totalDue = document.getElementById('t_total').textContent;
+        const customerName = document.getElementById('cust_name').textContent;
+        const customerEmail = document.getElementById('cust_email').textContent;
         const orderId = activeOrder.id;
+        const customerAddress = document.getElementById('cust_addr1').textContent + (document.getElementById('cust_addr2').textContent ? ', ' + document.getElementById('cust_addr2').textContent : '') + ', ' + document.getElementById('cust_citystzip').textContent;
+        
+        const lineItems = [
+            { label: `Base Price (${activeOrder.cookie_amount_dzns || 0} dozen @ ${document.getElementById('t_price').textContent})`, amount: document.getElementById('t_base').textContent },
+            ...(activeOrder.consultation_requested ? [{ label: 'Consultation Fee', amount: document.getElementById('t_consult').textContent }] : []),
+            ...(activeOrder.gift_note ? [{ label: 'Gift Note Fee', amount: document.getElementById('t_gift').textContent }] : []),
+            ...adjustments.filter(a => a.kind === 'fee').map(a => ({ label: a.label + ' (Fee)', amount: money(a.amount) })),
+            ...adjustments.filter(a => a.kind === 'discount').map(a => ({ label: a.label + ' (Discount)', amount: '-' + money(a.amount) })),
+        ];
 
-        const externalInvoiceUrl = `https://invoicing.placeholder.com/create?order=${orderId}&customer=${encodeURIComponent(customerName)}&email=${encodeURIComponent(customerEmail)}&amount=${totalDue}`;
-        
-        // 1. **CRITICAL CHANGE: Open the new tab first.**
-        window.open(externalInvoiceUrl, '_blank');
-        
-        // 2. Display the alert afterward.
-        alert(`Invoice flow initiated. A new tab opened to create an invoice for:\n\nOrder ID: #${orderId}\nCustomer: ${customerName}\nAmount: ${totalDue}\n\nPlease finalize the invoice details in the external system.`);
+        // 1. Build the HTML content for the pop-up
+        let invoiceContent = `
+            <html>
+            <head>
+                <title>Invoice #${orderId}</title>
+                <style>
+                    body { font-family: sans-serif; margin: 0; padding: 20px; font-size: 14px; }
+                    .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, 0.15); }
+                    h1 { font-size: 24px; color: #3b82f6; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; margin-bottom: 20px; }
+                    .address, .details { width: 49%; display: inline-block; vertical-align: top; }
+                    .details { text-align: right; }
+                    .item-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    .item-table th, .item-table td { border-bottom: 1px solid #eee; padding: 10px; text-align: left; }
+                    .item-table th { background-color: #f3f4f6; }
+                    .total-row td { border-top: 2px solid #333; font-weight: bold; font-size: 16px; padding-top: 10px; }
+                    .line-total { text-align: right; }
+                    .notes { margin-top: 30px; font-size: 12px; border-top: 1px dashed #ccc; padding-top: 10px; }
+                    @media print {
+                        .invoice-box { box-shadow: none; border: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="invoice-box">
+                    <h1>REBEL RIBBON INVOICE</h1>
+                    
+                    <div class="address">
+                        <strong>REBEL RIBBON</strong><br>
+                        [Your Company Address Here]<br>
+                        [Your Company Contact Here]
+                    </div>
+                    <div class="details">
+                        Invoice # ${orderId}<br>
+                        Date: ${new Date().toLocaleDateString()}<br><br>
+                        **Customer:** ${customerName}<br>
+                        ${customerEmail}<br>
+                        ${customerAddress || 'N/A'}
+                    </div>
+
+                    <table class="item-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 75%;">Description</th>
+                                <th class="line-total">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${lineItems.map(item => `
+                                <tr>
+                                    <td>${item.label}</td>
+                                    <td class="line-total">${item.amount}</td>
+                                </tr>
+                            `).join('')}
+                            <tr class="total-row">
+                                <td>TOTAL DUE</td>
+                                <td class="line-total">${totalDue}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    
+                    <div class="notes">
+                        **Order Notes:** ${activeOrder.design_notes || 'None'}<br>
+                        **Payment Terms:** [Insert Payment Instructions Here]
+                    </div>
+                </div>
+                <script>
+                    // Automatically trigger print dialog when the window loads
+                    window.onload = function() {
+                        window.print();
+                    }
+                </script>
+            </body>
+            </html>
+        `;
+
+        // 2. Open the pop-up window and write the content
+        const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
+        printWindow.document.write(invoiceContent);
+        printWindow.document.close();
     });
 
     // init
