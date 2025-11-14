@@ -547,6 +547,12 @@
     const fmt = (v)=> v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
     const dateOnly=(d)=>{ if(!d) return ''; const dt=new Date(d); const tz=new Date(dt.getTime()-dt.getTimezoneOffset()*60000); return tz.toISOString().slice(0,10); };
 
+    // Order number formatter: 6+ digit order numbers
+    function formatOrderNumber(id) {
+        if (id === null || id === undefined) return '';
+        return String(id).padStart(6, '0'); // 1 -> 000001
+    }
+
     const isUrgent = (d) => {
         if (!d) return false;
         const today = new Date();
@@ -708,7 +714,7 @@
             const eventDateCell = $('td', `cell nowrap text-center`, eventDate);
 
             const rowView = {
-                id: `#${r.id}`,
+                id: `#${formatOrderNumber(r.id)}`,
                 status: statusCell,
                 customer_name: cust ? `${cust.first_name||''} ${cust.last_name||''}`.trim() : 'N/A',
                 cookie_amount_dzns: r.cookie_amount_dzns ?? '',
@@ -1094,7 +1100,7 @@
         const isConsultation = o?.consultation_requested || false;
         const rawPhone = c?.phone || '';
 
-        document.getElementById('drawerTitle').textContent = `Order #${o.id} - ${c ? `${c.first_name||''} ${c.last_name||''}`.trim() : ''}`;
+        document.getElementById('drawerTitle').textContent = `Order #${formatOrderNumber(o.id)} - ${c ? `${c.first_name||''} ${c.last_name||''}`.trim() : ''}`;
 
         // Left Column (Design & Details)
         document.getElementById('ov_flavor').textContent = o?.flavor || 'N/A';
@@ -1301,6 +1307,7 @@
         const customerName = document.getElementById('cust_name').textContent;
         const customerEmail = document.getElementById('cust_email').textContent;
         const orderId = activeOrder.id;
+        const orderIdDisplay = formatOrderNumber(orderId);
         const customerAddress = document.getElementById('cust_addr1').textContent 
             + (document.getElementById('cust_addr2').textContent ? ', ' + document.getElementById('cust_addr2').textContent : '') 
             + ', ' + document.getElementById('cust_citystzip').textContent;
@@ -1319,7 +1326,7 @@
         let invoiceContent = `
             <html>
             <head>
-                <title>Invoice #${orderId}</title>
+                <title>Invoice #${orderIdDisplay}</title>
                 <style>
                     body { font-family: sans-serif; margin: 0; padding: 20px; font-size: 14px; }
                     .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, 0.15); }
@@ -1347,7 +1354,7 @@
                         [Your Company Contact Here]
                     </div>
                     <div class="details">
-                        Invoice # ${orderId}<br>
+                        Invoice # ${orderIdDisplay}<br>
                         Date: ${new Date().toLocaleDateString()}<br><br>
                         <strong>Customer:</strong> ${customerName}<br>
                         ${customerEmail}<br>
