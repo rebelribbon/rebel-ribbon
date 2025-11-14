@@ -1,1181 +1,1147 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title>Rebel Ribbon Staff UI</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <style>
-        /* General Styles */
-        body { margin: 0; display: flex; min-height: 100vh; }
-        #app-wrapper { display: flex; width: 100%; }
-        /* FIX: Ensure signin card takes full screen and app wrapper is absolutely hidden initially */
-        #signinCard {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 1000; /* Ensure it stays on top */
-            background-color: #f9fafb; /* bg-gray-50 */
-        }
-        #app-wrapper.hidden {
-            display: none;
-        }
-        /* Sidebar Navigation */
-        #sidebar { width: 200px; background-color: #1f2937; color: white; flex-shrink: 0; padding: 1rem 0; }
-        .nav-item { display: block; padding: 0.75rem 1rem; cursor: pointer; transition: background-color 0.15s; }
-        .nav-item:hover { background-color: #374151; }
-        .nav-active { background-color: #374151; font-weight: 600; border-left: 4px solid #3b82f6; padding-left: calc(1rem - 4px); }
-        .submenu-item { padding: 0.5rem 1rem 0.5rem 2rem; font-size: 0.875rem; }
-        /* Content Area */
-        #content { flex-grow: 1; padding: 2rem; }
-        /* Dashboard Filters */
-        .filter-tab { padding: 0.5rem 1rem; border-radius: 9999px; cursor: pointer; font-weight: 500; transition: background-color 0.15s; }
-        .filter-tab:hover { background-color: #e5e7eb; }
-        .filter-active { background-color: #1d4ed8; color: white; }
-        /* Table & Grid */
-        .table-wrap { overflow: auto; border-radius: 0.75rem; border: 1px solid #e5e7eb; background: #fff; }
-        table { border-collapse: separate; border-spacing: 0; }
-        .cell { padding: 0.75rem; }
-        .thcell { padding: 0.75rem; font-weight: 600; }
-        .nowrap { white-space: nowrap; }
-        /* Dialogs */
-        dialog::backdrop { background: rgba(0, 0, 0, 0.25); }
-        .drawer { width: 100%; max-width: 1080px; }
-        /* Order Manager Enhancements */
-        .status-badge { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
-        .status-in-review { background-color: #fef3c7; color: #b45309; }
-        .status-approved { background-color: #bfdbfe; color: #1e40af; }
-        .status-paid { background-color: #d1fae5; color: #065f46; }
-        .status-production-complete { background-color: #fee2e2; color: #991b1b; }
-        .status-fulfilled { background-color: #e0f2f1; color: #0f766e; }
-        .status-canceled { background-color: #f3f4f6; color: #6b7280; }
-        .urgent-date { color: #dc2626; font-weight: 700; }
-        .info-card { background-color: #fff; border-radius: 0.75rem; border: 1px solid #e5e7eb; padding: 1rem; }
-        /* Custom Button Styles */
-        .btn-primary { background-color: #3b82f6; color: white; transition: background-color 0.15s; }
-        .btn-primary:hover { background-color: #2563eb; }
-        .btn-secondary { background-color: white; color: #374151; border: 1px solid #d1d5db; transition: background-color 0.15s; }
-        .btn-secondary:hover { background-color: #f3f4f6; }
-        .btn-success { background-color: #10b981; color: white; transition: background-color 0.15s; }
-        .btn-success:hover { background-color: #059669; }
-        .btn-icon { padding: 0.5rem; border-radius: 0.5rem; }
-    </style>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <title>Rebel Ribbon Staff UI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <style>
+        /* General Styles */
+        body { margin: 0; display: flex; min-height: 100vh; }
+        #app-wrapper { display: flex; width: 100%; }
+        /* FIX: Ensure signin card takes full screen and app wrapper is absolutely hidden initially */
+        #signinCard {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1000; /* Ensure it stays on top */
+            background-color: #f9fafb; /* bg-gray-50 */
+        }
+        #app-wrapper.hidden {
+            display: none;
+        }
+        /* Sidebar Navigation */
+        #sidebar { width: 200px; background-color: #1f2937; color: white; flex-shrink: 0; padding: 1rem 0; }
+        .nav-item { display: block; padding: 0.75rem 1rem; cursor: pointer; transition: background-color 0.15s; }
+        .nav-item:hover { background-color: #374151; }
+        .nav-active { background-color: #374151; font-weight: 600; border-left: 4px solid #3b82f6; padding-left: calc(1rem - 4px); }
+        .submenu-item { padding: 0.5rem 1rem 0.5rem 2rem; font-size: 0.875rem; }
+        /* Content Area */
+        #content { flex-grow: 1; padding: 2rem; }
+        /* Dashboard Filters */
+        .filter-tab { padding: 0.5rem 1rem; border-radius: 9999px; cursor: pointer; font-weight: 500; transition: background-color 0.15s; }
+        .filter-tab:hover { background-color: #e5e7eb; }
+        .filter-active { background-color: #1d4ed8; color: white; }
+        /* Table & Grid */
+        .table-wrap { overflow: auto; border-radius: 0.75rem; border: 1px solid #e5e7eb; background: #fff; }
+        table { border-collapse: separate; border-spacing: 0; }
+        .cell { padding: 0.75rem; }
+        .thcell { padding: 0.75rem; font-weight: 600; }
+        .nowrap { white-space: nowrap; }
+        /* Dialogs */
+        dialog::backdrop { background: rgba(0, 0, 0, 0.25); }
+        .drawer { width: 100%; max-width: 1080px; }
+        /* Order Manager Enhancements */
+        .status-badge { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .status-in-review { background-color: #fef3c7; color: #b45309; }
+        .status-approved { background-color: #bfdbfe; color: #1e40af; }
+        .status-paid { background-color: #d1fae5; color: #065f46; }
+        .status-production-complete { background-color: #fee2e2; color: #991b1b; }
+        .status-fulfilled { background-color: #e0f2f1; color: #0f766e; }
+        .status-canceled { background-color: #f3f4f6; color: #6b7280; }
+        .urgent-date { color: #dc2626; font-weight: 700; }
+        .info-card { background-color: #fff; border-radius: 0.75rem; border: 1px solid #e5e7eb; padding: 1rem; }
+        /* Custom Button Styles */
+        .btn-primary { background-color: #3b82f6; color: white; transition: background-color 0.15s; }
+        .btn-primary:hover { background-color: #2563eb; }
+        .btn-secondary { background-color: white; color: #374151; border: 1px solid #d1d5db; transition: background-color 0.15s; }
+        .btn-secondary:hover { background-color: #f3f4f6; }
+        .btn-success { background-color: #10b981; color: white; transition: background-color 0.15s; }
+        .btn-success:hover { background-color: #059669; }
+        .btn-icon { padding: 0.5rem; border-radius: 0.5rem; }
+    </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
-    <div id="signinCard" class="flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-white rounded-2xl shadow p-6">
-            <h1 class="text-2xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
-            <p class="text-sm text-gray-600 mb-4">Use your @rebelribbon.com email and password.</p>
-           
-            <label class="block text-sm mb-2">Email</label>
-            <input id="email" type="email" placeholder="you@rebelribbon.com" class="w-full px-3 py-2 rounded-lg border mb-4"/>
-           
-            <label class="block text-sm mb-2">Password</label>
-            <input id="password" type="password" placeholder="Password" class="w-full px-3 py-2 rounded-lg border mb-4"/>
-           
-            <button id="signInButton" class="w-full px-4 py-2 rounded-lg btn-primary">Sign In</button>
-            <p id="authMsg" class="text-sm text-red-600 mt-3"></p>
-            <p class="text-xs text-gray-500 mt-3">If the button does nothing, check Supabase keys and ensure Email/Password provider is enabled.</p>
-        </div>
-    </div>
-    <div id="app-wrapper" class="hidden">
-        <nav id="sidebar">
-            <h1 class="text-xl font-semibold px-4 mb-6 text-white/90">Rebel Ribbon</h1>
-            <div id="main-nav">
-                <button id="nav_orders" class="nav-item nav-active" data-key="order_list">Orders</button>
-                <button id="nav_surveys" class="nav-item" data-key="surveys">Surveys</button>
-            </div>
-            <div class="mt-8">
-                <h3 class="text-xs uppercase font-medium text-gray-400 px-4 mb-2">Admin / Settings</h3>
-                <button id="nav_customers" class="nav-item submenu-item" data-key="customers">Customers</button>
-                <button id="nav_discount_codes" class="nav-item submenu-item" data-key="discount_codes">Discount Codes</button>
-                <button id="nav_referral_codes" class="nav-item submenu-item" data-key="referral_codes">Referral Codes</button>
-                <button id="nav_flavors" class="nav-item submenu-item" data-key="flavors">Flavors & Options</button>
-                <button id="nav_pricing" class="nav-item submenu-item" data-key="pricing">Pricing & Fees</button>
-                <button id="nav_costs" class="nav-item submenu-item" data-key="costs">Costs</button>
-            </div>
-            <div class="mt-8 pt-4 border-t border-gray-700 px-4 text-xs text-gray-400">
-                <span id="who" class="block truncate mb-2"></span>
-                <button id="logout" class="px-3 py-1 text-xs rounded bg-gray-600 text-white hover:bg-gray-500">Sign out</button>
-            </div>
-        </nav>
-        <main id="content" class="max-w-7xl">
-            <header class="flex items-center justify-between mb-6">
-                <h2 id="pageTitle" class="text-3xl font-bold">Orders</h2>
-                <div class="flex gap-4 items-center">
-                    <input id="globalSearch" type="search" placeholder="Search customer, ID, date" class="px-4 py-2 rounded-lg border w-72 shadow-sm"/>
-                    <button id="refreshAll" class="px-3 py-2 rounded-lg btn-secondary shadow-sm">Refresh</button>
-                </div>
-            </header>
-            <div id="orderFilters" class="flex flex-wrap gap-3 mb-4">
-                <button class="filter-tab filter-active" data-filter="All">All Orders</button>
-                <button class="filter-tab" data-filter="In Review">⭐ New Orders</button>
-                <button class="filter-tab" data-filter="Approved">💸 Needs Payment</button>
-                <button class="filter-tab" data-filter="Paid">🏭 In Production</button>
-                <button class="filter-tab" data-filter="Production Complete">🚚 Ready for Fulfillment</button>
-                <button class="filter-tab" data-filter="Fulfilled">✅ Completed</button>
-                <button class="filter-tab" data-filter="Canceled">❌ Canceled</button>
-            </div>
-            <div class="flex items-center justify-between mb-2">
-                <div class="flex items-center gap-2">
-                    <button id="addBtn" class="px-3 py-2 rounded-lg btn-primary shadow-md">Add New</button>
-                    <button id="exportBtn" class="px-3 py-2 rounded-lg btn-secondary shadow-sm">Export CSV</button>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button id="prev" class="px-3 py-2 rounded-lg btn-secondary disabled:opacity-50">Prev</button>
-                    <span id="pageInfo" class="text-sm text-gray-600"></span>
-                    <button id="next" class="px-3 py-2 rounded-lg btn-secondary disabled:opacity-50">Next</button>
-                </div>
-            </div>
-            <div class="table-wrap">
-                <table id="grid" class="min-w-full text-sm table-fixed">
-                    <colgroup id="colgroup"></colgroup>
-                    <thead class="bg-gray-100 text-gray-700"><tr id="thead"></tr></thead>
-                    <tbody id="tbody"></tbody>
-                </table>
-            </div>
-            <p id="netHint" class="text-yellow-700 text-sm mt-3 hidden"></p>
-        </main>
-    </div>
-    <dialog id="editor" class="rounded-2xl p-0 w-full max-w-3xl shadow-2xl">
-        <form method="dialog" class="p-0">
-            <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
-                <h2 id="editorTitle" class="text-lg font-semibold">Edit</h2>
-                <button value="close" class="p-2 rounded hover:bg-gray-200">✕</button>
-            </div>
-            <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
-            <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
-                <button id="deleteBtn" type="button" class="px-3 py-2 rounded-lg border text-red-700 border-red-300 hidden hover:bg-red-50">Delete</button>
-                <button id="saveBtn" class="px-4 py-2 rounded-lg btn-primary">Save</button>
-            </div>
-        </form>
-    </dialog>
-    <dialog id="orderDrawer" class="rounded-2xl p-0 shadow-2xl drawer">
-        <div class="p-0">
-            <div class="sticky top-0 z-10 p-4 border-b bg-white flex items-center justify-between shadow-sm">
-                <div class="flex items-center gap-4">
-                    <button value="close" id="backToOrders" class="text-xl p-2 rounded hover:bg-gray-100 btn-icon">← Back to Orders</button>
-                    <h2 id="drawerTitle" class="text-xl font-semibold">Order #XXXX</h2>
-                </div>
-                <div class="flex items-center gap-3">
-                    <div class="flex items-center gap-2 p-1 border rounded-lg bg-gray-50">
-                        <label class="font-medium text-sm">Status:</label>
-                        <select id="statusSelect" class="px-3 py-2 rounded-lg border shadow-sm">
-                            <option value="In Review">In Review</option>
-                            <option value="Approved">Approved</option>
-                            <option value="Paid">Paid</option>
-                            <option value="Production Complete">Production Complete</option>
-                            <option value="Fulfilled">Fulfilled</option>
-                            <option value="Canceled">Canceled</option>
-                        </select>
-                        <button id="saveStatus" type="button" class="px-4 py-2 rounded-lg btn-success">Save Status</button>
-                    </div>
-                    <button id="editFields" type="button" class="px-4 py-2 rounded-lg btn-secondary font-medium">Edit All Fields</button>
-                    <button id="viewInvoice" type="button" class="px-4 py-2 rounded-lg btn-primary shadow-md font-medium">Generate Invoice / Save PDF</button>
-                </div>
-            </div>
-            <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="info-card">
-                        <h3 class="text-lg font-semibold mb-3">🎨 Design & Details</h3>
-                        <div class="grid grid-cols-2 gap-4 text-sm mb-4">
-                            <div><span class="font-medium">Flavor:</span> <span id="ov_flavor"></span></div>
-                            <div><span class="font-medium">Dietary Option:</span> <span id="ov_dietary"></span></div>
-                            <div><span class="font-medium">Cookie Dzns:</span> <span id="ov_dzns"></span></div>
-                        </div>
-                        <label class="block text-sm font-medium mb-1">Design Notes (Primary Request)</label>
-                        <p class="p-3 border rounded-lg bg-gray-50 text-base" id="ov_notes"></p>
-                    </div>
-                    <div class="info-card">
-                        <h3 class="text-lg font-semibold mb-3">🖼️ Inspiration & Gift Note</h3>
-                        <div class="flex items-start gap-6">
-                            <div class="w-40 flex-shrink-0">
-                                <img id="ov_photo" class="w-40 h-40 object-cover rounded border shadow-sm" alt="Inspiration"/>
-                                <label class="block mt-3 text-sm">
-                                    <span class="font-medium">Replace photo:</span>
-                                    <input id="uploadPhoto" type="file" accept="image/jpeg,image/png,image/gif,image/webp" class="block mt-1 text-sm"/>
-                                </label>
-                                <button id="btnUploadPhoto" type="button" class="mt-2 w-full px-3 py-1.5 text-sm rounded bg-gray-900 text-white hover:bg-gray-700">Upload</button>
-                            </div>
-                            <div class="grow space-y-3">
-                                <h4 class="font-semibold text-sm">Gift Note Details:</h4>
-                                <div class="text-sm">
-                                    <span class="font-medium">Gift Order:</span> <span id="ov_gift_note" class="status-badge"></span>
-                                </div>
-                                <div class="text-sm">
-                                    <span class="font-medium">Gift Text:</span>
-                                    <p class="p-3 border rounded-lg bg-gray-50 mt-1" id="ov_gift_text"></p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="info-card">
-                        <h3 class="text-lg font-semibold mb-3">🗓️ Key Dates & Codes</h3>
-                        <div class="grid grid-cols-2 gap-4 text-sm">
-                            <div><span class="font-medium">Date Submitted:</span> <span id="ov_submitted"></span></div>
-                            <div><span class="font-medium">Event Date:</span> <span id="ov_event"></span></div>
-                            <div><span class="font-medium">P/D Date:</span> <span id="ov_pickup"></span></div>
-                            <div><span class="font-medium">Consultation Requested:</span> <span id="ov_consultation"></span></div>
-                            <div><span class="font-medium">Discount Code:</span> <span id="ov_discount_code"></span></div>
-                            <div><span class="font-medium">Referral Code:</span> <span id="ov_referral_code"></span></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="space-y-6">
-                    <div class="info-card bg-white shadow-xl border-blue-200 border-2">
-                        <h3 class="text-lg font-bold mb-3">💰 Estimated Totals</h3>
-                        <div class="text-sm space-y-2">
-                            <div class="flex justify-between"><span>Price/dozen:</span> <span id="t_price"></span></div>
-                            <div class="flex justify-between"><span>Base Subtotal:</span> <span id="t_base"></span></div>
-                            <div class="flex justify-between"><span>Delivery Fee:</span> <span id="t_delivery"></span></div>
-                            <div class="flex justify-between"><span>Consult Fee:</span> <span id="t_consult"></span></div>
-                            <div class="flex justify-between"><span>Gift Note Fee:</span> <span id="t_gift"></span></div>
-                            <div class="flex justify-between"><span>Additional Fees:</span> <span id="t_adj_fees" class="text-green-700"></span></div>
-                            <div class="flex justify-between"><span>Discounts:</span> <span id="t_adj_disc" class="text-red-700"></span></div>
-                            <hr class="my-2"/>
-                            <div class="font-extrabold text-xl flex justify-between">Total Due: <span id="t_total"></span></div>
-                        </div>
-                    </div>
-                    <div class="info-card">
-                        <h3 class="text-lg font-semibold mb-3">👤 Customer & Logistics</h3>
-                        <div class="text-sm space-y-1">
-                            <div class="font-medium text-base" id="cust_name"></div>
-                            <a id="cust_email" class="break-all text-blue-600 hover:underline cursor-pointer"></a>
-                            <a id="cust_phone_link" class="text-blue-600 hover:underline cursor-pointer"></a>
-                            <hr class="my-2"/>
-                            <h4 class="font-medium">Pickup / Delivery Address:</h4>
-                            <div id="cust_addr1"></div>
-                            <div id="cust_addr2"></div>
-                            <div id="cust_citystzip"></div>
-                            <button id="mapLocation" type="button" class="mt-2 text-xs text-blue-600 hover:underline">View on Map</button>
-                        </div>
-                    </div>
-                    <div class="info-card">
-                        <h3 class="font-semibold mb-3">➕ Fees & Adjustments</h3>
-                        <div class="flex flex-wrap items-center gap-2 mb-3">
-                            <input id="adjLabel" class="px-3 py-2 rounded-lg border w-1/3 grow" placeholder="Label (e.g., Rush fee)"/>
-                            <input id="adjAmount" type="number" step="0.01" class="px-3 py-2 rounded-lg border w-20" placeholder="Amt"/>
-                            <select id="adjKind" class="px-3 py-2 rounded-lg border">
-                                <option value="fee">Fee</option>
-                                <option value="discount">Discount</option>
-                            </select>
-                            <button id="addAdjustment" type="button" class="px-3 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-700">Add</button>
-                        </div>
-                        <div class="overflow-auto max-h-48">
-                            <table class="min-w-full text-sm">
-                                <thead class="bg-gray-100 sticky top-0">
-                                    <tr>
-                                        <th class="text-left p-2">When</th>
-                                        <th class="text-left p-2">Kind</th>
-                                        <th class="text-left p-2">Label</th>
-                                        <th class="text-right p-2">Amount</th>
-                                        <th class="text-right p-2">Remove</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="adjTbody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </dialog>
-    <script>
-    // ---- Supabase client ----
-    // *** SUPABASE KEYS INJECTED ***
-    const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-   
-    // ---- Auth (Email & Password) ----
-    const signinCard = document.getElementById('signinCard');
-    const appWrapper = document.getElementById('app-wrapper');
-    const authMsg = document.getElementById('authMsg');
-   
-    // Elements for sign-in
-    const signInButton = document.getElementById('signInButton');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
-    // *** LOGIC: Email and Password Sign-In ***
-    signInButton.addEventListener('click', async () => {
-        try {
-            authMsg.textContent = '';
-            const email = emailInput.value.trim();
-            const password = passwordInput.value.trim();
-            if (!onlyCompanyEmail(email)) {
-                authMsg.textContent = 'Access denied. Use your @rebelribbon.com address.'; return;
-            }
-            if (!password) {
-                authMsg.textContent = 'Password is required.'; return;
-            }
-           
-            // Disable button and change cursor immediately upon click
-            signInButton.disabled = true;
-            document.body.style.cursor = 'progress';
-            const { data, error } = await sb.auth.signInWithPassword({
-                email: email,
-                password: password,
-            });
-           
-            if (error) throw error;
-           
-            // If successful, bootstrap will handle the UI change via getSession()
-        } catch (e) {
-            authMsg.classList.remove('text-green-700');
-            authMsg.classList.add('text-red-600');
-            authMsg.textContent = e.message || 'Sign in failed. Check credentials.';
-        } finally {
-            // Re-enable button and reset cursor
-            signInButton.disabled = false;
-            document.body.style.cursor = 'default';
-        }
-    });
-    async function bootstrap() {
-        // We call getSession only once on load to determine login state
-        const { data: { session }, error } = await sb.auth.getSession();
-        if (error) { authMsg.textContent = error.message; return; }
-        if (!session) {
-            // FIX: Ensure the sign-in card is fixed and visible, and app wrapper is hidden
-            signinCard.classList.remove('hidden');
-            appWrapper.classList.add('hidden');
-            if (SUPABASE_URL.includes('YOUR-PROJECT') || SUPABASE_ANON_KEY.includes('PASTE_')) {
-                const hint = document.getElementById('netHint'); hint.classList.remove('hidden'); hint.textContent = 'Missing Supabase keys.';
-            }
-            return;
-        }
-       
-        const email = session.user?.email || '';
-       
-        // Final check: Ensure the signed-in user belongs to the required domain
-        if (!onlyCompanyEmail(email)) {
-            await sb.auth.signOut();
-            authMsg.textContent = 'Access restricted. Please use your @rebelribbon.com account.';
-            // Re-show signin card manually for immediate feedback
-            signinCard.classList.remove('hidden');
-            appWrapper.classList.add('hidden');
-            return;
-        }
-       
-        document.getElementById('who').textContent = email;
-        // FIX: Hide the sign-in card and show the app wrapper
-        signinCard.classList.add('hidden');
-        appWrapper.classList.remove('hidden');
-        // Initialize state
-        activeKey = 'order_list';
-        activeOrderFilter = 'All';
-        renderTabs();
-        loadTable();
-        wireRealtime();
-    }
-    document.getElementById('logout').addEventListener('click', async () => {
-        await sb.auth.signOut();
-        // Redirect to clear URL parameters
-        location.href = location.origin + location.pathname;
-    });
-    // ---- Tables config ----
-    const tables = {
-        order_list: {
-            title: 'Orders',
-            table: 'orders',
-            readOnly: true,
-            customLoader: 'loadOrderList',
-            center: true,
-            cols: [
-                { key:'id', label:'Order #', type:'text', w:'10' },
-                { key:'status', label:'Status', type:'text', w:'14' },
-                { key:'customer_name', label:'Customer Name', type:'text', w:'22' }, // Placeholder for joined data
-                { key:'cookie_amount_dzns', label:'Dozens', type:'number', w:'12' },
-                { key:'pickup_delivery_date', label:'P/D Date', type:'date', w:'16' },
-                { key:'event_date', label:'Event Date', type:'date', w:'16' },
-            ]
-        },
-        customers: { title:'Customers', table:'customers', isSettings:true, cols:[
-            { key:'first_name', label:'First name', type:'text', required:true, w:'14' },
-            { key:'last_name', label:'Last name', type:'text', required:true, w:'14' },
-            { key:'phone', label:'Phone', type:'text', w:'14' },
-            { key:'email', label:'Email', type:'email', w:'16' },
-            { key:'street_address', label:'Street address', type:'text', w:'16' },
-            { key:'street_address_cont', label:'Street address cont', type:'text', w:'16' },
-            { key:'city', label:'City', type:'text', w:'12' },
-            { key:'state', label:'State', type:'text', w:'10' },
-            { key:'zip', label:'Zip', type:'text', w:'10' },
-            { key:'customer_id', label:'Customer ID', type:'text', w:'14' },
-            { key:'referral_code_assigned', label:'Referral code assigned', type:'text', w:'18',
-                asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] },
-            { key:'order_id', label:'Order ID', type:'text', w:'12' }
-        ]},
-        // NOTE: The 'orders' table tab is functionally replaced by the dedicated Order Manager in 'order_list' view.
-        orders: { title:'Orders', table:'orders', cols:[
-            { key:'order_id', label:'Order ID', type:'text', w:'12' },
-            { key:'customer_id', label:'Customer', type:'select-async', w:'20',
-                asyncOptions: async () => {
-                    const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
-                    return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
-                }},
-            { key:'pickup_delivery_date', label:'Pick up or delivery date', type:'date', w:'18' },
-            { key:'event_date', label:'Event date', type:'date', w:'14' },
-            { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', step:'0.01', w:'18' },
-            { key:'flavor', label:'Flavor', type:'select-async', w:'14', asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
-            { key:'dietary_option', label:'Dietary option', type:'select-async', w:'16', asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[] },
-            { key:'design_notes', label:'Design notes', type:'textarea', w:'20' },
-            { key:'design_inspiration_photo', label:'Design inspiration photo URL', type:'url', w:'20' },
-            { key:'gift_note', label:'Gift note', type:'checkbox', w:'10' },
-            { key:'gift_note_text', label:'Gift note text', type:'textarea', w:'16' },
-            { key:'consultation_requested', label:'Consultation requested', type:'checkbox', w:'20' },
-            { key:'discount_code_used', label:'Discount code used', type:'text', w:'16' },
-            { key:'referral_code_used', label:'Referral code used', type:'text', w:'16' },
-            { key:'status', label:'Status', type:'select', w:'14', options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'] }
-        ]},
-        discount_codes: { title:'Discount Codes', table:'discount_codes', isSettings:true, cols:[
-            { key:'code', label:'Code', type:'text', required:true, w:'20' },
-            { key:'type', label:'Type', type:'select', options:['percent','fixed'], required:true, w:'14' },
-            { key:'uses_allowed', label:'Uses allowed', type:'number', w:'20' },
-            { key:'email_allowed', label:'Email allowed', type:'email', w:'18' },
-            { key:'good_through_date', label:'Good through date', type:'date', w:'18' }
-        ]},
-        referral_codes: { title:'Referral Codes', table:'referral_codes', isSettings:true, cols:[
-            { key:'code', label:'Code', type:'text', required:true, w:'20' },
-            { key:'associated_customer_id', label:'Associated customer', type:'select-async', w:'22',
-                asyncOptions: async () => {
-                    const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
-                    return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
-                }},
-            { key:'good_through_date', label:'Good through date', type:'date', w:'18' },
-            { key:'referrer_discount', label:'Referrer discount %', type:'number', step:'0.01', w:'20' },
-            { key:'referee_discount', label:'Referee discount %', type:'number', step:'0.01', w:'20' }
-        ]},
-        flavors: { title:'Flavors', table:'flavors', isSettings:true, cols:[
-            { key:'name', label:'Flavor name', type:'text', required:true, w:'40' }
-        ]},
-        dietary_options: { title:'Dietary Options', table:'dietary_options', isSettings:true, cols:[
-            { key:'name', label:'Dietary option', type:'text', required:true, w:'40' }
-        ]},
-        pricing: { title:'Pricing', table:'pricing', isSettings:true, cols:[
-            { key:'price_per_dozen', label:'Price per dozen', type:'number', step:'0.01', w:'20' },
-            { key:'delivery_fee', label:'Delivery fee', type:'number', step:'0.01', w:'20' },
-            { key:'consultation_fee', label:'Consultation fee', type:'number', step:'0.01', w:'20' },
-            { key:'gift_note_fee', label:'Gift Note fee', type:'number', step:'0.01', w:'20' },
-            { key:'rush_fee', label:'Rush fee', type:'number', step:'0.01', w:'20' }
-        ]},
-        costs: { title:'Costs', table:'costs', isSettings:true, cols:[
-            { key:'item_name', label:'Item name', type:'text', required:true, w:'60' },
-            { key:'amount', label:'Amount', type:'number', step:'0.01', required:true, w:'40' }
-        ]},
-        surveys: { title:'Surveys', table:'surveys', cols:[
-            { key:'customer_id', label:'Customer', type:'select-async', w:'22',
-                asyncOptions: async () => {
-                    const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
-                    return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
-                }},
-            { key:'cookies_stars', label:'Cookies 1 to 5', type:'number', min:1, max:5, w:'18' },
-            { key:'service_stars', label:'Service 1 to 5', type:'number', min:1, max:5, w:'18' },
-            { key:'recommend', label:'Recommend to family', type:'checkbox', w:'22' },
-            { key:'improvements', label:'Improvements', type:'textarea', w:'30' },
-            { key:'website_review', label:'Website review', type:'textarea', w:'30' }
-        ]}
-    };
-    const tabOrder = ['order_list','surveys'];
-    const settingsOrder = ['customers','discount_codes','referral_codes','flavors','dietary_options','pricing','costs'];
-    // ---- Table helpers ----
-    let activeKey = 'order_list';
-    let activeOrderFilter = 'All';
-    const pageSize = 20; // Increased page size for better dashboard view
-    let page = 0;
-    let totalCount = 0;
-    const $ = (t,c,h)=>{ const e=document.createElement(t); if(c) e.className=c; if(h!==undefined) e.innerHTML=h; return e; };
-    const fmt = (v)=> v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
-    const dateOnly=(d)=>{ if(!d) return ''; const dt=new Date(d); const tz=new Date(dt.getTime()-dt.getTimezoneOffset()*60000); return tz.toISOString().slice(0,10); };
-    const isUrgent = (d) => {
-        if (!d) return false;
-        const today = new Date();
-        const eventDate = new Date(d);
-        const diffDays = Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
-        return diffDays >= 0 && diffDays <= 7;
-    };
-    const getStatusClass = (status) => {
-        if (!status) return 'status-in-review';
-        const s = status.toLowerCase().replace(/\s/g, '-');
-        return `status-${s}`;
-    };
-    function buildColGroup(conf){
-        const cg = document.getElementById('colgroup'); cg.innerHTML='';
-        const cols = conf.cols.slice();
-        if (!conf.readOnly) cols.push({key:'__actions', w:'8'});
-        const total = cols.reduce((s,c)=> s + (Number(c.w||0) || 0), 0) || 100;
-        for (const c of cols){
-            const col = document.createElement('col');
-            const pct = (Number(c.w||0)||0) / total * 100;
-            col.style.width = pct ? pct+'%' : 'auto';
-            cg.appendChild(col);
-        }
-    }
-    function buildThead(conf){
-        const tr = document.getElementById('thead'); tr.innerHTML='';
-        for (const c of conf.cols){
-            const cls = 'thcell nowrap ' + (conf.center ? 'text-center' : 'text-left');
-            tr.appendChild($('th', cls, c.label));
-        }
-        if (!conf.readOnly) tr.appendChild($('th','thcell text-right nowrap','Actions'));
-    }
-    async function loadTable(){
-        const conf = tables[activeKey];
-        document.getElementById('pageTitle').textContent = conf.title;
-        document.getElementById('orderFilters').classList.toggle('hidden', activeKey !== 'order_list');
-        document.getElementById('addBtn').classList.toggle('hidden', !!conf.readOnly);
-        buildColGroup(conf); buildThead(conf);
-        const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
-        if (conf.customLoader === 'loadOrderList') { await loadOrderList(); return; }
-        document.body.style.cursor = 'progress';
-        let query = sb.from(conf.table).select('*', { count:'exact' });
-        const q = document.getElementById('globalSearch').value?.trim();
-        if (q) {
-            const orParts = conf.cols.map(c => `${c.key}.ilike.%${q}%`).join(',');
-            if (orParts) query = query.or(orParts);
-        }
-        query = query.order('updated_at', { ascending:false }).range(page*pageSize, page*pageSize+pageSize-1);
-        const { data, error, count } = await query;
-        document.body.style.cursor = 'default';
-        if (error) {
-            tbody.appendChild($('tr','',`<td class="cell text-red-700" colspan="99">${error.message}</td>`));
-            return;
-        }
-        totalCount = count || 0;
-        // rows
-        for (const row of (data||[])){
-            const tr = $('tr','border-b ' + (conf.center ? 'text-center' : ''));
-            for (const c of conf.cols){
-                let val = row[c.key];
-                if (c.type === 'checkbox') val = !!val;
-                if (c.type === 'date') val = dateOnly(val);
-                tr.appendChild($('td','cell nowrap', fmt(val)));
-            }
-            if (!conf.readOnly) {
-                const td = $('td','cell text-right nowrap');
-                const edit = $('button','px-2 py-1 rounded border hover:bg-gray-100','Edit');
-                edit.addEventListener('click', () => openEditor(conf, row));
-                td.appendChild(edit);
-                tr.appendChild(td);
-            }
-            document.getElementById('tbody').appendChild(tr);
-        }
-        updatePager();
-        // export current table
-        document.getElementById('exportBtn').onclick = async () => {
-            const { data: allRows } = await sb.from(conf.table).select('*').order('updated_at',{ascending:false});
-            exportCSV(allRows||[], conf);
-        };
-    }
-    // ORDER LIST (enhanced with Kanban filter)
-    async function loadOrderList(){
-        const conf = tables.order_list;
-        const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
-        document.body.style.cursor = 'progress';
-        let q = sb.from('orders').select('id, created_at, customer_id, cookie_amount_dzns, status, pickup_delivery_date, event_date', { count:'exact' })
-                .order('created_at',{ascending:false});
-        if (activeOrderFilter !== 'All') {
-            q = q.eq('status', activeOrderFilter);
-        }
-        const searchTerm = document.getElementById('globalSearch').value?.trim();
-        if (searchTerm) {
-            // Note: Cannot search joined fields easily here, need a view or RLS setup for full search
-            q = q.or(`id.ilike.%${searchTerm}%,status.ilike.%${searchTerm}%`);
-        }
-        q = q.range(page*pageSize, page*pageSize+pageSize-1);
-        const { data: orders, error, count } = await q;
-        document.body.style.cursor = 'default';
-        if (error) {
-            tbody.appendChild($('tr','',`<td class="cell text-red-700" colspan="99">${error.message}</td>`));
-            return;
-        }
-        totalCount = count || 0;
-        // Fetch all customers needed for the page in one go
-        const ids = [...new Set((orders||[]).map(o=>o.customer_id).filter(Boolean))];
-        const map = new Map();
-        if (ids.length){
-            const { data: cust } = await sb.from('customers').select('id, first_name, last_name').in('id', ids);
-            (cust||[]).forEach(c => map.set(c.id, c));
-        }
-        for (const r of (orders||[])){
-            const cust = map.get(r.customer_id);
-            const status = r.status || 'In Review';
-            const pdDate = dateOnly(r.pickup_delivery_date);
-            const eventDate = dateOnly(r.event_date);
-            const isUrgentOrder = isUrgent(r.event_date) || isUrgent(r.pickup_delivery_date);
-            const tr = $('tr','border-b hover:bg-gray-100 cursor-pointer');
-            const statusCell = $('td', 'cell nowrap text-center');
-            statusCell.appendChild($('span', `status-badge ${getStatusClass(status)}`, status));
-            const pdDateCell = $('td', `cell nowrap text-center ${isUrgentOrder ? 'urgent-date' : ''}`, pdDate);
-            const eventDateCell = $('td', `cell nowrap text-center`, eventDate);
-            const rowView = {
-                id: `#${r.id}`,
-                status: statusCell,
-                customer_name: cust ? `${cust.first_name||''} ${cust.last_name||''}`.trim() : 'N/A',
-                cookie_amount_dzns: r.cookie_amount_dzns ?? '',
-                pickup_delivery_date: pdDateCell,
-                event_date: eventDateCell
-            };
-            // Order of cells must match conf.cols
-            tr.appendChild($('td', 'cell nowrap text-center', rowView.id));
-            tr.appendChild(rowView.status);
-            tr.appendChild($('td', 'cell nowrap text-left font-medium', rowView.customer_name));
-            tr.appendChild($('td', 'cell nowrap text-center', rowView.cookie_amount_dzns));
-            tr.appendChild(rowView.pickup_delivery_date);
-            tr.appendChild(rowView.event_date);
-            tr.addEventListener('click', ()=> openOrderManager(r.id));
-            tbody.appendChild(tr);
-        }
-        updatePager();
-        // Enhanced CSV export logic for this view
-        document.getElementById('exportBtn').onclick = async () => {
-            const allQ = sb.from('orders').select('*, customers:customer_id(first_name, last_name)').order('created_at',{ascending:false});
-            const { data: allOrders } = await allQ;
-            const rows = (allOrders||[]).map(r => ({
-                'Order ID': r.id,
-                'Date Submitted': dateOnly(r.created_at),
-                'Status': r.status || 'In Review',
-                'First Name': r.customers?.first_name || '',
-                'Last Name': r.customers?.last_name || '',
-                'Cookie Amount (dzns)': r.cookie_amount_dzns ?? '',
-                'Pickup/Delivery Date': dateOnly(r.pickup_delivery_date),
-                'Event Date': dateOnly(r.event_date),
-            }));
-            const exportConf = { title: 'Order_List_Export', cols: Object.keys(rows[0] || {}).map(k => ({ key: k, label: k })) };
-            exportCSV(rows, exportConf);
-        };
-    }
-    function exportCSV(rows, conf){
-        const headers = conf.cols.map(c => c.label);
-        const csvRows = [headers.join(',')];
-        for (const r of rows){
-            const vals = conf.cols.map(c => {
-                let v = r[c.key];
-                if (v == null) v = '';
-                // Handle nested customer data for order_list export
-                if (c.key.includes('.')) {
-                    const [table, key] = c.key.split('.');
-                    v = r[table]?.[key] ?? '';
-                }
-                const s = String(v).replaceAll('"', '""');
-                return `"${s}"`;
-            });
-            csvRows.push(vals.join(','));
-        }
-        const csv = csvRows.join('\n');
-        const blob = new Blob([csv], { type: 'text/csv' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a'); a.href = url; a.download = `${conf.title.replace(/\s+/g,'_')}.csv`; a.click();
-        URL.revokeObjectURL(url);
-    }
-    function updatePager(){
-        const prev = document.getElementById('prev');
-        const next = document.getElementById('next');
-        prev.disabled = page === 0;
-        next.disabled = (page + 1) * pageSize >= totalCount;
-        const shown = Math.min(totalCount, page*pageSize + Math.min(pageSize, Math.max(0,totalCount - page*pageSize)));
-        document.getElementById('pageInfo').textContent = `${shown} of ${totalCount}`;
-    }
-    // ---- Generic CRUD Editor ----
-    const dlg = document.getElementById('editor');
-    const formBody = document.getElementById('formBody');
-    // ... (optionEl and openEditor remains mostly the same, adapted to new navigation)
-    async function optionEl(col, value){
-        const wrap = $('label','block');
-        wrap.appendChild($('span','text-sm block mb-1', col.label));
-        let input;
-        if (col.type === 'textarea'){ input = $('textarea','px-3 py-2 rounded-lg border w-full'); input.rows = 4; }
-        else if (col.type === 'checkbox'){ input = $('input','h-4 w-4'); input.type='checkbox'; }
-        else if (col.type === 'select'){
-            input = $('select','px-3 py-2 rounded-lg border w-full');
-            (col.options||[]).forEach(o => { const opt = $('option','',o); opt.value=o; input.appendChild(opt); });
-        } else if (col.type === 'select-async'){
-            input = $('select','px-3 py-2 rounded-lg border w-full');
-            const options = await col.asyncOptions();
-            for (const o of options){ const opt = document.createElement('option'); if (typeof o === 'string'){ opt.value=o; opt.textContent=o; } else { opt.value=o.value; opt.textContent=o.label; } input.appendChild(opt); }
-        } else {
-            input = $('input','px-3 py-2 rounded-lg border w-full');
-            input.type = col.type || 'text';
-            if (col.step) input.step = col.step;
-            if (col.min !== undefined) input.min = col.min;
-            if (col.max !== undefined) input.max = col.max;
-        }
-        input.id = `fld_${col.key}`;
-        if (col.required) input.required = true;
-        if (col.type === 'checkbox') input.checked = !!value; else if (col.type === 'date') input.value = dateOnly(value); else input.value = value ?? '';
-        wrap.appendChild(input);
-        return wrap;
-    }
-    async function openEditor(conf, row){
-        document.getElementById('editorTitle').textContent = row ? `Edit ${conf.title}` : `New ${conf.title}`;
-        formBody.innerHTML = '';
-        for (const c of conf.cols) formBody.appendChild(await optionEl(c, row?.[c.key]));
-        const idHidden = document.createElement('input'); idHidden.type='hidden'; idHidden.id='row_id'; idHidden.value=row?.id||''; formBody.appendChild(idHidden);
-        const delBtn = document.getElementById('deleteBtn');
-        delBtn.classList.toggle('hidden', !row || !!conf.readOnly);
-        delBtn.onclick = async () => {
-            if (!row?.id) return; if (!confirm('Delete this record?')) return;
-            const { error } = await sb.from(conf.table).delete().eq('id', row.id);
-            if (error) { alert(error.message); return; }
-            dlg.close(); loadTable();
-            // If editing an order and deleting, close the drawer too
-            if (conf.table === 'orders') drawer.close();
-        };
-        document.getElementById('saveBtn').onclick = async (e) => { e.preventDefault(); await saveRecord(conf, row); };
-        dlg.showModal();
-    }
-    async function saveRecord(conf, originalRow){
-        const payload = {};
-        for (const c of conf.cols){
-            const elx = document.getElementById(`fld_${c.key}`);
-            let val = (c.type === 'checkbox') ? elx.checked : elx.value || null;
-            if (c.type === 'number' && val !== null) val = elx.value === '' ? null : Number(val);
-            payload[c.key] = val;
-        }
-        const id = document.getElementById('row_id').value;
-        let resp;
-        if (id) resp = await sb.from(conf.table).update(payload).eq('id', id).select('*').single();
-        else   resp = await sb.from(conf.table).insert(payload).select('*').single();
-        if (resp.error) { alert(resp.error.message); return; }
-        dlg.close(); loadTable();
-        // If we just saved an order from the editor, re-open/update the Order Manager
-        if (conf.table === 'orders' && originalRow) {
-            openOrderManager(originalRow.id);
-        }
-    }
-    // ---- Navigation/Search/Pager/Realtime ----
-    function renderTabs(){
-        const nav = document.getElementById('main-nav');
-        const sidebar = document.getElementById('sidebar');
-        // Clear active classes
-        sidebar.querySelectorAll('.nav-item').forEach(b => b.classList.remove('nav-active'));
-        // Handle main tabs
-        [...tabOrder, ...settingsOrder].forEach(key => {
-            const btn = document.querySelector(`.nav-item[data-key="${key}"]`);
-            if (btn) {
-                if (key === activeKey) btn.classList.add('nav-active');
-                btn.onclick = () => {
-                    activeKey = key;
-                    page = 0;
-                    renderTabs();
-                    loadTable();
-                };
-            }
-        });
-        // Event listener for filter tabs (only on the Orders list)
-        const filterBtns = document.querySelectorAll('#orderFilters .filter-tab');
-        filterBtns.forEach(btn => {
-            btn.classList.remove('filter-active');
-            if (btn.dataset.filter === activeOrderFilter) btn.classList.add('filter-active');
-            btn.onclick = () => {
-                activeOrderFilter = btn.dataset.filter;
-                page = 0;
-                filterBtns.forEach(b => b.classList.remove('filter-active'));
-                btn.classList.add('filter-active');
-                loadTable();
-            };
-        });
-        document.getElementById('addBtn').onclick = () => openEditor(tables[activeKey], null);
-        document.getElementById('prev').onclick = () => { if (page>0) { page--; loadTable(); } };
-        document.getElementById('next').onclick = () => { if ((page+1)*pageSize < totalCount) { page++; loadTable(); } };
-        document.getElementById('globalSearch').onkeydown = (e)=>{ if (e.key==='Enter'){ page=0; loadTable(); } };
-        document.getElementById('refreshAll').onclick = () => loadTable();
-    }
-    function wireRealtime(){
-        for (const key of Object.keys(tables)){
-            const table = (key==='order_list'?'orders':tables[key].table);
-            sb.channel(`${key}-changes`)
-                .on('postgres_changes', { event:'*', schema:'public', table: table },
-                    () => { if (key === activeKey) loadTable(); })
-                .subscribe();
-        }
-    }
-    // =========================================
-    // ORDER MANAGER (drawer) Logic
-    // =========================================
-    const drawer = document.getElementById('orderDrawer');
-    let activeOrder = null; // full order object
-    let activeCustomer = null;
-    let pricing = null;
-    let adjustments = [];
-    // MIME TYPE VALIDATION HELPER
-    function isValidMimeType(mimeType) {
-        const allowedMimeTypes = [
-            'image/jpeg',
-            'image/png',
-            'image/gif',
-            'image/webp'
-        ];
-        return allowedMimeTypes.includes(mimeType);
-    }
-   
-    async function fetchPricing(){
-        const { data } = await sb.from('pricing').select('*').limit(1);
-        const p = (data && data[0]) || {};
-        return {
-            price_per_dozen: Number(p.price_per_dozen||0),
-            delivery_fee: Number(p.delivery_fee||0), // ADDED: Delivery Fee
-            consultation_fee: Number(p.consultation_fee||0),
-            gift_note_fee: Number(p.gift_note_fee||0)
-        };
-    }
-    async function fetchAdjustments(order_id){
-        const { data } = await sb.from('order_adjustments').select('*').eq('order_id', order_id).order('created_at',{ascending:false});
-        return (data||[]).map(r => ({...r, amount: Number(r.amount||0)}));
-    }
-    
-    // NEW HELPER: Checks if the order is for delivery based on customer address data
-    function isDelivery(customer) {
-        if (!customer) return false;
-        // Check if any part of the delivery address is present
-        return !!customer.street_address || !!customer.city || !!customer.zip;
+    <div id="signinCard" class="flex items-center justify-center p-4">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow p-6">
+            <h1 class="text-2xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
+            <p class="text-sm text-gray-600 mb-4">Use your @rebelribbon.com email and password.</p>
+           
+            <label class="block text-sm mb-2">Email</label>
+            <input id="email" type="email" placeholder="you@rebelribbon.com" class="w-full px-3 py-2 rounded-lg border mb-4"/>
+           
+            <label class="block text-sm mb-2">Password</label>
+            <input id="password" type="password" placeholder="Password" class="w-full px-3 py-2 rounded-lg border mb-4"/>
+           
+            <button id="signInButton" class="w-full px-4 py-2 rounded-lg btn-primary">Sign In</button>
+            <p id="authMsg" class="text-sm text-red-600 mt-3"></p>
+            <p class="text-xs text-gray-500 mt-3">If the button does nothing, check Supabase keys and ensure Email/Password provider is enabled.</p>
+        </div>
+    </div>
+    <div id="app-wrapper" class="hidden">
+        <nav id="sidebar">
+            <h1 class="text-xl font-semibold px-4 mb-6 text-white/90">Rebel Ribbon</h1>
+            <div id="main-nav">
+                <button id="nav_orders" class="nav-item nav-active" data-key="order_list">Orders</button>
+                <button id="nav_surveys" class="nav-item" data-key="surveys">Surveys</button>
+            </div>
+            <div class="mt-8">
+                <h3 class="text-xs uppercase font-medium text-gray-400 px-4 mb-2">Admin / Settings</h3>
+                <button id="nav_customers" class="nav-item submenu-item" data-key="customers">Customers</button>
+                <button id="nav_discount_codes" class="nav-item submenu-item" data-key="discount_codes">Discount Codes</button>
+                <button id="nav_referral_codes" class="nav-item submenu-item" data-key="referral_codes">Referral Codes</button>
+                <button id="nav_flavors" class="nav-item submenu-item" data-key="flavors">Flavors & Options</button>
+                <button id="nav_pricing" class="nav-item submenu-item" data-key="pricing">Pricing & Fees</button>
+                <button id="nav_costs" class="nav-item submenu-item" data-key="costs">Costs</button>
+            </div>
+            <div class="mt-8 pt-4 border-t border-gray-700 px-4 text-xs text-gray-400">
+                <span id="who" class="block truncate mb-2"></span>
+                <button id="logout" class="px-3 py-1 text-xs rounded bg-gray-600 text-white hover:bg-gray-500">Sign out</button>
+            </div>
+        </nav>
+        <main id="content" class="max-w-7xl">
+            <header class="flex items-center justify-between mb-6">
+                <h2 id="pageTitle" class="text-3xl font-bold">Orders</h2>
+                <div class="flex gap-4 items-center">
+                    <input id="globalSearch" type="search" placeholder="Search customer, ID, date" class="px-4 py-2 rounded-lg border w-72 shadow-sm"/>
+                    <button id="refreshAll" class="px-3 py-2 rounded-lg btn-secondary shadow-sm">Refresh</button>
+                </div>
+            </header>
+            <div id="orderFilters" class="flex flex-wrap gap-3 mb-4">
+                <button class="filter-tab filter-active" data-filter="All">All Orders</button>
+                <button class="filter-tab" data-filter="In Review">⭐ New Orders</button>
+                <button class="filter-tab" data-filter="Approved">💸 Needs Payment</button>
+                <button class="filter-tab" data-filter="Paid">🏭 In Production</button>
+                <button class="filter-tab" data-filter="Production Complete">🚚 Ready for Fulfillment</button>
+                <button class="filter-tab" data-filter="Fulfilled">✅ Completed</button>
+            </div>
+            <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-2">
+                    <button id="addBtn" class="px-3 py-2 rounded-lg btn-primary shadow-md">Add New</button>
+                    <button id="exportBtn" class="px-3 py-2 rounded-lg btn-secondary shadow-sm">Export CSV</button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button id="prev" class="px-3 py-2 rounded-lg btn-secondary disabled:opacity-50">Prev</button>
+                    <span id="pageInfo" class="text-sm text-gray-600"></span>
+                    <button id="next" class="px-3 py-2 rounded-lg btn-secondary disabled:opacity-50">Next</button>
+                </div>
+            </div>
+            <div class="table-wrap">
+                <table id="grid" class="min-w-full text-sm table-fixed">
+                    <colgroup id="colgroup"></colgroup>
+                    <thead class="bg-gray-100 text-gray-700"><tr id="thead"></tr></thead>
+                    <tbody id="tbody"></tbody>
+                </table>
+            </div>
+            <p id="netHint" class="text-yellow-700 text-sm mt-3 hidden"></p>
+        </main>
+    </div>
+    <dialog id="editor" class="rounded-2xl p-0 w-full max-w-3xl shadow-2xl">
+        <form method="dialog" class="p-0">
+            <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
+                <h2 id="editorTitle" class="text-lg font-semibold">Edit</h2>
+                <button value="close" class="p-2 rounded hover:bg-gray-200">✕</button>
+            </div>
+            <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
+            <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
+                <button id="deleteBtn" type="button" class="px-3 py-2 rounded-lg border text-red-700 border-red-300 hidden hover:bg-red-50">Delete</button>
+                <button id="saveBtn" class="px-4 py-2 rounded-lg btn-primary">Save</button>
+            </div>
+        </form>
+    </dialog>
+    <dialog id="orderDrawer" class="rounded-2xl p-0 shadow-2xl drawer">
+        <div class="p-0">
+            <div class="sticky top-0 z-10 p-4 border-b bg-white flex items-center justify-between shadow-sm">
+                <div class="flex items-center gap-4">
+                    <button value="close" id="backToOrders" class="text-xl p-2 rounded hover:bg-gray-100 btn-icon">← Back to Orders</button>
+                    <h2 id="drawerTitle" class="text-xl font-semibold">Order #XXXX</h2>
+                </div>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-2 p-1 border rounded-lg bg-gray-50">
+                        <label class="font-medium text-sm">Status:</label>
+                        <select id="statusSelect" class="px-3 py-2 rounded-lg border shadow-sm">
+                            <option value="In Review">In Review</option>
+                            <option value="Approved">Approved</option>
+                            <option value="Paid">Paid</option>
+                            <option value="Production Complete">Production Complete</option>
+                            <option value="Fulfilled">Fulfilled</option>
+                            <option value="Canceled">Canceled</option>
+                        </select>
+                        <button id="saveStatus" type="button" class="px-4 py-2 rounded-lg btn-success">Save Status</button>
+                    </div>
+                    <button id="editFields" type="button" class="px-4 py-2 rounded-lg btn-secondary font-medium">Edit All Fields</button>
+                    <button id="viewInvoice" type="button" class="px-4 py-2 rounded-lg btn-primary shadow-md font-medium">Generate Invoice / Save PDF</button>
+                </div>
+            </div>
+            <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="info-card">
+                        <h3 class="text-lg font-semibold mb-3">🎨 Design & Details</h3>
+                        <div class="grid grid-cols-2 gap-4 text-sm mb-4">
+                            <div><span class="font-medium">Flavor:</span> <span id="ov_flavor"></span></div>
+                            <div><span class="font-medium">Dietary Option:</span> <span id="ov_dietary"></span></div>
+                            <div><span class="font-medium">Cookie Dzns:</span> <span id="ov_dzns"></span></div>
+                        </div>
+                        <label class="block text-sm font-medium mb-1">Design Notes (Primary Request)</label>
+                        <p class="p-3 border rounded-lg bg-gray-50 text-base" id="ov_notes"></p>
+                    </div>
+                    <div class="info-card">
+                        <h3 class="text-lg font-semibold mb-3">🖼️ Inspiration & Gift Note</h3>
+                        <div class="flex items-start gap-6">
+                            <div class="w-40 flex-shrink-0">
+                                <img id="ov_photo" class="w-40 h-40 object-cover rounded border shadow-sm" alt="Inspiration"/>
+                                <label class="block mt-3 text-sm">
+                                    <span class="font-medium">Replace photo:</span>
+                                    <input id="uploadPhoto" type="file" accept="image/jpeg,image/png,image/gif,image/webp" class="block mt-1 text-sm"/>
+                                </label>
+                                <button id="btnUploadPhoto" type="button" class="mt-2 w-full px-3 py-1.5 text-sm rounded bg-gray-900 text-white hover:bg-gray-700">Upload</button>
+                            </div>
+                            <div class="grow space-y-3">
+                                <h4 class="font-semibold text-sm">Gift Note Details:</h4>
+                                <div class="text-sm">
+                                    <span class="font-medium">Gift Order:</span> <span id="ov_gift_note" class="status-badge"></span>
+                                </div>
+                                <div class="text-sm">
+                                    <span class="font-medium">Gift Text:</span>
+                                    <p class="p-3 border rounded-lg bg-gray-50 mt-1" id="ov_gift_text"></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <h3 class="text-lg font-semibold mb-3">🗓️ Key Dates & Codes</h3>
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div><span class="font-medium">Date Submitted:</span> <span id="ov_submitted"></span></div>
+                            <div><span class="font-medium">Event Date:</span> <span id="ov_event"></span></div>
+                            <div><span class="font-medium">P/D Date:</span> <span id="ov_pickup"></span></div>
+                            <div><span class="font-medium">Consultation Requested:</span> <span id="ov_consultation"></span></div>
+                            <div><span class="font-medium">Discount Code:</span> <span id="ov_discount_code"></span></div>
+                            <div><span class="font-medium">Referral Code:</span> <span id="ov_referral_code"></span></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="space-y-6">
+                    <div class="info-card bg-white shadow-xl border-blue-200 border-2">
+                        <h3 class="text-lg font-bold mb-3">💰 Estimated Totals</h3>
+                        <div class="text-sm space-y-2">
+                            <div class="flex justify-between"><span>Price/dozen:</span> <span id="t_price"></span></div>
+                            <div class="flex justify-between"><span>Base Subtotal:</span> <span id="t_base"></span></div>
+                            <div class="flex justify-between"><span>Consult Fee:</span> <span id="t_consult"></span></div>
+                            <div class="flex justify-between"><span>Gift Note Fee:</span> <span id="t_gift"></span></div>
+                            <div class="flex justify-between"><span>Additional Fees:</span> <span id="t_adj_fees" class="text-green-700"></span></div>
+                            <div class="flex justify-between"><span>Discounts:</span> <span id="t_adj_disc" class="text-red-700"></span></div>
+                            <hr class="my-2"/>
+                            <div class="font-extrabold text-xl flex justify-between">Total Due: <span id="t_total"></span></div>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <h3 class="text-lg font-semibold mb-3">👤 Customer & Logistics</h3>
+                        <div class="text-sm space-y-1">
+                            <div class="font-medium text-base" id="cust_name"></div>
+                            <a id="cust_email" class="break-all text-blue-600 hover:underline cursor-pointer"></a>
+                            <a id="cust_phone_link" class="text-blue-600 hover:underline cursor-pointer"></a>
+                            <hr class="my-2"/>
+                            <h4 class="font-medium">Pickup / Delivery Address:</h4>
+                            <div id="cust_addr1"></div>
+                            <div id="cust_addr2"></div>
+                            <div id="cust_citystzip"></div>
+                            <button id="mapLocation" type="button" class="mt-2 text-xs text-blue-600 hover:underline">View on Map</button>
+                        </div>
+                    </div>
+                    <div class="info-card">
+                        <h3 class="font-semibold mb-3">➕ Fees & Adjustments</h3>
+                        <div class="flex flex-wrap items-center gap-2 mb-3">
+                            <input id="adjLabel" class="px-3 py-2 rounded-lg border w-1/3 grow" placeholder="Label (e.g., Rush fee)"/>
+                            <input id="adjAmount" type="number" step="0.01" class="px-3 py-2 rounded-lg border w-20" placeholder="Amt"/>
+                            <select id="adjKind" class="px-3 py-2 rounded-lg border">
+                                <option value="fee">Fee</option>
+                                <option value="discount">Discount</option>
+                            </select>
+                            <button id="addAdjustment" type="button" class="px-3 py-2 rounded-lg bg-gray-900 text-white hover:bg-gray-700">Add</button>
+                        </div>
+                        <div class="overflow-auto max-h-48">
+                            <table class="min-w-full text-sm">
+                                <thead class="bg-gray-100 sticky top-0">
+                                    <tr>
+                                        <th class="text-left p-2">When</th>
+                                        <th class="text-left p-2">Kind</th>
+                                        <th class="text-left p-2">Label</th>
+                                        <th class="text-right p-2">Amount</th>
+                                        <th class="text-right p-2">Remove</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adjTbody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </dialog>
+    <script>
+    // ---- Supabase client ----
+    // *** SUPABASE KEYS INJECTED ***
+    const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+   
+    // ---- Auth (Email & Password) ----
+    const signinCard = document.getElementById('signinCard');
+    const appWrapper = document.getElementById('app-wrapper');
+    const authMsg = document.getElementById('authMsg');
+   
+    // Elements for sign-in
+    const signInButton = document.getElementById('signInButton');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
+    // *** LOGIC: Email and Password Sign-In ***
+    signInButton.addEventListener('click', async () => {
+        try {
+            authMsg.textContent = '';
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
+            if (!onlyCompanyEmail(email)) {
+                authMsg.textContent = 'Access denied. Use your @rebelribbon.com address.'; return;
+            }
+            if (!password) {
+                authMsg.textContent = 'Password is required.'; return;
+            }
+           
+            // Disable button and change cursor immediately upon click
+            signInButton.disabled = true;
+            document.body.style.cursor = 'progress';
+            const { data, error } = await sb.auth.signInWithPassword({
+                email: email,
+                password: password,
+            });
+           
+            if (error) throw error;
+           
+            // If successful, bootstrap will handle the UI change via getSession()
+        } catch (e) {
+            authMsg.classList.remove('text-green-700');
+            authMsg.classList.add('text-red-600');
+            authMsg.textContent = e.message || 'Sign in failed. Check credentials.';
+        } finally {
+            // Re-enable button and reset cursor
+            signInButton.disabled = false;
+            document.body.style.cursor = 'default';
+        }
+    });
+    async function bootstrap() {
+        // We call getSession only once on load to determine login state
+        const { data: { session }, error } = await sb.auth.getSession();
+        if (error) { authMsg.textContent = error.message; return; }
+        if (!session) {
+            // FIX: Ensure the sign-in card is fixed and visible, and app wrapper is hidden
+            signinCard.classList.remove('hidden');
+            appWrapper.classList.add('hidden');
+            if (SUPABASE_URL.includes('YOUR-PROJECT') || SUPABASE_ANON_KEY.includes('PASTE_')) {
+                const hint = document.getElementById('netHint'); hint.classList.remove('hidden'); hint.textContent = 'Missing Supabase keys.';
+            }
+            return;
+        }
+       
+        const email = session.user?.email || '';
+       
+        // Final check: Ensure the signed-in user belongs to the required domain
+        if (!onlyCompanyEmail(email)) {
+            await sb.auth.signOut();
+            authMsg.textContent = 'Access restricted. Please use your @rebelribbon.com account.';
+            // Re-show signin card manually for immediate feedback
+            signinCard.classList.remove('hidden');
+            appWrapper.classList.add('hidden');
+            return;
+        }
+       
+        document.getElementById('who').textContent = email;
+        // FIX: Hide the sign-in card and show the app wrapper
+        signinCard.classList.add('hidden');
+        appWrapper.classList.remove('hidden');
+        // Initialize state
+        activeKey = 'order_list';
+        activeOrderFilter = 'All';
+        renderTabs();
+        loadTable();
+        wireRealtime();
     }
-   
-    // NEW FUNCTION: Handles the deletion of a specific adjustment
-    async function deleteAdjustment(adjustmentId){
-        if (!confirm('Are you sure you want to remove this adjustment?')) return;
-       
-        document.body.style.cursor = 'progress';
-        const { error } = await sb.from('order_adjustments').delete().eq('id', adjustmentId);
-        document.body.style.cursor = 'default';
-        if (error) {
-            alert(error.message + '\n\nMake sure the Supabase table has a DELETE RLS policy for authenticated users.');
-            return;
-        }
-        // Update local list
-        adjustments = adjustments.filter(a => a.id !== adjustmentId);
-       
-        // Re-render the drawer to update totals and the list
-        fillDrawer();
-        loadTable(); // Refresh main list in case it's visible
-    }
-    function money(n){ return '$' + (Number(n||0)).toFixed(2); }
-    function formatPhone(phone){
-        if (!phone) return '';
-        const cleaned = ('' + phone).replace(/\D/g, '');
-        const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
-        if (match) {
-            return `(${match[1]}) ${match[2]}-${match[3]}`;
-        }
-        return phone;
-    }
-    function computeTotals(){
-        const ppd = pricing?.price_per_dozen || 0;
-        const isDel = isDelivery(activeCustomer); // CHECK DELIVERY STATUS
-        const deliveryFee = (isDel ? (pricing?.delivery_fee||0) : 0); // CALCULATE DELIVERY FEE
-        const consult = (activeOrder?.consultation_requested ? (pricing?.consultation_fee||0) : 0);
-        const gift = (activeOrder?.gift_note ? (pricing?.gift_note_fee||0) : 0);
-        const base = (Number(activeOrder?.cookie_amount_dzns||0) * ppd);
-        const feeSum = adjustments.filter(a=>a.kind==='fee').reduce((s,a)=>s+a.amount,0);
-        const discSum = adjustments.filter(a=>a.kind==='discount').reduce((s,a)=>s+a.amount,0);
-        
-        // ADD DELIVERY FEE TO TOTAL CALCULATION
-        const total = base + deliveryFee + consult + gift + feeSum - discSum; 
-        
-        document.getElementById('t_price').textContent = money(ppd);
-        document.getElementById('t_base').textContent = money(base);
-        document.getElementById('t_delivery').textContent = money(deliveryFee); // NEW: Display the Delivery Fee
-        document.getElementById('t_consult').textContent = money(consult);
-        document.getElementById('t_gift').textContent = money(gift);
-        document.getElementById('t_adj_fees').textContent = money(feeSum);
-        document.getElementById('t_adj_disc').textContent = '- ' + money(discSum).replace('$', '$');
-        document.getElementById('t_total').textContent = money(total);
-    }
-    function renderAdjustments(){
-        const tb = document.getElementById('adjTbody'); tb.innerHTML='';
-        if (adjustments.length === 0) {
-            tb.innerHTML = '<tr><td colspan="5" class="p-2 text-center text-gray-500">No adjustments yet.</td></tr>';
-            return;
-        }
-        for (const a of adjustments){
-            const tr = $('tr','border-b');
-            const amountText = a.kind === 'discount' ? '-' + money(a.amount) : money(a.amount);
-            tr.appendChild($('td','p-2 text-xs', new Date(a.created_at).toLocaleDateString()));
-            tr.appendChild($('td','p-2 text-xs', a.kind));
-            tr.appendChild($('td','p-2', a.label||''));
-            tr.appendChild($('td',`p-2 text-right ${a.kind === 'discount' ? 'text-red-600' : 'text-green-600'}`, amountText));
-           
-            // NEW COLUMN: Remove Button
-            const removeCell = $('td', 'p-2 text-right');
-            const removeBtn = $('button', 'text-red-500 hover:text-red-700 text-sm font-medium', 'Remove');
-            removeBtn.onclick = () => deleteAdjustment(a.id);
-            removeCell.appendChild(removeBtn);
-            tr.appendChild(removeCell);
-            tb.appendChild(tr);
-        }
-    }
-    function fillDrawer(){
-        const o = activeOrder, c = activeCustomer;
-        const currentStatus = o?.status || 'In Review';
-        const isGiftNote = o?.gift_note || false;
-        const isConsultation = o?.consultation_requested || false;
-        const rawPhone = c?.phone || '';
-        const deliveryType = isDelivery(c) ? '🚚 Delivery' : '📦 Pickup'; // CHECK DELIVERY STATUS
-        
-        document.getElementById('drawerTitle').textContent = `Order #${o.id} — ${c ? `${c.first_name||''} ${c.last_name||''}`.trim() : ''}`;
-        // Left Column (Design & Details)
-        document.getElementById('ov_flavor').textContent = o?.flavor || 'N/A';
-        document.getElementById('ov_dietary').textContent = o?.dietary_option || 'None';
-        document.getElementById('ov_dzns').textContent = o?.cookie_amount_dzns ?? '0';
-        document.getElementById('ov_notes').textContent = o?.design_notes || 'No design notes provided.';
-        document.getElementById('ov_gift_note').textContent = isGiftNote ? 'Yes' : 'No';
-        document.getElementById('ov_gift_note').className = `status-badge ${isGiftNote ? 'status-approved' : 'status-canceled'}`;
-        document.getElementById('ov_gift_text').textContent = o?.gift_note_text || '—';
-        document.getElementById('ov_submitted').textContent = dateOnly(o?.created_at);
-        document.getElementById('ov_event').textContent = dateOnly(o?.event_date);
-        
-        // UPDATED: Add Pickup/Delivery type next to the P/D date
-        const pdText = dateOnly(o?.pickup_delivery_date);
-        document.getElementById('ov_pickup').innerHTML = `${pdText} **(${deliveryType})**`;
-        
-        document.getElementById('ov_consultation').textContent = isConsultation ? 'Yes' : 'No';
-        document.getElementById('ov_discount_code').textContent = o?.discount_code_used || 'None';
-        document.getElementById('ov_referral_code').textContent = o?.referral_code_used || 'None';
-        document.getElementById('statusSelect').value = currentStatus;
-        const photo = document.getElementById('ov_photo');
-        if (o?.design_inspiration_photo) {
-            photo.src = o.design_inspiration_photo;
-        } else {
-            photo.src = 'https://dummyimage.com/320x320/e5e7eb/6b7280.jpg&text=No+photo';
-        }
-        // Right Column (Customer & Logistics)
-        document.getElementById('cust_name').textContent = c ? `${c.first_name||''} ${c.last_name||''}`.trim() : 'N/A';
-       
-        // Email link setup
-        const custEmailEl = document.getElementById('cust_email');
-        custEmailEl.textContent = c?.email || 'N/A';
-        custEmailEl.href = `mailto:${c?.email}`;
-        // Phone number link and formatting setup
-        const custPhoneEl = document.getElementById('cust_phone_link');
-        custPhoneEl.textContent = formatPhone(rawPhone) || 'N/A';
-        custPhoneEl.href = `tel:${rawPhone.replace(/\D/g, '')}`;
-        document.getElementById('cust_addr1').textContent = c?.street_address || '—';
-        document.getElementById('cust_addr2').textContent = c?.street_address_cont || '';
-        const cityStZip = [c?.city, c?.state, c?.zip].filter(Boolean).join(', ');
-        document.getElementById('cust_citystzip').textContent = cityStZip;
-        document.getElementById('mapLocation').onclick = () => {
-            const address = [c?.street_address, c?.street_address_cont, c?.city, c?.state, c?.zip].filter(Boolean).join(', ');
-            if (address) {
-                // Use HTTPS and open in new tab
-                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
-            } else {
-                alert('No full address available to map.');
-            }
-        };
-        renderAdjustments();
-        computeTotals();
-    }
-    async function openOrderManager(orderId){
-        document.body.style.cursor = 'progress';
-        const [orderResp, customerResp, pricingData, adjustmentsData] = await Promise.all([
-            sb.from('orders').select('*').eq('id', orderId).single(),
-            // Attempt to fetch ALL customer details for address check
-            (async () => {
-                const { data: ord } = await sb.from('orders').select('customer_id').eq('id', orderId).single();
-                if (ord?.customer_id) return sb.from('customers').select('*').eq('id', ord.customer_id).single();
-                return { data: null };
-            })(),
-            fetchPricing(),
-            fetchAdjustments(orderId)
-        ]);
-        document.body.style.cursor = 'default';
-        if (orderResp.error) { alert(orderResp.error.message); return; }
-        activeOrder = orderResp.data;
-        activeCustomer = customerResp.data;
-        pricing = pricingData;
-        adjustments = adjustmentsData;
-        fillDrawer();
-        drawer.showModal();
-    }
-    // drawer actions
-    document.getElementById('saveStatus').addEventListener('click', async ()=>{
-        const status = document.getElementById('statusSelect').value;
-        const { error } = await sb.from('orders').update({ status }).eq('id', activeOrder.id);
-        if (error) { alert(error.message); return; }
-        activeOrder.status = status;
-        // Re-render status badge on the drawer and refresh the main list
-        fillDrawer();
-        loadTable();
-    });
-    // "Edit All Fields" button functionality
-    document.getElementById('editFields').addEventListener('click', ()=>{
-        if (!activeOrder) return;
-        // Re-use generic editor with the full 'orders' config and the currently active order data
-        openEditor(tables.orders, activeOrder);
-    });
-    document.getElementById('backToOrders').addEventListener('click', (e) => {
-        e.preventDefault();
-        drawer.close();
-    });
-    document.getElementById('addAdjustment').addEventListener('click', async ()=>{
-        const label = document.getElementById('adjLabel').value.trim();
-        const amount = Number(document.getElementById('adjAmount').value);
-        const kind = document.getElementById('adjKind').value;
-        if (!label || !amount || amount <= 0) { alert('Enter a valid label and positive amount'); return; }
-        const payload = { order_id: activeOrder.id, label, amount, kind };
-       
-        // This is the action that triggers the RLS error if the INSERT policy is missing/incorrect
-        const { data, error } = await sb.from('order_adjustments').insert(payload).select('*').single();
-        if (error) {
-            alert(error.message + '\n\nFix the RLS policy for INSERT on the "order_adjustments" table in Supabase.');
-            return;
-        }
-        // Update list
-        adjustments.unshift({...data, amount: Number(data.amount||0)});
-        // Clear inputs
-        document.getElementById('adjLabel').value = '';
-        document.getElementById('adjAmount').value = '';
-        document.getElementById('adjKind').value = 'fee';
-        // Re-render
-        renderAdjustments();
-        computeTotals();
-    });
-    // Photo upload -> Supabase Storage bucket "order_uploads"
-    document.getElementById('btnUploadPhoto').addEventListener('click', async ()=>{
-        const file = document.getElementById('uploadPhoto').files?.[0];
-        if (!file) { alert('Choose an image file first.'); return; }
-       
-        // --- MIME TYPE VALIDATION ---
-        if (!isValidMimeType(file.type)) {
-            alert('Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.');
-            document.getElementById('uploadPhoto').value = ''; // Clear file input
-            return;
-        }
-        // --------------------------
-        document.body.style.cursor = 'progress';
-        const ext = file.name.split('.').pop();
-        const path = `${activeOrder.id}/inspiration_${Date.now()}.${ext}`;
-       
-        // Ensure bucket exists and public policy allows read; RLS on Storage should allow authenticated upload
-        const { data, error } = await sb.storage.from('order_uploads').upload(path, file, { upsert:true, contentType:file.type });
-        document.body.style.cursor = 'default';
-        if (error) {
-            alert(error.message + '\n\nMake sure Storage bucket "order_uploads" exists and allows authenticated uploads.');
-            return;
-        }
-        const { data: publicUrl } = sb.storage.from('order_uploads').getPublicUrl(data.path);
-        const url = publicUrl?.publicUrl;
-        const { error: upErr } = await sb.from('orders').update({ design_inspiration_photo: url }).eq('id', activeOrder.id);
-        if (upErr) { alert(upErr.message); return; }
-        activeOrder.design_inspiration_photo = url;
-        document.getElementById('ov_photo').src = url;
-        document.getElementById('uploadPhoto').value = ''; // Clear file input
-    });
-    // *** Invoice button generates a printable pop-up window ***
-    document.getElementById('viewInvoice').addEventListener('click', ()=>{
-        if (!activeOrder || !activeCustomer) {
-            alert("Please load a complete order first to generate the invoice.");
-            return;
-        }
-
-        // Calculate final Delivery Fee to include in invoice
-        const isDel = isDelivery(activeCustomer);
-        const deliveryFee = isDel ? (pricing?.delivery_fee||0) : 0;
-        const deliveryFeeText = money(deliveryFee);
-       
-        const totalDue = document.getElementById('t_total').textContent;
-        const customerName = document.getElementById('cust_name').textContent;
-        const customerEmail = document.getElementById('cust_email').textContent;
-        const orderId = activeOrder.id;
-        const customerAddress = document.getElementById('cust_addr1').textContent + (document.getElementById('cust_addr2').textContent ? ', ' + document.getElementById('cust_addr2').textContent : '') + ', ' + document.getElementById('cust_citystzip').textContent;
-       
-        // Determine the main logistics label
-        const deliveryTypeLabel = isDel ? 'Delivery Address' : 'Pickup Location (Assumed)';
-
-        const lineItems = [
-            { label: `Base Price (${activeOrder.cookie_amount_dzns || 0} dozen @ ${document.getElementById('t_price').textContent})`, amount: document.getElementById('t_base').textContent },
-            // ADD DELIVERY FEE TO LINE ITEMS
-            ...(isDel ? [{ label: 'Delivery Fee', amount: deliveryFeeText }] : []),
-            
-            ...(activeOrder.consultation_requested ? [{ label: 'Consultation Fee', amount: document.getElementById('t_consult').textContent }] : []),
-            ...(activeOrder.gift_note ? [{ label: 'Gift Note Fee', amount: document.getElementById('t_gift').textContent }] : []),
-            ...adjustments.filter(a => a.kind === 'fee').map(a => ({ label: a.label + ' (Fee)', amount: money(a.amount) })),
-            ...(activeOrder.discount_code_used ? [{ label: `Discount Code Used: ${activeOrder.discount_code_used}`, amount: '- [Calculated Discount]' }] : []),
-            ...(activeOrder.referral_code_used ? [{ label: `Referral Code Used: ${activeOrder.referral_code_used}`, amount: '- [Calculated Referral Discount]' }] : []),
-            ...adjustments.filter(a => a.kind === 'discount').map(a => ({ label: a.label + ' (Discount)', amount: '-' + money(a.amount) })),
-        ];
-        // 1. Build the HTML content for the pop-up
-        let invoiceContent = `
-            <html>
-            <head>
-                <title>Invoice #${orderId}</title>
-                <style>
-                    body { font-family: sans-serif; margin: 0; padding: 20px; font-size: 14px; }
-                    .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, 0.15); }
-                    h1 { font-size: 24px; color: #3b82f6; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; margin-bottom: 20px; }
-                    .address, .details { width: 49%; display: inline-block; vertical-align: top; }
-                    .details { text-align: right; }
-                    .item-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                    .item-table th, .item-table td { border-bottom: 1px solid #eee; padding: 10px; text-align: left; }
-                    .item-table th { background-color: #f3f4f6; }
-                    .total-row td { border-top: 2px solid #333; font-weight: bold; font-size: 16px; padding-top: 10px; }
-                    .line-total { text-align: right; }
-                    .notes { margin-top: 30px; font-size: 12px; border-top: 1px dashed #ccc; padding-top: 10px; }
-                    @media print {
-                        .invoice-box { box-shadow: none; border: none; }
-                    }
-                </style>
-            </head>
-            <body>
-                <div class="invoice-box">
-                    <h1>REBEL RIBBON INVOICE</h1>
-                   
-                    <div class="address">
-                        <strong>REBEL RIBBON</strong><br>
-                        [Your Company Address Here]<br>
-                        [Your Company Contact Here]
-                    </div>
-                    <div class="details">
-                        Invoice # ${orderId}<br>
-                        Date: ${new Date().toLocaleDateString()}<br><br>
-                        **Customer:** ${customerName}<br>
-                        ${customerEmail}<br>
-                        **${deliveryTypeLabel}:** ${customerAddress || 'N/A'}
-                    </div>
-                    <table class="item-table">
-                        <thead>
-                            <tr>
-                                <th style="width: 75%;">Description</th>
-                                <th class="line-total">Amount</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            ${lineItems.map(item => `
-                                <tr>
-                                    <td>${item.label}</td>
-                                    <td class="line-total">${item.amount}</td>
-                                </tr>
-                            `).join('')}
-                            <tr class="total-row">
-                                <td>TOTAL DUE</td>
-                                <td class="line-total">${totalDue}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                   
-                    <div class="notes">
-                        **Order Notes:** ${activeOrder.design_notes || 'None'}<br>
-                        **Payment Terms:** Orders are not locked in until full payment is received.
-                    </div>
-                </div>
-                <script>
-                    // Automatically trigger print dialog when the window loads
-                    window.onload = function() {
-                        window.print();
-                    }
-                <\/script>
-            </body>
-            </html>
-        `;
-        // 2. Open the pop-up window and write the content
-        const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
-        printWindow.document.write(invoiceContent);
-        printWindow.document.close();
-    });
-    // init
-    bootstrap();
-    </script>
+    document.getElementById('logout').addEventListener('click', async () => {
+        await sb.auth.signOut();
+        // Redirect to clear URL parameters
+        location.href = location.origin + location.pathname;
+    });
+    // ---- Tables config ----
+    const tables = {
+        order_list: {
+            title: 'Orders',
+            table: 'orders',
+            readOnly: true,
+            customLoader: 'loadOrderList',
+            center: true,
+            cols: [
+                { key:'id', label:'Order #', type:'text', w:'10' },
+                { key:'status', label:'Status', type:'text', w:'14' },
+                { key:'customer_name', label:'Customer Name', type:'text', w:'22' }, // Placeholder for joined data
+                { key:'cookie_amount_dzns', label:'Dozens', type:'number', w:'12' },
+                { key:'pickup_delivery_date', label:'P/D Date', type:'date', w:'16' },
+                { key:'event_date', label:'Event Date', type:'date', w:'16' },
+            ]
+        },
+        customers: { title:'Customers', table:'customers', isSettings:true, cols:[
+            { key:'first_name', label:'First name', type:'text', required:true, w:'14' },
+            { key:'last_name', label:'Last name', type:'text', required:true, w:'14' },
+            { key:'phone', label:'Phone', type:'text', w:'14' },
+            { key:'email', label:'Email', type:'email', w:'16' },
+            { key:'street_address', label:'Street address', type:'text', w:'16' },
+            { key:'street_address_cont', label:'Street address cont', type:'text', w:'16' },
+            { key:'city', label:'City', type:'text', w:'12' },
+            { key:'state', label:'State', type:'text', w:'10' },
+            { key:'zip', label:'Zip', type:'text', w:'10' },
+            { key:'customer_id', label:'Customer ID', type:'text', w:'14' },
+            { key:'referral_code_assigned', label:'Referral code assigned', type:'text', w:'18',
+                asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] },
+            { key:'order_id', label:'Order ID', type:'text', w:'12' }
+        ]},
+        // NOTE: The 'orders' table tab is functionally replaced by the dedicated Order Manager in 'order_list' view.
+        orders: { title:'Orders', table:'orders', cols:[
+            { key:'order_id', label:'Order ID', type:'text', w:'12' },
+            { key:'customer_id', label:'Customer', type:'select-async', w:'20',
+                asyncOptions: async () => {
+                    const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+                    return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+                }},
+            { key:'pickup_delivery_date', label:'Pick up or delivery date', type:'date', w:'18' },
+            { key:'event_date', label:'Event date', type:'date', w:'14' },
+            { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', step:'0.01', w:'18' },
+            { key:'flavor', label:'Flavor', type:'select-async', w:'14', asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
+            { key:'dietary_option', label:'Dietary option', type:'select-async', w:'16', asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[] },
+            { key:'design_notes', label:'Design notes', type:'textarea', w:'20' },
+            { key:'design_inspiration_photo', label:'Design inspiration photo URL', type:'url', w:'20' },
+            { key:'gift_note', label:'Gift note', type:'checkbox', w:'10' },
+            { key:'gift_note_text', label:'Gift note text', type:'textarea', w:'16' },
+            { key:'consultation_requested', label:'Consultation requested', type:'checkbox', w:'20' },
+            { key:'discount_code_used', label:'Discount code used', type:'text', w:'16' },
+            { key:'referral_code_used', label:'Referral code used', type:'text', w:'16' },
+            { key:'status', label:'Status', type:'select', w:'14', options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'] }
+        ]},
+        discount_codes: { title:'Discount Codes', table:'discount_codes', isSettings:true, cols:[
+            { key:'code', label:'Code', type:'text', required:true, w:'20' },
+            { key:'type', label:'Type', type:'select', options:['percent','fixed'], required:true, w:'14' },
+            { key:'uses_allowed', label:'Uses allowed', type:'number', w:'20' },
+            { key:'email_allowed', label:'Email allowed', type:'email', w:'18' },
+            { key:'good_through_date', label:'Good through date', type:'date', w:'18' }
+        ]},
+        referral_codes: { title:'Referral Codes', table:'referral_codes', isSettings:true, cols:[
+            { key:'code', label:'Code', type:'text', required:true, w:'20' },
+            { key:'associated_customer_id', label:'Associated customer', type:'select-async', w:'22',
+                asyncOptions: async () => {
+                    const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+                    return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+                }},
+            { key:'good_through_date', label:'Good through date', type:'date', w:'18' },
+            { key:'referrer_discount', label:'Referrer discount %', type:'number', step:'0.01', w:'20' },
+            { key:'referee_discount', label:'Referee discount %', type:'number', step:'0.01', w:'20' }
+        ]},
+        flavors: { title:'Flavors', table:'flavors', isSettings:true, cols:[
+            { key:'name', label:'Flavor name', type:'text', required:true, w:'40' }
+        ]},
+        dietary_options: { title:'Dietary Options', table:'dietary_options', isSettings:true, cols:[
+            { key:'name', label:'Dietary option', type:'text', required:true, w:'40' }
+        ]},
+        pricing: { title:'Pricing', table:'pricing', isSettings:true, cols:[
+            { key:'price_per_dozen', label:'Price per dozen', type:'number', step:'0.01', w:'20' },
+            { key:'delivery_fee', label:'Delivery fee', type:'number', step:'0.01', w:'20' },
+            { key:'consultation_fee', label:'Consultation fee', type:'number', step:'0.01', w:'20' },
+            { key:'gift_note_fee', label:'Gift Note fee', type:'number', step:'0.01', w:'20' },
+            { key:'rush_fee', label:'Rush fee', type:'number', step:'0.01', w:'20' }
+        ]},
+        costs: { title:'Costs', table:'costs', isSettings:true, cols:[
+            { key:'item_name', label:'Item name', type:'text', required:true, w:'60' },
+            { key:'amount', label:'Amount', type:'number', step:'0.01', required:true, w:'40' }
+        ]},
+        surveys: { title:'Surveys', table:'surveys', cols:[
+            { key:'customer_id', label:'Customer', type:'select-async', w:'22',
+                asyncOptions: async () => {
+                    const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+                    return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+                }},
+            { key:'cookies_stars', label:'Cookies 1 to 5', type:'number', min:1, max:5, w:'18' },
+            { key:'service_stars', label:'Service 1 to 5', type:'number', min:1, max:5, w:'18' },
+            { key:'recommend', label:'Recommend to family', type:'checkbox', w:'22' },
+            { key:'improvements', label:'Improvements', type:'textarea', w:'30' },
+            { key:'website_review', label:'Website review', type:'textarea', w:'30' }
+        ]}
+    };
+    const tabOrder = ['order_list','surveys'];
+    const settingsOrder = ['customers','discount_codes','referral_codes','flavors','dietary_options','pricing','costs'];
+    // ---- Table helpers ----
+    let activeKey = 'order_list';
+    let activeOrderFilter = 'All';
+    const pageSize = 20; // Increased page size for better dashboard view
+    let page = 0;
+    let totalCount = 0;
+    const $ = (t,c,h)=>{ const e=document.createElement(t); if(c) e.className=c; if(h!==undefined) e.innerHTML=h; return e; };
+    const fmt = (v)=> v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
+    const dateOnly=(d)=>{ if(!d) return ''; const dt=new Date(d); const tz=new Date(dt.getTime()-dt.getTimezoneOffset()*60000); return tz.toISOString().slice(0,10); };
+    const isUrgent = (d) => {
+        if (!d) return false;
+        const today = new Date();
+        const eventDate = new Date(d);
+        const diffDays = Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
+        return diffDays >= 0 && diffDays <= 7;
+    };
+    const getStatusClass = (status) => {
+        if (!status) return 'status-in-review';
+        const s = status.toLowerCase().replace(/\s/g, '-');
+        return `status-${s}`;
+    };
+    function buildColGroup(conf){
+        const cg = document.getElementById('colgroup'); cg.innerHTML='';
+        const cols = conf.cols.slice();
+        if (!conf.readOnly) cols.push({key:'__actions', w:'8'});
+        const total = cols.reduce((s,c)=> s + (Number(c.w||0) || 0), 0) || 100;
+        for (const c of cols){
+            const col = document.createElement('col');
+            const pct = (Number(c.w||0)||0) / total * 100;
+            col.style.width = pct ? pct+'%' : 'auto';
+            cg.appendChild(col);
+        }
+    }
+    function buildThead(conf){
+        const tr = document.getElementById('thead'); tr.innerHTML='';
+        for (const c of conf.cols){
+            const cls = 'thcell nowrap ' + (conf.center ? 'text-center' : 'text-left');
+            tr.appendChild($('th', cls, c.label));
+        }
+        if (!conf.readOnly) tr.appendChild($('th','thcell text-right nowrap','Actions'));
+    }
+    async function loadTable(){
+        const conf = tables[activeKey];
+        document.getElementById('pageTitle').textContent = conf.title;
+        document.getElementById('orderFilters').classList.toggle('hidden', activeKey !== 'order_list');
+        document.getElementById('addBtn').classList.toggle('hidden', !!conf.readOnly);
+        buildColGroup(conf); buildThead(conf);
+        const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
+        if (conf.customLoader === 'loadOrderList') { await loadOrderList(); return; }
+        document.body.style.cursor = 'progress';
+        let query = sb.from(conf.table).select('*', { count:'exact' });
+        const q = document.getElementById('globalSearch').value?.trim();
+        if (q) {
+            const orParts = conf.cols.map(c => `${c.key}.ilike.%${q}%`).join(',');
+            if (orParts) query = query.or(orParts);
+        }
+        query = query.order('updated_at', { ascending:false }).range(page*pageSize, page*pageSize+pageSize-1);
+        const { data, error, count } = await query;
+        document.body.style.cursor = 'default';
+        if (error) {
+            tbody.appendChild($('tr','',`<td class="cell text-red-700" colspan="99">${error.message}</td>`));
+            return;
+        }
+        totalCount = count || 0;
+        // rows
+        for (const row of (data||[])){
+            const tr = $('tr','border-b ' + (conf.center ? 'text-center' : ''));
+            for (const c of conf.cols){
+                let val = row[c.key];
+                if (c.type === 'checkbox') val = !!val;
+                if (c.type === 'date') val = dateOnly(val);
+                tr.appendChild($('td','cell nowrap', fmt(val)));
+            }
+            if (!conf.readOnly) {
+                const td = $('td','cell text-right nowrap');
+                const edit = $('button','px-2 py-1 rounded border hover:bg-gray-100','Edit');
+                edit.addEventListener('click', () => openEditor(conf, row));
+                td.appendChild(edit);
+                tr.appendChild(td);
+            }
+            document.getElementById('tbody').appendChild(tr);
+        }
+        updatePager();
+        // export current table
+        document.getElementById('exportBtn').onclick = async () => {
+            const { data: allRows } = await sb.from(conf.table).select('*').order('updated_at',{ascending:false});
+            exportCSV(allRows||[], conf);
+        };
+    }
+    // ORDER LIST (enhanced with Kanban filter)
+    async function loadOrderList(){
+        const conf = tables.order_list;
+        const tbody = document.getElementById('tbody'); tbody.innerHTML = '';
+        document.body.style.cursor = 'progress';
+        let q = sb.from('orders').select('id, created_at, customer_id, cookie_amount_dzns, status, pickup_delivery_date, event_date', { count:'exact' })
+                .order('created_at',{ascending:false});
+        if (activeOrderFilter !== 'All') {
+            q = q.eq('status', activeOrderFilter);
+        }
+        const searchTerm = document.getElementById('globalSearch').value?.trim();
+        if (searchTerm) {
+            // Note: Cannot search joined fields easily here, need a view or RLS setup for full search
+            q = q.or(`id.ilike.%${searchTerm}%,status.ilike.%${searchTerm}%`);
+        }
+        q = q.range(page*pageSize, page*pageSize+pageSize-1);
+        const { data: orders, error, count } = await q;
+        document.body.style.cursor = 'default';
+        if (error) {
+            tbody.appendChild($('tr','',`<td class="cell text-red-700" colspan="99">${error.message}</td>`));
+            return;
+        }
+        totalCount = count || 0;
+        // Fetch all customers needed for the page in one go
+        const ids = [...new Set((orders||[]).map(o=>o.customer_id).filter(Boolean))];
+        const map = new Map();
+        if (ids.length){
+            const { data: cust } = await sb.from('customers').select('id, first_name, last_name').in('id', ids);
+            (cust||[]).forEach(c => map.set(c.id, c));
+        }
+        for (const r of (orders||[])){
+            const cust = map.get(r.customer_id);
+            const status = r.status || 'In Review';
+            const pdDate = dateOnly(r.pickup_delivery_date);
+            const eventDate = dateOnly(r.event_date);
+            const isUrgentOrder = isUrgent(r.event_date) || isUrgent(r.pickup_delivery_date);
+            const tr = $('tr','border-b hover:bg-gray-100 cursor-pointer');
+            const statusCell = $('td', 'cell nowrap text-center');
+            statusCell.appendChild($('span', `status-badge ${getStatusClass(status)}`, status));
+            const pdDateCell = $('td', `cell nowrap text-center ${isUrgentOrder ? 'urgent-date' : ''}`, pdDate);
+            const eventDateCell = $('td', `cell nowrap text-center`, eventDate);
+            const rowView = {
+                id: `#${r.id}`,
+                status: statusCell,
+                customer_name: cust ? `${cust.first_name||''} ${cust.last_name||''}`.trim() : 'N/A',
+                cookie_amount_dzns: r.cookie_amount_dzns ?? '',
+                pickup_delivery_date: pdDateCell,
+                event_date: eventDateCell
+            };
+            // Order of cells must match conf.cols
+            tr.appendChild($('td', 'cell nowrap text-center', rowView.id));
+            tr.appendChild(rowView.status);
+            tr.appendChild($('td', 'cell nowrap text-left font-medium', rowView.customer_name));
+            tr.appendChild($('td', 'cell nowrap text-center', rowView.cookie_amount_dzns));
+            tr.appendChild(rowView.pickup_delivery_date);
+            tr.appendChild(rowView.event_date);
+            tr.addEventListener('click', ()=> openOrderManager(r.id));
+            tbody.appendChild(tr);
+        }
+        updatePager();
+        // Enhanced CSV export logic for this view
+        document.getElementById('exportBtn').onclick = async () => {
+            const allQ = sb.from('orders').select('*, customers:customer_id(first_name, last_name)').order('created_at',{ascending:false});
+            const { data: allOrders } = await allQ;
+            const rows = (allOrders||[]).map(r => ({
+                'Order ID': r.id,
+                'Date Submitted': dateOnly(r.created_at),
+                'Status': r.status || 'In Review',
+                'First Name': r.customers?.first_name || '',
+                'Last Name': r.customers?.last_name || '',
+                'Cookie Amount (dzns)': r.cookie_amount_dzns ?? '',
+                'Pickup/Delivery Date': dateOnly(r.pickup_delivery_date),
+                'Event Date': dateOnly(r.event_date),
+            }));
+            const exportConf = { title: 'Order_List_Export', cols: Object.keys(rows[0] || {}).map(k => ({ key: k, label: k })) };
+            exportCSV(rows, exportConf);
+        };
+    }
+    function exportCSV(rows, conf){
+        const headers = conf.cols.map(c => c.label);
+        const csvRows = [headers.join(',')];
+        for (const r of rows){
+            const vals = conf.cols.map(c => {
+                let v = r[c.key];
+                if (v == null) v = '';
+                // Handle nested customer data for order_list export
+                if (c.key.includes('.')) {
+                    const [table, key] = c.key.split('.');
+                    v = r[table]?.[key] ?? '';
+                }
+                const s = String(v).replaceAll('"', '""');
+                return `"${s}"`;
+            });
+            csvRows.push(vals.join(','));
+        }
+        const csv = csvRows.join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a'); a.href = url; a.download = `${conf.title.replace(/\s+/g,'_')}.csv`; a.click();
+        URL.revokeObjectURL(url);
+    }
+    function updatePager(){
+        const prev = document.getElementById('prev');
+        const next = document.getElementById('next');
+        prev.disabled = page === 0;
+        next.disabled = (page + 1) * pageSize >= totalCount;
+        const shown = Math.min(totalCount, page*pageSize + Math.min(pageSize, Math.max(0,totalCount - page*pageSize)));
+        document.getElementById('pageInfo').textContent = `${shown} of ${totalCount}`;
+    }
+    // ---- Generic CRUD Editor ----
+    const dlg = document.getElementById('editor');
+    const formBody = document.getElementById('formBody');
+    // ... (optionEl and openEditor remains mostly the same, adapted to new navigation)
+    async function optionEl(col, value){
+        const wrap = $('label','block');
+        wrap.appendChild($('span','text-sm block mb-1', col.label));
+        let input;
+        if (col.type === 'textarea'){ input = $('textarea','px-3 py-2 rounded-lg border w-full'); input.rows = 4; }
+        else if (col.type === 'checkbox'){ input = $('input','h-4 w-4'); input.type='checkbox'; }
+        else if (col.type === 'select'){
+            input = $('select','px-3 py-2 rounded-lg border w-full');
+            (col.options||[]).forEach(o => { const opt = $('option','',o); opt.value=o; input.appendChild(opt); });
+        } else if (col.type === 'select-async'){
+            input = $('select','px-3 py-2 rounded-lg border w-full');
+            const options = await col.asyncOptions();
+            for (const o of options){ const opt = document.createElement('option'); if (typeof o === 'string'){ opt.value=o; opt.textContent=o; } else { opt.value=o.value; opt.textContent=o.label; } input.appendChild(opt); }
+        } else {
+            input = $('input','px-3 py-2 rounded-lg border w-full');
+            input.type = col.type || 'text';
+            if (col.step) input.step = col.step;
+            if (col.min !== undefined) input.min = col.min;
+            if (col.max !== undefined) input.max = col.max;
+        }
+        input.id = `fld_${col.key}`;
+        if (col.required) input.required = true;
+        if (col.type === 'checkbox') input.checked = !!value; else if (col.type === 'date') input.value = dateOnly(value); else input.value = value ?? '';
+        wrap.appendChild(input);
+        return wrap;
+    }
+    async function openEditor(conf, row){
+        document.getElementById('editorTitle').textContent = row ? `Edit ${conf.title}` : `New ${conf.title}`;
+        formBody.innerHTML = '';
+        for (const c of conf.cols) formBody.appendChild(await optionEl(c, row?.[c.key]));
+        const idHidden = document.createElement('input'); idHidden.type='hidden'; idHidden.id='row_id'; idHidden.value=row?.id||''; formBody.appendChild(idHidden);
+        const delBtn = document.getElementById('deleteBtn');
+        delBtn.classList.toggle('hidden', !row || !!conf.readOnly);
+        delBtn.onclick = async () => {
+            if (!row?.id) return; if (!confirm('Delete this record?')) return;
+            const { error } = await sb.from(conf.table).delete().eq('id', row.id);
+            if (error) { alert(error.message); return; }
+            dlg.close(); loadTable();
+            // If editing an order and deleting, close the drawer too
+            if (conf.table === 'orders') drawer.close();
+        };
+        document.getElementById('saveBtn').onclick = async (e) => { e.preventDefault(); await saveRecord(conf, row); };
+        dlg.showModal();
+    }
+    async function saveRecord(conf, originalRow){
+        const payload = {};
+        for (const c of conf.cols){
+            const elx = document.getElementById(`fld_${c.key}`);
+            let val = (c.type === 'checkbox') ? elx.checked : elx.value || null;
+            if (c.type === 'number' && val !== null) val = elx.value === '' ? null : Number(val);
+            payload[c.key] = val;
+        }
+        const id = document.getElementById('row_id').value;
+        let resp;
+        if (id) resp = await sb.from(conf.table).update(payload).eq('id', id).select('*').single();
+        else   resp = await sb.from(conf.table).insert(payload).select('*').single();
+        if (resp.error) { alert(resp.error.message); return; }
+        dlg.close(); loadTable();
+        // If we just saved an order from the editor, re-open/update the Order Manager
+        if (conf.table === 'orders' && originalRow) {
+            openOrderManager(originalRow.id);
+        }
+    }
+    // ---- Navigation/Search/Pager/Realtime ----
+    function renderTabs(){
+        const nav = document.getElementById('main-nav');
+        const sidebar = document.getElementById('sidebar');
+        // Clear active classes
+        sidebar.querySelectorAll('.nav-item').forEach(b => b.classList.remove('nav-active'));
+        // Handle main tabs
+        [...tabOrder, ...settingsOrder].forEach(key => {
+            const btn = document.querySelector(`.nav-item[data-key="${key}"]`);
+            if (btn) {
+                if (key === activeKey) btn.classList.add('nav-active');
+                btn.onclick = () => {
+                    activeKey = key;
+                    page = 0;
+                    renderTabs();
+                    loadTable();
+                };
+            }
+        });
+        // Event listener for filter tabs (only on the Orders list)
+        const filterBtns = document.querySelectorAll('#orderFilters .filter-tab');
+        filterBtns.forEach(btn => {
+            btn.classList.remove('filter-active');
+            if (btn.dataset.filter === activeOrderFilter) btn.classList.add('filter-active');
+            btn.onclick = () => {
+                activeOrderFilter = btn.dataset.filter;
+                page = 0;
+                filterBtns.forEach(b => b.classList.remove('filter-active'));
+                btn.classList.add('filter-active');
+                loadTable();
+            };
+        });
+        document.getElementById('addBtn').onclick = () => openEditor(tables[activeKey], null);
+        document.getElementById('prev').onclick = () => { if (page>0) { page--; loadTable(); } };
+        document.getElementById('next').onclick = () => { if ((page+1)*pageSize < totalCount) { page++; loadTable(); } };
+        document.getElementById('globalSearch').onkeydown = (e)=>{ if (e.key==='Enter'){ page=0; loadTable(); } };
+        document.getElementById('refreshAll').onclick = () => loadTable();
+    }
+    function wireRealtime(){
+        for (const key of Object.keys(tables)){
+            const table = (key==='order_list'?'orders':tables[key].table);
+            sb.channel(`${key}-changes`)
+                .on('postgres_changes', { event:'*', schema:'public', table: table },
+                    () => { if (key === activeKey) loadTable(); })
+                .subscribe();
+        }
+    }
+    // =========================================
+    // ORDER MANAGER (drawer) Logic
+    // =========================================
+    const drawer = document.getElementById('orderDrawer');
+    let activeOrder = null; // full order object
+    let activeCustomer = null;
+    let pricing = null;
+    let adjustments = [];
+    // MIME TYPE VALIDATION HELPER
+    function isValidMimeType(mimeType) {
+        const allowedMimeTypes = [
+            'image/jpeg',
+            'image/png',
+            'image/gif',
+            'image/webp'
+        ];
+        return allowedMimeTypes.includes(mimeType);
+    }
+   
+    async function fetchPricing(){
+        const { data } = await sb.from('pricing').select('*').limit(1);
+        const p = (data && data[0]) || {};
+        return {
+            price_per_dozen: Number(p.price_per_dozen||0),
+            consultation_fee: Number(p.consultation_fee||0),
+            gift_note_fee: Number(p.gift_note_fee||0)
+        };
+    }
+    async function fetchAdjustments(order_id){
+        const { data } = await sb.from('order_adjustments').select('*').eq('order_id', order_id).order('created_at',{ascending:false});
+        return (data||[]).map(r => ({...r, amount: Number(r.amount||0)}));
+    }
+   
+    // NEW FUNCTION: Handles the deletion of a specific adjustment
+    async function deleteAdjustment(adjustmentId){
+        if (!confirm('Are you sure you want to remove this adjustment?')) return;
+       
+        document.body.style.cursor = 'progress';
+        const { error } = await sb.from('order_adjustments').delete().eq('id', adjustmentId);
+        document.body.style.cursor = 'default';
+        if (error) {
+            alert(error.message + '\n\nMake sure the Supabase table has a DELETE RLS policy for authenticated users.');
+            return;
+        }
+        // Update local list
+        adjustments = adjustments.filter(a => a.id !== adjustmentId);
+       
+        // Re-render the drawer to update totals and the list
+        fillDrawer();
+        loadTable(); // Refresh main list in case it's visible
+    }
+    function money(n){ return '$' + (Number(n||0)).toFixed(2); }
+    function formatPhone(phone){
+        if (!phone) return '';
+        const cleaned = ('' + phone).replace(/\D/g, '');
+        const match = cleaned.match(/^(\d{3})(\d{3})(\d{4})$/);
+        if (match) {
+            return `(${match[1]}) ${match[2]}-${match[3]}`;
+        }
+        return phone;
+    }
+    function computeTotals(){
+        const ppd = pricing?.price_per_dozen || 0;
+        const consult = (activeOrder?.consultation_requested ? (pricing?.consultation_fee||0) : 0);
+        const gift = (activeOrder?.gift_note ? (pricing?.gift_note_fee||0) : 0);
+        const base = (Number(activeOrder?.cookie_amount_dzns||0) * ppd);
+        const feeSum = adjustments.filter(a=>a.kind==='fee').reduce((s,a)=>s+a.amount,0);
+        const discSum = adjustments.filter(a=>a.kind==='discount').reduce((s,a)=>s+a.amount,0);
+        const total = base + consult + gift + feeSum - discSum;
+        document.getElementById('t_price').textContent = money(ppd);
+        document.getElementById('t_base').textContent = money(base);
+        document.getElementById('t_consult').textContent = money(consult);
+        document.getElementById('t_gift').textContent = money(gift);
+        document.getElementById('t_adj_fees').textContent = money(feeSum);
+        document.getElementById('t_adj_disc').textContent = '- ' + money(discSum).replace('$', '$');
+        document.getElementById('t_total').textContent = money(total);
+    }
+    function renderAdjustments(){
+        const tb = document.getElementById('adjTbody'); tb.innerHTML='';
+        if (adjustments.length === 0) {
+            tb.innerHTML = '<tr><td colspan="5" class="p-2 text-center text-gray-500">No adjustments yet.</td></tr>';
+            return;
+        }
+        for (const a of adjustments){
+            const tr = $('tr','border-b');
+            const amountText = a.kind === 'discount' ? '-' + money(a.amount) : money(a.amount);
+            tr.appendChild($('td','p-2 text-xs', new Date(a.created_at).toLocaleDateString()));
+            tr.appendChild($('td','p-2 text-xs', a.kind));
+            tr.appendChild($('td','p-2', a.label||''));
+            tr.appendChild($('td',`p-2 text-right ${a.kind === 'discount' ? 'text-red-600' : 'text-green-600'}`, amountText));
+           
+            // NEW COLUMN: Remove Button
+            const removeCell = $('td', 'p-2 text-right');
+            const removeBtn = $('button', 'text-red-500 hover:text-red-700 text-sm font-medium', 'Remove');
+            removeBtn.onclick = () => deleteAdjustment(a.id);
+            removeCell.appendChild(removeBtn);
+            tr.appendChild(removeCell);
+            tb.appendChild(tr);
+        }
+    }
+    function fillDrawer(){
+        const o = activeOrder, c = activeCustomer;
+        const currentStatus = o?.status || 'In Review';
+        const isGiftNote = o?.gift_note || false;
+        const isConsultation = o?.consultation_requested || false;
+        const rawPhone = c?.phone || '';
+        document.getElementById('drawerTitle').textContent = `Order #${o.id} — ${c ? `${c.first_name||''} ${c.last_name||''}`.trim() : ''}`;
+        // Left Column (Design & Details)
+        document.getElementById('ov_flavor').textContent = o?.flavor || 'N/A';
+        document.getElementById('ov_dietary').textContent = o?.dietary_option || 'None';
+        document.getElementById('ov_dzns').textContent = o?.cookie_amount_dzns ?? '0';
+        document.getElementById('ov_notes').textContent = o?.design_notes || 'No design notes provided.';
+        document.getElementById('ov_gift_note').textContent = isGiftNote ? 'Yes' : 'No';
+        document.getElementById('ov_gift_note').className = `status-badge ${isGiftNote ? 'status-approved' : 'status-canceled'}`;
+        document.getElementById('ov_gift_text').textContent = o?.gift_note_text || '—';
+        document.getElementById('ov_submitted').textContent = dateOnly(o?.created_at);
+        document.getElementById('ov_event').textContent = dateOnly(o?.event_date);
+        document.getElementById('ov_pickup').textContent = dateOnly(o?.pickup_delivery_date);
+        document.getElementById('ov_consultation').textContent = isConsultation ? 'Yes' : 'No';
+        document.getElementById('ov_discount_code').textContent = o?.discount_code_used || 'None';
+        document.getElementById('ov_referral_code').textContent = o?.referral_code_used || 'None';
+        document.getElementById('statusSelect').value = currentStatus;
+        const photo = document.getElementById('ov_photo');
+        if (o?.design_inspiration_photo) {
+            photo.src = o.design_inspiration_photo;
+        } else {
+            photo.src = 'https://dummyimage.com/320x320/e5e7eb/6b7280.jpg&text=No+photo';
+        }
+        // Right Column (Customer & Logistics)
+        document.getElementById('cust_name').textContent = c ? `${c.first_name||''} ${c.last_name||''}`.trim() : 'N/A';
+       
+        // Email link setup
+        const custEmailEl = document.getElementById('cust_email');
+        custEmailEl.textContent = c?.email || 'N/A';
+        custEmailEl.href = `mailto:${c?.email}`;
+        // Phone number link and formatting setup
+        const custPhoneEl = document.getElementById('cust_phone_link');
+        custPhoneEl.textContent = formatPhone(rawPhone) || 'N/A';
+        custPhoneEl.href = `tel:${rawPhone.replace(/\D/g, '')}`;
+        document.getElementById('cust_addr1').textContent = c?.street_address || '—';
+        document.getElementById('cust_addr2').textContent = c?.street_address_cont || '';
+        const cityStZip = [c?.city, c?.state, c?.zip].filter(Boolean).join(', ');
+        document.getElementById('cust_citystzip').textContent = cityStZip;
+        document.getElementById('mapLocation').onclick = () => {
+            const address = [c?.street_address, c?.street_address_cont, c?.city, c?.state, c?.zip].filter(Boolean).join(', ');
+            if (address) {
+                // Use HTTPS and open in new tab
+                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
+            } else {
+                alert('No full address available to map.');
+            }
+        };
+        renderAdjustments();
+        computeTotals();
+    }
+    async function openOrderManager(orderId){
+        document.body.style.cursor = 'progress';
+        const [orderResp, customerResp, pricingData, adjustmentsData] = await Promise.all([
+            sb.from('orders').select('*').eq('id', orderId).single(),
+            // Attempt to fetch customer details, but don't fail if they don't exist
+            (async () => {
+                const { data: ord } = await sb.from('orders').select('customer_id').eq('id', orderId).single();
+                if (ord?.customer_id) return sb.from('customers').select('*').eq('id', ord.customer_id).single();
+                return { data: null };
+            })(),
+            fetchPricing(),
+            fetchAdjustments(orderId)
+        ]);
+        document.body.style.cursor = 'default';
+        if (orderResp.error) { alert(orderResp.error.message); return; }
+        activeOrder = orderResp.data;
+        activeCustomer = customerResp.data;
+        pricing = pricingData;
+        adjustments = adjustmentsData;
+        fillDrawer();
+        drawer.showModal();
+    }
+    // drawer actions
+    document.getElementById('saveStatus').addEventListener('click', async ()=>{
+        const status = document.getElementById('statusSelect').value;
+        const { error } = await sb.from('orders').update({ status }).eq('id', activeOrder.id);
+        if (error) { alert(error.message); return; }
+        activeOrder.status = status;
+        // Re-render status badge on the drawer and refresh the main list
+        fillDrawer();
+        loadTable();
+    });
+    // "Edit All Fields" button functionality
+    document.getElementById('editFields').addEventListener('click', ()=>{
+        if (!activeOrder) return;
+        // Re-use generic editor with the full 'orders' config and the currently active order data
+        openEditor(tables.orders, activeOrder);
+    });
+    document.getElementById('backToOrders').addEventListener('click', (e) => {
+        e.preventDefault();
+        drawer.close();
+    });
+    document.getElementById('addAdjustment').addEventListener('click', async ()=>{
+        const label = document.getElementById('adjLabel').value.trim();
+        const amount = Number(document.getElementById('adjAmount').value);
+        const kind = document.getElementById('adjKind').value;
+        if (!label || !amount || amount <= 0) { alert('Enter a valid label and positive amount'); return; }
+        const payload = { order_id: activeOrder.id, label, amount, kind };
+       
+        // This is the action that triggers the RLS error if the INSERT policy is missing/incorrect
+        const { data, error } = await sb.from('order_adjustments').insert(payload).select('*').single();
+        if (error) {
+            alert(error.message + '\n\nFix the RLS policy for INSERT on the "order_adjustments" table in Supabase.');
+            return;
+        }
+        // Update list
+        adjustments.unshift({...data, amount: Number(data.amount||0)});
+        // Clear inputs
+        document.getElementById('adjLabel').value = '';
+        document.getElementById('adjAmount').value = '';
+        document.getElementById('adjKind').value = 'fee';
+        // Re-render
+        renderAdjustments();
+        computeTotals();
+    });
+    // Photo upload -> Supabase Storage bucket "order_uploads"
+    document.getElementById('btnUploadPhoto').addEventListener('click', async ()=>{
+        const file = document.getElementById('uploadPhoto').files?.[0];
+        if (!file) { alert('Choose an image file first.'); return; }
+       
+        // --- MIME TYPE VALIDATION ---
+        if (!isValidMimeType(file.type)) {
+            alert('Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.');
+            document.getElementById('uploadPhoto').value = ''; // Clear file input
+            return;
+        }
+        // --------------------------
+        document.body.style.cursor = 'progress';
+        const ext = file.name.split('.').pop();
+        const path = `${activeOrder.id}/inspiration_${Date.now()}.${ext}`;
+       
+        // Ensure bucket exists and public policy allows read; RLS on Storage should allow authenticated upload
+        const { data, error } = await sb.storage.from('order_uploads').upload(path, file, { upsert:true, contentType:file.type });
+        document.body.style.cursor = 'default';
+        if (error) {
+            alert(error.message + '\n\nMake sure Storage bucket "order_uploads" exists and allows authenticated uploads.');
+            return;
+        }
+        const { data: publicUrl } = sb.storage.from('order_uploads').getPublicUrl(data.path);
+        const url = publicUrl?.publicUrl;
+        const { error: upErr } = await sb.from('orders').update({ design_inspiration_photo: url }).eq('id', activeOrder.id);
+        if (upErr) { alert(upErr.message); return; }
+        activeOrder.design_inspiration_photo = url;
+        document.getElementById('ov_photo').src = url;
+        document.getElementById('uploadPhoto').value = ''; // Clear file input
+    });
+    // *** Invoice button generates a printable pop-up window ***
+    document.getElementById('viewInvoice').addEventListener('click', ()=>{
+        if (!activeOrder || !activeCustomer) {
+            alert("Please load a complete order first to generate the invoice.");
+            return;
+        }
+        const totalDue = document.getElementById('t_total').textContent;
+        const customerName = document.getElementById('cust_name').textContent;
+        const customerEmail = document.getElementById('cust_email').textContent;
+        const orderId = activeOrder.id;
+        const customerAddress = document.getElementById('cust_addr1').textContent + (document.getElementById('cust_addr2').textContent ? ', ' + document.getElementById('cust_addr2').textContent : '') + ', ' + document.getElementById('cust_citystzip').textContent;
+       
+        const lineItems = [
+            { label: `Base Price (${activeOrder.cookie_amount_dzns || 0} dozen @ ${document.getElementById('t_price').textContent})`, amount: document.getElementById('t_base').textContent },
+            ...(activeOrder.consultation_requested ? [{ label: 'Consultation Fee', amount: document.getElementById('t_consult').textContent }] : []),
+            ...(activeOrder.gift_note ? [{ label: 'Gift Note Fee', amount: document.getElementById('t_gift').textContent }] : []),
+            ...adjustments.filter(a => a.kind === 'fee').map(a => ({ label: a.label + ' (Fee)', amount: money(a.amount) })),
+            ...(activeOrder.discount_code_used ? [{ label: `Discount Code Used: ${activeOrder.discount_code_used}`, amount: '- [Calculated Discount]' }] : []),
+            ...(activeOrder.referral_code_used ? [{ label: `Referral Code Used: ${activeOrder.referral_code_used}`, amount: '- [Calculated Referral Discount]' }] : []),
+            ...adjustments.filter(a => a.kind === 'discount').map(a => ({ label: a.label + ' (Discount)', amount: '-' + money(a.amount) })),
+        ];
+        // 1. Build the HTML content for the pop-up
+        let invoiceContent = `
+            <html>
+            <head>
+                <title>Invoice #${orderId}</title>
+                <style>
+                    body { font-family: sans-serif; margin: 0; padding: 20px; font-size: 14px; }
+                    .invoice-box { max-width: 800px; margin: auto; padding: 30px; border: 1px solid #eee; box-shadow: 0 0 10px rgba(0, 0, 0, 0.15); }
+                    h1 { font-size: 24px; color: #3b82f6; border-bottom: 2px solid #3b82f6; padding-bottom: 5px; margin-bottom: 20px; }
+                    .address, .details { width: 49%; display: inline-block; vertical-align: top; }
+                    .details { text-align: right; }
+                    .item-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                    .item-table th, .item-table td { border-bottom: 1px solid #eee; padding: 10px; text-align: left; }
+                    .item-table th { background-color: #f3f4f6; }
+                    .total-row td { border-top: 2px solid #333; font-weight: bold; font-size: 16px; padding-top: 10px; }
+                    .line-total { text-align: right; }
+                    .notes { margin-top: 30px; font-size: 12px; border-top: 1px dashed #ccc; padding-top: 10px; }
+                    @media print {
+                        .invoice-box { box-shadow: none; border: none; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="invoice-box">
+                    <h1>REBEL RIBBON INVOICE</h1>
+                   
+                    <div class="address">
+                        <strong>REBEL RIBBON</strong><br>
+                        [Your Company Address Here]<br>
+                        [Your Company Contact Here]
+                    </div>
+                    <div class="details">
+                        Invoice # ${orderId}<br>
+                        Date: ${new Date().toLocaleDateString()}<br><br>
+                        **Customer:** ${customerName}<br>
+                        ${customerEmail}<br>
+                        ${customerAddress || 'N/A'}
+                    </div>
+                    <table class="item-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 75%;">Description</th>
+                                <th class="line-total">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${lineItems.map(item => `
+                                <tr>
+                                    <td>${item.label}</td>
+                                    <td class="line-total">${item.amount}</td>
+                                </tr>
+                            `).join('')}
+                            <tr class="total-row">
+                                <td>TOTAL DUE</td>
+                                <td class="line-total">${totalDue}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                   
+                    <div class="notes">
+                        **Order Notes:** ${activeOrder.design_notes || 'None'}<br>
+                        **Payment Terms:** Orders are not locked in until full payment is received.
+                    </div>
+                </div>
+                <script>
+                    // Automatically trigger print dialog when the window loads
+                    window.onload = function() {
+                        window.print();
+                    }
+                <\/script>
+            </body>
+            </html>
+        `;
+        // 2. Open the pop-up window and write the content
+        const printWindow = window.open('', '_blank', 'width=800,height=800,scrollbars=yes');
+        printWindow.document.write(invoiceContent);
+        printWindow.document.close();
+    });
+    // init
+    bootstrap();
+    </script>
 </body>
 </html>
