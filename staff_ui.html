@@ -849,7 +849,7 @@
 
         document.getElementById('addBtn').onclick = () => openEditor(tables[activeKey], null);
         document.getElementById('prev').onclick = () => { if (page>0) { page--; loadTable(); } };
-        document.getElementById('next').onclick = () => { if ((page+1)*pageSize < totalCount) { page++; loadTable(); } };
+        document.getElementById('next').onclick = () => { if ((page+1)*pageSize < totalCount) { page++; loadTable(); } }
         document.getElementById('globalSearch').onkeydown = (e)=>{ if (e.key==='Enter'){ page=0; loadTable(); } };
         document.getElementById('refreshAll').onclick = () => loadTable();
     }
@@ -1243,7 +1243,7 @@
                     window.onload = function() {
                         window.print();
                     }
-                </script>
+                <\/script>
             </body>
             </html>
         `;
@@ -1256,6 +1256,6 @@
 
     // init
     bootstrap();
-    <\/script>
+    </script>
 </body>
 </html>
