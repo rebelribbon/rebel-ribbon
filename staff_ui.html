@@ -576,7 +576,7 @@
                     const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
                     return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
                 }},
-            { key:'event_type', label:'Event type / name', type:'text', w:'20' },
+            { key:'event_type_name', label:'Event type / name', type:'text', w:'20' },
 
             { key:'pickup_delivery_date', label:'Pick up or delivery date', type:'date', w:'18' },
             { key:'event_date', label:'Event date', type:'date', w:'14' },
