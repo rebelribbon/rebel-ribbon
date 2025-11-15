@@ -643,8 +643,9 @@ signInButton.addEventListener('click', async () => {
             { key:'rush_fee', label:'Rush fee', type:'number', step:'0.01', w:'20' }
         ]},
         costs: { title:'Costs', table:'costs', isSettings:true, cols:[
-            { key:'item_name', label:'Item name', type:'text', required:true, w:'60' },
-            { key:'amount', label:'Amount', type:'number', step:'0.01', required:true, w:'40' }
+            { key:'cost_date', label:'Date', type:'date', w:'20' },
+            { key:'item_name', label:'Item name', type:'text', required:true, w:'50' },
+            { key:'amount', label:'Amount', type:'number', step:'0.01', required:true, w:'30' }
         ]},
         surveys: { title:'Surveys', table:'surveys', cols:[
             { key:'customer_id', label:'Customer', type:'select-async', w:'22',
