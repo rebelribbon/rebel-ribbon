@@ -35,7 +35,7 @@
         #content { flex-grow: 1; padding: 2rem; }
 
         /* Dashboard Filters */
-        .filter-tab { padding: 0.5rem 1rem; border-radius: 9999px; cursor: pointer; font-weight: 500; transition: background-color 0.15s; }
+        .filter-tab { padding: 0.5rem 1rem; border-radius: 999px; cursor: pointer; font-weight: 500; transition: background-color 0.15s; }
         .filter-tab:hover { background-color: #e5e7eb; }
         .filter-active { background-color: #1d4ed8; color: white; }
 
@@ -569,37 +569,85 @@
                 asyncOptions: async () => (await sb.from('referral_codes').select('code')).data?.map(r=>r.code)||[] },
             { key:'order_id', label:'Order ID', type:'text', w:'12' }
         ]},
-orders: { title:'Orders', table:'orders', cols:[
-    { key:'order_id', label:'Order ID', type:'text', w:'12' },
-    { key:'customer_id', label:'Customer', type:'select-async', w:'20',
-        asyncOptions: async () => {
-            const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
-            return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
-        }},
-    { key:'event_type', label:'Event type / name', type:'text', w:'20' },
+        orders: { title:'Orders', table:'orders', cols:[
+            { key:'order_id', label:'Order ID', type:'text', w:'12' },
+            { key:'customer_id', label:'Customer', type:'select-async', w:'20',
+                asyncOptions: async () => {
+                    const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+                    return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+                }},
+            { key:'event_type', label:'Event type / name', type:'text', w:'20' },
 
-    { key:'pickup_delivery_date', label:'Pick up or delivery date', type:'date', w:'18' },
-    { key:'event_date', label:'Event date', type:'date', w:'14' },
+            { key:'pickup_delivery_date', label:'Pick up or delivery date', type:'date', w:'18' },
+            { key:'event_date', label:'Event date', type:'date', w:'14' },
 
-    { key:'pickup_or_delivery', label:'Pickup / delivery type', type:'select', w:'18',
-        options:['Pickup','Delivery'] },
+            { key:'pickup_or_delivery', label:'Pickup / delivery type', type:'select', w:'18',
+                options:['Pickup','Delivery'] },
 
-    { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', step:'0.01', w:'18' },
-    { key:'flavor', label:'Flavor', type:'select-async', w:'14',
-        asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
-    { key:'dietary_option', label:'Dietary option', type:'select-async', w:'16',
-        asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[] },
-    { key:'design_notes', label:'Design notes', type:'textarea', w:'20' },
-    { key:'design_inspiration_photo', label:'Design inspiration photo URL', type:'url', w:'20' },
-    { key:'gift_note', label:'Gift note', type:'checkbox', w:'10' },
-    { key:'gift_note_text', label:'Gift note text', type:'textarea', w:'16' },
-    { key:'consultation_requested', label:'Consultation requested', type:'checkbox', w:'20' },
-    { key:'discount_code_used', label:'Discount code used', type:'text', w:'16' },
-    { key:'referral_code_used', label:'Referral code used', type:'text', w:'16' },
-    { key:'status', label:'Status', type:'select', w:'14',
-        options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'] }
-]},
-
+            { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', step:'0.01', w:'18' },
+            { key:'flavor', label:'Flavor', type:'select-async', w:'14',
+                asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
+            { key:'dietary_option', label:'Dietary option', type:'select-async', w:'16',
+                asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[] },
+            { key:'design_notes', label:'Design notes', type:'textarea', w:'20' },
+            { key:'design_inspiration_photo', label:'Design inspiration photo URL', type:'url', w:'20' },
+            { key:'gift_note', label:'Gift note', type:'checkbox', w:'10' },
+            { key:'gift_note_text', label:'Gift note text', type:'textarea', w:'16' },
+            { key:'consultation_requested', label:'Consultation requested', type:'checkbox', w:'20' },
+            { key:'discount_code_used', label:'Discount code used', type:'text', w:'16' },
+            { key:'referral_code_used', label:'Referral code used', type:'text', w:'16' },
+            { key:'status', label:'Status', type:'select', w:'14',
+                options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'] }
+        ]},
+        discount_codes: { title:'Discount Codes', table:'discount_codes', isSettings:true, cols:[
+            { key:'code', label:'Code', type:'text', required:true, w:'16' },
+            { key:'type', label:'Type', type:'select', options:['percent','fixed'], required:true, w:'14' },
+            { key:'amount', label:'Amount', type:'number', step:'0.01', w:'16' },
+            { key:'uses_allowed', label:'Uses allowed', type:'number', w:'16' },
+            { key:'email_allowed', label:'Email allowed', type:'email', w:'20' },
+            { key:'good_through_date', label:'Good through date', type:'date', w:'18' }
+        ]},
+        referral_codes: { title:'Referral Codes', table:'referral_codes', isSettings:true, cols:[
+            { key:'code', label:'Code', type:'text', required:true, w:'20' },
+            { key:'associated_customer_id', label:'Associated customer', type:'select-async', w:'22',
+                asyncOptions: async () => {
+                    const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+                    return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+                }},
+            { key:'good_through_date', label:'Good through date', type:'date', w:'18' },
+            { key:'referrer_discount', label:'Referrer discount %', type:'number', step:'0.01', w:'20' },
+            { key:'referee_discount', label:'Referee discount %', type:'number', step:'0.01', w:'20' }
+        ]},
+        flavors: { title:'Flavors', table:'flavors', isSettings:true, cols:[
+            { key:'name', label:'Flavor name', type:'text', required:true, w:'40' }
+        ]},
+        dietary_options: { title:'Dietary Options', table:'dietary_options', isSettings:true, cols:[
+            { key:'name', label:'Dietary option', type:'text', required:true, w:'40' }
+        ]},
+        pricing: { title:'Pricing', table:'pricing', isSettings:true, cols:[
+            { key:'price_per_dozen', label:'Price per dozen', type:'number', step:'0.01', w:'20' },
+            { key:'delivery_fee', label:'Delivery fee', type:'number', step:'0.01', w:'20' },
+            { key:'consultation_fee', label:'Consultation fee', type:'number', step:'0.01', w:'20' },
+            { key:'gift_note_fee', label:'Gift Note fee', type:'number', step:'0.01', w:'20' },
+            { key:'rush_fee', label:'Rush fee', type:'number', step:'0.01', w:'20' }
+        ]},
+        costs: { title:'Costs', table:'costs', isSettings:true, cols:[
+            { key:'item_name', label:'Item name', type:'text', required:true, w:'60' },
+            { key:'amount', label:'Amount', type:'number', step:'0.01', required:true, w:'40' }
+        ]},
+        surveys: { title:'Surveys', table:'surveys', cols:[
+            { key:'customer_id', label:'Customer', type:'select-async', w:'22',
+                asyncOptions: async () => {
+                    const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+                    return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+                }},
+            { key:'cookies_stars', label:'Cookies 1 to 5', type:'number', min:1, max:5, w:'18' },
+            { key:'service_stars', label:'Service 1 to 5', type:'number', min:1, max:5, w:'18' },
+            { key:'recommend', label:'Recommend to family', type:'checkbox', w:'22' },
+            { key:'improvements', label:'Improvements', type:'textarea', w:'30' },
+            { key:'website_review', label:'Website review', type:'textarea', w:'30' }
+        ]}
+    };
 
     const tabOrder = ['order_list','surveys'];
     const settingsOrder = ['customers','discount_codes','referral_codes','flavors','dietary_options','pricing','costs'];
@@ -1444,7 +1492,7 @@ orders: { title:'Orders', table:'orders', cols:[
         }
        
         if (!isValidMimeType(file.type)) {
-            alert('Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.');
+            alert('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.');
             document.getElementById('uploadPhoto').value = '';
             return;
         }
