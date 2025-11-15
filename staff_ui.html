@@ -238,7 +238,8 @@
         <form method="dialog" class="p-0">
             <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
                 <h2 id="editorTitle" class="text-lg font-semibold">Edit</h2>
-                <button value="close" class="btn btn-ghost btn-icon">✕</button>
+                <!-- Close button fixed: no validation, always closes -->
+                <button type="button" id="closeEditorBtn" class="btn btn-ghost btn-icon">✕</button>
             </div>
             <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
@@ -462,50 +463,49 @@
     const authMsg = document.getElementById('authMsg');
    
     const signInButton = document.getElementById('signInButton');
-const emailInput = document.getElementById('email');
-const passwordInput = document.getElementById('password');
-const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
 
-signInButton.addEventListener('click', async () => {
-    try {
-        authMsg.textContent = '';
-        authMsg.classList.remove('text-red-600', 'text-green-700');
+    signInButton.addEventListener('click', async () => {
+        try {
+            authMsg.textContent = '';
+            authMsg.classList.remove('text-red-600', 'text-green-700');
 
-        const email = emailInput.value.trim();
-        const password = passwordInput.value.trim();
+            const email = emailInput.value.trim();
+            const password = passwordInput.value.trim();
 
-        if (!onlyCompanyEmail(email)) {
+            if (!onlyCompanyEmail(email)) {
+                authMsg.classList.add('text-red-600');
+                authMsg.textContent = 'Access denied. Use your @rebelribbon.com address.';
+                return;
+            }
+            if (!password) {
+                authMsg.classList.add('text-red-600');
+                authMsg.textContent = 'Password is required.';
+                return;
+            }
+           
+            signInButton.disabled = true;
+            document.body.style.cursor = 'progress';
+
+            const { data, error } = await sb.auth.signInWithPassword({ email, password });
+            if (error) throw error;
+
+            // Success: immediately move into the app
+            authMsg.classList.add('text-green-700');
+            authMsg.textContent = 'Signed in. Loading app...';
+
+            await bootstrap();
+        } catch (e) {
+            authMsg.classList.remove('text-green-700');
             authMsg.classList.add('text-red-600');
-            authMsg.textContent = 'Access denied. Use your @rebelribbon.com address.';
-            return;
+            authMsg.textContent = e.message || 'Sign in failed. Check credentials.';
+        } finally {
+            signInButton.disabled = false;
+            document.body.style.cursor = 'default';
         }
-        if (!password) {
-            authMsg.classList.add('text-red-600');
-            authMsg.textContent = 'Password is required.';
-            return;
-        }
-       
-        signInButton.disabled = true;
-        document.body.style.cursor = 'progress';
-
-        const { data, error } = await sb.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-
-        // Success: immediately move into the app
-        authMsg.classList.add('text-green-700');
-        authMsg.textContent = 'Signed in. Loading app...';
-
-        await bootstrap();  // <<< THIS is what you were missing
-    } catch (e) {
-        authMsg.classList.remove('text-green-700');
-        authMsg.classList.add('text-red-600');
-        authMsg.textContent = e.message || 'Sign in failed. Check credentials.';
-    } finally {
-        signInButton.disabled = false;
-        document.body.style.cursor = 'default';
-    }
-});
-
+    });
 
     async function bootstrap() {
         const { data: { session }, error } = await sb.auth.getSession();
@@ -857,7 +857,7 @@ signInButton.addEventListener('click', async () => {
 
         updatePager();
 
-        // Export CSV is hidden for Orders per your request, so no wiring here
+        // Export CSV is hidden for Orders
     }
 
     function exportCSV(rows, conf){
@@ -900,6 +900,14 @@ signInButton.addEventListener('click', async () => {
 
     const dlg = document.getElementById('editor');
     const formBody = document.getElementById('formBody');
+
+    // Close button for editor dialog that ignores validation
+    const closeEditorBtn = document.getElementById('closeEditorBtn');
+    if (closeEditorBtn) {
+        closeEditorBtn.addEventListener('click', () => {
+            dlg.close();
+        });
+    }
 
     async function optionEl(col, value){
         const wrap = $('label','block');
@@ -1144,12 +1152,12 @@ signInButton.addEventListener('click', async () => {
         if (error || !data) return result;
 
         if (data.good_through_date && isDatePast(data.good_through_date)) {
-            return result; // expired
+            return result;
         }
 
         if (data.email_allowed && customerEmail &&
             data.email_allowed.toLowerCase() !== customerEmail.toLowerCase()){
-            return result; // not for this email
+            return result;
         }
 
         const value =
@@ -1183,7 +1191,7 @@ signInButton.addEventListener('click', async () => {
         if (!value || value <= 0) return result;
 
         result.isValid = true;
-        result.value = value; // percent
+        result.value = value;
         return result;
     }
 
