@@ -238,8 +238,7 @@
         <form method="dialog" class="p-0">
             <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
                 <h2 id="editorTitle" class="text-lg font-semibold">Edit</h2>
-                <!-- Close button fixed: no validation, always closes -->
-                <button type="button" id="closeEditorBtn" class="btn btn-ghost btn-icon">✕</button>
+                <button value="close" class="btn btn-ghost btn-icon">✕</button>
             </div>
             <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
@@ -507,6 +506,7 @@
         }
     });
 
+
     async function bootstrap() {
         const { data: { session }, error } = await sb.auth.getSession();
         if (error) { authMsg.textContent = error.message; return; }
@@ -723,7 +723,13 @@
         const conf = tables[activeKey];
         document.getElementById('pageTitle').textContent = conf.title;
         document.getElementById('orderFilters').classList.toggle('hidden', activeKey !== 'order_list');
-        document.getElementById('addBtn').classList.toggle('hidden', !!conf.readOnly);
+
+        const addBtn = document.getElementById('addBtn');
+        if (addBtn) {
+            // hide Add New when readOnly or on the pricing tab
+            const hideAdd = !!conf.readOnly || activeKey === 'pricing';
+            addBtn.classList.toggle('hidden', hideAdd);
+        }
 
         // Export CSV only visible on Costs page
         const exportBtn = document.getElementById('exportBtn');
@@ -856,8 +862,6 @@
         }
 
         updatePager();
-
-        // Export CSV is hidden for Orders
     }
 
     function exportCSV(rows, conf){
@@ -900,14 +904,6 @@
 
     const dlg = document.getElementById('editor');
     const formBody = document.getElementById('formBody');
-
-    // Close button for editor dialog that ignores validation
-    const closeEditorBtn = document.getElementById('closeEditorBtn');
-    if (closeEditorBtn) {
-        closeEditorBtn.addEventListener('click', () => {
-            dlg.close();
-        });
-    }
 
     async function optionEl(col, value){
         const wrap = $('label','block');
@@ -1152,12 +1148,12 @@
         if (error || !data) return result;
 
         if (data.good_through_date && isDatePast(data.good_through_date)) {
-            return result;
+            return result; // expired
         }
 
         if (data.email_allowed && customerEmail &&
             data.email_allowed.toLowerCase() !== customerEmail.toLowerCase()){
-            return result;
+            return result; // not for this email
         }
 
         const value =
@@ -1191,7 +1187,7 @@
         if (!value || value <= 0) return result;
 
         result.isValid = true;
-        result.value = value;
+        result.value = value; // percent
         return result;
     }
 
