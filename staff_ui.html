@@ -462,39 +462,50 @@
     const authMsg = document.getElementById('authMsg');
    
     const signInButton = document.getElementById('signInButton');
-    const emailInput = document.getElementById('email');
-    const passwordInput = document.getElementById('password');
-    const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
+const emailInput = document.getElementById('email');
+const passwordInput = document.getElementById('password');
+const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
 
-    signInButton.addEventListener('click', async () => {
-        try {
-            authMsg.textContent = '';
-            const email = emailInput.value.trim();
-            const password = passwordInput.value.trim();
+signInButton.addEventListener('click', async () => {
+    try {
+        authMsg.textContent = '';
+        authMsg.classList.remove('text-red-600', 'text-green-700');
 
-            if (!onlyCompanyEmail(email)) {
-                authMsg.textContent = 'Access denied. Use your @rebelribbon.com address.';
-                return;
-            }
-            if (!password) {
-                authMsg.textContent = 'Password is required.';
-                return;
-            }
-           
-            signInButton.disabled = true;
-            document.body.style.cursor = 'progress';
+        const email = emailInput.value.trim();
+        const password = passwordInput.value.trim();
 
-            const { error } = await sb.auth.signInWithPassword({ email, password });
-            if (error) throw error;
-        } catch (e) {
-            authMsg.classList.remove('text-green-700');
+        if (!onlyCompanyEmail(email)) {
             authMsg.classList.add('text-red-600');
-            authMsg.textContent = e.message || 'Sign in failed. Check credentials.';
-        } finally {
-            signInButton.disabled = false;
-            document.body.style.cursor = 'default';
+            authMsg.textContent = 'Access denied. Use your @rebelribbon.com address.';
+            return;
         }
-    });
+        if (!password) {
+            authMsg.classList.add('text-red-600');
+            authMsg.textContent = 'Password is required.';
+            return;
+        }
+       
+        signInButton.disabled = true;
+        document.body.style.cursor = 'progress';
+
+        const { data, error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+
+        // Success: immediately move into the app
+        authMsg.classList.add('text-green-700');
+        authMsg.textContent = 'Signed in. Loading app...';
+
+        await bootstrap();  // <<< THIS is what you were missing
+    } catch (e) {
+        authMsg.classList.remove('text-green-700');
+        authMsg.classList.add('text-red-600');
+        authMsg.textContent = e.message || 'Sign in failed. Check credentials.';
+    } finally {
+        signInButton.disabled = false;
+        document.body.style.cursor = 'default';
+    }
+});
+
 
     async function bootstrap() {
         const { data: { session }, error } = await sb.auth.getSession();
