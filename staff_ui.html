@@ -404,6 +404,7 @@
                             <div class="flex justify-between"><span>Price / dozen:</span> <span id="t_price"></span></div>
                             <div class="flex justify-between"><span>Base subtotal:</span> <span id="t_base"></span></div>
                             <div class="flex justify-between"><span>Consultation fee:</span> <span id="t_consult"></span></div>
+                            <div class="flex justify-between"><span>Delivery fee:</span> <span id="t_delivery"></span></div>
                             <div class="flex justify-between"><span>Gift note fee:</span> <span id="t_gift"></span></div>
                             <div class="flex justify-between"><span>Additional fees:</span> <span id="t_adj_fees" class="text-green-700"></span></div>
                             <div class="flex justify-between"><span>Discount code savings:</span> <span id="t_disc_code" class="text-red-700"></span></div>
@@ -1123,8 +1124,10 @@
         const p = (data && data[0]) || {};
         return {
             price_per_dozen: Number(p.price_per_dozen||0),
+            delivery_fee: Number(p.delivery_fee||0),
             consultation_fee: Number(p.consultation_fee||0),
-            gift_note_fee: Number(p.gift_note_fee||0)
+            gift_note_fee: Number(p.gift_note_fee||0),
+            rush_fee: Number(p.rush_fee||0)
         };
     }
 
@@ -1155,7 +1158,6 @@
             return result; // not for this email
         }
 
-        // use explicit amount field first
         const value =
             Number(data.amount ?? data.value ?? data.discount ?? 0);
 
@@ -1226,39 +1228,87 @@
     }
 
     function computeTotals(){
-        const ppd = pricing?.price_per_dozen || 0;
-        const consult = (activeOrder?.consultation_requested ? (pricing?.consultation_fee||0) : 0);
-        const gift = (activeOrder?.gift_note ? (pricing?.gift_note_fee||0) : 0);
-        const base = (Number(activeOrder?.cookie_amount_dzns||0) * ppd);
+        const o = activeOrder || {};
+        const p = pricing || {};
+
+        const ppd = (o.snapshot_price_per_dozen != null)
+            ? Number(o.snapshot_price_per_dozen)
+            : Number(p.price_per_dozen || 0);
+
+        const deliveryFee = (o.snapshot_delivery_fee != null)
+            ? Number(o.snapshot_delivery_fee)
+            : Number(p.delivery_fee || 0);
+
+        const consultFee = (o.snapshot_consultation_fee != null)
+            ? Number(o.snapshot_consultation_fee)
+            : Number(p.consultation_fee || 0);
+
+        const giftFee = (o.snapshot_gift_note_fee != null)
+            ? Number(o.snapshot_gift_note_fee)
+            : Number(p.gift_note_fee || 0);
+
+        const applyDelivery = (o.pickup_delivery_type || o.fulfillment_type || '').toLowerCase() === 'delivery';
+
+        const base = Number(o.cookie_amount_dzns || 0) * ppd;
+        const consult = o.consultation_requested ? consultFee : 0;
+        const delivery = applyDelivery ? deliveryFee : 0;
+        const gift = o.gift_note ? giftFee : 0;
+
         const feeSum = adjustments.filter(a=>a.kind==='fee').reduce((s,a)=>s+a.amount,0);
         const manualDiscSum = adjustments.filter(a=>a.kind==='discount').reduce((s,a)=>s+a.amount,0);
 
-        const baseForCodes = base + consult + gift + feeSum;
+        const baseForCodes = base + consult + delivery + gift + feeSum;
 
         discountCodeAmount = 0;
         referralDiscountAmount = 0;
 
-        if (discountCodeDetails && discountCodeDetails.isValid && baseForCodes > 0){
-            const v = discountCodeDetails.value || 0;
-            if (discountCodeDetails.type === 'percent') {
-                discountCodeAmount = baseForCodes * (v / 100);
+        // discount code uses snapshot if present, else live details
+        let discType = null;
+        let discVal = null;
+
+        if (o.snapshot_discount_code_value != null) {
+            discType = o.snapshot_discount_code_type || 'fixed';
+            discVal = Number(o.snapshot_discount_code_value || 0);
+        } else if (discountCodeDetails && discountCodeDetails.isValid) {
+            discType = discountCodeDetails.type;
+            discVal = Number(discountCodeDetails.value || 0);
+        }
+
+        if (discVal && baseForCodes > 0) {
+            if (discType === 'percent') {
+                discountCodeAmount = baseForCodes * (discVal / 100);
             } else {
-                discountCodeAmount = v;
+                discountCodeAmount = discVal;
             }
             if (discountCodeAmount > baseForCodes) discountCodeAmount = baseForCodes;
         }
 
-        if (referralCodeDetails && referralCodeDetails.isValid && baseForCodes > 0){
-            const v = referralCodeDetails.value || 0;
-            referralDiscountAmount = baseForCodes * (v / 100);
+        // referral code uses snapshot if present, else live details
+        let refVal = null;
+        let refType = 'percent';
+
+        if (o.snapshot_referral_value != null) {
+            refType = o.snapshot_referral_type || 'percent';
+            refVal = Number(o.snapshot_referral_value || 0);
+        } else if (referralCodeDetails && referralCodeDetails.isValid) {
+            refVal = Number(referralCodeDetails.value || 0);
+        }
+
+        if (refVal && baseForCodes > 0) {
+            if (refType === 'percent') {
+                referralDiscountAmount = baseForCodes * (refVal / 100);
+            } else {
+                referralDiscountAmount = refVal;
+            }
             if (referralDiscountAmount > baseForCodes) referralDiscountAmount = baseForCodes;
         }
 
-        const total = base + consult + gift + feeSum - manualDiscSum - discountCodeAmount - referralDiscountAmount;
+        const total = base + consult + delivery + gift + feeSum - manualDiscSum - discountCodeAmount - referralDiscountAmount;
 
         document.getElementById('t_price').textContent = money(ppd);
         document.getElementById('t_base').textContent = money(base);
         document.getElementById('t_consult').textContent = money(consult);
+        document.getElementById('t_delivery').textContent = money(delivery);
         document.getElementById('t_gift').textContent = money(gift);
         document.getElementById('t_adj_fees').textContent = money(feeSum);
         document.getElementById('t_disc_code').textContent = discountCodeAmount ? '- ' + money(discountCodeAmount) : '- $0.00';
@@ -1367,22 +1417,28 @@
         // Pricing and codes
         const discountLabelEl = document.getElementById('ov_discount_code');
         if (o?.discount_code_used) {
-            if (discountCodeDetails && discountCodeDetails.isValid) {
-                discountLabelEl.textContent = `${o.discount_code_used} (applied)`;
-            } else {
-                discountLabelEl.textContent = `${o.discount_code_used} (not valid)`;
+            const hasSnap = o.snapshot_discount_code_value != null;
+            let statusText = 'not valid';
+            if (hasSnap) {
+                statusText = 'applied (locked)';
+            } else if (discountCodeDetails && discountCodeDetails.isValid) {
+                statusText = 'applied';
             }
+            discountLabelEl.textContent = `${o.discount_code_used} (${statusText})`;
         } else {
             discountLabelEl.textContent = 'None';
         }
 
         const referralLabelEl = document.getElementById('ov_referral_code');
         if (o?.referral_code_used) {
-            if (referralCodeDetails && referralCodeDetails.isValid) {
-                referralLabelEl.textContent = `${o.referral_code_used} (applied)`;
-            } else {
-                referralLabelEl.textContent = `${o.referral_code_used} (not valid)`;
+            const hasSnap = o.snapshot_referral_value != null;
+            let statusText = 'not valid';
+            if (hasSnap) {
+                statusText = 'applied (locked)';
+            } else if (referralCodeDetails && referralCodeDetails.isValid) {
+                statusText = 'applied';
             }
+            referralLabelEl.textContent = `${o.referral_code_used} (${statusText})`;
         } else {
             referralLabelEl.textContent = 'None';
         }
@@ -1419,7 +1475,7 @@
         pricing = pricingData;
         adjustments = adjustmentsData;
 
-        // load discount / referral details
+        // load discount / referral details (live, used only if no snapshot)
         discountCodeDetails = null;
         referralCodeDetails = null;
         if (activeOrder.discount_code_used) {
@@ -1436,12 +1492,53 @@
         drawer.showModal();
     }
 
-    document.getElementById('saveStatus').addEventListener('click', async ()=>{
-        const status = document.getElementById('statusSelect').value;
-        const { error } = await sb.from('orders').update({ status }).eq('id', activeOrder.id);
-        if (error) { alert(error.message); return; }
+    const frozenStatuses = ['Approved','Paid','Production Complete','Fulfilled'];
 
-        activeOrder.status = status;
+    document.getElementById('saveStatus').addEventListener('click', async ()=>{
+        if (!activeOrder) return;
+        const status = document.getElementById('statusSelect').value;
+        const prevStatus = activeOrder.status || 'In Review';
+
+        const wasFrozen = frozenStatuses.includes(prevStatus);
+        const willBeFrozen = frozenStatuses.includes(status);
+
+        const snapshot = {};
+
+        // Only capture snapshot the first time we cross into Approved or later
+        if (willBeFrozen && !wasFrozen) {
+            const p = pricing || {};
+
+            snapshot.snapshot_price_per_dozen = Number(p.price_per_dozen || 0);
+            snapshot.snapshot_delivery_fee = Number(p.delivery_fee || 0);
+            snapshot.snapshot_consultation_fee = Number(p.consultation_fee || 0);
+            snapshot.snapshot_gift_note_fee = Number(p.gift_note_fee || 0);
+            snapshot.snapshot_rush_fee = Number(p.rush_fee || 0);
+
+            if (activeOrder.discount_code_used && discountCodeDetails?.isValid) {
+                snapshot.snapshot_discount_code_type = discountCodeDetails.type;
+                snapshot.snapshot_discount_code_value = Number(discountCodeDetails.value || 0);
+            }
+
+            if (activeOrder.referral_code_used && referralCodeDetails?.isValid) {
+                snapshot.snapshot_referral_type = 'percent';
+                snapshot.snapshot_referral_value = Number(referralCodeDetails.value || 0);
+            }
+        }
+
+        const payload = { status, ...snapshot };
+
+        const { data, error } = await sb.from('orders')
+            .update(payload)
+            .eq('id', activeOrder.id)
+            .select('*')
+            .single();
+
+        if (error) {
+            alert(error.message);
+            return;
+        }
+
+        activeOrder = data;
         fillDrawer();
         loadTable();
     });
@@ -1548,6 +1645,13 @@
         if (activeOrder.consultation_requested) {
             lineItems.push({ label: 'Consultation fee', amount: document.getElementById('t_consult').textContent });
         }
+
+        // delivery line
+        const deliveryText = document.getElementById('t_delivery').textContent;
+        if (deliveryText && deliveryText !== '$0.00') {
+            lineItems.push({ label: 'Delivery fee', amount: deliveryText });
+        }
+
         if (activeOrder.gift_note) {
             lineItems.push({ label: 'Gift note fee', amount: document.getElementById('t_gift').textContent });
         }
@@ -1558,7 +1662,7 @@
         });
 
         // discount code
-        if (activeOrder.discount_code_used && discountCodeAmount > 0 && discountCodeDetails?.isValid) {
+        if (activeOrder.discount_code_used && discountCodeAmount > 0) {
             lineItems.push({
                 label: `Discount code (${activeOrder.discount_code_used})`,
                 amount: '- ' + money(discountCodeAmount)
@@ -1566,7 +1670,7 @@
         }
 
         // referral code
-        if (activeOrder.referral_code_used && referralDiscountAmount > 0 && referralCodeDetails?.isValid) {
+        if (activeOrder.referral_code_used && referralDiscountAmount > 0) {
             lineItems.push({
                 label: `Referral code (${activeOrder.referral_code_used})`,
                 amount: '- ' + money(referralDiscountAmount)
@@ -1915,6 +2019,17 @@
         printWindow.document.write(invoiceContent);
         printWindow.document.close();
     });
+
+    // NOTE: make sure these columns exist on public.orders:
+    // snapshot_price_per_dozen numeric
+    // snapshot_delivery_fee numeric
+    // snapshot_consultation_fee numeric
+    // snapshot_gift_note_fee numeric
+    // snapshot_rush_fee numeric
+    // snapshot_discount_code_type text
+    // snapshot_discount_code_value numeric
+    // snapshot_referral_type text
+    // snapshot_referral_value numeric
 
     bootstrap();
     </script>
