@@ -581,7 +581,7 @@
             { key:'pickup_delivery_date', label:'Pick up or delivery date', type:'date', w:'18' },
             { key:'event_date', label:'Event date', type:'date', w:'14' },
 
-            { key:'pickup_or_delivery', label:'Pickup / delivery type', type:'select', w:'18',
+            { key:'pickup_delivery_type', label:'Pickup / delivery type', type:'select', w:'18',
                 options:['Pickup','Delivery'] },
 
             { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', step:'0.01', w:'18' },
@@ -1335,7 +1335,7 @@
         };
 
         // Event info
-        const eventName = o?.event_type || o?.event_name || '';
+        const eventName = o?.event_type_name || o?.event_name || '';
         document.getElementById('ov_event_name').textContent = eventName || 'N/A';
         document.getElementById('ov_pickup').textContent = dateOnly(o?.pickup_delivery_date);
         document.getElementById('ov_event').textContent = dateOnly(o?.event_date);
@@ -1361,7 +1361,7 @@
         giftBadge.className = `status-badge ${isGiftNote ? 'status-approved' : 'status-canceled'}`;
         document.getElementById('ov_gift_text').textContent = o?.gift_note_text || 'None';
 
-        const pdType = o?.pickup_or_delivery || o?.fulfillment_type || o?.delivery_method || '';
+        const pdType = o?.pickup_delivery_type || o?.fulfillment_type || o?.delivery_method || '';
         document.getElementById('ov_pd_type').textContent = pdType || 'N/A';
 
         // Pricing and codes
