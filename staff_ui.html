@@ -355,7 +355,7 @@
                                 <div class="mt-4">
                                     <span class="font-medium">Inspiration Photo:</span>
                                     <div class="mt-2">
-                                        <img id="ov_photo" class="w-32 h-32 object-cover rounded border shadow-sm" alt="Inspiration"/>
+                                        <img id="ov_photo" class="w-32 h-32 object-cover rounded border shadow-sm cursor-pointer" alt="Inspiration"/>
                                     </div>
                                     <label class="block mt-3 text-xs">
                                         <span class="font-medium">Replace photo:</span>
@@ -406,7 +406,9 @@
                             <div class="flex justify-between"><span>Consultation fee:</span> <span id="t_consult"></span></div>
                             <div class="flex justify-between"><span>Gift note fee:</span> <span id="t_gift"></span></div>
                             <div class="flex justify-between"><span>Additional fees:</span> <span id="t_adj_fees" class="text-green-700"></span></div>
-                            <div class="flex justify-between"><span>Discounts:</span> <span id="t_adj_disc" class="text-red-700"></span></div>
+                            <div class="flex justify-between"><span>Discount code savings:</span> <span id="t_disc_code" class="text-red-700"></span></div>
+                            <div class="flex justify-between"><span>Referral savings:</span> <span id="t_disc_referral" class="text-red-700"></span></div>
+                            <div class="flex justify-between"><span>Other discounts:</span> <span id="t_adj_disc" class="text-red-700"></span></div>
                             <hr class="my-2"/>
                             <div class="font-extrabold text-xl flex justify-between">Total due: <span id="t_total"></span></div>
                         </div>
@@ -576,24 +578,6 @@
                 }},
             { key:'pickup_delivery_date', label:'Pick up or delivery date', type:'date', w:'18' },
             { key:'event_date', label:'Event date', type:'date', w:'14' },
-
-            // New field: Event Type / Name
-            { key:'event_type_name', label:'Event Type / Name', type:'text', w:'20' },
-
-            // New field: Pickup / Delivery Type as dropdown
-            { 
-                key:'pickup_delivery_type',
-                label:'Pickup / Delivery Type',
-                type:'select',
-                w:'20',
-                options:[
-                    'Pickup at Rebel Ribbon',
-                    'Delivery',
-                    'Meet up',
-                    'Shipping'
-                ]
-            },
-
             { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', step:'0.01', w:'18' },
             { key:'flavor', label:'Flavor', type:'select-async', w:'14', asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
             { key:'dietary_option', label:'Dietary option', type:'select-async', w:'16', asyncOptions: async () => (await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[] },
@@ -858,8 +842,6 @@
                 'Cookie Amount (dzns)': r.cookie_amount_dzns ?? '',
                 'Pickup/Delivery Date': dateOnly(r.pickup_delivery_date),
                 'Event Date': dateOnly(r.event_date),
-                'Event Type / Name': r.event_type_name || '',
-                'Pickup / Delivery Type': r.pickup_delivery_type || ''
             }));
 
             const exportConf = {
@@ -1078,6 +1060,12 @@
     let pricing = null;
     let adjustments = [];
 
+    // discount / referral state
+    let discountCodeDetails = null;
+    let referralCodeDetails = null;
+    let discountCodeAmount = 0;
+    let referralDiscountAmount = 0;
+
     function isValidMimeType(mimeType) {
         const allowedMimeTypes = [
             'image/jpeg',
@@ -1088,7 +1076,7 @@
         return allowedMimeTypes.includes(mimeType);
     }
 
-    // Live preview for inspiration photo
+    // LIVE PREVIEW FOR INSPIRATION PHOTO
     document.addEventListener("DOMContentLoaded", () => {
         const uploadInput = document.getElementById('uploadPhoto');
         const previewImg = document.getElementById('ov_photo');
@@ -1108,6 +1096,16 @@
                 previewImg.src = previewUrl;
             });
         }
+
+        // click to open large preview in new window
+        if (previewImg) {
+            previewImg.addEventListener('click', () => {
+                if (!previewImg.src) return;
+                const w = window.open('', '_blank');
+                w.document.write(`<img src="${previewImg.src}" style="max-width:100%;height:auto;display:block;margin:0 auto;"/>`);
+                w.document.close();
+            });
+        }
     });
 
     async function fetchPricing(){
@@ -1118,6 +1116,68 @@
             consultation_fee: Number(p.consultation_fee||0),
             gift_note_fee: Number(p.gift_note_fee||0)
         };
+    }
+
+    function isDatePast(d){
+        if (!d) return false;
+        const today = dateOnly(new Date());
+        return dateOnly(d) < today;
+    }
+
+    async function fetchDiscountCodeDetails(code, customerEmail){
+        if (!code) return null;
+        const result = { code, isValid:false, type:null, value:0 };
+
+        const { data, error } = await sb
+            .from('discount_codes')
+            .select('*')
+            .eq('code', code)
+            .maybeSingle();
+
+        if (error || !data) return result;
+
+        if (data.good_through_date && isDatePast(data.good_through_date)) {
+            return result; // expired
+        }
+
+        if (data.email_allowed && customerEmail &&
+            data.email_allowed.toLowerCase() !== customerEmail.toLowerCase()){
+            return result; // not for this email
+        }
+
+        const value =
+            Number(data.amount ?? data.value ?? data.discount ?? 0);
+
+        if (!value || value <= 0) return result;
+
+        result.isValid = true;
+        result.type = (data.type === 'percent') ? 'percent' : 'fixed';
+        result.value = value;
+        return result;
+    }
+
+    async function fetchReferralCodeDetails(code){
+        if (!code) return null;
+        const result = { code, isValid:false, type:'percent', value:0 };
+
+        const { data, error } = await sb
+            .from('referral_codes')
+            .select('*')
+            .eq('code', code)
+            .maybeSingle();
+
+        if (error || !data) return result;
+
+        if (data.good_through_date && isDatePast(data.good_through_date)){
+            return result;
+        }
+
+        const value = Number(data.referee_discount ?? 0);
+        if (!value || value <= 0) return result;
+
+        result.isValid = true;
+        result.value = value; // percent
+        return result;
     }
 
     async function fetchAdjustments(order_id){
@@ -1160,15 +1220,40 @@
         const gift = (activeOrder?.gift_note ? (pricing?.gift_note_fee||0) : 0);
         const base = (Number(activeOrder?.cookie_amount_dzns||0) * ppd);
         const feeSum = adjustments.filter(a=>a.kind==='fee').reduce((s,a)=>s+a.amount,0);
-        const discSum = adjustments.filter(a=>a.kind==='discount').reduce((s,a)=>s+a.amount,0);
-        const total = base + consult + gift + feeSum - discSum;
+        const manualDiscSum = adjustments.filter(a=>a.kind==='discount').reduce((s,a)=>s+a.amount,0);
+
+        const baseForCodes = base + consult + gift + feeSum;
+
+        discountCodeAmount = 0;
+        referralDiscountAmount = 0;
+
+        if (discountCodeDetails && discountCodeDetails.isValid && baseForCodes > 0){
+            const v = discountCodeDetails.value || 0;
+            if (discountCodeDetails.type === 'percent') {
+                discountCodeAmount = baseForCodes * (v / 100);
+            } else {
+                discountCodeAmount = v;
+            }
+            if (discountCodeAmount > baseForCodes) discountCodeAmount = baseForCodes;
+        }
+
+        if (referralCodeDetails && referralCodeDetails.isValid && baseForCodes > 0){
+            const v = referralCodeDetails.value || 0;
+            referralDiscountAmount = baseForCodes * (v / 100);
+            if (referralDiscountAmount > baseForCodes) referralDiscountAmount = baseForCodes;
+        }
+
+        const totalDiscounts = manualDiscSum + discountCodeAmount + referralDiscountAmount;
+        const total = base + consult + gift + feeSum - manualDiscSum - discountCodeAmount - referralDiscountAmount;
 
         document.getElementById('t_price').textContent = money(ppd);
         document.getElementById('t_base').textContent = money(base);
         document.getElementById('t_consult').textContent = money(consult);
         document.getElementById('t_gift').textContent = money(gift);
         document.getElementById('t_adj_fees').textContent = money(feeSum);
-        document.getElementById('t_adj_disc').textContent = '- ' + money(discSum).replace('$', '$');
+        document.getElementById('t_disc_code').textContent = discountCodeAmount ? '- ' + money(discountCodeAmount) : '- $0.00';
+        document.getElementById('t_disc_referral').textContent = referralDiscountAmount ? '- ' + money(referralDiscountAmount) : '- $0.00';
+        document.getElementById('t_adj_disc').textContent = manualDiscSum ? '- ' + money(manualDiscSum) : '- $0.00';
         document.getElementById('t_total').textContent = money(total);
     }
 
@@ -1240,7 +1325,7 @@
         };
 
         // Event info
-        const eventName = o?.event_type_name || o?.event_type || o?.event_name || '';
+        const eventName = o?.event_type || o?.event_name || '';
         document.getElementById('ov_event_name').textContent = eventName || 'N/A';
         document.getElementById('ov_pickup').textContent = dateOnly(o?.pickup_delivery_date);
         document.getElementById('ov_event').textContent = dateOnly(o?.event_date);
@@ -1266,12 +1351,31 @@
         giftBadge.className = `status-badge ${isGiftNote ? 'status-approved' : 'status-canceled'}`;
         document.getElementById('ov_gift_text').textContent = o?.gift_note_text || 'None';
 
-        const pdType = o?.pickup_delivery_type || o?.pickup_or_delivery || o?.fulfillment_type || o?.delivery_method || '';
+        const pdType = o?.pickup_or_delivery || o?.fulfillment_type || o?.delivery_method || '';
         document.getElementById('ov_pd_type').textContent = pdType || 'N/A';
 
         // Pricing and codes
-        document.getElementById('ov_discount_code').textContent = o?.discount_code_used || 'None';
-        document.getElementById('ov_referral_code').textContent = o?.referral_code_used || 'None';
+        const discountLabelEl = document.getElementById('ov_discount_code');
+        if (o?.discount_code_used) {
+            if (discountCodeDetails && discountCodeDetails.isValid) {
+                discountLabelEl.textContent = `${o.discount_code_used} (applied)`;
+            } else {
+                discountLabelEl.textContent = `${o.discount_code_used} (not valid)`;
+            }
+        } else {
+            discountLabelEl.textContent = 'None';
+        }
+
+        const referralLabelEl = document.getElementById('ov_referral_code');
+        if (o?.referral_code_used) {
+            if (referralCodeDetails && referralCodeDetails.isValid) {
+                referralLabelEl.textContent = `${o.referral_code_used} (applied)`;
+            } else {
+                referralLabelEl.textContent = `${o.referral_code_used} (not valid)`;
+            }
+        } else {
+            referralLabelEl.textContent = 'None';
+        }
 
         document.getElementById('statusSelect').value = currentStatus;
 
@@ -1304,6 +1408,19 @@
         activeCustomer = customerResp.data;
         pricing = pricingData;
         adjustments = adjustmentsData;
+
+        // load discount / referral details
+        discountCodeDetails = null;
+        referralCodeDetails = null;
+        if (activeOrder.discount_code_used) {
+            discountCodeDetails = await fetchDiscountCodeDetails(
+                activeOrder.discount_code_used,
+                activeCustomer?.email || null
+            );
+        }
+        if (activeOrder.referral_code_used) {
+            referralCodeDetails = await fetchReferralCodeDetails(activeOrder.referral_code_used);
+        }
 
         fillDrawer();
         drawer.showModal();
@@ -1365,7 +1482,7 @@
         }
        
         if (!isValidMimeType(file.type)) {
-            alert('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.');
+            alert('Invalid file type. Only JPEG, PNG, GIF, and WebP images are allowed.');
             document.getElementById('uploadPhoto').value = '';
             return;
         }
@@ -1396,56 +1513,77 @@
         document.getElementById('uploadPhoto').value = '';
     });
 
-document.getElementById('viewInvoice').addEventListener('click', ()=>{
-    if (!activeOrder || !activeCustomer) {
-        alert('Please load a complete order first to generate the invoice.');
-        return;
-    }
+    // PRETTY INVOICE
+    document.getElementById('viewInvoice').addEventListener('click', ()=>{
+        if (!activeOrder || !activeCustomer) {
+            alert('Please load a complete order first to generate the invoice.');
+            return;
+        }
 
-    const totalDue = document.getElementById('t_total').textContent;
-    const customerName = document.getElementById('cust_name').textContent;
-    const customerEmail = document.getElementById('cust_email').textContent;
-    const orderId = formatOrderId(activeOrder.id);
-    const customerAddress =
-        document.getElementById('cust_addr1').textContent +
-        (document.getElementById('cust_addr2').textContent ? ', ' + document.getElementById('cust_addr2').textContent : '') +
-        ', ' + document.getElementById('cust_citystzip').textContent;
+        const totalDue = document.getElementById('t_total').textContent;
+        const customerName = document.getElementById('cust_name').textContent;
+        const customerEmail = document.getElementById('cust_email').textContent;
+        const orderId = formatOrderId(activeOrder.id);
+        const customerAddress =
+            document.getElementById('cust_addr1').textContent +
+            (document.getElementById('cust_addr2').textContent ? ', ' + document.getElementById('cust_addr2').textContent : '') +
+            ', ' + document.getElementById('cust_citystzip').textContent;
+       
+        const baseLine = `Base price (${activeOrder.cookie_amount_dzns || 0} dozen @ ${document.getElementById('t_price').textContent})`;
 
-    const lineItems = [
-        { label: `Base price (${activeOrder.cookie_amount_dzns || 0} dozen @ ${document.getElementById('t_price').textContent})`, amount: document.getElementById('t_base').textContent },
-        ...(activeOrder.consultation_requested ? [{ label: 'Consultation fee', amount: document.getElementById('t_consult').textContent }] : []),
-        ...(activeOrder.gift_note ? [{ label: 'Gift note fee', amount: document.getElementById('t_gift').textContent }] : []),
-        ...adjustments.filter(a => a.kind === 'fee').map(a => ({ label: a.label + ' (Fee)', amount: money(a.amount) })),
-        ...(activeOrder.discount_code_used ? [{ label: `Discount code used: ${activeOrder.discount_code_used}`, amount: '- [Calculated discount]' }] : []),
-        ...(activeOrder.referral_code_used ? [{ label: `Referral code used: ${activeOrder.referral_code_used}`, amount: '- [Calculated referral discount]' }] : []),
-        ...adjustments.filter(a => a.kind === 'discount').map(a => ({ label: a.label + ' (Discount)', amount: '-' + money(a.amount) })),
-    ];
+        const lineItems = [
+            { label: baseLine, amount: document.getElementById('t_base').textContent },
+        ];
 
-    const invoiceDate = new Date().toLocaleDateString();
+        if (activeOrder.consultation_requested) {
+            lineItems.push({ label: 'Consultation fee', amount: document.getElementById('t_consult').textContent });
+        }
+        if (activeOrder.gift_note) {
+            lineItems.push({ label: 'Gift note fee', amount: document.getElementById('t_gift').textContent });
+        }
 
-    const invoiceContent = `
+        // fees
+        adjustments.filter(a => a.kind === 'fee').forEach(a => {
+            lineItems.push({ label: a.label + ' (Fee)', amount: money(a.amount) });
+        });
+
+        // discount code
+        if (activeOrder.discount_code_used && discountCodeAmount > 0 && discountCodeDetails?.isValid) {
+            lineItems.push({
+                label: `Discount code (${activeOrder.discount_code_used})`,
+                amount: '- ' + money(discountCodeAmount)
+            });
+        }
+
+        // referral code
+        if (activeOrder.referral_code_used && referralDiscountAmount > 0 && referralCodeDetails?.isValid) {
+            lineItems.push({
+                label: `Referral code (${activeOrder.referral_code_used})`,
+                amount: '- ' + money(referralDiscountAmount)
+            });
+        }
+
+        // manual discounts
+        adjustments.filter(a => a.kind === 'discount').forEach(a => {
+            lineItems.push({ label: a.label + ' (Discount)', amount: '-' + money(a.amount) });
+        });
+
+        const invoiceDate = new Date().toLocaleDateString();
+
+        const invoiceContent = `
         <html>
         <head>
             <title>Invoice #${orderId}</title>
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Nunito:wght@300;400;600;700&display=swap');
-
-                * {
-                    box-sizing: border-box;
-                }
-
+                * { box-sizing: border-box; }
                 body {
                     margin: 0;
                     padding: 24px;
                     font-family: 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
                     background: #fdf2f8;
                 }
-
-                .wrapper {
-                    max-width: 900px;
-                    margin: 0 auto;
-                }
-
+                .wrapper { max-width: 900px; margin: 0 auto; }
                 .invoice {
                     background: #ffffff;
                     border-radius: 24px;
@@ -1455,7 +1593,6 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     position: relative;
                     overflow: hidden;
                 }
-
                 .invoice::before {
                     content: '';
                     position: absolute;
@@ -1465,12 +1602,7 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     opacity: 0.6;
                     pointer-events: none;
                 }
-
-                .invoice-inner {
-                    position: relative;
-                    z-index: 2;
-                }
-
+                .invoice-inner { position: relative; z-index: 2; }
                 .brand-row {
                     display: flex;
                     justify-content: space-between;
@@ -1478,13 +1610,7 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     gap: 24px;
                     margin-bottom: 28px;
                 }
-
-                .brand-left {
-                    display: flex;
-                    flex-direction: column;
-                    gap: 6px;
-                }
-
+                .brand-left { display: flex; flex-direction: column; gap: 6px; }
                 .brand-mark {
                     display: inline-flex;
                     align-items: center;
@@ -1499,7 +1625,6 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     font-weight: 700;
                     color: #be185d;
                 }
-
                 .badge-dot {
                     width: 10px;
                     height: 10px;
@@ -1507,7 +1632,6 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     background: linear-gradient(135deg, #fb7185, #ec4899);
                     box-shadow: 0 0 0 3px rgba(252, 231, 243, 0.9);
                 }
-
                 .brand-name {
                     font-family: 'Playfair Display', serif;
                     font-size: 28px;
@@ -1515,24 +1639,18 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     text-transform: uppercase;
                     color: #1f2937;
                 }
-
                 .brand-sub {
                     font-size: 12px;
                     letter-spacing: 0.12em;
                     text-transform: uppercase;
                     color: #9ca3af;
                 }
-
                 .invoice-meta {
                     text-align: right;
                     font-size: 13px;
                     color: #6b7280;
                 }
-
-                .invoice-meta strong {
-                    color: #374151;
-                }
-
+                .invoice-meta strong { color: #374151; }
                 .pill {
                     display: inline-flex;
                     padding: 4px 12px;
@@ -1543,14 +1661,12 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     font-weight: 600;
                     margin-bottom: 4px;
                 }
-
                 .divider {
                     margin: 18px 0 24px;
                     border: none;
                     border-top: 1px solid rgba(148, 163, 184, 0.35);
                     position: relative;
                 }
-
                 .divider::after {
                     content: '';
                     position: absolute;
@@ -1561,7 +1677,6 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     top: -2px;
                     left: 0;
                 }
-
                 .info-row {
                     display: flex;
                     justify-content: space-between;
@@ -1569,7 +1684,6 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     font-size: 13px;
                     margin-bottom: 24px;
                 }
-
                 .info-block-title {
                     font-size: 11px;
                     font-weight: 700;
@@ -1578,18 +1692,8 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     color: #9ca3af;
                     margin-bottom: 6px;
                 }
-
-                .info-block-main {
-                    font-weight: 700;
-                    color: #374151;
-                    margin-bottom: 2px;
-                }
-
-                .info-block-sub {
-                    color: #6b7280;
-                    line-height: 1.4;
-                }
-
+                .info-block-main { font-weight: 700; color: #374151; margin-bottom: 2px; }
+                .info-block-sub { color: #6b7280; line-height: 1.4; }
                 .totals-chip {
                     display: inline-flex;
                     align-items: center;
@@ -1601,7 +1705,6 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     font-size: 11px;
                     font-weight: 600;
                 }
-
                 .totals-chip span {
                     background: #facc15;
                     color: #1f2937;
@@ -1610,7 +1713,6 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     font-size: 11px;
                     font-weight: 700;
                 }
-
                 .table-wrapper {
                     margin-top: 18px;
                     border-radius: 18px;
@@ -1618,52 +1720,26 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     border: 1px solid rgba(209, 213, 219, 0.7);
                     background: linear-gradient(180deg, #f9fafb 0, #ffffff 28px);
                 }
-
-                table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    font-size: 13px;
-                }
-
-                thead tr {
-                    background: rgba(249, 250, 251, 0.9);
-                }
-
+                table { width: 100%; border-collapse: collapse; font-size: 13px; }
+                thead tr { background: rgba(249, 250, 251, 0.9); }
                 thead th {
                     padding: 12px 16px;
                     text-align: left;
                     font-weight: 700;
                     color: #4b5563;
                 }
-
-                thead th:last-child {
-                    text-align: right;
-                }
-
-                tbody tr {
-                    background: #ffffff;
-                }
-
-                tbody tr:nth-child(odd) {
-                    background: #f9fafb;
-                }
-
+                thead th:last-child { text-align: right; }
+                tbody tr { background: #ffffff; }
+                tbody tr:nth-child(odd) { background: #f9fafb; }
                 tbody td {
                     padding: 10px 16px;
                     color: #4b5563;
                 }
-
                 tbody td:last-child {
                     text-align: right;
                     white-space: nowrap;
                     font-variant-numeric: tabular-nums;
                 }
-
-                tbody tr.subtle-row td {
-                    font-size: 12px;
-                    color: #6b7280;
-                }
-
                 .total-row td {
                     border-top: 1px solid rgba(148, 163, 184, 0.7);
                     padding-top: 14px;
@@ -1673,19 +1749,16 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     color: #111827;
                     background: #fef3c7;
                 }
-
                 .total-row td:first-child {
                     text-transform: uppercase;
                     letter-spacing: 0.12em;
                     font-size: 11px;
                     color: #92400e;
                 }
-
                 .total-row td:last-child {
                     font-size: 18px;
                     color: #b91c1c;
                 }
-
                 .footer-row {
                     display: flex;
                     justify-content: space-between;
@@ -1693,7 +1766,6 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     margin-top: 26px;
                     font-size: 12px;
                 }
-
                 .note-card {
                     flex: 2;
                     padding: 12px 14px;
@@ -1701,7 +1773,6 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     background: #f9fafb;
                     border: 1px dashed rgba(209, 213, 219, 0.9);
                 }
-
                 .note-label {
                     font-size: 11px;
                     font-weight: 700;
@@ -1710,11 +1781,7 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     color: #9ca3af;
                     margin-bottom: 4px;
                 }
-
-                .note-text {
-                    color: #4b5563;
-                }
-
+                .note-text { color: #4b5563; }
                 .terms-card {
                     flex: 1.4;
                     padding: 12px 14px;
@@ -1723,35 +1790,18 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
                     border: 1px solid rgba(248, 113, 113, 0.4);
                     color: #7f1d1d;
                 }
-
-                .terms-card strong {
-                    font-weight: 700;
-                }
-
+                .terms-card strong { font-weight: 700; }
                 .footer-tagline {
                     margin-top: 20px;
                     font-size: 11px;
                     text-align: center;
                     color: #9ca3af;
                 }
-
-                .footer-tagline span {
-                    color: #ec4899;
-                    font-weight: 700;
-                }
-
+                .footer-tagline span { color: #ec4899; font-weight: 700; }
                 @media print {
-                    body {
-                        background: #ffffff;
-                        padding: 0;
-                    }
-                    .invoice {
-                        box-shadow: none;
-                        border-radius: 0;
-                    }
-                    .invoice::before {
-                        display: none;
-                    }
+                    body { background: #ffffff; padding: 0; }
+                    .invoice { box-shadow: none; border-radius: 0; }
+                    .invoice::before { display: none; }
                 }
             </style>
         </head>
@@ -1849,13 +1899,12 @@ document.getElementById('viewInvoice').addEventListener('click', ()=>{
             <\/script>
         </body>
         </html>
-    `;
+        `;
 
-    const printWindow = window.open('', '_blank', 'width=900,height=900,scrollbars=yes');
-    printWindow.document.write(invoiceContent);
-    printWindow.document.close();
-});
-
+        const printWindow = window.open('', '_blank', 'width=900,height=900,scrollbars=yes');
+        printWindow.document.write(invoiceContent);
+        printWindow.document.close();
+    });
 
     bootstrap();
     </script>
