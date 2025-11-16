@@ -1531,397 +1531,349 @@ if (conf.table === 'orders') {
     });
 
     // PRETTY INVOICE
-    document.getElementById('viewInvoice').addEventListener('click', ()=>{
-        if (!activeOrder || !activeCustomer) {
-            alert('Please load a complete order first to generate the invoice.');
-            return;
-        }
+document.getElementById('viewInvoice').addEventListener('click', ()=>{
+    if (!activeOrder || !activeCustomer) {
+        alert('Please load a complete order first to generate the invoice.');
+        return;
+    }
 
-        const totalDue = document.getElementById('t_total').textContent;
-        const customerName = document.getElementById('cust_name').textContent;
-        const customerEmail = document.getElementById('cust_email').textContent;
-        const orderId = formatOrderId(activeOrder.id);
-        const customerAddress =
-            document.getElementById('cust_addr1').textContent +
-            (document.getElementById('cust_addr2').textContent ? ', ' + document.getElementById('cust_addr2').textContent : '') +
-            ', ' + document.getElementById('cust_citystzip').textContent;
-       
-        const baseLine = `Base price (${activeOrder.cookie_amount_dzns || 0} dozen @ ${document.getElementById('t_price').textContent})`;
+    const totalDue = document.getElementById('t_total').textContent;
+    const customerName = document.getElementById('cust_name').textContent;
+    const customerEmail = document.getElementById('cust_email').textContent;
+    const customerPhone = document.getElementById('cust_phone_link').textContent;
+    const orderId = formatOrderId(activeOrder.id);
+    const customerAddress =
+        document.getElementById('cust_addr1').textContent +
+        (document.getElementById('cust_addr2').textContent ? ', ' + document.getElementById('cust_addr2').textContent : '') +
+        ', ' + document.getElementById('cust_citystzip').textContent;
+   
+    const baseLine = `Base price (${activeOrder.cookie_amount_dzns || 0} dozen @ ${document.getElementById('t_price').textContent})`;
 
-        const lineItems = [
-            { label: baseLine, amount: document.getElementById('t_base').textContent },
-        ];
+    const lineItems = [
+        { label: baseLine, amount: document.getElementById('t_base').textContent },
+    ];
 
-        if (activeOrder.consultation_requested) {
-            lineItems.push({ label: 'Consultation fee', amount: document.getElementById('t_consult').textContent });
-        }
-        if (activeOrder.gift_note) {
-            lineItems.push({ label: 'Gift note fee', amount: document.getElementById('t_gift').textContent });
-        }
+    if (activeOrder.consultation_requested) {
+        lineItems.push({ label: 'Consultation fee', amount: document.getElementById('t_consult').textContent });
+    }
+    if (activeOrder.gift_note) {
+        lineItems.push({ label: 'Gift note fee', amount: document.getElementById('t_gift').textContent });
+    }
 
-        // fees
-        adjustments.filter(a => a.kind === 'fee').forEach(a => {
-            lineItems.push({ label: a.label + ' (Fee)', amount: money(a.amount) });
+    // fees
+    adjustments.filter(a => a.kind === 'fee').forEach(a => {
+        lineItems.push({ label: a.label + ' (Fee)', amount: money(a.amount) });
+    });
+
+    // discount code
+    if (activeOrder.discount_code_used && discountCodeAmount > 0 && discountCodeDetails?.isValid) {
+        lineItems.push({
+            label: `Discount code (${activeOrder.discount_code_used})`,
+            amount: '- ' + money(discountCodeAmount)
         });
+    }
 
-        // discount code
-        if (activeOrder.discount_code_used && discountCodeAmount > 0 && discountCodeDetails?.isValid) {
-            lineItems.push({
-                label: `Discount code (${activeOrder.discount_code_used})`,
-                amount: '- ' + money(discountCodeAmount)
-            });
-        }
-
-        // referral code
-        if (activeOrder.referral_code_used && referralDiscountAmount > 0 && referralCodeDetails?.isValid) {
-            lineItems.push({
-                label: `Referral code (${activeOrder.referral_code_used})`,
-                amount: '- ' + money(referralDiscountAmount)
-            });
-        }
-
-        // manual discounts
-        adjustments.filter(a => a.kind === 'discount').forEach(a => {
-            lineItems.push({ label: a.label + ' (Discount)', amount: '-' + money(a.amount) });
+    // referral code
+    if (activeOrder.referral_code_used && referralDiscountAmount > 0 && referralCodeDetails?.isValid) {
+        lineItems.push({
+            label: `Referral code (${activeOrder.referral_code_used})`,
+            amount: '- ' + money(referralDiscountAmount)
         });
+    }
 
-        const invoiceDate = new Date().toLocaleDateString();
+    // manual discounts
+    adjustments.filter(a => a.kind === 'discount').forEach(a => {
+        lineItems.push({ label: a.label + ' (Discount)', amount: '-' + money(a.amount) });
+    });
 
-        const invoiceContent = `
-        <html>
-        <head>
-            <title>Invoice #${orderId}</title>
-            <style>
-                @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Nunito:wght@300;400;600;700&display=swap');
-                * { box-sizing: border-box; }
-                body {
-                    margin: 0;
-                    padding: 24px;
-                    font-family: 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-                    background: #fdf2f8;
-                }
-                .wrapper { max-width: 900px; margin: 0 auto; }
-                .invoice {
-                    background: #ffffff;
-                    border-radius: 24px;
-                    padding: 32px 36px 40px;
-                    box-shadow: 0 18px 45px rgba(148, 27, 89, 0.18);
-                    border: 1px solid rgba(244, 114, 182, 0.25);
-                    position: relative;
-                    overflow: hidden;
-                }
-                .invoice::before {
-                    content: '';
-                    position: absolute;
-                    inset: 0;
-                    background: radial-gradient(circle at -10% -20%, #fce7f3 0, transparent 45%),
-                                radial-gradient(circle at 110% 120%, #e0f2fe 0, transparent 45%);
-                    opacity: 0.6;
-                    pointer-events: none;
-                }
-                .invoice-inner { position: relative; z-index: 2; }
-                .brand-row {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-start;
-                    gap: 24px;
-                    margin-bottom: 28px;
-                }
-                .brand-left { display: flex; flex-direction: column; gap: 6px; }
-                .brand-mark {
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 10px;
-                    padding: 6px 14px;
-                    border-radius: 999px;
-                    background: rgba(251, 113, 133, 0.08);
-                    border: 1px solid rgba(251, 113, 133, 0.4);
-                    font-size: 11px;
-                    letter-spacing: 0.08em;
-                    text-transform: uppercase;
-                    font-weight: 700;
-                    color: #be185d;
-                }
-                .badge-dot {
-                    width: 10px;
-                    height: 10px;
-                    border-radius: 999px;
-                    background: linear-gradient(135deg, #fb7185, #ec4899);
-                    box-shadow: 0 0 0 3px rgba(252, 231, 243, 0.9);
-                }
-                .brand-name {
-                    font-family: 'Playfair Display', serif;
-                    font-size: 28px;
-                    letter-spacing: 0.08em;
-                    text-transform: uppercase;
-                    color: #1f2937;
-                }
-                .brand-sub {
-                    font-size: 12px;
-                    letter-spacing: 0.12em;
-                    text-transform: uppercase;
-                    color: #9ca3af;
-                }
-                .invoice-meta {
-                    text-align: right;
-                    font-size: 13px;
-                    color: #6b7280;
-                }
-                .invoice-meta strong { color: #374151; }
-                .pill {
-                    display: inline-flex;
-                    padding: 4px 12px;
-                    border-radius: 999px;
-                    font-size: 11px;
-                    background: #eff6ff;
-                    color: #1d4ed8;
-                    font-weight: 600;
-                    margin-bottom: 4px;
-                }
-                .divider {
-                    margin: 18px 0 24px;
-                    border: none;
-                    border-top: 1px solid rgba(148, 163, 184, 0.35);
-                    position: relative;
-                }
-                .divider::after {
-                    content: '';
-                    position: absolute;
-                    width: 90px;
-                    height: 3px;
-                    border-radius: 999px;
-                    background: linear-gradient(90deg, #fb7185, #f97316, #facc15);
-                    top: -2px;
-                    left: 0;
-                }
-                .info-row {
-                    display: flex;
-                    justify-content: space-between;
-                    gap: 32px;
-                    font-size: 13px;
-                    margin-bottom: 24px;
-                }
-                .info-block-title {
-                    font-size: 11px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    letter-spacing: 0.18em;
-                    color: #9ca3af;
-                    margin-bottom: 6px;
-                }
-                .info-block-main { font-weight: 700; color: #374151; margin-bottom: 2px; }
-                .info-block-sub { color: #6b7280; line-height: 1.4; }
-                .totals-chip {
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 8px;
-                    padding: 6px 14px;
-                    border-radius: 999px;
-                    background: #fefce8;
-                    color: #854d0e;
-                    font-size: 11px;
-                    font-weight: 600;
-                }
-                .totals-chip span {
-                    background: #facc15;
-                    color: #1f2937;
-                    border-radius: 999px;
-                    padding: 2px 8px;
-                    font-size: 11px;
-                    font-weight: 700;
-                }
-                .table-wrapper {
-                    margin-top: 18px;
-                    border-radius: 18px;
-                    overflow: hidden;
-                    border: 1px solid rgba(209, 213, 219, 0.7);
-                    background: linear-gradient(180deg, #f9fafb 0, #ffffff 28px);
-                }
-                table { width: 100%; border-collapse: collapse; font-size: 13px; }
-                thead tr { background: rgba(249, 250, 251, 0.9); }
-                thead th {
-                    padding: 12px 16px;
-                    text-align: left;
-                    font-weight: 700;
-                    color: #4b5563;
-                }
-                thead th:last-child { text-align: right; }
-                tbody tr { background: #ffffff; }
-                tbody tr:nth-child(odd) { background: #f9fafb; }
-                tbody td {
-                    padding: 10px 16px;
-                    color: #4b5563;
-                }
-                tbody td:last-child {
-                    text-align: right;
-                    white-space: nowrap;
-                    font-variant-numeric: tabular-nums;
-                }
-                .total-row td {
-                    border-top: 1px solid rgba(148, 163, 184, 0.7);
-                    padding-top: 14px;
-                    padding-bottom: 14px;
-                    font-weight: 700;
-                    font-size: 15px;
-                    color: #111827;
-                    background: #fef3c7;
-                }
-                .total-row td:first-child {
-                    text-transform: uppercase;
-                    letter-spacing: 0.12em;
-                    font-size: 11px;
-                    color: #92400e;
-                }
-                .total-row td:last-child {
-                    font-size: 18px;
-                    color: #b91c1c;
-                }
-                .footer-row {
-                    display: flex;
-                    justify-content: space-between;
-                    gap: 20px;
-                    margin-top: 26px;
-                    font-size: 12px;
-                }
-                .note-card {
-                    flex: 2;
-                    padding: 12px 14px;
-                    border-radius: 12px;
-                    background: #f9fafb;
-                    border: 1px dashed rgba(209, 213, 219, 0.9);
-                }
-                .note-label {
-                    font-size: 11px;
-                    font-weight: 700;
-                    text-transform: uppercase;
-                    letter-spacing: 0.18em;
-                    color: #9ca3af;
-                    margin-bottom: 4px;
-                }
-                .note-text { color: #4b5563; }
-                .terms-card {
-                    flex: 1.4;
-                    padding: 12px 14px;
-                    border-radius: 12px;
-                    background: #fef2f2;
-                    border: 1px solid rgba(248, 113, 113, 0.4);
-                    color: #7f1d1d;
-                }
-                .terms-card strong { font-weight: 700; }
-                .footer-tagline {
-                    margin-top: 20px;
-                    font-size: 11px;
-                    text-align: center;
-                    color: #9ca3af;
-                }
-                .footer-tagline span { color: #ec4899; font-weight: 700; }
-                @media print {
-                    body { background: #ffffff; padding: 0; }
-                    .invoice { box-shadow: none; border-radius: 0; }
-                    .invoice::before { display: none; }
-                }
-            </style>
-        </head>
-        <body>
-            <div class="wrapper">
-                <div class="invoice">
-                    <div class="invoice-inner">
-                        <div class="brand-row">
-                            <div class="brand-left">
-                                <div class="brand-mark">
-                                    <span class="badge-dot"></span>
-                                    Women owned cookie studio
-                                </div>
-                                <div class="brand-name">Rebel Ribbon</div>
-                                <div class="brand-sub">Custom cookies, hand decorated with love</div>
-                            </div>
-                            <div class="invoice-meta">
-                                <div class="pill">Invoice #${orderId}</div>
-                                <div><strong>Date:</strong> ${invoiceDate}</div>
-                                <div><strong>Total due:</strong> ${totalDue}</div>
+    const invoiceDate = new Date().toLocaleDateString();
+
+    const invoiceContent = `
+    <html>
+    <head>
+        <title>Invoice #${orderId}</title>
+        <style>
+            @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Nunito:wght@300;400;600;700&display=swap');
+            * { box-sizing: border-box; }
+            body {
+                margin: 0;
+                padding: 24px;
+                font-family: 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+                background: #fdf2f8;
+            }
+            .wrapper { max-width: 900px; margin: 0 auto; }
+            .invoice {
+                background: #ffffff;
+                border-radius: 24px;
+                padding: 32px 36px 40px;
+                box-shadow: 0 18px 45px rgba(148, 27, 89, 0.18);
+                border: 1px solid rgba(244, 114, 182, 0.25);
+                position: relative;
+                overflow: hidden;
+            }
+            .invoice::before {
+                content: '';
+                position: absolute;
+                inset: 0;
+                background: radial-gradient(circle at -10% -20%, #fce7f3 0, transparent 45%),
+                            radial-gradient(circle at 110% 120%, #e0f2fe 0, transparent 45%);
+                opacity: 0.6;
+                pointer-events: none;
+            }
+            .invoice-inner { position: relative; z-index: 2; }
+            .brand-row {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                gap: 24px;
+                margin-bottom: 28px;
+            }
+            .brand-left { display: flex; flex-direction: column; gap: 6px; }
+            .brand-name {
+                font-family: 'Playfair Display', serif;
+                font-size: 28px;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #1f2937;
+            }
+            .brand-sub {
+                font-size: 12px;
+                letter-spacing: 0.12em;
+                text-transform: uppercase;
+                color: #9ca3af;
+            }
+            .invoice-meta {
+                text-align: right;
+                font-size: 13px;
+                color: #6b7280;
+            }
+            .invoice-meta strong { color: #374151; }
+            .pill {
+                display: inline-flex;
+                padding: 4px 12px;
+                border-radius: 999px;
+                font-size: 11px;
+                background: #eff6ff;
+                color: #1d4ed8;
+                font-weight: 600;
+                margin-bottom: 4px;
+            }
+            .divider {
+                margin: 18px 0 24px;
+                border: none;
+                border-top: 1px solid rgba(148, 163, 184, 0.35);
+                position: relative;
+            }
+            .divider::after {
+                content: '';
+                position: absolute;
+                width: 90px;
+                height: 3px;
+                border-radius: 999px;
+                background: linear-gradient(90deg, #fb7185, #f97316, #facc15);
+                top: -2px;
+                left: 0;
+            }
+            .info-row {
+                display: flex;
+                justify-content: space-between;
+                gap: 32px;
+                font-size: 13px;
+                margin-bottom: 24px;
+            }
+            .info-block-title {
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.18em;
+                color: #9ca3af;
+                margin-bottom: 6px;
+            }
+            .info-block-main { font-weight: 700; color: #374151; margin-bottom: 2px; }
+            .info-block-sub { color: #6b7280; line-height: 1.4; }
+            .table-wrapper {
+                margin-top: 18px;
+                border-radius: 18px;
+                overflow: hidden;
+                border: 1px solid rgba(209, 213, 219, 0.7);
+                background: linear-gradient(180deg, #f9fafb 0, #ffffff 28px);
+            }
+            table { width: 100%; border-collapse: collapse; font-size: 13px; }
+            thead tr { background: rgba(249, 250, 251, 0.9); }
+            thead th {
+                padding: 12px 16px;
+                text-align: left;
+                font-weight: 700;
+                color: #4b5563;
+            }
+            thead th:last-child { text-align: right; }
+            tbody tr { background: #ffffff; }
+            tbody tr:nth-child(odd) { background: #f9fafb; }
+            tbody td {
+                padding: 10px 16px;
+                color: #4b5563;
+            }
+            tbody td:last-child {
+                text-align: right;
+                white-space: nowrap;
+                font-variant-numeric: tabular-nums;
+            }
+            .total-row td {
+                border-top: 1px solid rgba(148, 163, 184, 0.7);
+                padding-top: 14px;
+                padding-bottom: 14px;
+                font-weight: 700;
+                font-size: 15px;
+                color: #111827;
+                background: #fef3c7;
+            }
+            .total-row td:first-child {
+                text-transform: uppercase;
+                letter-spacing: 0.12em;
+                font-size: 11px;
+                color: #92400e;
+            }
+            .total-row td:last-child {
+                font-size: 18px;
+                color: #b91c1c;
+            }
+            .footer-row {
+                display: flex;
+                justify-content: space-between;
+                gap: 20px;
+                margin-top: 26px;
+                font-size: 12px;
+            }
+            .note-card {
+                flex: 2;
+                padding: 12px 14px;
+                border-radius: 12px;
+                background: #f9fafb;
+                border: 1px dashed rgba(209, 213, 219, 0.9);
+            }
+            .note-label {
+                font-size: 11px;
+                font-weight: 700;
+                text-transform: uppercase;
+                letter-spacing: 0.18em;
+                color: #9ca3af;
+                margin-bottom: 4px;
+            }
+            .note-text { color: #4b5563; }
+            .terms-card {
+                flex: 1.4;
+                padding: 12px 14px;
+                border-radius: 12px;
+                background: #fef2f2;
+                border: 1px solid rgba(248, 113, 113, 0.4);
+                color: #7f1d1d;
+            }
+            .terms-card strong { font-weight: 700; }
+            .footer-tagline {
+                margin-top: 20px;
+                font-size: 11px;
+                text-align: center;
+                color: #9ca3af;
+            }
+            .footer-tagline span { color: #ec4899; font-weight: 700; }
+            @media print {
+                body { background: #ffffff; padding: 0; }
+                .invoice { box-shadow: none; border-radius: 0; }
+                .invoice::before { display: none; }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="wrapper">
+            <div class="invoice">
+                <div class="invoice-inner">
+                    <div class="brand-row">
+                        <div class="brand-left">
+                            <div class="brand-name">Rebel Ribbon</div>
+                        </div>
+                        <div class="invoice-meta">
+                            <div class="pill">Invoice #${orderId}</div>
+                            <div><strong>Date:</strong> ${invoiceDate}</div>
+                        </div>
+                    </div>
+
+                    <hr class="divider"/>
+
+                    <div class="info-row">
+                        <div>
+                            <div class="info-block-title">Bill to</div>
+                            <div class="info-block-main">${customerName}</div>
+                            <div class="info-block-sub">
+                                ${customerEmail}<br/>
+                                ${customerPhone ? customerPhone + '<br/>' : ''}${customerAddress || 'N/A'}
                             </div>
                         </div>
-
-                        <hr class="divider"/>
-
-                        <div class="info-row">
-                            <div>
-                                <div class="info-block-title">Bill to</div>
-                                <div class="info-block-main">${customerName}</div>
-                                <div class="info-block-sub">
-                                    ${customerEmail}<br/>
-                                    ${customerAddress || 'N/A'}
-                                </div>
-                            </div>
-                            <div style="text-align:right;">
-                                <div class="info-block-title">From</div>
-                                <div class="info-block-main">Rebel Ribbon Cookies</div>
-                                <div class="info-block-sub">
-                                    [Your Company Address Here]<br/>
-                                    [Your Company Contact Here]<br/>
-                                    IG: @rebelribboncookies
-                                </div>
+                        <div style="text-align:right;">
+                            <div class="info-block-title">From</div>
+                            <div class="info-block-main">Rebel Ribbon</div>
+                            <div class="info-block-sub">
+                                www.rebelribbon.com<br/>
+                                info@rebelribbon.com<br/>
+                                210-239-7471<br/>
+                                IG: rebelribbon
                             </div>
                         </div>
+                    </div>
 
-                        <div class="totals-chip">
-                            Order summary
-                            <span>${totalDue}</span>
-                        </div>
-
-                        <div class="table-wrapper">
-                            <table>
-                                <thead>
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Description</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${lineItems.map(item => `
                                     <tr>
-                                        <th>Description</th>
-                                        <th>Amount</th>
+                                        <td>${item.label}</td>
+                                        <td>${item.amount}</td>
                                     </tr>
-                                </thead>
-                                <tbody>
-                                    ${lineItems.map(item => `
-                                        <tr>
-                                            <td>${item.label}</td>
-                                            <td>${item.amount}</td>
-                                        </tr>
-                                    `).join('')}
-                                    <tr class="total-row">
-                                        <td>Total due</td>
-                                        <td>${totalDue}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                                `).join('')}
+                                <tr class="total-row">
+                                    <td>Total due</td>
+                                    <td>${totalDue}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-                        <div class="footer-row">
-                            <div class="note-card">
-                                <div class="note-label">Order notes</div>
-                                <div class="note-text">${activeOrder.design_notes || 'None'}</div>
-                            </div>
-                            <div class="terms-card">
-                                <strong>Payment terms</strong><br/>
-                                Orders are not locked in until full payment is received.  
-                                Once paid, we begin planning, baking, and hand decorating your cookies just for you.
-                            </div>
+                    <div class="footer-row">
+                        <div class="note-card">
+                            <div class="note-label">Order notes</div>
+                            <div class="note-text">${activeOrder.design_notes || 'None'}</div>
                         </div>
+                        <div class="terms-card">
+                            <strong>Payment terms</strong><br/>
+                            Orders are not locked in until full payment is received.  
+                            Once paid, we begin planning, baking, and hand decorating your cookies just for you.
+                        </div>
+                    </div>
 
-                        <div class="footer-tagline">
-                            Thank you for supporting <span>handmade</span> cookies and a small woman owned business.
-                        </div>
+                    <div class="footer-tagline">
+                        Thank you for supporting handmade custom cookies and a woman owned small business!
                     </div>
                 </div>
             </div>
+        </div>
 
-            <script>
-                window.onload = function() { window.print(); }
-            <\/script>
-        </body>
-        </html>
-        `;
+        <script>
+            window.onload = function() { window.print(); }
+        <\/script>
+    </body>
+    </html>
+    `;
 
-        const printWindow = window.open('', '_blank', 'width=900,height=900,scrollbars=yes');
-        printWindow.document.write(invoiceContent);
-        printWindow.document.close();
-    });
+    const printWindow = window.open('', '_blank', 'width=900,height=900,scrollbars=yes');
+    printWindow.document.write(invoiceContent);
+    printWindow.document.close();
+});
+       
 
     bootstrap();
     </script>
