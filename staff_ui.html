@@ -802,7 +802,7 @@
     function buildColGroup(conf){
         const cg = document.getElementById('colgroup'); cg.innerHTML='';
         const cols = conf.cols.slice();
-        if (activeKey !== 'order_list' && !conf.readOnly) cols.push({key:'__actions', w:'10'});
+        if (activeKey !== 'order_list' && !conf.readOnly) cols.push({key:'__actions', w:'20'});
        
         const total = cols.reduce((s,c)=> s + (Number(c.w||0) || 0), 0) || 100;
         for (const c of cols){
