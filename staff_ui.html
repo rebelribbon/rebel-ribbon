@@ -27,96 +27,127 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 64px; 
-            background-color: #fce7f3; /* Soft pink color */
-            color: #4c0519; 
+            height: 60px; /* Fixed height for the banner */
+            background-color: #fbcfe8; /* Soft pink color */
+            color: #4c0519; /* Darker text for contrast */
             z-index: 100;
             display: flex;
             align-items: center;
             padding: 0 1rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
         #menuToggle {
+            /* Positioned on the far left */
             margin-right: 1rem;
             background: #fdf2f8; 
             color: #be185d; 
             width: 40px;
             height: 40px;
-            border-radius: 8px; 
+            border-radius: 6px;
             font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: all 0.2s;
         }
-        #menuToggle:hover { background-color: #ffe4e6; }
+        #logo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            /* Centering the logo and text within the header */
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
         #logo-text {
             font-family: 'Playfair Display', serif; 
-            font-size: 1.6rem; 
+            font-size: 1.5rem; 
             font-weight: 700;
-            letter-spacing: 0.1em; 
+            letter-spacing: 0.08em; 
             color: #831843;
         }
 
         /* --- SIDEBAR --- */
         #sidebar {
-            width: 260px; 
+            width: 250px;
             background-color: #1f2937;
             color: white;
-            padding-top: 64px;
-            z-index: 90;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 90; 
+            padding-top: 60px;
             transform: translateX(-100%);
-            box-shadow: 6px 0 15px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
         }
         #sidebar.open {
             transform: translateX(0);
         }
-        .nav-item { 
-            display: block; 
-            padding: 0.9rem 1.5rem; 
-            transition: background-color 0.2s, border-left 0.2s; 
-        }
-        .nav-active { 
-            border-left: 5px solid #be185d; 
-            padding-left: calc(1.5rem - 5px); 
-        }
-        .submenu-item { padding: 0.9rem 1.5rem 0.9rem 2.5rem; }
+        .nav-item { display: block; padding: 0.75rem 1rem; cursor: pointer; transition: background-color 0.15s; }
+        .nav-item:hover { background-color: #374151; }
+        .nav-active { background-color: #374151; font-weight: 600; border-left: 4px solid #3b82f6; padding-left: calc(1rem - 4px); }
+        .submenu-item { padding: 0.5rem 1rem 0.5rem 2rem; font-size: 0.875rem; }
+        #logout-sidebar { margin-top: auto; padding: 1rem; border-top: 1px solid #374151; }
 
 
         /* --- MAIN CONTENT & LAYOUT --- */
-        #app-wrapper { padding-top: 64px; }
+        #app-wrapper { padding-top: 60px; }
         #content { flex-grow: 1; padding: 1.5rem; max-width: 100%; }
         #pageTitle { color: #831843; } 
         
         /* Order Page Controls (Search Bar & Filters Group) */
         #orderPageControls {
-            /* Ensure this container does not cause horizontal scroll */
             width: 100%;
             padding: 0 0.5rem;
             box-sizing: border-box;
             margin-bottom: 1rem;
         }
         #searchContainer {
+            display: flex;
             gap: 0.5rem;
             align-items: center;
             margin-bottom: 1rem;
         }
         #globalSearch {
-            max-width: 300px;
+            padding: 0.4rem 0.75rem;
             border-radius: 10px;
+            border: 1px solid #d1d5db;
+            flex-grow: 1;
+            width: 100%; 
+            max-width: 300px;
         }
-        
-        /* Order Filters - Centered and Responsive */
+
+        /* Order Filters - Centered */
         #orderFilters {
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
+            margin-bottom: 1rem;
             justify-content: center;
+            max-width: 100%;
             margin-left: auto;
             margin-right: auto;
+            padding: 0 0.5rem;
         }
         .filter-tab {
             font-size: 0.75rem;
             padding: 0.5rem 1rem;
             border-radius: 10px; 
+            border: 1px solid #d1d5db;
+            background-color: #ffffff;
+            color: #374151;
+            transition: all 0.2s ease-in-out;
+        }
+        .filter-active {
+            border: 2px solid #be185d;
+            background-color: #be185d;
+            color: white;
+            font-weight: 600;
         }
 
 
@@ -131,54 +162,41 @@
             word-wrap: break-word;
             overflow: hidden; 
         }
-        #grid #tbody tr:last-child .cell { border-bottom: none; } /* Clean last row */
+        #grid #tbody tr:last-child .cell { border-bottom: none; } 
         #grid #tbody tr:hover { background-color: #fefcf3; }
 
-        /* Order List Alignment (ID 1 fix) */
+        /* Order List Alignment (Fixed 2nd column centering) */
         #grid #thead th:nth-child(2), 
         #grid #tbody tr td:nth-child(2) {
-            text-align: center !important; 
+            text-align: center !important;
+        }
+        #grid #thead th:nth-child(1),
+        #grid #tbody tr td:nth-child(1) {
+            text-align: left !important;
         }
 
-        /* Settings Tables Action Column Fix (ID 6/9 fix) */
-        /* Ensure that action columns do not get pushed off screen by setting explicit widths */
-        #grid #thead th:last-child {
-            width: 80px; /* Width for Action header */
-        }
-        #grid #tbody tr td:last-child {
-            width: 80px; /* Width for Edit button */
-            text-align: right;
-        }
-        .pricing-item-amount { width: 100px; } /* Ensure spacing in Pricing list */
+        /* Pricing List Layout */
+        .pricing-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb; }
+        .pricing-item-amount { width: 100px; text-align: right; flex-shrink: 0; color: #059669; }
+        .pricing-edit-btn { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
 
         /* --- ORDER DRAWER (DETAILS PAGE) --- */
         #orderDrawer { overflow-y: auto; overflow-x: hidden; }
-
-        /* Drawer Header Buttons (Responsive stacking - ID 3 fix) */
+        
+        /* Drawer Header Buttons (Responsive stacking - FIX) */
         #drawerHeaderActions {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
-            width: 100%; /* Full width on mobile */
-            margin-top: 1rem; /* Space below status on mobile */
+            width: 100%; 
+            margin-top: 1rem;
         }
         #drawerHeaderActions button {
             width: 100%;
             justify-content: center;
         }
 
-        /* Responsive stack layout in header */
-        #orderDrawer .sticky { 
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 1rem;
-        }
-
         @media (min-width: 1024px) {
-            #orderDrawer .sticky { 
-                flex-direction: row;
-                align-items: center;
-            }
             #drawerHeaderActions {
                 flex-direction: row;
                 width: auto;
@@ -186,27 +204,20 @@
             }
         }
         
-        /* Button Aesthetics (ID 3 fix) */
+        /* Button Aesthetics */
         .btn {
             border-radius: 8px; 
             font-weight: 500;
             padding: 0.6rem 1.2rem;
             box-shadow: 0 3px 6px rgba(15, 23, 42, 0.1); 
             transition: all 0.2s ease;
-            text-decoration: none; /* Ensure text looks like a button */
+            text-decoration: none;
             line-height: 1.2;
             display: inline-flex;
             align-items: center;
         }
-        .btn-ghost {
-            box-shadow: none;
-            background: transparent;
-            color: #1f2937;
-        }
-        .btn-ghost:hover {
-            background-color: #f3f4f6;
-            transform: none;
-        }
+        .btn-primary { background: linear-gradient(145deg, #be185d, #831843); color: #fff; }
+        .btn-secondary { background-color: #ffffff; color: #1f2937; border-color: #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
     </style>
 </head>
 
@@ -264,7 +275,7 @@
                 <h2 id="pageTitle" class="text-2xl lg:text-3xl font-bold">Orders</h2>
             </header>
 
-            <div id="orderPageControls">
+            <div id="orderPageControls" class="hidden">
                 <div id="searchContainer">
                     <input id="globalSearch" type="search" placeholder="Search customer, ID, date" class="px-3 py-1.5 rounded-lg border shadow-sm text-sm"/>
                     <button id="refreshAll" class="btn btn-secondary shadow-sm">Refresh</button>
@@ -713,17 +724,14 @@
         if(!d) return ''; 
         const dt=new Date(d); 
         const year = dt.getFullYear();
-        // Use local methods for month and day, then format to MM/DD/YYYY
         return `${(dt.getMonth() + 1).toString().padStart(2, '0')}/${dt.getDate().toString().padStart(2, '0')}/${year}`;
     };
-    // Replaced all uses of dateOnly with dateToMDY in functions below where appropriate
 
     const formatOrderId = (id) => {
         if (id == null) return '';
         const n = Number(id);
         if (!Number.isFinite(n)) return String(id);
         const s = String(Math.trunc(n));
-        // Customer ID length issue is moot, but keep ID format helper
         return s.padStart(7, '0');
     };
 
@@ -779,7 +787,7 @@
         const isPricing = activeKey === 'pricing';
         const isOrderList = activeKey === 'order_list';
 
-        // STRICTLY control the visibility of the search/refresh/filters group
+        // **CRITICAL FIX:** STRICTLY control the visibility of the search/refresh/filters group
         document.getElementById('orderPageControls').classList.toggle('hidden', !isOrderList);
         
         document.getElementById('addBtn').classList.toggle('hidden', !!conf.readOnly || isPricing);
@@ -787,7 +795,6 @@
         document.getElementById('pricingList').classList.toggle('hidden', !isPricing);
         document.getElementById('grid').closest('.table-wrap').classList.toggle('hidden', isPricing);
 
-        // **COSTS PAGE FIX**: Show CSV export button only for Costs tab
         const exportBtn = document.getElementById('exportBtn');
         if (exportBtn) {
             exportBtn.classList.toggle('hidden', activeKey !== 'costs');
@@ -833,11 +840,11 @@
             for (const c of conf.cols){
                 let val = row[c.key];
                 if (c.type === 'checkbox') val = !!val;
-                if (c.type === 'date') val = dateToMDY(val); // Use new date format
+                if (c.type === 'date') val = dateToMDY(val);
                 
                 let align = 'text-left';
                 if (c.type === 'number') align = 'text-right';
-                if (activeKey === 'order_list' && c.key === 'status') align = 'text-center'; // Orders status always centered
+                if (activeKey === 'order_list' && c.key === 'status') align = 'text-center';
                 
                 tr.appendChild($('td',`cell ${align}`, fmt(val)));
             }
@@ -1042,7 +1049,6 @@
                     const [table, key] = c.key.split('.');
                     v = r[table]?.[key] ?? '';
                 }
-                // Use the desired date format for CSV export if it's a date column
                 if (c.type === 'date') v = dateToMDY(v);
 
                 const s = String(v).replaceAll('"', '""');
@@ -1119,7 +1125,16 @@
         if (col.required) input.required = true;
 
         if (col.type === 'checkbox') input.checked = !!value;
-        else if (col.type === 'date') input.value = value ? dateToMDY(value) : ''; // Use new date format for editing
+        else if (col.type === 'date') {
+            // Convert to YYYY-MM-DD for input value, as date inputs expect that format
+            const dt = value ? new Date(value) : null;
+            if (dt && !isNaN(dt)) {
+                input.value = dt.toISOString().split('T')[0];
+            } else {
+                 input.value = '';
+            }
+            input.setAttribute('data-original-format', 'MM/DD/YYYY'); // Mark for later conversion if needed
+        }
         else input.value = value ?? '';
 
         wrap.appendChild(input);
@@ -1130,10 +1145,7 @@
         document.getElementById('editorTitle').textContent = row ? `Edit ${conf.title}` : `New ${conf.title}`;
         formBody.innerHTML = '';
 
-        // All fields for the table are loaded, satisfying New Requirement #2
         const baseConf = tables[conf.table];
-        
-        // If editing a single pricing item, we still use the single column config passed in.
         const colsToRender = conf.cols.length === 1 && conf.table === 'pricing' ? conf.cols : baseConf.cols;
 
         for (const c of colsToRender) formBody.appendChild(await optionEl(c, row?.[c.key]));
@@ -1171,25 +1183,22 @@
     async function saveRecord(conf, originalRow){
         const payload = {};
         
-        // Use the columns from the main table config, or the custom config if editing single pricing field
         const colsToSave = conf.cols.length === 1 && conf.table === 'pricing' ? conf.cols : tables[conf.table].cols;
         
         for (const c of colsToSave){
             const elx = document.getElementById(`fld_${c.key}`);
             
-            // Skip fields that were not rendered in a single-field edit scenario, unless it's the target field
-            if (!elx && conf.cols.length === 1 && c.key !== conf.cols[0].key) continue;
+            if (!elx) continue;
 
             let val = (c.type === 'checkbox') ? elx.checked : elx.value || null;
             if (c.type === 'number' && val !== null) val = elx.value === '' ? null : Number(val);
             
-            // Format dates back to standard ISO string for Supabase to handle
+            // Date conversion: The input returns YYYY-MM-DD string, which Supabase handles fine, 
+            // so we only need to ensure the value is captured.
             if (c.type === 'date' && val) {
-                // Assuming MM/DD/YYYY format from input, convert back to YYYY-MM-DD
-                const parts = val.split('/');
-                if (parts.length === 3) {
-                     val = `${parts[2]}-${parts[0]}-${parts[1]}`;
-                }
+                // If input type="date" is used, the value is already in YYYY-MM-DD, which is standard SQL date format.
+                // If we used a text input, we would need MM/DD/YYYY to YYYY-MM-DD conversion here.
+                // Assuming standard HTML date input returns the correct format for direct DB use.
             }
 
             payload[c.key] = val;
@@ -1790,7 +1799,7 @@
             lineItems.push({ label: a.label + ' (Discount)', amount: '-' + money(a.amount) });
         });
 
-        const invoiceDate = dateToMDY(new Date()); // Use new date format
+        const invoiceDate = dateToMDY(new Date());
 
         const invoiceContent = `
         <html>
