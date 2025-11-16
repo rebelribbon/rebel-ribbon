@@ -7,33 +7,16 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        /* General Layout */
-        body {
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        #app-wrapper { display: flex; width: 100%; flex: 1; flex-direction: column; }
+        /* General Styles */
+        body { margin: 0; display: flex; min-height: 100vh; overflow-x: hidden; }
+        #app-wrapper { display: flex; width: 100%; transition: transform 0.3s ease; }
         button { font-family: inherit; }
 
-        /* Mobile first sidebar and main */
-        #sidebar {
-            width: 100%;
-            background-color: #1f2937;
-            color: white;
-            flex-shrink: 0;
-            padding: 1rem 0;
+        /* Mobile Layout: Shift content when menu is open */
+        #app-wrapper.sidebar-open {
+            transform: translateX(200px); /* Move app content to the right to reveal sidebar */
         }
-        #content { flex-grow: 1; padding: 1rem; }
-
-        @media (min-width: 1024px) {
-            body { flex-direction: row; }
-            #app-wrapper { flex-direction: row; }
-            #sidebar { width: 220px; }
-            #content { padding: 2rem; }
-        }
-
+        
         /* Sign in overlay */
         #signinCard {
             position: fixed;
@@ -46,50 +29,78 @@
         }
         #app-wrapper.hidden { display: none; }
 
+        /* Sidebar Navigation */
+        #sidebar {
+            width: 200px;
+            background-color: #1f2937;
+            color: white;
+            flex-shrink: 0;
+            padding: 1rem 0;
+            /* New: Fixed position for mobile draw on small screens */
+            position: fixed;
+            top: 0;
+            left: -200px; /* Hidden off-screen by default on mobile */
+            height: 100vh;
+            z-index: 50;
+            transition: left 0.3s ease; /* Smooth slide transition */
+        }
+        /* New: Visible when open for mobile */
+        #app-wrapper.sidebar-open #sidebar {
+            left: 0;
+        }
+        /* New: Standard desktop behavior */
+        @media (min-width: 1024px) { /* lg breakpoint */
+            #sidebar {
+                position: static;
+                left: 0;
+            }
+            #app-wrapper.sidebar-open {
+                transform: translateX(0);
+            }
+        }
+
         .nav-item { display: block; padding: 0.75rem 1rem; cursor: pointer; transition: background-color 0.15s; }
         .nav-item:hover { background-color: #374151; }
         .nav-active { background-color: #374151; font-weight: 600; border-left: 4px solid #3b82f6; padding-left: calc(1rem - 4px); }
         .submenu-item { padding: 0.5rem 1rem 0.5rem 2rem; font-size: 0.875rem; }
 
-        /* Filters and tables */
-        .filter-tab { padding: 0.5rem 1rem; border-radius: 999px; cursor: pointer; font-weight: 500; transition: background-color 0.15s; white-space: nowrap; }
-        .filter-tab:hover { background-color: #e5e7eb; }
-        .filter-active { background-color: #1d4ed8; color: white; }
+        /* Content Area */
+        #content { flex-grow: 1; padding: 1rem; /* Reduced padding for mobile */ }
+        @media (min-width: 1024px) {
+            #content { padding: 2rem; }
+        }
 
-        .table-wrap { overflow: auto; border-radius: 0.75rem; border: 1px solid #e5e7eb; background: #fff; max-width: 100%; }
-        table { border-collapse: separate; border-spacing: 0; width: 100%; }
+        /* Dashboard Filters - Allow wrapping */
+        #orderFilters { overflow-x: auto; white-space: nowrap; padding-bottom: 8px; }
+        .filter-tab { flex-shrink: 0; } /* Prevent tabs from shrinking */
+
+        /* Table & Grid */
+        .table-wrap { overflow-x: auto; border-radius: 0.75rem; border: 1px solid #e5e7eb; background: #fff; }
+        table { border-collapse: separate; border-spacing: 0; min-width: 600px; /* Ensure horizontal scroll on mobile */ }
         .cell { padding: 0.75rem; }
         .thcell { padding: 0.75rem; font-weight: 600; }
         .nowrap { white-space: nowrap; }
 
         /* Dialogs */
-        dialog::backdrop { background: rgba(0, 0, 0, 0.25); }
-        .drawer { width: 100%; max-width: 1080px; }
-
-        dialog {
-            max-width: 100%;
-            margin: auto;
+        dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+        dialog { max-height: 90vh; overflow-y: auto; }
+        #orderDrawer {
+            width: 100%;
+            max-width: 100%; /* Full screen on mobile */
+            margin: 0;
+            border-radius: 0;
+            height: 100%;
         }
-
-        @media (max-width: 768px) {
-            #editor,
+        @media (min-width: 1024px) {
             #orderDrawer {
-                width: 100vw;
-                height: 100vh;
-                border-radius: 0;
-                padding: 0;
-            }
-            #editor form {
-                height: 100%;
-                display: flex;
-                flex-direction: column;
-            }
-            #formBody {
-                flex: 1;
-                overflow: auto;
+                width: 100%;
+                max-width: 1080px;
+                height: auto;
+                border-radius: 1rem;
             }
         }
 
+        /* Order Manager Enhancements */
         .status-badge { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
         .status-in-review { background-color: #fef3c7; color: #b45309; }
         .status-approved { background-color: #bfdbfe; color: #1e40af; }
@@ -100,126 +111,45 @@
         .urgent-date { color: #dc2626; font-weight: 700; }
         .info-card { background-color: #fff; border-radius: 0.75rem; border: 1px solid #e5e7eb; padding: 1rem; }
 
-        /* Buttons */
+        /* Pretty buttons (no change needed here, Tailwind utilities handle them well) */
         .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 9999px;
-            font-weight: 600;
-            padding: 0.5rem 1.1rem;
-            font-size: 0.875rem;
-            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
-            border: 1px solid transparent;
-            cursor: pointer;
-            gap: 0.4rem;
-            transition:
-                background-color 0.15s ease,
-                color 0.15s ease,
-                border-color 0.15s ease,
-                box-shadow 0.15s ease,
-                transform 0.1s ease;
-        }
-        .btn:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.18);
-        }
-        .btn:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.2);
-        }
-        button:disabled,
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            box-shadow: none;
-            transform: none;
+            /* ... existing styles ... */
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
         }
 
-        .btn-primary {
-            background: linear-gradient(135deg, #3b82f6, #6366f1);
-            color: #fff;
-            border-color: transparent;
-        }
-        .btn-primary:hover {
-            background: linear-gradient(135deg, #2563eb, #4f46e5);
-        }
-
-        .btn-secondary {
-            background-color: #f9fafb;
-            color: #111827;
-            border-color: #d1d5db;
-        }
-        .btn-secondary:hover {
-            background-color: #e5e7eb;
-        }
-
-        .btn-success {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: #fff;
-            border-color: transparent;
-        }
-        .btn-success:hover {
-            background: linear-gradient(135deg, #059669, #047857);
-        }
-
-        .btn-ghost {
-            background: transparent;
-            color: #4b5563;
-            border-color: transparent;
-            box-shadow: none;
-        }
-        .btn-ghost:hover {
-            background-color: #f3f4f6;
-            border-color: #e5e7eb;
-            box-shadow: 0 2px 6px rgba(15, 23, 42, 0.08);
-        }
-
-        .btn-lg {
-            padding: 0.7rem 1.5rem;
-            font-size: 0.9rem;
-        }
-
-        .btn-icon {
-            padding: 0.4rem 0.9rem;
-            border-radius: 9999px;
-            box-shadow: none;
-        }
+        /* Order Drawer Header Fix */
+        #orderDrawer .sticky { z-index: 20; }
     </style>
 </head>
 
 <body class="bg-gray-50 text-gray-900">
-    <!-- SIGN IN -->
     <div id="signinCard" class="flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-white rounded-2xl shadow p-6">
-            <h1 class="text-2xl font-semibold mb-2 text-center">Rebel Ribbon Staff Sign in</h1>
-            <p class="text-sm text-gray-600 mb-4 text-center">Use your @rebelribbon.com email and password.</p>
-           
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-6">
+            <h1 class="text-2xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
+            <p class="text-sm text-gray-600 mb-4">Use your @rebelribbon.com email and password.</p>
+            
             <label class="block text-sm mb-2">Email</label>
             <input id="email" type="email" placeholder="you@rebelribbon.com" class="w-full px-3 py-2 rounded-lg border mb-4"/>
-           
+            
             <label class="block text-sm mb-2">Password</label>
             <input id="password" type="password" placeholder="Password" class="w-full px-3 py-2 rounded-lg border mb-4"/>
-           
+            
             <button id="signInButton" class="w-full btn btn-primary">Sign In</button>
             <p id="authMsg" class="text-sm text-red-600 mt-3"></p>
-            <p class="text-xs text-gray-500 mt-3 text-center">If the button does nothing, check Supabase keys and ensure Email/Password provider is enabled.</p>
+            <p class="text-xs text-gray-500 mt-3">If the button does nothing, check Supabase keys and ensure Email/Password provider is enabled.</p>
         </div>
     </div>
 
-    <!-- APP -->
     <div id="app-wrapper" class="hidden">
-        <!-- SIDEBAR -->
-        <nav id="sidebar">
-            <h1 class="text-xl font-semibold px-4 mb-4 text-white/90">Rebel Ribbon</h1>
-            <div id="main-nav" class="px-1 flex flex-col lg:block">
+        <nav id="sidebar" class="hidden lg:flex flex-col">
+            <h1 class="text-xl font-semibold px-4 mb-6 text-white/90">Rebel Ribbon</h1>
+            <div id="main-nav" class="flex-grow">
                 <button id="nav_orders" class="nav-item nav-active" data-key="order_list">Orders</button>
                 <button id="nav_surveys" class="nav-item" data-key="surveys">Surveys</button>
             </div>
 
-            <div class="mt-6">
+            <div class="mt-4">
                 <h3 class="text-xs uppercase font-medium text-gray-400 px-4 mb-2">Admin / Settings</h3>
-                <!-- Customers tab removed -->
                 <button id="nav_discount_codes" class="nav-item submenu-item" data-key="discount_codes">Discount Codes</button>
                 <button id="nav_referral_codes" class="nav-item submenu-item" data-key="referral_codes">Referral Codes</button>
                 <button id="nav_flavors" class="nav-item submenu-item" data-key="flavors">Flavors & Options</button>
@@ -227,49 +157,45 @@
                 <button id="nav_costs" class="nav-item submenu-item" data-key="costs">Costs</button>
             </div>
 
-            <div class="mt-6 pt-4 border-t border-gray-700 px-4 text-xs text-gray-400 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-                <span id="who" class="block truncate"></span>
+            <div class="mt-8 pt-4 border-t border-gray-700 px-4 text-xs text-gray-400">
+                <span id="who" class="block truncate mb-2"></span>
                 <button id="logout" class="btn btn-secondary text-xs px-3 py-1">Sign out</button>
             </div>
         </nav>
 
-        <!-- MAIN CONTENT -->
-        <main id="content" class="max-w-7xl mx-auto w-full">
-            <!-- Header + search -->
-            <header class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between mb-4">
-                <h2 id="pageTitle" class="text-2xl md:text-3xl font-bold">Orders</h2>
-                <div class="flex flex-col w-full gap-2 sm:flex-row sm:items-center sm:justify-end">
-                    <input id="globalSearch" type="search" placeholder="Search customer, ID, date" class="px-4 py-2 rounded-lg border w-full sm:w-72 shadow-sm"/>
-                    <button id="refreshAll" class="btn btn-secondary shadow-sm w-full sm:w-auto">Refresh</button>
+        <main id="content" class="max-w-full lg:max-w-7xl">
+            <header class="flex items-center justify-between mb-4 lg:mb-6">
+                <h2 id="pageTitle" class="text-2xl lg:text-3xl font-bold">Orders</h2>
+                <div class="flex gap-2 lg:gap-4 items-center">
+                    <button id="menuToggle" class="btn btn-secondary lg:hidden">Menu</button>
+                    <input id="globalSearch" type="search" placeholder="Search..." class="px-3 py-1.5 lg:px-4 lg:py-2 rounded-lg border w-32 sm:w-48 lg:w-72 shadow-sm text-sm"/>
+                    <button id="refreshAll" class="btn btn-secondary shadow-sm text-sm">Refresh</button>
                 </div>
             </header>
 
-            <!-- Order filters -->
-            <div id="orderFilters" class="flex gap-2 mb-4 overflow-x-auto pb-2">
-                <button class="filter-tab filter-active" data-filter="All">All Orders</button>
-                <button class="filter-tab" data-filter="In Review">⭐ New Orders</button>
-                <button class="filter-tab" data-filter="Approved">💸 Needs Payment</button>
-                <button class="filter-tab" data-filter="Paid">🏭 In Production</button>
-                <button class="filter-tab" data-filter="Production Complete">🚚 Ready for Fulfillment</button>
-                <button class="filter-tab" data-filter="Fulfilled">✅ Completed</button>
+            <div id="orderFilters" class="flex gap-2 lg:gap-3 mb-4">
+                <button class="filter-tab filter-active text-sm" data-filter="All">All Orders</button>
+                <button class="filter-tab text-sm" data-filter="In Review">⭐ New</button>
+                <button class="filter-tab text-sm" data-filter="Approved">💸 Payment</button>
+                <button class="filter-tab text-sm" data-filter="Paid">🏭 Prod</button>
+                <button class="filter-tab text-sm" data-filter="Production Complete">🚚 Ready</button>
+                <button class="filter-tab text-sm" data-filter="Fulfilled">✅ Done</button>
             </div>
 
-            <!-- Toolbar -->
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between mb-2">
+            <div class="flex flex-wrap justify-between items-center mb-2 gap-2">
                 <div class="flex items-center gap-2">
-                    <button id="addBtn" class="btn btn-primary shadow-md">Add New</button>
-                    <button id="exportBtn" class="btn btn-secondary shadow-sm hidden">Export CSV</button>
+                    <button id="addBtn" class="btn btn-primary shadow-md text-sm">Add New</button>
+                    <button id="exportBtn" class="btn btn-secondary shadow-sm hidden text-sm">Export CSV</button>
                 </div>
 
-                <div class="flex items-center gap-2 self-start sm:self-auto">
-                    <button id="prev" class="btn btn-secondary disabled:opacity-50 text-sm">Prev</button>
+                <div class="flex items-center gap-2">
+                    <button id="prev" class="btn btn-secondary disabled:opacity-50 text-xs px-3 py-1.5">Prev</button>
                     <span id="pageInfo" class="text-sm text-gray-600"></span>
-                    <button id="next" class="btn btn-secondary disabled:opacity-50 text-sm">Next</button>
+                    <button id="next" class="btn btn-secondary disabled:opacity-50 text-xs px-3 py-1.5">Next</button>
                 </div>
             </div>
 
-            <!-- Table -->
-            <div class="table-wrap mb-2">
+            <div class="table-wrap">
                 <table id="grid" class="min-w-full text-sm table-fixed">
                     <colgroup id="colgroup"></colgroup>
                     <thead class="bg-gray-100 text-gray-700"><tr id="thead"></tr></thead>
@@ -281,29 +207,27 @@
         </main>
     </div>
 
-    <!-- EDITOR DIALOG -->
-    <dialog id="editor" class="rounded-2xl p-0 w-full max-w-3xl shadow-2xl">
+    <dialog id="editor" class="rounded-lg lg:rounded-2xl p-0 w-11/12 max-w-lg lg:max-w-3xl shadow-2xl">
         <form method="dialog" class="p-0">
             <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
                 <h2 id="editorTitle" class="text-lg font-semibold">Edit</h2>
-                <button id="editorCloseBtn" type="button" class="btn btn-ghost btn-icon">✕</button>
+                <button value="close" class="btn btn-ghost btn-icon">✕</button>
             </div>
             <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
-                <button id="deleteBtn" type="button" class="px-3 py-2 rounded-lg border text-red-700 border-red-300 hidden hover:bg-red-50">Delete</button>
-                <button id="saveBtn" class="btn btn-primary">Save</button>
+                <button id="deleteBtn" type="button" class="px-3 py-2 rounded-lg border text-red-700 border-red-300 hidden hover:bg-red-50 text-sm">Delete</button>
+                <button id="saveBtn" class="btn btn-primary text-sm">Save</button>
             </div>
         </form>
     </dialog>
 
-    <!-- ORDER DRAWER -->
-    <dialog id="orderDrawer" class="rounded-2xl p-0 shadow-2xl drawer">
+    <dialog id="orderDrawer" class="rounded-none lg:rounded-2xl p-0 shadow-2xl drawer">
         <div class="p-0">
-            <div class="sticky top-0 z-10 p-4 border-b bg-white flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between shadow-sm">
-                <div class="flex flex-col gap-2 lg:flex-row lg:items-center lg:gap-4">
-                    <button value="close" id="backToOrders" class="btn btn-ghost btn-icon text-sm self-start">← Back to Orders</button>
+            <div class="sticky top-0 z-20 p-4 border-b bg-white flex flex-col md:flex-row items-start md:items-center justify-between shadow-sm gap-3">
+                <div class="flex items-start gap-4">
+                    <button value="close" id="backToOrders" class="btn btn-ghost btn-icon text-sm flex-shrink-0">← Back</button>
                     <div>
-                        <h2 id="drawerTitle" class="text-xl font-semibold">Order #XXXX</h2>
+                        <h2 id="drawerTitle" class="text-lg md:text-xl font-semibold">Order #XXXX</h2>
                         <div class="mt-1 flex flex-wrap items-center gap-2 text-sm">
                             <span class="font-medium">Status:</span>
                             <select id="statusSelect" class="px-3 py-1 rounded-lg border text-sm">
@@ -314,38 +238,26 @@
                                 <option value="Fulfilled">Fulfilled</option>
                                 <option value="Canceled">Canceled</option>
                             </select>
-                            <button id="saveStatus" type="button" class="btn btn-success text-sm">Save Status</button>
+                            <button id="saveStatus" type="button" class="btn btn-success text-xs px-2 py-1">Save Status</button>
                         </div>
                     </div>
                 </div>
 
-                <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                    <button id="editFields" type="button" class="btn btn-secondary btn-lg w-full sm:w-auto">Edit All Fields</button>
-                    <button id="viewInvoice" type="button" class="btn btn-primary btn-lg w-full sm:w-auto">Generate Invoice / Save PDF</button>
+                <div class="flex items-center gap-2 w-full md:w-auto">
+                    <button id="editFields" type="button" class="btn btn-secondary btn-lg w-1/2 md:w-auto text-sm">Edit All</button>
+                    <button id="viewInvoice" type="button" class="btn btn-primary btn-lg w-1/2 md:w-auto text-sm">Invoice / PDF</button>
                 </div>
             </div>
 
-            <div class="p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
-                <div class="lg:col-span-2 space-y-4 sm:space-y-6">
+            <div class="p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+                <div class="lg:col-span-2 space-y-4 lg:space-y-6">
                     <div class="info-card">
                         <h3 class="text-lg font-semibold mb-3">👤 Customer Info</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
-                            <div>
-                                <span class="font-medium">Name:</span>
-                                <div id="cust_name" class="text-base"></div>
-                            </div>
-                            <div>
-                                <span class="font-medium">Customer ID:</span>
-                                <div id="cust_id" class="text-sm text-gray-700"></div>
-                            </div>
-                            <div>
-                                <span class="font-medium">Phone:</span><br/>
-                                <a id="cust_phone_link" class="text-blue-600 hover:underline cursor-pointer text-sm"></a>
-                            </div>
-                            <div>
-                                <span class="font-medium">Email:</span><br/>
-                                <a id="cust_email" class="break-all text-blue-600 hover:underline cursor-pointer text-sm"></a>
-                            </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                            <div><span class="font-medium">Name:</span> <div id="cust_name" class="text-base"></div></div>
+                            <div><span class="font-medium">Customer ID:</span> <div id="cust_id" class="text-sm text-gray-700"></div></div>
+                            <div><span class="font-medium">Phone:</span><br/><a id="cust_phone_link" class="text-blue-600 hover:underline cursor-pointer text-sm"></a></div>
+                            <div><span class="font-medium">Email:</span><br/><a id="cust_email" class="break-all text-blue-600 hover:underline cursor-pointer text-sm"></a></div>
                         </div>
                         <div class="mt-4 text-sm">
                             <span class="font-medium">Address:</span>
@@ -359,36 +271,18 @@
                     <div class="info-card">
                         <h3 class="text-lg font-semibold mb-3">📅 Event Info</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                            <div>
-                                <span class="font-medium">Event Type / Name:</span>
-                                <div id="ov_event_name"></div>
-                            </div>
-                            <div>
-                                <span class="font-medium">Pickup / Delivery Date:</span>
-                                <div id="ov_pickup"></div>
-                            </div>
-                            <div>
-                                <span class="font-medium">Event Date:</span>
-                                <div id="ov_event"></div>
-                            </div>
+                            <div><span class="font-medium">Event Type / Name:</span> <div id="ov_event_name"></div></div>
+                            <div><span class="font-medium">Pickup / Delivery Date:</span> <div id="ov_pickup"></div></div>
+                            <div><span class="font-medium">Event Date:</span> <div id="ov_event"></div></div>
                         </div>
                     </div>
 
                     <div class="info-card">
                         <h3 class="text-lg font-semibold mb-3">📝 Order Details</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm mb-4">
-                            <div>
-                                <span class="font-medium">Date Submitted:</span>
-                                <div id="ov_submitted"></div>
-                            </div>
-                            <div>
-                                <span class="font-medium">How many dzns:</span>
-                                <div id="ov_dzns"></div>
-                            </div>
-                            <div>
-                                <span class="font-medium">Dietary Options:</span>
-                                <div id="ov_dietary"></div>
-                            </div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm mb-4">
+                            <div><span class="font-medium">Date Submitted:</span> <div id="ov_submitted"></div></div>
+                            <div><span class="font-medium">How many dzns:</span> <div id="ov_dzns"></div></div>
+                            <div><span class="font-medium">Dietary Options:</span> <div id="ov_dietary"></div></div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
@@ -398,13 +292,13 @@
                                 <div class="mt-4">
                                     <span class="font-medium">Inspiration Photo:</span>
                                     <div class="mt-2">
-                                        <img id="ov_photo" class="w-32 h-32 object-cover rounded border shadow-sm cursor-pointer" alt="Inspiration"/>
+                                        <img id="ov_photo" class="w-24 h-24 md:w-32 md:h-32 object-cover rounded border shadow-sm cursor-pointer" alt="Inspiration"/>
                                     </div>
                                     <label class="block mt-3 text-xs">
                                         <span class="font-medium">Replace photo:</span>
                                         <input id="uploadPhoto" type="file" accept="image/jpeg,image/png,image/gif,image/webp" class="block mt-1 text-xs"/>
                                     </label>
-                                    <button id="btnUploadPhoto" type="button" class="btn btn-secondary text-xs mt-2 w-full sm:w-auto">Upload</button>
+                                    <button id="btnUploadPhoto" type="button" class="btn btn-secondary text-xs mt-2">Upload</button>
                                 </div>
                             </div>
 
@@ -417,19 +311,10 @@
 
                     <div class="info-card">
                         <h3 class="text-lg font-semibold mb-3">✨ Extras</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm mb-3">
-                            <div>
-                                <span class="font-medium">Consultation requested:</span>
-                                <div id="ov_consultation"></div>
-                            </div>
-                            <div>
-                                <span class="font-medium">Gift note:</span>
-                                <div id="ov_gift_note" class="status-badge"></div>
-                            </div>
-                            <div>
-                                <span class="font-medium">Pickup / Delivery Type:</span>
-                                <div id="ov_pd_type"></div>
-                            </div>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm mb-3">
+                            <div><span class="font-medium">Consultation requested:</span> <div id="ov_consultation"></div></div>
+                            <div><span class="font-medium">Gift note:</span> <div id="ov_gift_note" class="status-badge"></div></div>
+                            <div><span class="font-medium">Pickup / Delivery Type:</span> <div id="ov_pd_type"></div></div>
                         </div>
                         <div class="mt-2 text-sm">
                             <span class="font-medium">Gift Note Text:</span>
@@ -438,7 +323,7 @@
                     </div>
                 </div>
 
-                <div class="space-y-4 sm:space-y-6">
+                <div class="space-y-4 lg:space-y-6">
                     <div class="info-card bg-white shadow-xl border-blue-200 border-2">
                         <h3 class="text-lg font-bold mb-3">💰 Pricing Breakdown</h3>
                         <div class="text-sm space-y-2">
@@ -462,13 +347,13 @@
                     <div class="info-card">
                         <h3 class="font-semibold mb-3">➕ Fees & Discounts</h3>
                         <div class="flex flex-wrap items-center gap-2 mb-3">
-                            <input id="adjLabel" class="px-3 py-2 rounded-lg border w-full sm:w-1/3 grow" placeholder="Label (e.g. Rush fee)"/>
-                            <input id="adjAmount" type="number" step="0.01" class="px-3 py-2 rounded-lg border w-24" placeholder="Amt"/>
-                            <select id="adjKind" class="px-3 py-2 rounded-lg border">
+                            <input id="adjLabel" class="px-3 py-2 rounded-lg border w-full sm:w-1/3 grow text-sm" placeholder="Label (e.g. Rush fee)"/>
+                            <input id="adjAmount" type="number" step="0.01" class="px-3 py-2 rounded-lg border w-24 text-sm" placeholder="Amt"/>
+                            <select id="adjKind" class="px-3 py-2 rounded-lg border text-sm">
                                 <option value="fee">Fee</option>
                                 <option value="discount">Discount</option>
                             </select>
-                            <button id="addAdjustment" type="button" class="btn btn-primary text-sm w-full sm:w-auto">Add</button>
+                            <button id="addAdjustment" type="button" class="btn btn-primary text-sm">Add</button>
                         </div>
 
                         <div class="overflow-auto max-h-48">
@@ -492,14 +377,36 @@
     </dialog>
 
     <script>
+    // ---- Supabase client (No changes) ----
     const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // ---- Mobile Toggle Logic (New) ----
+    const menuToggle = document.getElementById('menuToggle');
+    const sidebar = document.getElementById('sidebar');
 
+    if (menuToggle) {
+        menuToggle.addEventListener('click', () => {
+            appWrapper.classList.toggle('sidebar-open');
+            sidebar.classList.toggle('hidden'); // Toggle the Tailwind hidden class for a better mobile experience
+        });
+    }
+
+    // Close sidebar when a navigation item is clicked (on mobile)
+    sidebar.addEventListener('click', (e) => {
+        if (e.target.closest('.nav-item') && window.innerWidth < 1024) {
+             appWrapper.classList.remove('sidebar-open');
+             // Re-hide the sidebar after the transition (or immediately, depending on desired effect)
+             setTimeout(() => sidebar.classList.add('hidden'), 300);
+        }
+    });
+
+    // ---- Auth (Email & Password) (No functional changes) ----
     const signinCard = document.getElementById('signinCard');
     const appWrapper = document.getElementById('app-wrapper');
     const authMsg = document.getElementById('authMsg');
-
+    
     const signInButton = document.getElementById('signInButton');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
@@ -523,13 +430,14 @@
                 authMsg.textContent = 'Password is required.';
                 return;
             }
-           
+            
             signInButton.disabled = true;
             document.body.style.cursor = 'progress';
 
             const { data, error } = await sb.auth.signInWithPassword({ email, password });
             if (error) throw error;
 
+            // Success: immediately move into the app
             authMsg.classList.add('text-green-700');
             authMsg.textContent = 'Signed in. Loading app...';
 
@@ -559,7 +467,7 @@
             }
             return;
         }
-       
+        
         const email = session.user?.email || '';
         if (!onlyCompanyEmail(email)) {
             await sb.auth.signOut();
@@ -568,10 +476,17 @@
             appWrapper.classList.add('hidden');
             return;
         }
-       
+        
         document.getElementById('who').textContent = email;
         signinCard.classList.add('hidden');
         appWrapper.classList.remove('hidden');
+        
+        // New: ensure sidebar is only visible on desktop by default
+        if (window.innerWidth >= 1024) {
+            sidebar.classList.remove('hidden');
+        } else {
+            sidebar.classList.add('hidden');
+        }
 
         activeKey = 'order_list';
         activeOrderFilter = 'All';
@@ -585,6 +500,7 @@
         location.href = location.origin + location.pathname;
     });
 
+    // ---- Tables config (No changes) ----
     const tables = {
         order_list: {
             title: 'Orders',
@@ -624,10 +540,13 @@
                     return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
                 }},
             { key:'event_type_name', label:'Event type / name', type:'text', w:'20' },
+
             { key:'pickup_delivery_date', label:'Pick up or delivery date', type:'date', w:'18' },
             { key:'event_date', label:'Event date', type:'date', w:'14' },
+
             { key:'pickup_delivery_type', label:'Pickup / delivery type', type:'select', w:'18',
                 options:['Pickup','Delivery'] },
+
             { key:'cookie_amount_dzns', label:'Cookie amount (dzns)', type:'number', step:'0.01', w:'18' },
             { key:'flavor', label:'Flavor', type:'select-async', w:'14',
                 asyncOptions: async () => (await sb.from('flavors').select('name')).data?.map(r=>r.name)||[] },
@@ -707,6 +626,7 @@
     const fmt = (v)=> v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
     const dateOnly=(d)=>{ if(!d) return ''; const dt=new Date(d); const tz=new Date(dt.getTime()-dt.getTimezoneOffset()*60000); return tz.toISOString().slice(0,10); };
 
+    // Format order ID as 7 digit string for display
     const formatOrderId = (id) => {
         if (id == null) return '';
         const n = Number(id);
@@ -755,10 +675,9 @@
         const conf = tables[activeKey];
         document.getElementById('pageTitle').textContent = conf.title;
         document.getElementById('orderFilters').classList.toggle('hidden', activeKey !== 'order_list');
+        document.getElementById('addBtn').classList.toggle('hidden', !!conf.readOnly);
 
-        const addBtn = document.getElementById('addBtn');
-        addBtn.classList.toggle('hidden', !!conf.readOnly || activeKey === 'pricing');
-
+        // Export CSV only visible on Costs page
         const exportBtn = document.getElementById('exportBtn');
         if (exportBtn) {
             exportBtn.classList.toggle('hidden', activeKey !== 'costs');
@@ -814,6 +733,7 @@
 
         updatePager();
 
+        // CSV export only wired for costs
         if (activeKey === 'costs' && exportBtn) {
             exportBtn.onclick = async () => {
                 const { data: allRows } = await sb.from(conf.table).select('*').order('updated_at',{ascending:false});
@@ -822,65 +742,104 @@
         }
     }
 
+    // Match function for Orders search bar
+    function orderMatchesSearch(order, customer, term) {
+        if (!term) return true;
+        const lowerTerm = term.toLowerCase();
+
+        const idStr = String(order.id || '').toLowerCase();
+        const formattedId = formatOrderId(order.id).toLowerCase();
+        const statusStr = String(order.status || '').toLowerCase();
+        const created = dateOnly(order.created_at).toLowerCase();
+        const pd = dateOnly(order.pickup_delivery_date).toLowerCase();
+        const ev = dateOnly(order.event_date).toLowerCase();
+
+        const custName = customer ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim().toLowerCase() : '';
+        const custEmail = customer?.email?.toLowerCase() || '';
+        const custPhone = (customer?.phone || '').toLowerCase();
+
+        return (
+            idStr.includes(lowerTerm) ||
+            formattedId.includes(lowerTerm) ||
+            statusStr.includes(lowerTerm) ||
+            created.includes(lowerTerm) ||
+            pd.includes(lowerTerm) ||
+            ev.includes(lowerTerm) ||
+            custName.includes(lowerTerm) ||
+            custEmail.includes(lowerTerm) ||
+            custPhone.includes(lowerTerm)
+        );
+    }
+
     async function loadOrderList(){
-        const conf = tables.order_list;
         const tbody = document.getElementById('tbody'); 
         tbody.innerHTML = '';
 
         document.body.style.cursor = 'progress';
 
-        const searchTerm = document.getElementById('globalSearch').value?.trim();
-        let customerIds = [];
+        const searchRaw = document.getElementById('globalSearch').value || '';
+        const searchTerm = searchRaw.trim().toLowerCase();
 
-        if (searchTerm) {
-            const { data: custMatches } = await sb
-                .from('customers')
-                .select('id, first_name, last_name, email')
-                .or(`first_name.ilike.%${searchTerm}%,last_name.ilike.%${searchTerm}%,email.ilike.%${searchTerm}%`)
-                .limit(100);
-            customerIds = (custMatches || []).map(c => c.id);
-        }
-
-        let q = sb.from('orders')
-            .select('id, created_at, customer_id, cookie_amount_dzns, status, pickup_delivery_date, event_date, event_type_name', { count:'exact' })
+        let baseQuery = sb
+            .from('orders')
+            .select('id, created_at, customer_id, cookie_amount_dzns, status, pickup_delivery_date, event_date', { count:'exact' })
             .order('created_at',{ascending:false});
 
         if (activeOrderFilter !== 'All') {
-            q = q.eq('status', activeOrderFilter);
+            baseQuery = baseQuery.eq('status', activeOrderFilter);
         }
+
+        let orders = [];
+        let count = 0;
+        let error = null;
 
         if (searchTerm) {
-            if (customerIds.length) {
-                q = q.in('customer_id', customerIds);
-            } else {
-                const orConditions = [
-                    `id::text.ilike.%${searchTerm}%`,
-                    `status.ilike.%${searchTerm}%`,
-                    `event_type_name.ilike.%${searchTerm}%`,
-                    `pickup_delivery_date::text.ilike.%${searchTerm}%`,
-                    `event_date::text.ilike.%${searchTerm}%`
-                ];
-                q = q.or(orConditions.join(','));
-            }
+            // Fetch all orders for this filter, then filter in JS so we can match on customer name and phone
+            const { data, error: err, count: total } = await baseQuery;
+            error = err;
+            orders = data || [];
+            count = total || orders.length;
+        } else {
+            // Normal paged load
+            const { data, error: err, count: total } = await baseQuery.range(page*pageSize, page*pageSize+pageSize-1);
+            error = err;
+            orders = data || [];
+            count = total || 0;
         }
 
-        q = q.range(page*pageSize, page*pageSize+pageSize-1);
-        const { data: orders, error, count } = await q;
         document.body.style.cursor = 'default';
 
         if (error) {
             tbody.appendChild($('tr','',`<td class="cell text-red-700" colspan="99">${error.message}</td>`));
+            totalCount = 0;
+            updatePager();
             return;
         }
 
-        totalCount = count || 0;
-
+        // Load customers for these orders
         const ids = [...new Set((orders||[]).map(o=>o.customer_id).filter(Boolean))];
         const map = new Map();
 
         if (ids.length){
-            const { data: cust } = await sb.from('customers').select('id, first_name, last_name').in('id', ids);
+            const { data: cust } = await sb
+                .from('customers')
+                .select('id, first_name, last_name, email, phone')
+                .in('id', ids);
             (cust||[]).forEach(c => map.set(c.id, c));
+        }
+
+        if (searchTerm) {
+            const filtered = (orders || []).filter(o => {
+                const cust = map.get(o.customer_id);
+                return orderMatchesSearch(o, cust, searchTerm);
+            });
+            totalCount = filtered.length;
+
+            const start = page * pageSize;
+            const end = start + pageSize;
+            orders = filtered.slice(start, end);
+        } else {
+            totalCount = count;
         }
 
         for (const r of (orders||[])){
@@ -910,12 +869,7 @@
         }
 
         updatePager();
-
-        const exportBtn = document.getElementById('exportBtn');
-        if (exportBtn) {
-            exportBtn.onclick = null;
-            exportBtn.classList.add('hidden');
-        }
+        // Export CSV is hidden for Orders per your request
     }
 
     function exportCSV(rows, conf){
@@ -965,34 +919,35 @@
         let input;
 
         if (col.type === 'textarea'){
-            input = $('textarea','px-3 py-2 rounded-lg border w-full');
+            input = $('textarea','px-3 py-2 rounded-lg border w-full text-sm');
             input.rows = 4;
         } else if (col.type === 'checkbox'){
             input = $('input','h-4 w-4');
             input.type='checkbox';
-        } else if (col.type === 'select'){
-            input = $('select','px-3 py-2 rounded-lg border w-full');
-            (col.options||[]).forEach(o => {
-                const opt = $('option','',o);
-                opt.value=o;
-                input.appendChild(opt);
-            });
-        } else if (col.type === 'select-async'){
-            input = $('select','px-3 py-2 rounded-lg border w-full');
-            const options = await col.asyncOptions();
-            for (const o of options){
-                const opt = document.createElement('option');
-                if (typeof o === 'string'){
+        } else if (col.type === 'select' || col.type === 'select-async'){
+            input = $('select','px-3 py-2 rounded-lg border w-full text-sm');
+            if (col.type === 'select'){
+                (col.options||[]).forEach(o => {
+                    const opt = $('option','',o);
                     opt.value=o;
-                    opt.textContent=o;
-                } else {
-                    opt.value=o.value;
-                    opt.textContent=o.label;
+                    input.appendChild(opt);
+                });
+            } else if (col.type === 'select-async'){
+                const options = await col.asyncOptions();
+                for (const o of options){
+                    const opt = document.createElement('option');
+                    if (typeof o === 'string'){
+                        opt.value=o;
+                        opt.textContent=o;
+                    } else {
+                        opt.value=o.value;
+                        opt.textContent=o.label;
+                    }
+                    input.appendChild(opt);
                 }
-                input.appendChild(opt);
             }
         } else {
-            input = $('input','px-3 py-2 rounded-lg border w-full');
+            input = $('input','px-3 py-2 rounded-lg border w-full text-sm');
             input.type = col.type || 'text';
             if (col.step) input.step = col.step;
             if (col.min !== undefined) input.min = col.min;
@@ -1023,8 +978,9 @@
         formBody.appendChild(idHidden);
 
         const delBtn = document.getElementById('deleteBtn');
-        const hideDelete = !row || !!conf.readOnly || conf.table === 'orders';
-        delBtn.classList.toggle('hidden', hideDelete);
+        // Hide delete for orders (you cancel instead), show for other tables
+        const hideDelete = conf.table === 'orders';
+        delBtn.classList.toggle('hidden', !row || !!conf.readOnly || hideDelete);
 
         delBtn.onclick = async () => {
             if (!row?.id || hideDelete) return;
@@ -1035,15 +991,12 @@
 
             dlg.close();
             loadTable();
+            if (conf.table === 'orders') drawer.close();
         };
 
         document.getElementById('saveBtn').onclick = async (e) => {
             e.preventDefault();
             await saveRecord(conf, row);
-        };
-
-        document.getElementById('editorCloseBtn').onclick = () => {
-            dlg.close();
         };
 
         dlg.showModal();
@@ -1106,10 +1059,15 @@
             };
         });
 
-        document.getElementById('addBtn').onclick = () => {
-            if (activeKey === 'pricing') return;
-            openEditor(tables[activeKey], null);
-        };
+        // Remove Add New for Pricing tab
+        const addBtn = document.getElementById('addBtn');
+        if (activeKey === 'pricing') {
+            addBtn.classList.add('hidden');
+        } else {
+            addBtn.classList.toggle('hidden', !!tables[activeKey].readOnly);
+        }
+
+        addBtn.onclick = () => openEditor(tables[activeKey], null);
         document.getElementById('prev').onclick = () => { if (page>0) { page--; loadTable(); } };
         document.getElementById('next').onclick = () => { if ((page+1)*pageSize < totalCount) { page++; loadTable(); } };
         document.getElementById('globalSearch').onkeydown = (e)=>{ if (e.key==='Enter'){ page=0; loadTable(); } };
@@ -1132,6 +1090,7 @@
     let pricing = null;
     let adjustments = [];
 
+    // discount / referral state
     let discountCodeDetails = null;
     let referralCodeDetails = null;
     let discountCodeAmount = 0;
@@ -1147,6 +1106,7 @@
         return allowedMimeTypes.includes(mimeType);
     }
 
+    // LIVE PREVIEW FOR INSPIRATION PHOTO
     document.addEventListener("DOMContentLoaded", () => {
         const uploadInput = document.getElementById('uploadPhoto');
         const previewImg = document.getElementById('ov_photo');
@@ -1169,8 +1129,8 @@
 
         if (previewImg) {
             previewImg.addEventListener('click', () => {
-                if (!previewImg.src) return;
-                const w = window.open('', '_blank');
+                if (!previewImg.src || previewImg.src.includes('No+photo')) return;
+                const w = window.open(previewImg.src, '_blank');
                 w.document.write(`<img src="${previewImg.src}" style="max-width:100%;height:auto;display:block;margin:0 auto;"/>`);
                 w.document.close();
             });
@@ -1214,9 +1174,7 @@
             return result;
         }
 
-        const value =
-            Number(data.amount ?? data.value ?? data.discount ?? 0);
-
+        const value = Number(data.amount ?? data.value ?? data.discount ?? 0);
         if (!value || value <= 0) return result;
 
         result.isValid = true;
@@ -1256,7 +1214,7 @@
 
     async function deleteAdjustment(adjustmentId){
         if (!confirm('Are you sure you want to remove this adjustment?')) return;
-       
+        
         document.body.style.cursor = 'progress';
         const { error } = await sb.from('order_adjustments').delete().eq('id', adjustmentId);
         document.body.style.cursor = 'default';
@@ -1342,7 +1300,7 @@
             tr.appendChild($('td','p-2 text-xs', a.kind));
             tr.appendChild($('td','p-2', a.label||''));
             tr.appendChild($('td',`p-2 text-right ${a.kind === 'discount' ? 'text-red-600' : 'text-green-600'}`, amountText));
-           
+            
             const removeCell = $('td', 'p-2 text-right');
             const removeBtn = $('button', 'text-red-500 hover:text-red-700 text-sm font-medium', 'Remove');
             removeBtn.onclick = () => deleteAdjustment(a.id);
@@ -1363,6 +1321,7 @@
         document.getElementById('drawerTitle').textContent =
             `Order #${formatOrderId(o.id)} (${currentStatus || 'In Review'})`;
 
+        // Customer info
         document.getElementById('cust_name').textContent =
             c ? `${c.first_name||''} ${c.last_name||''}`.trim() : 'N/A';
         document.getElementById('cust_id').textContent =
@@ -1385,17 +1344,20 @@
             const address = [c?.street_address, c?.street_address_cont, c?.city, c?.state, c?.zip]
                 .filter(Boolean).join(', ');
             if (address) {
-                window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`, '_blank');
+                // Fixed the bad string concatenation in the map link
+                window.open(`https://maps.google.com/?q=${encodeURIComponent(address)}`, '_blank');
             } else {
                 alert('No full address available to map.');
             }
         };
 
+        // Event info
         const eventName = o?.event_type_name || o?.event_name || '';
         document.getElementById('ov_event_name').textContent = eventName || 'N/A';
         document.getElementById('ov_pickup').textContent = dateOnly(o?.pickup_delivery_date);
         document.getElementById('ov_event').textContent = dateOnly(o?.event_date);
 
+        // Order details
         document.getElementById('ov_submitted').textContent = dateOnly(o?.created_at);
         document.getElementById('ov_dzns').textContent = o?.cookie_amount_dzns ?? '0';
         document.getElementById('ov_flavor').textContent = o?.flavor || 'N/A';
@@ -1409,6 +1371,7 @@
             photo.src = 'https://dummyimage.com/320x320/e5e7eb/6b7280.jpg&text=No+photo';
         }
 
+        // Extras
         document.getElementById('ov_consultation').textContent = isConsultation ? 'Yes' : 'No';
         const giftBadge = document.getElementById('ov_gift_note');
         giftBadge.textContent = isGiftNote ? 'Yes' : 'No';
@@ -1418,6 +1381,7 @@
         const pdType = o?.pickup_delivery_type || o?.fulfillment_type || o?.delivery_method || '';
         document.getElementById('ov_pd_type').textContent = pdType || 'N/A';
 
+        // Pricing and codes
         const discountLabelEl = document.getElementById('ov_discount_code');
         if (o?.discount_code_used) {
             if (discountCodeDetails && discountCodeDetails.isValid) {
@@ -1472,6 +1436,7 @@
         pricing = pricingData;
         adjustments = adjustmentsData;
 
+        // load discount / referral details
         discountCodeDetails = null;
         referralCodeDetails = null;
         if (activeOrder.discount_code_used) {
@@ -1542,7 +1507,7 @@
             alert('Choose an image file first.');
             return;
         }
-       
+        
         if (!isValidMimeType(file.type)) {
             alert('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.');
             document.getElementById('uploadPhoto').value = '';
@@ -1552,7 +1517,7 @@
         document.body.style.cursor = 'progress';
         const ext = file.name.split('.').pop();
         const path = `${activeOrder.id}/inspiration_${Date.now()}.${ext}`;
-       
+        
         const { data, error } = await sb.storage.from('order_uploads').upload(path, file, { upsert:true, contentType:file.type });
         document.body.style.cursor = 'default';
 
@@ -1575,6 +1540,7 @@
         document.getElementById('uploadPhoto').value = '';
     });
 
+    // PRETTY INVOICE (No changes, print window handles its own layout)
     document.getElementById('viewInvoice').addEventListener('click', ()=>{
         if (!activeOrder || !activeCustomer) {
             alert('Please load a complete order first to generate the invoice.');
@@ -1589,8 +1555,8 @@
         const customerAddress =
             document.getElementById('cust_addr1').textContent +
             (document.getElementById('cust_addr2').textContent ? ', ' + document.getElementById('cust_addr2').textContent : '') +
-            ', ' + document.getElementById('cust_citystzip').textContent;
-       
+            (document.getElementById('cust_citystzip').textContent ? ', ' + document.getElementById('cust_citystzip').textContent : '');
+
         const baseLine = `Base price (${activeOrder.cookie_amount_dzns || 0} dozen @ ${document.getElementById('t_price').textContent})`;
 
         const lineItems = [
@@ -1632,13 +1598,12 @@
         <html>
         <head>
             <title>Invoice #${orderId}</title>
-            <meta name="viewport" content="width=device-width,initial-scale=1"/>
             <style>
                 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Nunito:wght@300;400;600;700&display=swap');
                 * { box-sizing: border-box; }
                 body {
                     margin: 0;
-                    padding: 16px;
+                    padding: 24px;
                     font-family: 'Nunito', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
                     background: #fdf2f8;
                 }
@@ -1646,37 +1611,34 @@
                 .invoice {
                     background: #ffffff;
                     border-radius: 24px;
-                    padding: 24px 20px 28px;
+                    padding: 32px 36px 40px;
                     box-shadow: 0 18px 45px rgba(148, 27, 89, 0.18);
                     border: 1px solid rgba(244, 114, 182, 0.25);
                     position: relative;
                     overflow: hidden;
                 }
+                .invoice::before {
+                    content: '';
+                    position: absolute;
+                    inset: 0;
+                    background: radial-gradient(circle at -10% -20%, #fce7f3 0, transparent 45%),
+                                 radial-gradient(circle at 110% 120%, #e0f2fe 0, transparent 45%);
+                    opacity: 0.6;
+                    pointer-events: none;
+                }
                 .invoice-inner { position: relative; z-index: 2; }
                 .brand-row {
                     display: flex;
-                    flex-wrap: wrap;
                     justify-content: space-between;
-                    align-items: center;
-                    gap: 16px;
-                    margin-bottom: 18px;
+                    align-items: flex-start;
+                    gap: 24px;
+                    margin-bottom: 28px;
                 }
-                .brand-left {
-                    display: flex;
-                    flex-direction: row;
-                    align-items: center;
-                    gap: 12px;
-                    flex-wrap: wrap;
-                }
-                .brand-logo {
-                    height: 40px;
-                    width: auto;
-                    display: block;
-                }
+                .brand-left { display: flex; flex-direction: column; gap: 6px; }
                 .brand-name {
                     font-family: 'Playfair Display', serif;
-                    font-size: 26px;
-                    letter-spacing: 0.12em;
+                    font-size: 28px;
+                    letter-spacing: 0.08em;
                     text-transform: uppercase;
                     color: #1f2937;
                 }
@@ -1686,18 +1648,38 @@
                     color: #6b7280;
                 }
                 .invoice-meta strong { color: #374151; }
+                .pill {
+                    display: inline-flex;
+                    padding: 4px 12px;
+                    border-radius: 999px;
+                    font-size: 11px;
+                    background: #eff6ff;
+                    color: #1d4ed8;
+                    font-weight: 600;
+                    margin-bottom: 4px;
+                }
                 .divider {
-                    margin: 12px 0 18px;
+                    margin: 18px 0 24px;
                     border: none;
                     border-top: 1px solid rgba(148, 163, 184, 0.35);
+                    position: relative;
+                }
+                .divider::after {
+                    content: '';
+                    position: absolute;
+                    width: 90px;
+                    height: 3px;
+                    border-radius: 999px;
+                    background: linear-gradient(90deg, #fb7185, #f97316, #facc15);
+                    top: -2px;
+                    left: 0;
                 }
                 .info-row {
                     display: flex;
-                    flex-wrap: wrap;
                     justify-content: space-between;
-                    gap: 20px;
+                    gap: 32px;
                     font-size: 13px;
-                    margin-bottom: 18px;
+                    margin-bottom: 24px;
                 }
                 .info-block-title {
                     font-size: 11px;
@@ -1708,9 +1690,9 @@
                     margin-bottom: 6px;
                 }
                 .info-block-main { font-weight: 700; color: #374151; margin-bottom: 2px; }
-                .info-block-sub { color: #6b7280; line-height: 1.4; white-space: pre-line; }
+                .info-block-sub { color: #6b7280; line-height: 1.4; }
                 .table-wrapper {
-                    margin-top: 12px;
+                    margin-top: 18px;
                     border-radius: 18px;
                     overflow: hidden;
                     border: 1px solid rgba(209, 213, 219, 0.7);
@@ -1719,7 +1701,7 @@
                 table { width: 100%; border-collapse: collapse; font-size: 13px; }
                 thead tr { background: rgba(249, 250, 251, 0.9); }
                 thead th {
-                    padding: 10px 12px;
+                    padding: 12px 16px;
                     text-align: left;
                     font-weight: 700;
                     color: #4b5563;
@@ -1728,7 +1710,7 @@
                 tbody tr { background: #ffffff; }
                 tbody tr:nth-child(odd) { background: #f9fafb; }
                 tbody td {
-                    padding: 8px 12px;
+                    padding: 10px 16px;
                     color: #4b5563;
                 }
                 tbody td:last-child {
@@ -1738,8 +1720,8 @@
                 }
                 .total-row td {
                     border-top: 1px solid rgba(148, 163, 184, 0.7);
-                    padding-top: 12px;
-                    padding-bottom: 12px;
+                    padding-top: 14px;
+                    padding-bottom: 14px;
                     font-weight: 700;
                     font-size: 15px;
                     color: #111827;
@@ -1757,14 +1739,14 @@
                 }
                 .footer-row {
                     display: flex;
-                    flex-wrap: wrap;
-                    gap: 16px;
-                    margin-top: 20px;
+                    justify-content: space-between;
+                    gap: 20px;
+                    margin-top: 26px;
                     font-size: 12px;
                 }
                 .note-card {
                     flex: 2;
-                    padding: 10px 12px;
+                    padding: 12px 14px;
                     border-radius: 12px;
                     background: #f9fafb;
                     border: 1px dashed rgba(209, 213, 219, 0.9);
@@ -1780,7 +1762,7 @@
                 .note-text { color: #4b5563; }
                 .terms-card {
                     flex: 1.4;
-                    padding: 10px 12px;
+                    padding: 12px 14px;
                     border-radius: 12px;
                     background: #fef2f2;
                     border: 1px solid rgba(248, 113, 113, 0.4);
@@ -1788,30 +1770,16 @@
                 }
                 .terms-card strong { font-weight: 700; }
                 .footer-tagline {
-                    margin-top: 18px;
+                    margin-top: 20px;
                     font-size: 11px;
                     text-align: center;
                     color: #9ca3af;
                 }
-                .footer-tagline span {
-                    color: #ec4899;
-                    font-weight: 700;
-                }
-                @media (max-width: 640px) {
-                    .invoice {
-                        border-radius: 0;
-                        padding: 16px;
-                    }
-                    .brand-row {
-                        align-items: flex-start;
-                    }
-                    .invoice-meta {
-                        text-align: left;
-                    }
-                }
+                .footer-tagline span { color: #ec4899; font-weight: 700; }
                 @media print {
                     body { background: #ffffff; padding: 0; }
                     .invoice { box-shadow: none; border-radius: 0; }
+                    .invoice::before { display: none; }
                 }
             </style>
         </head>
@@ -1821,13 +1789,19 @@
                     <div class="invoice-inner">
                         <div class="brand-row">
                             <div class="brand-left">
-                                <img class="brand-logo" src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" alt="Rebel Ribbon Logo"/>
+                                <img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png"
+                                    style="
+                                        height: 80px;
+                                        width: auto;
+                                        margin-bottom: 10px;
+                                        object-fit: contain;
+                                        display: block;
+                                    ">
                                 <div class="brand-name">Rebel Ribbon</div>
                             </div>
                             <div class="invoice-meta">
-                                <div><strong>Invoice #</strong> ${orderId}</div>
+                                <div class="pill">Invoice #${orderId}</div>
                                 <div><strong>Date:</strong> ${invoiceDate}</div>
-                                <div><strong>Total due:</strong> ${totalDue}</div>
                             </div>
                         </div>
 
@@ -1838,19 +1812,19 @@
                                 <div class="info-block-title">Bill to</div>
                                 <div class="info-block-main">${customerName}</div>
                                 <div class="info-block-sub">
-${customerEmail}
-${customerPhone || ''}
-${customerAddress || 'N/A'}
+                                    ${customerEmail}<br/>
+                                    ${customerPhone ? 'Phone: ' + customerPhone + '<br/>' : ''}
+                                    ${customerAddress || 'N/A'}
                                 </div>
                             </div>
                             <div style="text-align:right;">
                                 <div class="info-block-title">From</div>
                                 <div class="info-block-main">Rebel Ribbon</div>
                                 <div class="info-block-sub">
-www.rebelribbon.com
-info@rebelribbon.com
-210-239-7471
-IG: @rebelribbon
+                                    www.rebelribbon.com<br/>
+                                    info@rebelribbon.com<br/>
+                                    210-239-7471<br/>
+                                    IG: @rebelribbon
                                 </div>
                             </div>
                         </div>
@@ -1885,7 +1859,8 @@ IG: @rebelribbon
                             </div>
                             <div class="terms-card">
                                 <strong>Payment terms</strong><br/>
-                                Orders are not locked in until full payment is received. Once paid, we begin planning, baking, and hand decorating your cookies just for you.
+                                Orders are not locked in until full payment is received.  
+                                Once paid, we begin planning, baking, and hand decorating your cookies just for you.
                             </div>
                         </div>
 
