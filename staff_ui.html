@@ -968,8 +968,15 @@
         idHidden.value=row?.id||'';
         formBody.appendChild(idHidden);
 
-        const delBtn = document.getElementById('deleteBtn');
-        delBtn.classList.toggle('hidden', !row || !!conf.readOnly);
+const delBtn = document.getElementById('deleteBtn');
+
+// Never allow deleting orders — only canceling them.
+if (conf.table === 'orders') {
+    delBtn.classList.add('hidden');
+} else {
+    delBtn.classList.toggle('hidden', !row || !!conf.readOnly);
+}
+
 
         delBtn.onclick = async () => {
             if (!row?.id) return;
