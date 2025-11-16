@@ -58,8 +58,6 @@
             letter-spacing: 0.08em; 
             color: #831843;
         }
-        /* REMOVED GLOBAL SEARCH STYLES HERE */
-
 
         /* SIDEBAR NAVIGATION (Mobile Overlay) */
         #sidebar {
@@ -112,11 +110,11 @@
             border-radius: 9999px;
             border: 1px solid #d1d5db;
             flex-grow: 1;
-            width: 100%; /* Ensure it fills container */
+            width: 100%; 
             max-width: 300px;
         }
 
-        /* ORDER FILTERS - Responsive/Aesthetic Filter Bar - Now centered */
+        /* ORDER FILTERS - Centered */
         #orderFilters {
             display: flex;
             flex-wrap: wrap;
@@ -160,31 +158,104 @@
         }
         .thcell { padding: 0.75rem; font-weight: 600; }
         .cell { 
-            padding: 1rem 0.75rem; /* Increased vertical padding for spacing */
+            padding: 1rem 0.75rem;
             word-wrap: break-word; 
             overflow: hidden; 
             vertical-align: middle;
         }
         .cell, .thcell { white-space: normal; }
 
+        /* Order List Centering */
+        #grid #thead th:nth-child(2), 
+        #grid #tbody tr td:nth-child(2) {
+            text-align: center !important; /* Center the Status column content */
+        }
+        /* Keep first column (Customer Name) left-aligned for readability */
+        #grid #thead th:nth-child(1),
+        #grid #tbody tr td:nth-child(1) {
+            text-align: left !important;
+        }
 
-        /* Pricing List Layout (Specific to Pricing Page) */
+
+        /* Pricing List Layout */
         .pricing-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb; }
         .pricing-item-amount { width: 80px; text-align: right; flex-shrink: 0; }
         .pricing-edit-btn { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
 
-        /* Dialogs and Order Manager (kept responsive) */
+        /* Dialogs and Order Manager Responsiveness */
         dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
         dialog { max-height: 90vh; overflow-y: auto; }
-        #orderDrawer { width: 100%; max-width: 100%; margin: 0; border-radius: 0; height: 100%; }
-        @media (min-width: 1024px) {
-            #orderDrawer { width: 100%; max-width: 1080px; height: auto; border-radius: 1rem; }
+        #orderDrawer { 
+            width: 100%; 
+            max-width: 100%; 
+            margin: 0; 
+            border-radius: 0; 
+            height: 100%; 
+            overflow-x: hidden; /* Ensure no horizontal scroll in drawer */
+        }
+        
+        /* Order Drawer Header Button Layout */
+        #drawerHeaderActions {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            width: 100%;
         }
 
-        /* Status badges */
-        .status-badge { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
-        .info-card { background-color: #fff; border-radius: 0.75rem; border: 1px solid #e5e7eb; padding: 1rem; }
+        /* Responsive stack for Edit/Invoice buttons */
+        #drawerHeaderActions > div:last-child {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            width: 100%;
+            margin-top: 1rem;
+        }
+        #drawerHeaderActions > div:last-child button {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
 
+        @media (min-width: 1024px) {
+             #orderDrawer { 
+                max-width: 1080px; 
+                height: auto; 
+                border-radius: 1rem; 
+            }
+            #drawerHeaderActions {
+                flex-direction: row;
+                width: auto;
+            }
+            #drawerHeaderActions > div:last-child {
+                flex-direction: row;
+                width: auto;
+                margin-top: 0;
+            }
+        }
+        
+        /* Existing Order Drawer Header Flex Fixes */
+        #orderDrawer .sticky { 
+            display: flex;
+            flex-wrap: wrap; 
+            justify-content: space-between; 
+            align-items: center;
+        }
+        #orderDrawer .sticky > div:first-child {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        @media (min-width: 768px) {
+            #orderDrawer .sticky > div:first-child {
+                width: auto;
+                margin-bottom: 0;
+            }
+        }
+
+
+        /* Sign in overlay */
+        #signinCard {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; background-color: #f9fafb;
+        }
         /* Custom font import */
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
     </style>
@@ -242,7 +313,7 @@
         <main id="content" class="max-w-full">
             <header class="flex flex-wrap items-center justify-between mb-4 lg:mb-6 gap-2">
                 <h2 id="pageTitle" class="text-2xl lg:text-3xl font-bold">Orders</h2>
-                </header>
+            </header>
 
             <div id="orderPageControls">
                 <div id="searchContainer">
@@ -304,7 +375,7 @@
 
     <dialog id="orderDrawer" class="rounded-2xl p-0 shadow-2xl drawer">
         <div class="p-0">
-            <div class="sticky top-0 z-index-10 p-4 border-b bg-white flex items-center justify-between shadow-sm">
+            <div class="sticky top-0 z-index-10 p-4 border-b bg-white flex flex-wrap items-center justify-between shadow-sm">
                 <div class="flex items-center gap-4">
                     <button value="close" id="backToOrders" class="btn btn-ghost btn-icon text-sm">← Back to Orders</button>
                     <div>
@@ -324,7 +395,7 @@
                     </div>
                 </div>
 
-                <div class="flex items-center gap-2">
+                <div id="drawerHeaderActions">
                     <button id="editFields" type="button" class="btn btn-secondary btn-lg">Edit All Fields</button>
                     <button id="viewInvoice" type="button" class="btn btn-primary btn-lg">Generate Invoice / Save PDF</button>
                 </div>
@@ -972,10 +1043,10 @@
 
             const tr = $('tr','border-b hover:bg-gray-100 cursor-pointer');
 
-            // Cell for Customer Name
+            // Cell for Customer Name (Left aligned)
             tr.appendChild($('td', 'cell text-left font-medium', custName));
             
-            // Cell for Status
+            // Cell for Status (Center aligned via CSS class)
             const statusCell = $('td', 'cell text-center');
             statusCell.appendChild($('span', `status-badge ${getStatusClass(status)}`, status));
             tr.appendChild(statusCell);
@@ -1258,7 +1329,16 @@
             });
         }
         
-        // Removed duplicated Global search Enter key handler from here
+        // Ensure initial setting of handler
+        const globalSearch = document.getElementById('globalSearch');
+        if (globalSearch) {
+             globalSearch.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    page = 0; 
+                    loadTable();
+                }
+             });
+        }
     });
 
     async function fetchPricing(){
