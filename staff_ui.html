@@ -58,28 +58,7 @@
             letter-spacing: 0.08em; 
             color: #831843;
         }
-
-        /* NEW: Global Search Bar in Header */
-        #globalSearch {
-            position: absolute;
-            right: 1rem;
-            width: 150px; /* Mobile width */
-            padding: 0.4rem 0.75rem;
-            border-radius: 9999px;
-            border: 1px solid #d1d5db;
-            font-size: 0.875rem;
-        }
-        @media (min-width: 768px) {
-            #globalSearch {
-                width: 250px; /* Desktop width */
-            }
-        }
-        @media (max-width: 767px) {
-            /* Hide the search bar on extra small screens for more space, relying on the header-banner button */
-            #globalSearch {
-                display: none;
-            }
-        }
+        /* REMOVED GLOBAL SEARCH STYLES HERE */
 
 
         /* SIDEBAR NAVIGATION (Mobile Overlay) */
@@ -121,18 +100,33 @@
             #content { padding: 2rem; }
         }
 
-        /* ORDER FILTERS - Now outside the main content header for cleaner separation */
+        /* ORDER PAGE CONTROLS (Search Bar, Filters, Refresh) */
+        #searchContainer {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        #globalSearch {
+            padding: 0.4rem 0.75rem;
+            border-radius: 9999px;
+            border: 1px solid #d1d5db;
+            flex-grow: 1;
+            width: 100%; /* Ensure it fills container */
+            max-width: 300px;
+        }
+
+        /* ORDER FILTERS - Responsive/Aesthetic Filter Bar - Now centered */
         #orderFilters {
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
             margin-bottom: 1rem;
             justify-content: center;
-            max-width: fit-content;
+            max-width: 100%;
             margin-left: auto;
             margin-right: auto;
             padding: 0 0.5rem;
-            /* Added hidden class by default in HTML, controlled by JS */
         }
         .filter-tab {
             font-size: 0.75rem;
@@ -175,13 +169,7 @@
 
 
         /* Pricing List Layout (Specific to Pricing Page) */
-        .pricing-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0.75rem 0;
-            border-bottom: 1px solid #e5e7eb;
-        }
+        .pricing-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb; }
         .pricing-item-amount { width: 80px; text-align: right; flex-shrink: 0; }
         .pricing-edit-btn { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
 
@@ -226,7 +214,6 @@
             <img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" alt="Rebel Ribbon Logo" style="height: 40px; width: auto;">
             <span id="logo-text">Rebel Ribbon</span>
         </div>
-        <input id="globalSearch" type="search" placeholder="Search customer, ID, date" class="px-3 py-1.5 rounded-lg border shadow-sm text-sm"/>
     </div>
 
     <nav id="sidebar">
@@ -255,18 +242,22 @@
         <main id="content" class="max-w-full">
             <header class="flex flex-wrap items-center justify-between mb-4 lg:mb-6 gap-2">
                 <h2 id="pageTitle" class="text-2xl lg:text-3xl font-bold">Orders</h2>
-                <div class="flex gap-2 items-center w-full sm:w-auto">
+                </header>
+
+            <div id="orderPageControls">
+                <div id="searchContainer">
+                    <input id="globalSearch" type="search" placeholder="Search customer, ID, date" class="px-3 py-1.5 rounded-lg border shadow-sm text-sm"/>
                     <button id="refreshAll" class="btn btn-secondary shadow-sm">Refresh</button>
                 </div>
-            </header>
 
-            <div id="orderFilters" class="flex gap-2 mb-4 hidden"> 
-                <button class="filter-tab filter-active" data-filter="All">All Orders</button>
-                <button class="filter-tab" data-filter="In Review">⭐ New Orders</button>
-                <button class="filter-tab" data-filter="Approved">💸 Payment</button>
-                <button class="filter-tab" data-filter="Paid">🏭 Production</button>
-                <button class="filter-tab" data-filter="Production Complete">🚚 Ready</button>
-                <button class="filter-tab" data-filter="Fulfilled">✅ Completed</button>
+                <div id="orderFilters" class="flex gap-2 mb-4">
+                    <button class="filter-tab filter-active" data-filter="All">All Orders</button>
+                    <button class="filter-tab" data-filter="In Review">⭐ New Orders</button>
+                    <button class="filter-tab" data-filter="Approved">💸 Payment</button>
+                    <button class="filter-tab" data-filter="Paid">🏭 Production</button>
+                    <button class="filter-tab" data-filter="Production Complete">🚚 Ready</button>
+                    <button class="filter-tab" data-filter="Fulfilled">✅ Completed</button>
+                </div>
             </div>
 
             <div id="dataActions" class="flex items-center justify-between mb-2 flex-wrap gap-2">
@@ -751,7 +742,9 @@
         const isPricing = activeKey === 'pricing';
         const isOrderList = activeKey === 'order_list';
 
-        document.getElementById('orderFilters').classList.toggle('hidden', !isOrderList);
+        // STRICTLY control the visibility of the search/refresh/filters group
+        document.getElementById('orderPageControls').classList.toggle('hidden', !isOrderList);
+        
         document.getElementById('addBtn').classList.toggle('hidden', !!conf.readOnly || isPricing);
         document.getElementById('dataActions').classList.toggle('hidden', isPricing);
         document.getElementById('pricingList').classList.toggle('hidden', !isPricing);
@@ -1191,8 +1184,17 @@
         document.getElementById('prev').onclick = () => { if (page>0) { page--; loadTable(); } };
         document.getElementById('next').onclick = () => { if ((page+1)*pageSize < totalCount) { page++; loadTable(); } };
         
-        // Removed globalSearch event listener from main content, now it's tied to the global refresh
-        // document.getElementById('globalSearch').onkeydown = (e)=>{ if (e.key==='Enter'){ page=0; loadTable(); } };
+        // Re-enable globalSearch event handler (now part of orderPageControls)
+        const globalSearch = document.getElementById('globalSearch');
+        if (globalSearch) {
+             globalSearch.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    page = 0; 
+                    loadTable();
+                }
+             });
+        }
+        
         document.getElementById('refreshAll').onclick = () => { page = 0; loadTable(); };
     }
 
@@ -1256,16 +1258,7 @@
             });
         }
         
-        // Global search Enter key handler
-        const globalSearch = document.getElementById('globalSearch');
-        if (globalSearch) {
-             globalSearch.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    page = 0; 
-                    loadTable();
-                }
-             });
-        }
+        // Removed duplicated Global search Enter key handler from here
     });
 
     async function fetchPricing(){
