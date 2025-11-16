@@ -148,13 +148,14 @@
             border-collapse: separate; border-spacing: 0;
             table-layout: fixed;
         }
-        .thcell { padding: 0.75rem; font-weight: 600; }
+        .thcell { padding: 0.75rem; font-weight: 600; white-space: nowrap; }
         .cell {
             padding: 1rem 0.75rem;
             overflow-wrap: break-word;
             vertical-align: middle;
+            overflow: hidden;
         }
-        .cell, .thcell { white-space: nowrap; }
+        .cell, .thcell { white-space: normal; }
         /* Order List Centering */
         #grid #thead th:nth-child(2),
         #grid #tbody tr td:nth-child(2) {
@@ -241,6 +242,80 @@
         }
         /* Custom font import */
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+        /* Button styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+        .btn-primary {
+            background-color: #be185d;
+            color: white;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #9d174d;
+        }
+        .btn-secondary {
+            background-color: white;
+            color: #be185d;
+            border: 1px solid #be185d;
+        }
+        .btn-secondary:hover {
+            background-color: #fdf2f8;
+        }
+        .btn-success {
+            background-color: #22c55e;
+            color: white;
+            border: none;
+        }
+        .btn-success:hover {
+            background-color: #16a34a;
+        }
+        .btn-danger {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #f87171;
+        }
+        .btn-danger:hover {
+            background-color: #fecaca;
+        }
+        .btn-ghost {
+            background-color: transparent;
+            border: none;
+            color: inherit;
+        }
+        .btn-ghost:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        .btn-icon {
+            padding: 0.25rem;
+            font-size: 1.25rem;
+        }
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+        /* Status badge styles (if needed) */
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        /* Example status classes */
+        .status-in-review { background: #fef3c7; color: #92400e; }
+        .status-approved { background: #dcfce7; color: #15803d; }
+        .status-paid { background: #dbeafe; color: #1d4ed8; }
+        .status-production-complete { background: #d1fae5; color: #065f46; }
+        .status-fulfilled { background: #d1fae5; color: #065f46; }
+        .status-canceled { background: #fee2e2; color: #b91c1c; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -261,7 +336,7 @@
         </div>
     </div>
     <div id="header-banner">
-        <div id="menuToggle" class="text-white">☰</div>
+        <button id="menuToggle">☰</button>
         <div id="logo-wrapper">
             <img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" alt="Rebel Ribbon Logo" style="height: 40px; width: auto;">
             <span id="logo-text">Rebel Ribbon</span>
@@ -336,7 +411,7 @@
             </div>
             <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
-                <button id="deleteBtn" type="button" class="px-3 py-2 rounded-lg border text-red-700 border-red-300 hidden hover:bg-red-50">Delete</button>
+                <button id="deleteBtn" type="button" class="btn btn-danger hidden">Delete</button>
                 <button id="saveBtn" class="btn btn-primary">Save</button>
             </div>
         </form>
@@ -382,7 +457,7 @@
                             <div id="cust_addr1"></div>
                             <div id="cust_addr2"></div>
                             <div id="cust_citystzip"></div>
-                            <button id="mapLocation" type="button" class="mt-2 text-xs text-blue-600 hover:underline">View on Map</button>
+                            <button id="mapLocation" type="button" class="btn btn-ghost text-xs text-blue-600">View on Map</button>
                         </div>
                     </div>
                    
@@ -727,7 +802,7 @@
     function buildColGroup(conf){
         const cg = document.getElementById('colgroup'); cg.innerHTML='';
         const cols = conf.cols.slice();
-        if (activeKey !== 'order_list' && !conf.readOnly) cols.push({key:'__actions', w:'20'});
+        if (activeKey !== 'order_list' && !conf.readOnly) cols.push({key:'__actions', w:'10'});
        
         const total = cols.reduce((s,c)=> s + (Number(c.w||0) || 0), 0) || 100;
         for (const c of cols){
@@ -800,7 +875,7 @@
             }
             if (!conf.readOnly && activeKey !== 'order_list') {
                 const td = $('td','cell text-right');
-                const edit = $('button','px-2 py-1 rounded border hover:bg-gray-100','Edit');
+                const edit = $('button','btn btn-secondary','Edit');
                 edit.addEventListener('click', () => openEditor(conf, row));
                 td.appendChild(edit);
                 tr.appendChild(td);
@@ -831,7 +906,7 @@
             const item = $('div', 'pricing-item');
             const label = $('span', 'pricing-item-label', col.label);
             const amount = $('span', 'pricing-item-amount', money(pricingRow[col.key]));
-            const editBtn = $('button', 'pricing-edit-btn btn-secondary', 'Edit');
+            const editBtn = $('button', 'btn btn-secondary pricing-edit-btn', 'Edit');
             editBtn.addEventListener('click', () => {
                 const tempRow = {
                     id: pricingRow.id,
@@ -1330,7 +1405,7 @@
             tr.appendChild($('td',`p-2 text-right ${a.kind === 'discount' ? 'text-red-600' : 'text-green-600'}`, amountText));
            
             const removeCell = $('td', 'p-2 text-right');
-            const removeBtn = $('button', 'text-red-500 hover:text-red-700 text-sm font-medium', 'Remove');
+            const removeBtn = $('button', 'btn btn-ghost text-red-500 hover:text-red-700 text-sm font-medium', 'Remove');
             removeBtn.onclick = () => deleteAdjustment(a.id);
             removeCell.appendChild(removeBtn);
             tr.appendChild(removeCell);
