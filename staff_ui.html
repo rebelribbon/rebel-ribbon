@@ -7,212 +7,275 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        /* --- TYPOGRAPHY & BASE STYLES --- */
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap');
-
-        body { 
-            margin: 0; 
-            min-height: 100vh; 
-            display: flex; 
-            flex-direction: column;
-            font-family: 'Poppins', sans-serif;
-            color: #1f2937; /* Darker primary text color */
-        }
-        html { overflow-x: hidden; }
+        /* BASE STYLES */
+        body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+        html { overflow-x: hidden; } /* Crucial: Prevents body from expanding beyond viewport */
         button { font-family: inherit; }
 
-        /* --- HEADER BANNER --- */
+        /* HEADER BANNER - Pinned Horizontal Top */
         #header-banner {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            height: 64px; /* Slightly taller banner */
-            background-color: #fce7f3; /* Very soft pink */
-            color: #4c0519; 
+            height: 60px; /* Fixed height for the banner */
+            background-color: #fbcfe8; /* Soft pink color */
+            color: #4c0519; /* Darker text for contrast */
             z-index: 100;
             display: flex;
             align-items: center;
             padding: 0 1rem;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05); /* Lighter shadow */
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
         #menuToggle {
+            /* Positioned on the far left */
+            margin-right: 1rem;
             background: #fdf2f8; 
             color: #be185d; 
             width: 40px;
             height: 40px;
-            border-radius: 8px; /* Slightly squarer, modern button */
+            border-radius: 6px;
             font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            transition: all 0.2s;
         }
-        #menuToggle:hover { background-color: #ffe4e6; }
+        #logo-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            /* Centering the logo and text within the header */
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
         #logo-text {
             font-family: 'Playfair Display', serif; 
-            font-size: 1.6rem; 
+            font-size: 1.5rem; 
             font-weight: 700;
-            letter-spacing: 0.1em; 
+            letter-spacing: 0.08em; 
             color: #831843;
         }
 
-        /* --- SIDEBAR --- */
+        /* SIDEBAR NAVIGATION (Mobile Overlay) */
         #sidebar {
-            width: 260px; /* Slightly wider sidebar */
+            width: 250px;
             background-color: #1f2937;
             color: white;
-            padding-top: 64px;
-            z-index: 90;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 90; 
+            padding-top: 60px;
             transform: translateX(-100%);
-            box-shadow: 6px 0 15px rgba(0, 0, 0, 0.4);
+            transition: transform 0.3s ease;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
         }
-        .nav-item { 
-            display: block; 
-            padding: 0.9rem 1.5rem; /* More vertical space */
-            transition: background-color 0.2s, border-left 0.2s; 
+        #sidebar.open {
+            transform: translateX(0);
         }
+        .nav-item { display: block; padding: 0.75rem 1rem; cursor: pointer; transition: background-color 0.15s; }
         .nav-item:hover { background-color: #374151; }
-        .nav-active { 
-            background-color: #374151; 
-            font-weight: 600; 
-            border-left: 5px solid #be185d; /* Pink accent */
-            padding-left: calc(1.5rem - 5px); 
+        .nav-active { background-color: #374151; font-weight: 600; border-left: 4px solid #3b82f6; padding-left: calc(1rem - 4px); }
+        .submenu-item { padding: 0.5rem 1rem 0.5rem 2rem; font-size: 0.875rem; }
+        #logout-sidebar { margin-top: auto; padding: 1rem; border-top: 1px solid #374151; }
+
+
+        /* MAIN CONTENT */
+        #app-wrapper {
+            display: flex;
+            width: 100%;
+            padding-top: 60px; /* Space for fixed header */
         }
-        #logout-sidebar { border-top: 1px solid #374151; }
+        #app-wrapper.hidden { display: none; }
+        #content { flex-grow: 1; padding: 1rem; max-width: 100%; }
+        @media (min-width: 768px) {
+            #content { padding: 2rem; }
+        }
 
+        /* ORDER PAGE CONTROLS (Search Bar, Filters, Refresh) */
+        #searchContainer {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        #globalSearch {
+            padding: 0.4rem 0.75rem;
+            border-radius: 9999px;
+            border: 1px solid #d1d5db;
+            flex-grow: 1;
+            width: 100%; 
+            max-width: 300px;
+        }
 
-        /* --- MAIN CONTENT & LAYOUT --- */
-        #app-wrapper { padding-top: 64px; }
-        #content { flex-grow: 1; padding: 1.5rem; max-width: 100%; }
-        #pageTitle { color: #831843; } 
-        
-        /* Order Page Controls */
-        #searchContainer { max-width: 400px; }
-        #globalSearch { max-width: 300px; border-radius: 10px; }
-        #searchContainer button { margin-top: 0; }
-        
-        /* Order Filters */
-        #orderFilters { 
-            gap: 0.6rem; /* Slightly larger gap */
-            margin-bottom: 1.5rem;
+        /* ORDER FILTERS - Centered */
+        #orderFilters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            justify-content: center;
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
+            padding: 0 0.5rem;
         }
         .filter-tab {
-            font-size: 0.8rem;
-            padding: 0.5rem 1rem;
-            border-radius: 10px; 
+            font-size: 0.75rem;
+            padding: 0.3rem 0.75rem;
+            flex-shrink: 1;
+            min-width: 0;
+            text-align: center;
+            border-radius: 0.5rem;
             border: 1px solid #d1d5db;
+            background-color: #ffffff;
+            color: #374151;
+            transition: all 0.2s ease-in-out;
         }
         .filter-active {
             border: 2px solid #be185d;
             background-color: #be185d;
-            box-shadow: 0 2px 4px rgba(190, 24, 93, 0.3);
+            color: white;
+            font-weight: 600;
         }
 
-        /* --- TABLES --- */
-        .table-wrap { overflow-x: hidden; border-radius: 12px; border: 1px solid #e5e7eb; }
-        .thcell { padding: 0.8rem 0.75rem; background-color: #fcfcfc; }
+
+        /* TABLE & GRID - No horizontal scroll enforced + Improved Spacing */
+        .table-wrap {
+            overflow-x: hidden;
+            border-radius: 0.75rem; border: 1px solid #e5e7eb; background: #fff;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate; border-spacing: 0;
+            table-layout: fixed;
+        }
+        .thcell { padding: 0.75rem; font-weight: 600; }
         .cell { 
-            padding: 0.9rem 0.75rem; /* Increased vertical padding */
+            padding: 1rem 0.75rem;
+            word-wrap: break-word; 
+            overflow: hidden; 
             vertical-align: middle;
-            border-bottom: 1px solid #f3f4f6; /* Subtle row separation */
         }
-        #grid #tbody tr:hover { background-color: #fefcf3; }
+        .cell, .thcell { white-space: normal; }
 
-        /* Order List Centering Fix (for Status) */
+        /* Order List Centering */
         #grid #thead th:nth-child(2), 
         #grid #tbody tr td:nth-child(2) {
-            text-align: center !important; 
+            text-align: center !important; /* Center the Status column content */
+        }
+        /* Keep first column (Customer Name) left-aligned for readability */
+        #grid #thead th:nth-child(1),
+        #grid #tbody tr td:nth-child(1) {
+            text-align: left !important;
         }
 
-        /* Pricing List */
-        .pricing-item { padding: 1rem 0; border-color: #f3f4f6; }
-        .pricing-item-amount { color: #059669; }
 
+        /* Pricing List Layout */
+        .pricing-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb; }
+        .pricing-item-amount { width: 80px; text-align: right; flex-shrink: 0; }
+        .pricing-edit-btn { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
 
-        /* --- ORDER DRAWER (DETAILS PAGE) --- */
-        #orderDrawer { overflow-y: auto; }
-        .info-card { 
-            border-radius: 12px; 
-            padding: 1.25rem; 
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05); 
+        /* Dialogs and Order Manager Responsiveness */
+        dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+        dialog { max-height: 90vh; overflow-y: auto; }
+        #orderDrawer { 
+            width: 100%; 
+            max-width: 100%; 
+            margin: 0; 
+            border-radius: 0; 
+            height: 100%; 
+            overflow-x: hidden; /* Ensure no horizontal scroll in drawer */
         }
-        .info-card h3 { color: #831843; }
         
-        /* Status Display */
-        #statusSelect { 
-            border-radius: 8px; 
-            border: 1px solid #d1d5db;
-            transition: all 0.2s;
-        }
-
-        /* Drawer Header Buttons (Responsive stacking) */
+        /* Order Drawer Header Button Layout */
         #drawerHeaderActions {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
             width: 100%;
         }
-        #drawerHeaderActions button {
+
+        /* Responsive stack for Edit/Invoice buttons */
+        #drawerHeaderActions > div:last-child {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
             width: 100%;
+            margin-top: 1rem;
+        }
+        #drawerHeaderActions > div:last-child button {
+            width: 100%;
+            display: flex;
             justify-content: center;
         }
+
         @media (min-width: 1024px) {
+             #orderDrawer { 
+                max-width: 1080px; 
+                height: auto; 
+                border-radius: 1rem; 
+            }
             #drawerHeaderActions {
                 flex-direction: row;
                 width: auto;
             }
-            #drawerHeaderActions button {
+            #drawerHeaderActions > div:last-child {
+                flex-direction: row;
                 width: auto;
+                margin-top: 0;
             }
         }
         
-        /* Pretty Buttons (Refined styles) */
-        .btn {
-            border-radius: 8px; 
-            font-weight: 500;
-            padding: 0.6rem 1.2rem;
-            box-shadow: 0 3px 6px rgba(15, 23, 42, 0.1); 
-            transition: all 0.2s ease;
+        /* Existing Order Drawer Header Flex Fixes */
+        #orderDrawer .sticky { 
+            display: flex;
+            flex-wrap: wrap; 
+            justify-content: space-between; 
+            align-items: center;
         }
-        .btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 10px rgba(15, 23, 42, 0.15);
+        #orderDrawer .sticky > div:first-child {
+            width: 100%;
+            margin-bottom: 0.5rem;
         }
-        .btn-primary {
-            background: linear-gradient(145deg, #be185d, #831843);
-            color: #fff;
+        @media (min-width: 768px) {
+            #orderDrawer .sticky > div:first-child {
+                width: auto;
+                margin-bottom: 0;
+            }
         }
-        .btn-primary:hover {
-            background: linear-gradient(145deg, #a4124f, #6c1335);
+
+
+        /* Sign in overlay */
+        #signinCard {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; background-color: #f9fafb;
         }
-        .btn-secondary {
-            background-color: #ffffff;
-            color: #1f2937;
-            border-color: #e5e7eb;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-        .btn-secondary:hover {
-            background-color: #f9fafb;
-            border-color: #d1d5db;
-        }
-        
+        /* Custom font import */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
     </style>
 </head>
 
 <body class="bg-gray-50 text-gray-900">
     <div id="signinCard" class="flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow p-6">
             <h1 class="text-2xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
-            <p class="text-sm text-gray-600 mb-6">Use your @rebelribbon.com email and password.</p>
+            <p class="text-sm text-gray-600 mb-4">Use your @rebelribbon.com email and password.</p>
             
-            <label class="block text-sm mb-2 font-medium">Email</label>
+            <label class="block text-sm mb-2">Email</label>
             <input id="email" type="email" placeholder="you@rebelribbon.com" class="w-full px-3 py-2 rounded-lg border mb-4"/>
             
-            <label class="block text-sm mb-2 font-medium">Password</label>
-            <input id="password" type="password" placeholder="Password" class="w-full px-3 py-2 rounded-lg border mb-6"/>
+            <label class="block text-sm mb-2">Password</label>
+            <input id="password" type="password" placeholder="Password" class="w-full px-3 py-2 rounded-lg border mb-4"/>
             
             <button id="signInButton" class="w-full btn btn-primary">Sign In</button>
             <p id="authMsg" class="text-sm text-red-600 mt-3"></p>
-            <p class="text-xs text-gray-500 mt-4">If the button does nothing, check Supabase keys and ensure Email/Password provider is enabled.</p>
+            <p class="text-xs text-gray-500 mt-3">If the button does nothing, check Supabase keys and ensure Email/Password provider is enabled.</p>
         </div>
     </div>
 
@@ -313,7 +376,7 @@
     <dialog id="orderDrawer" class="rounded-2xl p-0 shadow-2xl drawer">
         <div class="p-0">
             <div class="sticky top-0 z-index-10 p-4 border-b bg-white flex flex-wrap items-center justify-between shadow-sm">
-                <div class="flex items-center gap-4 w-full lg:w-auto mb-3 lg:mb-0">
+                <div class="flex items-center gap-4">
                     <button value="close" id="backToOrders" class="btn btn-ghost btn-icon text-sm">← Back to Orders</button>
                     <div>
                         <h2 id="drawerTitle" class="text-xl font-semibold">Order #XXXX</h2>
@@ -736,14 +799,7 @@
     function buildThead(conf){
         const tr = document.getElementById('thead'); tr.innerHTML='';
         for (const c of conf.cols){
-            // Ensure proper alignment for table headers
-            let align = conf.center ? 'text-center' : 'text-left';
-            if (activeKey === 'order_list' && c.key === 'status') {
-                 align = 'text-center'; 
-            } else if (activeKey === 'order_list' && c.key === 'customer_name') {
-                 align = 'text-left';
-            }
-            const cls = `thcell ${align}`;
+            const cls = 'thcell ' + (conf.center ? 'text-center' : 'text-left');
             tr.appendChild($('th', cls, c.label));
         }
         if (activeKey !== 'order_list' && !conf.readOnly) tr.appendChild($('th','thcell text-right','Actions'));
@@ -811,11 +867,7 @@
                 let val = row[c.key];
                 if (c.type === 'checkbox') val = !!val;
                 if (c.type === 'date') val = dateOnly(val);
-                
-                let align = conf.center ? 'text-center' : 'text-left';
-                if (c.type === 'number') align = 'text-right';
-                
-                tr.appendChild($('td',`cell ${align}`, fmt(val)));
+                tr.appendChild($('td','cell', fmt(val)));
             }
             if (!conf.readOnly && activeKey !== 'order_list') {
                 const td = $('td','cell text-right');
