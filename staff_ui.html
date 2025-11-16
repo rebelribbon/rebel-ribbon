@@ -16,9 +16,9 @@
             display: flex; 
             flex-direction: column;
             font-family: 'Poppins', sans-serif;
-            color: #1f2937; /* Darker primary text color */
+            color: #1f2937;
         }
-        html { overflow-x: hidden; } /* Crucial: Prevents body from expanding beyond viewport */
+        html { overflow-x: hidden; } /* CRITICAL: Prevents horizontal scroll */
         button { font-family: inherit; }
 
         /* --- HEADER BANNER --- */
@@ -27,9 +27,9 @@
             top: 0;
             left: 0;
             right: 0;
-            height: 60px; /* Fixed height for the banner */
-            background-color: #fbcfe8; /* Soft pink color */
-            color: #4c0519; /* Darker text for contrast */
+            height: 60px;
+            background-color: #fbcfe8;
+            color: #4c0519;
             z-index: 100;
             display: flex;
             align-items: center;
@@ -37,7 +37,6 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
         #menuToggle {
-            /* Positioned on the far left */
             margin-right: 1rem;
             background: #fdf2f8; 
             color: #be185d; 
@@ -45,17 +44,12 @@
             height: 40px;
             border-radius: 6px;
             font-size: 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         #logo-wrapper {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            /* Centering the logo and text within the header */
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
@@ -72,38 +66,20 @@
         #sidebar {
             width: 250px;
             background-color: #1f2937;
-            color: white;
-            position: fixed;
-            top: 0;
-            left: 0;
-            height: 100vh;
-            z-index: 90; 
             padding-top: 60px;
             transform: translateX(-100%);
-            transition: transform 0.3s ease;
-            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.5);
-            display: flex;
-            flex-direction: column;
         }
-        #sidebar.open {
-            transform: translateX(0);
-        }
-        .nav-item { display: block; padding: 0.75rem 1rem; cursor: pointer; transition: background-color 0.15s; }
-        .nav-item:hover { background-color: #374151; }
-        .nav-active { background-color: #374151; font-weight: 600; border-left: 4px solid #3b82f6; padding-left: calc(1rem - 4px); }
-        .submenu-item { padding: 0.5rem 1rem 0.5rem 2rem; font-size: 0.875rem; }
-        #logout-sidebar { margin-top: auto; padding: 1rem; border-top: 1px solid #374151; }
+        .nav-item { padding: 0.75rem 1rem; }
+        .nav-active { border-left: 4px solid #3b82f6; padding-left: calc(1rem - 4px); }
 
 
         /* --- MAIN CONTENT & LAYOUT --- */
         #app-wrapper { padding-top: 60px; }
-        #content { flex-grow: 1; padding: 1.5rem; max-width: 100%; }
-        #pageTitle { color: #831843; } 
+        #content { flex-grow: 1; padding: 1.5rem; max-width: 100%; box-sizing: border-box; }
         
-        /* Order Page Controls (Search Bar & Filters Group) */
+        /* Order Page Controls */
         #orderPageControls {
             width: 100%;
-            padding: 0 0.5rem;
             box-sizing: border-box;
             margin-bottom: 1rem;
         }
@@ -116,9 +92,7 @@
         #globalSearch {
             padding: 0.4rem 0.75rem;
             border-radius: 10px;
-            border: 1px solid #d1d5db;
             flex-grow: 1;
-            width: 100%; 
             max-width: 300px;
         }
 
@@ -127,76 +101,90 @@
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
-            margin-bottom: 1rem;
             justify-content: center;
-            max-width: 100%;
-            margin-left: auto;
-            margin-right: auto;
             padding: 0 0.5rem;
         }
         .filter-tab {
             font-size: 0.75rem;
             padding: 0.5rem 1rem;
             border-radius: 10px; 
-            border: 1px solid #d1d5db;
-            background-color: #ffffff;
-            color: #374151;
-            transition: all 0.2s ease-in-out;
-        }
-        .filter-active {
-            border: 2px solid #be185d;
-            background-color: #be185d;
-            color: white;
-            font-weight: 600;
         }
 
-
-        /* --- TABLES --- */
+        /* --- TABLES (Universal Fixes) --- */
         .table-wrap { overflow-x: hidden; border-radius: 12px; border: 1px solid #e5e7eb; }
         table { width: 100%; table-layout: fixed; }
-        .thcell { padding: 0.8rem 0.75rem; background-color: #fcfcfc; }
-        .cell { 
-            padding: 0.9rem 0.75rem; /* Improved vertical spacing */
-            vertical-align: middle;
-            border-bottom: 1px solid #f3f4f6;
-            word-wrap: break-word;
-            overflow: hidden; 
-        }
-        #grid #tbody tr:last-child .cell { border-bottom: none; } 
-        #grid #tbody tr:hover { background-color: #fefcf3; }
+        .thcell { padding: 0.8rem 0.75rem; }
+        .cell { padding: 0.9rem 0.75rem; vertical-align: middle; border-bottom: 1px solid #f3f4f6; }
+        .cell, .thcell { white-space: normal; }
 
-        /* Order List Alignment (Fixed 2nd column centering) */
+        /* Action Column Width Fix (Images 1, 2, 7 Fix) */
+        #grid #thead th:last-child {
+            width: 90px; /* Increased width to accommodate "Actions" text and Edit button */
+        }
+        #grid #tbody tr td:last-child {
+            width: 90px; 
+            text-align: right;
+            padding-right: 0.5rem;
+        }
+        
+        /* Order List Alignment */
         #grid #thead th:nth-child(2), 
         #grid #tbody tr td:nth-child(2) {
-            text-align: center !important;
-        }
-        #grid #thead th:nth-child(1),
-        #grid #tbody tr td:nth-child(1) {
-            text-align: left !important;
+            text-align: center !important; 
         }
 
-        /* Pricing List Layout */
-        .pricing-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb; }
-        .pricing-item-amount { width: 100px; text-align: right; flex-shrink: 0; color: #059669; }
+        /* --- PRICING LIST FIX (Image 5 Fix) --- */
+        .pricing-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 0.75rem 0; 
+            border-bottom: 1px solid #e5e7eb; 
+        }
+        .pricing-item-label { flex-grow: 1; }
+        .pricing-item-amount { 
+            width: 90px; /* Fixed width for amount */
+            text-align: right; 
+            flex-shrink: 0; 
+            color: #059669;
+            margin-right: 0.5rem;
+        }
         .pricing-edit-btn { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
 
         /* --- ORDER DRAWER (DETAILS PAGE) --- */
         #orderDrawer { overflow-y: auto; overflow-x: hidden; }
+
+        /* Drawer Header Buttons (Strict Mobile Stack - Images 4, 6 Fix) */
+        #orderDrawer .sticky { 
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+            padding-bottom: 1rem;
+        }
         
-        /* Drawer Header Buttons (Responsive stacking - FIX) */
         #drawerHeaderActions {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
-            width: 100%; 
-            margin-top: 1rem;
+            width: 100%;
+            margin-top: 0.5rem; /* Reduced margin */
         }
         #drawerHeaderActions button {
             width: 100%;
             justify-content: center;
         }
+        
+        /* Status Bar Fix (Image 6 Fix) */
+        #orderDrawer .sticky > div:first-child .flex {
+            flex-wrap: wrap;
+            align-items: center;
+        }
 
         @media (min-width: 1024px) {
+            #orderDrawer .sticky { 
+                flex-direction: row;
+                align-items: center;
+            }
             #drawerHeaderActions {
                 flex-direction: row;
                 width: auto;
@@ -205,19 +193,9 @@
         }
         
         /* Button Aesthetics */
-        .btn {
-            border-radius: 8px; 
-            font-weight: 500;
-            padding: 0.6rem 1.2rem;
-            box-shadow: 0 3px 6px rgba(15, 23, 42, 0.1); 
-            transition: all 0.2s ease;
-            text-decoration: none;
-            line-height: 1.2;
-            display: inline-flex;
-            align-items: center;
-        }
+        .btn { border-radius: 8px; font-weight: 500; padding: 0.6rem 1.2rem; }
         .btn-primary { background: linear-gradient(145deg, #be185d, #831843); color: #fff; }
-        .btn-secondary { background-color: #ffffff; color: #1f2937; border-color: #e5e7eb; box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+        .btn-secondary { background-color: #ffffff; color: #1f2937; border-color: #e5e7eb; }
     </style>
 </head>
 
@@ -487,7 +465,18 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     
-    // ---- Auth (Email & Password) ----
+    // ---- Date Formatting Tool ----
+    const dateToMDY = (d) => { 
+        if(!d) return ''; 
+        const dt=new Date(d); 
+        // Use UTC date parts to prevent timezone shifts changing the visible day
+        const year = dt.getUTCFullYear();
+        const month = dt.getUTCMonth() + 1;
+        const day = dt.getUTCDate();
+        return `${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}/${year}`;
+    };
+
+    // ---- Auth and Initialization (no changes) ----
     const signinCard = document.getElementById('signinCard');
     const appWrapper = document.getElementById('app-wrapper');
     const authMsg = document.getElementById('authMsg');
@@ -577,13 +566,12 @@
         location.href = location.origin + location.pathname;
     });
 
-    // ---- Sidebar Toggle Logic (New implementation for fixed header) ----
+    // ---- Sidebar Toggle Logic (no changes) ----
     document.getElementById('menuToggle').addEventListener('click', () => {
         document.getElementById('sidebar').classList.toggle('open');
-        document.body.classList.toggle('overflow-hidden'); // Prevent content scroll when sidebar is open
+        document.body.classList.toggle('overflow-hidden');
     });
 
-    // Close sidebar when a navigation item is clicked
     document.getElementById('sidebar').addEventListener('click', (e) => {
         if (e.target.closest('.nav-item')) {
             document.getElementById('sidebar').classList.remove('open');
@@ -591,7 +579,7 @@
         }
     });
 
-    // ---- Tables config (Updated for visibility requirements) ----
+    // ---- Tables config (no changes) ----
     const tables = {
         order_list: {
             title: 'Orders',
@@ -720,11 +708,14 @@
     const fmt = (v)=> v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
     
     // NEW DATE FORMATTER: MM/DD/YYYY
-    const dateToMDY = (d)=>{ 
+    const dateToMDY = (d) => { 
         if(!d) return ''; 
         const dt=new Date(d); 
-        const year = dt.getFullYear();
-        return `${(dt.getMonth() + 1).toString().padStart(2, '0')}/${dt.getDate().toString().padStart(2, '0')}/${year}`;
+        // Use UTC date parts to prevent timezone shifts changing the visible day
+        const year = dt.getUTCFullYear();
+        const month = dt.getUTCMonth() + 1;
+        const day = dt.getUTCDate();
+        return `${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}/${year}`;
     };
 
     const formatOrderId = (id) => {
@@ -783,11 +774,10 @@
         const conf = tables[activeKey];
         document.getElementById('pageTitle').textContent = conf.title;
         
-        // Hide/Show elements based on active tab
         const isPricing = activeKey === 'pricing';
         const isOrderList = activeKey === 'order_list';
 
-        // **CRITICAL FIX:** STRICTLY control the visibility of the search/refresh/filters group
+        // CRITICAL FIX: STRICTLY control the visibility of the search/refresh/filters group
         document.getElementById('orderPageControls').classList.toggle('hidden', !isOrderList);
         
         document.getElementById('addBtn').classList.toggle('hidden', !!conf.readOnly || isPricing);
@@ -1126,14 +1116,13 @@
 
         if (col.type === 'checkbox') input.checked = !!value;
         else if (col.type === 'date') {
-            // Convert to YYYY-MM-DD for input value, as date inputs expect that format
             const dt = value ? new Date(value) : null;
             if (dt && !isNaN(dt)) {
+                // Ensure value is in YYYY-MM-DD for the date input type
                 input.value = dt.toISOString().split('T')[0];
             } else {
                  input.value = '';
             }
-            input.setAttribute('data-original-format', 'MM/DD/YYYY'); // Mark for later conversion if needed
         }
         else input.value = value ?? '';
 
@@ -1193,14 +1182,6 @@
             let val = (c.type === 'checkbox') ? elx.checked : elx.value || null;
             if (c.type === 'number' && val !== null) val = elx.value === '' ? null : Number(val);
             
-            // Date conversion: The input returns YYYY-MM-DD string, which Supabase handles fine, 
-            // so we only need to ensure the value is captured.
-            if (c.type === 'date' && val) {
-                // If input type="date" is used, the value is already in YYYY-MM-DD, which is standard SQL date format.
-                // If we used a text input, we would need MM/DD/YYYY to YYYY-MM-DD conversion here.
-                // Assuming standard HTML date input returns the correct format for direct DB use.
-            }
-
             payload[c.key] = val;
         }
 
