@@ -162,6 +162,33 @@
             #orderDrawer { width: 100%; max-width: 1080px; height: auto; border-radius: 1rem; }
         }
 
+        /* Status badges */
+        .status-badge { display: inline-block; padding: 0.25rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; }
+        .status-in-review { background-color: #fef3c7; color: #b45309; }
+        .status-approved { background-color: #bfdbfe; color: #1e40af; }
+        .status-paid { background-color: #d1fae5; color: #065f46; }
+        .status-production-complete { background-color: #fee2e2; color: #991b1b; }
+        .status-fulfilled { background-color: #e0f2f1; color: #0f766e; }
+        .status-canceled { background-color: #f3f4f6; color: #6b7280; }
+        .urgent-date { color: #dc2626; font-weight: 700; }
+        .info-card { background-color: #fff; border-radius: 0.75rem; border: 1px solid #e5e7eb; padding: 1rem; }
+
+        /* Pretty buttons (kept for context) */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 9999px;
+            font-weight: 600;
+            padding: 0.5rem 1.1rem;
+            font-size: 0.875rem;
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.12);
+            border: 1px solid transparent;
+            cursor: pointer;
+            gap: 0.4rem;
+            transition: background-color 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+        }
+
         /* Sign in overlay */
         #signinCard {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; background-color: #f9fafb;
@@ -323,34 +350,35 @@
                             <button id="mapLocation" type="button" class="mt-2 text-xs text-blue-600 hover:underline">View on Map</button>
                         </div>
                     </div>
+                    
                     <div class="info-card">
                         <h3 class="text-lg font-semibold mb-3">📅 Event Info</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
                             <div><span class="font-medium">Event Type / Name:</span><div id="ov_event_name"></div></div>
-                            <div><span class="font-medium">Pickup / Delivery Date:</span><div id="ov_pickup"></div></div>
                             <div><span class="font-medium">Event Date:</span><div id="ov_event"></div></div>
                         </div>
                     </div>
+                    
                     <div class="info-card">
                         <h3 class="text-lg font-semibold mb-3">📝 Order Details</h3>
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm mb-4">
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm mb-4">
                             <div><span class="font-medium">Date Submitted:</span><div id="ov_submitted"></div></div>
-                            <div><span class="font-medium">How many dzns:</span><div id="ov_dzns"></div></div>
+                            <div class="md:col-span-2"><span class="font-medium">Pickup / Delivery Date:</span><div id="ov_pickup"></div></div>
+                            
+                            <div><span class="font-medium">Amount (Dozens):</span><div id="ov_dzns"></div></div>
+                            <div><span class="font-medium">Flavor:</span><div id="ov_flavor"></div></div>
                             <div><span class="font-medium">Dietary Options:</span><div id="ov_dietary"></div></div>
                         </div>
+
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                            <div>
-                                <span class="font-medium">Flavor:</span>
-                                <div id="ov_flavor"></div>
-                                <div class="mt-4">
-                                    <span class="font-medium">Inspiration Photo:</span>
-                                    <div class="mt-2"><img id="ov_photo" class="w-32 h-32 object-cover rounded border shadow-sm cursor-pointer" alt="Inspiration"/></div>
-                                    <label class="block mt-3 text-xs">
-                                        <span class="font-medium">Replace photo:</span>
-                                        <input id="uploadPhoto" type="file" accept="image/jpeg,image/png,image/gif,image/webp" class="block mt-1 text-xs"/>
-                                    </label>
-                                    <button id="btnUploadPhoto" type="button" class="btn btn-secondary text-xs mt-2">Upload</button>
-                                </div>
+                            <div class="md:col-span-1">
+                                <span class="font-medium">Inspiration Photo:</span>
+                                <div class="mt-2"><img id="ov_photo" class="w-32 h-32 object-cover rounded border shadow-sm cursor-pointer" alt="Inspiration"/></div>
+                                <label class="block mt-3 text-xs">
+                                    <span class="font-medium">Replace photo:</span>
+                                    <input id="uploadPhoto" type="file" accept="image/jpeg,image/png,image/gif,image/webp" class="block mt-1 text-xs"/>
+                                </label>
+                                <button id="btnUploadPhoto" type="button" class="btn btn-secondary text-xs mt-2">Upload</button>
                             </div>
                             <div class="md:col-span-2">
                                 <label class="block text-sm font-medium mb-1">Design Notes (Primary Request)</label>
@@ -358,6 +386,7 @@
                             </div>
                         </div>
                     </div>
+                    
                     <div class="info-card">
                         <h3 class="text-lg font-semibold mb-3">✨ Extras</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm mb-3">
@@ -533,7 +562,7 @@
         }
     });
 
-    // ---- Tables config (Modified for requested columns) ----
+    // ---- Tables config (Orders list modified for requested columns) ----
     const tables = {
         order_list: {
             title: 'Orders',
@@ -705,7 +734,10 @@
     async function loadTable(){
         const conf = tables[activeKey];
         document.getElementById('pageTitle').textContent = conf.title;
+        
+        // **CRUCIAL CHANGE FOR VISIBILITY**
         document.getElementById('orderFilters').classList.toggle('hidden', activeKey !== 'order_list');
+        
         document.getElementById('addBtn').classList.toggle('hidden', !!conf.readOnly);
 
         const exportBtn = document.getElementById('exportBtn');
@@ -1360,7 +1392,6 @@
             const address = [c?.street_address, c?.street_address_cont, c?.city, c?.state, c?.zip]
                 .filter(Boolean).join(', ');
             if (address) {
-                // Fixed the bad string concatenation in the map link
                 window.open(`http://googleusercontent.com/maps.google.com/?q=${encodeURIComponent(address)}`, '_blank');
             } else {
                 alert('No full address available to map.');
@@ -1369,10 +1400,11 @@
 
         const eventName = o?.event_type_name || o?.event_name || '';
         document.getElementById('ov_event_name').textContent = eventName || 'N/A';
-        document.getElementById('ov_pickup').textContent = dateOnly(o?.pickup_delivery_date);
-        document.getElementById('ov_event').textContent = dateOnly(o?.event_date);
+        document.getElementById('ov_event').textContent = dateOnly(o?.event_date); // Event Date remains here
 
         document.getElementById('ov_submitted').textContent = dateOnly(o?.created_at);
+        document.getElementById('ov_pickup').textContent = dateOnly(o?.pickup_delivery_date);
+        
         document.getElementById('ov_dzns').textContent = o?.cookie_amount_dzns ?? '0';
         document.getElementById('ov_flavor').textContent = o?.flavor || 'N/A';
         document.getElementById('ov_dietary').textContent = o?.dietary_option || 'None';
