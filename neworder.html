@@ -141,7 +141,6 @@
       margin: 20px auto;
       text-align: center;
     }
-
     /* Order Form Styles */
     .order-form-wrapper {
       margin-top: 10px;
@@ -250,7 +249,6 @@
     .form-message.success {
       color: #0b7a2a;
     }
-
     /* Estimate box */
     .estimate-box {
       margin-top: 8px;
@@ -281,7 +279,6 @@
       margin-top: 6px;
       color: #555;
     }
-
     .secondary-button {
       padding: 8px 14px;
       border-radius: 999px;
@@ -293,7 +290,6 @@
       align-self: flex-start;
       margin-top: 4px;
     }
-
     .code-message {
       font-size: 12px;
       margin-top: 3px;
@@ -318,7 +314,7 @@
       </ul>
     </nav>
   </header>
-  
+ 
   <!-- Hero Section for Order Page -->
   <section class="hero">
     <div class="hero-content">
@@ -326,7 +322,7 @@
       <p>Indulge in our handcrafted cookies, order now.</p>
     </div>
   </section>
-  
+ 
   <!-- Order Form Section -->
   <section class="content-section">
     <div class="order-form-wrapper">
@@ -334,7 +330,6 @@
       <p class="order-form-subtitle">
         Fill out this form and we will follow up to confirm details, pricing, and availability.
       </p>
-
       <form id="orderForm" novalidate>
         <!-- Customer Info -->
         <div class="form-section-heading">Your Info</div>
@@ -348,7 +343,6 @@
             <input type="text" id="last_name" name="last_name" required autocomplete="family-name">
           </div>
         </div>
-
         <div class="two-column">
           <div class="form-group">
             <label for="email">Email *</label>
@@ -359,7 +353,6 @@
             <input type="tel" id="phone" name="phone" required autocomplete="tel">
           </div>
         </div>
-
         <div class="form-section-heading">Delivery or Pickup Details</div>
         <div class="form-group">
           <label for="pickup_delivery_type">Pickup or Delivery *</label>
@@ -369,7 +362,6 @@
             <option value="Delivery">Delivery</option>
           </select>
         </div>
-
         <div class="two-column">
           <div class="form-group">
             <label for="pickup_delivery_date">Preferred Pickup or Delivery Date *</label>
@@ -380,7 +372,6 @@
             <input type="date" id="event_date" name="event_date" required>
           </div>
         </div>
-
         <div id="addressFields" style="display:none;">
           <div class="form-group">
             <label for="street_address">Street Address (for delivery)</label>
@@ -405,22 +396,18 @@
             <input type="text" id="zip" name="zip" autocomplete="postal-code">
           </div>
         </div>
-
         <!-- Order Details -->
         <div class="form-section-heading">Order Details</div>
-
         <div class="two-column">
           <div class="form-group">
             <label for="event_type_name">Event Type / Name *</label>
             <input type="text" id="event_type_name" name="event_type_name" required placeholder="Example: Baby shower, Wedding, Corporate, etc.">
           </div>
-
           <div class="form-group">
             <label for="cookie_amount_dzns">How Many Dozen Cookies *</label>
             <input type="number" id="cookie_amount_dzns" name="cookie_amount_dzns" min="1" step="0.5" required>
           </div>
         </div>
-
         <div class="two-column">
           <div class="form-group">
             <label for="flavor">Flavor *</label>
@@ -428,7 +415,6 @@
               <option value="">Loading flavors...</option>
             </select>
           </div>
-
           <div class="form-group">
             <label for="dietary_option">Dietary Option</label>
             <select id="dietary_option" name="dietary_option">
@@ -436,21 +422,17 @@
             </select>
           </div>
         </div>
-
         <div class="form-group">
           <label for="design_notes">Design Ideas and Notes *</label>
           <textarea id="design_notes" name="design_notes" required placeholder="Theme, colors, names, phrases, must have details..."></textarea>
         </div>
-
         <div class="form-group">
           <label for="design_inspiration_photo">Upload Inspiration Photo</label>
           <input type="file" id="design_inspiration_photo" name="design_inspiration_photo" accept="image/*">
           <small>Upload a screenshot or inspiration picture.</small>
         </div>
-
         <!-- Extras -->
         <div class="form-section-heading">Extras</div>
-
         <div class="form-group inline-checkbox">
           <input type="checkbox" id="gift_note" name="gift_note">
           <label for="gift_note">Add a gift note</label>
@@ -459,12 +441,10 @@
           <label for="gift_note_text">Gift Note Text</label>
           <textarea id="gift_note_text" name="gift_note_text" placeholder="Short message to the recipient."></textarea>
         </div>
-
         <div class="form-group inline-checkbox">
           <input type="checkbox" id="consultation_requested" name="consultation_requested">
           <label for="consultation_requested">I would like a design consultation</label>
         </div>
-
         <!-- Codes -->
         <div class="form-section-heading">Discount and Referral</div>
         <div class="two-column">
@@ -481,7 +461,6 @@
             <small id="referralHelp" class="code-message"></small>
           </div>
         </div>
-
         <!-- Estimated Total -->
         <div class="form-section-heading">Estimated Total</div>
         <div id="estimateBox" class="estimate-box">
@@ -489,7 +468,6 @@
             Enter your details above to see an estimated total. Final pricing, discounts, and tax are confirmed manually.
           </div>
         </div>
-
         <!-- Form Actions -->
         <div class="form-actions">
           <button type="submit" id="submitButton">Submit Request</button>
@@ -498,7 +476,7 @@
       </form>
     </div>
   </section>
-  
+ 
   <!-- Footer -->
   <footer>
     <div class="footer-content">
@@ -546,28 +524,22 @@
       </div>
     </div>
   </footer>
-
   <!-- Supabase client -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script>
     // Supabase configuration
     const SUPABASE_URL = "https://zyntkwammltmjjvgelwg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A";
-
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
     let currentPricing = null;
-
     // discount state
     let appliedDiscount = { type: null, amount: 0, label: "" };
     let appliedReferral = { type: null, amount: 0, label: "" };
-
     function formatMoney(amount) {
       if (isNaN(amount) || amount < 0) amount = 0;
       return "$" + amount.toFixed(2);
     }
-
     // helpers for IDs and referral codes
     function generateNumericId(length) {
       let result = "";
@@ -576,14 +548,12 @@
       }
       return result;
     }
-
     function generateReferralCode(firstName, lastName) {
       const firstPart = (firstName || "").trim().toUpperCase().slice(0, 3).padEnd(3, "X");
       const lastPart = (lastName || "").trim().toUpperCase().slice(0, 3).padEnd(3, "X");
       const numbers = generateNumericId(3);
       return firstPart + lastPart + numbers;
     }
-
     async function generateUniqueReferralCode(firstName, lastName) {
       let attempt = 0;
       while (attempt < 5) {
@@ -593,7 +563,6 @@
           .select("id")
           .eq("code", code)
           .limit(1);
-
         if (!error && (!data || data.length === 0)) {
           return code;
         }
@@ -602,18 +571,15 @@
       // fallback if collisions keep happening
       return "REF" + generateNumericId(6);
     }
-
     async function loadSelectOptions() {
       const flavorSelect = document.getElementById("flavor");
       const dietarySelect = document.getElementById("dietary_option");
-
       // Load flavors
       try {
         const { data: flavors, error: flavorError } = await sb
           .from("flavors")
           .select("name")
           .order("name", { ascending: true });
-
         flavorSelect.innerHTML = "";
         if (flavorError) {
           console.error("Error loading flavors", flavorError);
@@ -641,20 +607,17 @@
       } catch (err) {
         console.error("Unexpected error loading flavors", err);
       }
-
       // Load dietary options
       try {
         const { data: dietaryOptions, error: dietaryError } = await sb
           .from("dietary_options")
           .select("name")
           .order("name", { ascending: true });
-
         dietarySelect.innerHTML = "";
         const noneOpt = document.createElement("option");
         noneOpt.value = "";
         noneOpt.textContent = "None";
         dietarySelect.appendChild(noneOpt);
-
         if (dietaryError) {
           console.error("Error loading dietary options", dietaryError);
         } else if (dietaryOptions && dietaryOptions.length > 0) {
@@ -669,11 +632,9 @@
         console.error("Unexpected error loading dietary options", err);
       }
     }
-
     // debug version with console logs
     async function loadPricing() {
       const box = document.getElementById("estimateBox");
-
       try {
         const { data, error } = await sb
           .from("pricing")
@@ -681,10 +642,8 @@
           .order("created_at", { ascending: false })
           .limit(1)
           .maybeSingle();
-
         console.log("[pricing] data:", data);
         console.log("[pricing] error:", error);
-
         if (error) {
           console.error("[pricing] error from Supabase:", error);
           currentPricing = null;
@@ -693,7 +652,6 @@
           }
           return;
         }
-
         if (!data) {
           console.warn("[pricing] no pricing row found");
           currentPricing = null;
@@ -702,7 +660,6 @@
           }
           return;
         }
-
         currentPricing = {
           price_per_dozen: Number(data.price_per_dozen || 0),
           delivery_fee: Number(data.delivery_fee || 0),
@@ -710,7 +667,6 @@
           gift_note_fee: Number(data.gift_note_fee || 0),
           rush_fee: Number(data.rush_fee || 0)
         };
-
         updateEstimate();
       } catch (err) {
         console.error("[pricing] unexpected JS error:", err);
@@ -720,12 +676,10 @@
         }
       }
     }
-
     function updateAddressVisibility() {
       const typeSelect = document.getElementById("pickup_delivery_type");
       const addressFields = document.getElementById("addressFields");
       if (!typeSelect || !addressFields) return;
-
       if (typeSelect.value === "Delivery") {
         addressFields.style.display = "block";
       } else {
@@ -736,7 +690,6 @@
         });
       }
     }
-
     function getDaysFromToday(dateStr) {
       if (!dateStr) return null;
       const today = new Date();
@@ -747,34 +700,28 @@
       const diffMs = d.getTime() - today.getTime();
       return Math.round(diffMs / 86400000);
     }
-
     function updateEstimate() {
       const box = document.getElementById("estimateBox");
       if (!box) return;
-
       if (!currentPricing) {
         box.innerHTML = "<div class='estimate-note'>Pricing is not available right now. We will send your quote manually.</div>";
         return;
       }
-
       const qtyInput = document.getElementById("cookie_amount_dzns");
       const pickupType = document.getElementById("pickup_delivery_type");
       const pickupDateInput = document.getElementById("pickup_delivery_date");
       const giftNoteCheckbox = document.getElementById("gift_note");
       const consultCheckbox = document.getElementById("consultation_requested");
-
       const dzns = qtyInput && qtyInput.value ? parseFloat(qtyInput.value) : 0;
       const pricePerDozen = parseFloat(currentPricing.price_per_dozen || 0);
       const deliveryFee = parseFloat(currentPricing.delivery_fee || 0);
       const consultFee = parseFloat(currentPricing.consultation_fee || 0);
       const giftNoteFee = parseFloat(currentPricing.gift_note_fee || 0);
       const rushFee = parseFloat(currentPricing.rush_fee || 0);
-
       const baseSubtotal = dzns > 0 ? dzns * pricePerDozen : 0;
       const deliveryCharge = pickupType && pickupType.value === "Delivery" ? deliveryFee : 0;
       const consultCharge = consultCheckbox && consultCheckbox.checked ? consultFee : 0;
       const giftCharge = giftNoteCheckbox && giftNoteCheckbox.checked ? giftNoteFee : 0;
-
       // Rush fee: pickup/delivery between 5 and 13 days from today
       let rushCharge = 0;
       if (pickupDateInput && pickupDateInput.value && rushFee > 0) {
@@ -783,13 +730,10 @@
           rushCharge = rushFee;
         }
       }
-
       const totalBeforeDiscount = baseSubtotal + deliveryCharge + consultCharge + giftCharge + rushCharge;
-
       // discounts
       let discountTotal = 0;
       let discountLines = "";
-
       if (appliedDiscount && appliedDiscount.amount > 0) {
         let discountAmount = 0;
         if (appliedDiscount.type === "percent") {
@@ -802,7 +746,6 @@
           (appliedDiscount.label || "Discount") +
           "</span><span>-" + formatMoney(discountAmount) + "</span></div>";
       }
-
       if (appliedReferral && appliedReferral.amount > 0) {
         let referralAmount = 0;
         if (appliedReferral.type === "percent") {
@@ -815,97 +758,73 @@
           (appliedReferral.label || "Referral discount") +
           "</span><span>-" + formatMoney(referralAmount) + "</span></div>";
       }
-
       if (discountTotal > totalBeforeDiscount) {
         discountTotal = totalBeforeDiscount;
       }
-
       const totalAfterDiscount = totalBeforeDiscount - discountTotal;
-
       let html = "";
-
       html += "<div class='estimate-row'><span>Cookies (" +
         (dzns || 0) + " dozen @ " + formatMoney(pricePerDozen) + ")</span><span>" +
         formatMoney(baseSubtotal) + "</span></div>";
-
       html += "<div class='estimate-row'><span>Delivery</span><span>" +
         formatMoney(deliveryCharge) + "</span></div>";
-
       html += "<div class='estimate-row'><span>Consultation</span><span>" +
         formatMoney(consultCharge) + "</span></div>";
-
       html += "<div class='estimate-row'><span>Gift note</span><span>" +
         formatMoney(giftCharge) + "</span></div>";
-
       html += "<div class='estimate-row'><span>Rush fee</span><span>" +
         formatMoney(rushCharge) + "</span></div>";
-
       html += "<div class='estimate-row'><span>Subtotal before discounts</span><span>" +
         formatMoney(totalBeforeDiscount) + "</span></div>";
-
       if (discountLines) {
         html += discountLines;
       }
-
       html += "<div class='estimate-total'><span>Estimated Total: </span><span>" +
         formatMoney(totalAfterDiscount) + "</span></div>";
-
       html += "<div class='estimate-note'>This is an estimate based on current menu pricing.</div>";
-
       box.innerHTML = html;
     }
-
     async function applyDiscount() {
       const discountHelp = document.getElementById("discountHelp");
       const discountCode = document.getElementById("discount_code_used").value.trim();
       const email = document.getElementById("email").value.trim();
-
       appliedDiscount = { type: null, amount: 0, label: "" };
       if (discountHelp) discountHelp.textContent = "";
-
       if (!discountCode) {
         if (discountHelp) discountHelp.textContent = "Enter a discount code to apply.";
         updateEstimate();
         return;
       }
-
       const today = new Date().toISOString().slice(0, 10);
       let messages = [];
-
       try {
         const { data: disc, error: discError } = await sb
           .from("discount_codes")
           .select("*")
           .eq("code", discountCode)
           .maybeSingle();
-
         console.log("[discount] data:", disc);
         console.log("[discount] error:", discError);
-
         if (discError) {
           messages.push("Error checking discount code: " + (discError.message || "Unknown error"));
         } else if (!disc) {
           messages.push("Discount code not found.");
         } else {
           let valid = true;
-
           if (disc.good_through_date && disc.good_through_date < today) {
             valid = false;
             messages.push("Discount code is expired.");
           }
-
           if (disc.email_allowed && email &&
               disc.email_allowed.toLowerCase() !== email.toLowerCase()) {
             valid = false;
             messages.push("Discount code is not valid for this email.");
           }
-
           if (disc.uses_allowed && disc.uses_allowed > 0 &&
               disc.uses_count >= disc.uses_allowed) {
             valid = false;
             messages.push("Discount code has already been used up.");
           }
-
           if (valid) {
             const typeRaw = (disc.type || "").toLowerCase();
             const amountNum = Number(disc.amount || 0);
@@ -933,40 +852,31 @@
         console.error("Error validating discount code", err);
         messages.push("Unexpected error while validating discount code.");
       }
-
       if (discountHelp) {
         discountHelp.textContent = messages.join(" ");
       }
-
       updateEstimate();
     }
-
     async function applyReferral() {
       const referralHelp = document.getElementById("referralHelp");
       const referralCode = document.getElementById("referral_code_used").value.trim();
-
       appliedReferral = { type: null, amount: 0, label: "" };
       if (referralHelp) referralHelp.textContent = "";
-
       if (!referralCode) {
         if (referralHelp) referralHelp.textContent = "Enter a referral code to apply.";
         updateEstimate();
         return;
       }
-
       const today = new Date().toISOString().slice(0, 10);
       let messages = [];
-
       try {
         const { data: ref, error: refError } = await sb
           .from("referral_codes")
           .select("*")
           .eq("code", referralCode)
           .maybeSingle();
-
         console.log("[referral] data:", ref);
         console.log("[referral] error:", refError);
-
         if (refError) {
           messages.push("Error checking referral code: " + (refError.message || "Unknown error"));
         } else if (!ref) {
@@ -977,7 +887,6 @@
             validRef = false;
             messages.push("Referral code is expired.");
           }
-
           if (validRef) {
             const refPercent = Number(ref.referee_discount || 0);
             if (refPercent > 0) {
@@ -996,22 +905,17 @@
         console.error("Error validating referral code", err);
         messages.push("Unexpected error while validating referral code.");
       }
-
       if (referralHelp) {
         referralHelp.textContent = messages.join(" ");
       }
-
       updateEstimate();
     }
-
     async function handleOrderSubmit(event) {
       event.preventDefault();
-
       const submitButton = document.getElementById("submitButton");
       const messageEl = document.getElementById("formMessage");
       messageEl.textContent = "";
       messageEl.className = "form-message";
-
       // Always required fields
       const requiredIds = [
         "first_name",
@@ -1026,18 +930,14 @@
         "flavor",
         "design_notes"
       ];
-
       let missing = [];
-
       requiredIds.forEach(id => {
         const el = document.getElementById(id);
         if (el && !el.value.trim()) {
           missing.push(id);
         }
       });
-
       const pickupTypeVal = document.getElementById("pickup_delivery_type").value;
-
       // Address required only if Delivery is selected
       if (pickupTypeVal === "Delivery") {
         ["street_address", "city", "state", "zip"].forEach(id => {
@@ -1047,7 +947,6 @@
           }
         });
       }
-
       // Gift note text required if gift note is checked
       const giftNoteCheckbox = document.getElementById("gift_note");
       const giftNoteTextEl = document.getElementById("gift_note_text");
@@ -1056,27 +955,21 @@
           missing.push("gift_note_text");
         }
       }
-
       // Inspiration photo, discount_code_used, referral_code_used are intentionally NOT required
-
       if (missing.length > 0) {
         messageEl.textContent = "Please fill in all required fields.";
         messageEl.classList.add("error");
         return;
       }
-
       // Extra date rules
-
       const pickup_delivery_date = document.getElementById("pickup_delivery_date").value;
       const event_date_value = document.getElementById("event_date").value;
-
       // Pickup date must be at least 5 days from today
       if (pickup_delivery_date) {
         const pickupDateObj = new Date(pickup_delivery_date);
         const minPickup = new Date();
         minPickup.setHours(0, 0, 0, 0);
         minPickup.setDate(minPickup.getDate() + 5);
-
         if (isNaN(pickupDateObj.getTime()) || pickupDateObj < minPickup) {
           messageEl.textContent = "Pickup or delivery date must be at least 5 days from today.";
           messageEl.classList.add("error");
@@ -1087,7 +980,6 @@
         messageEl.classList.add("error");
         return;
       }
-
       // Event date rules: at least 5 days from today and not before pickup/delivery date
       if (event_date_value) {
         const eventDateObj = new Date(event_date_value);
@@ -1095,13 +987,11 @@
         const minEvent = new Date();
         minEvent.setHours(0, 0, 0, 0);
         minEvent.setDate(minEvent.getDate() + 5);
-
         if (isNaN(eventDateObj.getTime()) || eventDateObj < minEvent) {
           messageEl.textContent = "Event date must be at least 5 days from today.";
           messageEl.classList.add("error");
           return;
         }
-
         if (!isNaN(eventDateObj.getTime()) && !isNaN(pickupDateObj.getTime()) && eventDateObj < pickupDateObj) {
           messageEl.textContent = "Event date cannot be before the pickup or delivery date.";
           messageEl.classList.add("error");
@@ -1112,10 +1002,9 @@
         messageEl.classList.add("error");
         return;
       }
-
       submitButton.disabled = true;
       submitButton.textContent = "Submitting...";
-      
+     
       try {
         // Customer values
         const first_name = document.getElementById("first_name").value.trim();
@@ -1127,11 +1016,9 @@
         const city = document.getElementById("city").value.trim();
         const state = document.getElementById("state").value.trim();
         const zip = document.getElementById("zip").value.trim();
-
         // Generate IDs
         const generatedCustomerId = generateNumericId(7);
         const generatedOrderId = generateNumericId(9);
-
         // Order values
         const pickup_delivery_type = pickupTypeVal;
         const event_date = event_date_value || null;
@@ -1146,51 +1033,40 @@
         const consultation_requested = document.getElementById("consultation_requested").checked;
         const discount_code_used = document.getElementById("discount_code_used").value.trim() || null;
         const referral_code_used = document.getElementById("referral_code_used").value.trim() || null;
-
         if (isNaN(cookie_amount_dzns) || cookie_amount_dzns <= 0) {
           throw new Error("Please enter a valid number of dozens.");
         }
-
         // File upload handling for inspiration photo (optional)
         const inspirationFileInput = document.getElementById("design_inspiration_photo");
         let design_inspiration_photo = null;
-
         if (inspirationFileInput && inspirationFileInput.files.length > 0) {
           const file = inspirationFileInput.files[0];
           const fileExt = file.name.split(".").pop();
           const filePath = "inspirations/" + crypto.randomUUID() + "." + fileExt;
-
           const { data: uploadData, error: uploadError } = await sb
             .storage
             .from("order_uploads")
             .upload(filePath, file);
-
           if (uploadError) {
             console.error(uploadError);
             throw new Error("Unable to upload inspiration photo.");
           }
-
           const { data: urlData } = sb
             .storage
             .from("order_uploads")
             .getPublicUrl(filePath);
-
           design_inspiration_photo = urlData.publicUrl;
         }
-
         // Find or create customer by email
         let customerId = null;
-
         const { data: existingCustomers, error: customerLookupError } = await sb
           .from("customers")
           .select("id")
           .eq("email", email);
-
         if (customerLookupError) {
           console.error("Customer lookup error", customerLookupError);
           throw new Error("There was a problem looking up your customer record.");
         }
-
         if (existingCustomers && existingCustomers.length > 0) {
           customerId = existingCustomers[0].id;
         } else {
@@ -1212,14 +1088,12 @@
             ])
             .select("id")
             .single();
-
           if (newCustomerError) {
             console.error("Customer insert error", newCustomerError);
             throw new Error("There was a problem creating your customer record.");
           }
           customerId = newCustomer.id;
         }
-
         // Create and attach referral code for this customer
         try {
           const referralCode = await generateUniqueReferralCode(first_name, last_name);
@@ -1231,14 +1105,12 @@
                 associated_customer_id: customerId
               }
             ]);
-
           if (referralInsertError) {
             console.error("Referral insert error", referralInsertError);
           }
         } catch (refErr) {
           console.error("Unexpected referral creation error", refErr);
         }
-
         // Insert order
 const { data: newOrder, error: orderError } = await sb
   .from("orders")
@@ -1264,14 +1136,11 @@ const { data: newOrder, error: orderError } = await sb
   ])
   .select("order_id")
   .maybeSingle();
-
 if (orderError) {
   console.error("Order insert error full", JSON.stringify(orderError, null, 2));
   // This shows the actual Postgres message in the UI so you do not have to dig in Network tab
   throw new Error(orderError.message || "There was a problem saving your order.");
 }
-
-
         messageEl.textContent = "Thank you. Your request has been submitted. We will contact you to confirm details.";
         messageEl.classList.add("success");
         document.getElementById("orderForm").reset();
@@ -1280,6 +1149,9 @@ if (orderError) {
         appliedReferral = { type: null, amount: 0, label: "" };
         updateAddressVisibility();
         updateEstimate();
+        setTimeout(() => {
+          window.location.href = "https://rebelribbon.com/thanks.html";
+        }, 2000);
       } catch (err) {
         console.error(err);
         messageEl.textContent = err.message || "Something went wrong. Please try again or contact us directly.";
@@ -1289,14 +1161,11 @@ if (orderError) {
         submitButton.textContent = "Submit Request";
       }
     }
-
     document.addEventListener("DOMContentLoaded", function() {
       loadSelectOptions();
       loadPricing();
-
       const pickupDateInput = document.getElementById("pickup_delivery_date");
       const eventDateInput = document.getElementById("event_date");
-
       // Base min date (today + 5 days)
       const baseMin = new Date();
       baseMin.setHours(0, 0, 0, 0);
@@ -1305,7 +1174,6 @@ if (orderError) {
       const mm = String(baseMin.getMonth() + 1).padStart(2, "0");
       const dd = String(baseMin.getDate()).padStart(2, "0");
       const baseMinStr = yyyy + "-" + mm + "-" + dd;
-
       if (pickupDateInput) {
         pickupDateInput.min = baseMinStr;
         pickupDateInput.addEventListener("change", function() {
@@ -1324,12 +1192,10 @@ if (orderError) {
         });
         pickupDateInput.addEventListener("input", updateEstimate);
       }
-
       if (eventDateInput) {
         // Initial min for event date at load
         eventDateInput.min = baseMinStr;
       }
-
       const giftNoteCheckbox = document.getElementById("gift_note");
       const giftNoteTextGroup = document.getElementById("gift_note_text_group");
       if (giftNoteCheckbox) {
@@ -1338,7 +1204,6 @@ if (orderError) {
           updateEstimate();
         });
       }
-
       const pickupTypeSelect = document.getElementById("pickup_delivery_type");
       if (pickupTypeSelect) {
         pickupTypeSelect.addEventListener("change", function() {
@@ -1347,36 +1212,29 @@ if (orderError) {
         });
         updateAddressVisibility();
       }
-
       const qtyInput = document.getElementById("cookie_amount_dzns");
       if (qtyInput) {
         qtyInput.addEventListener("input", updateEstimate);
         qtyInput.addEventListener("change", updateEstimate);
       }
-
       const consultCheckbox = document.getElementById("consultation_requested");
       if (consultCheckbox) {
         consultCheckbox.addEventListener("change", updateEstimate);
       }
-
       const applyDiscountButton = document.getElementById("applyDiscountButton");
       if (applyDiscountButton) {
         applyDiscountButton.addEventListener("click", applyDiscount);
       }
-
       const applyReferralButton = document.getElementById("applyReferralButton");
       if (applyReferralButton) {
         applyReferralButton.addEventListener("click", applyReferral);
       }
-
       const form = document.getElementById("orderForm");
       if (form) {
         form.addEventListener("submit", handleOrderSubmit);
       }
-
       updateEstimate();
     });
-
     function toggleMenu() {
       var menu = document.getElementById('navMenu');
       var currentDisplay = window.getComputedStyle(menu).display;
