@@ -1218,36 +1218,37 @@
         }
 
         // Insert order including generated order_id
-        const { data: newOrder, error: orderError } = await sb
-          .from("orders")
-          .insert([
-            {
-              order_id: generatedOrderId,
-              customer_id: customerId,
-              pickup_delivery_date,
-              event_date,
-              cookie_amount_dzns,
-              flavor,
-              dietary_option,
-              design_notes,
-              design_inspiration_photo,
-              gift_note,
-              gift_note_text,
-              consultation_requested,
-              discount_code_used,
-              referral_code_used,
-              status: "New",
-              event_type_name,
-              pickup_delivery_type
-            }
-          ])
-          .select("order_id")
-          .maybeSingle();
+ // Insert order including generated order_id
+const { error: orderError } = await sb
+  .from("orders")
+  .insert([
+    {
+      order_id: generatedOrderId,
+      customer_id: customerId,
+      pickup_delivery_date,
+      event_date,
+      cookie_amount_dzns,
+      flavor,
+      dietary_option,
+      design_notes,
+      design_inspiration_photo,
+      gift_note,
+      gift_note_text,
+      consultation_requested,
+      discount_code_used,
+      referral_code_used,
+      status: "New",
+      event_type_name,
+      pickup_delivery_type
+    }
+  ]);
 
-        if (orderError) {
-          console.error("Order insert error", orderError);
-          throw new Error("There was a problem saving your order.");
-        }
+if (orderError) {
+  console.error("Order insert error", orderError);
+  // Let the real Supabase error bubble up so we can see message/details/hint
+  throw orderError;
+}
+
 
         messageEl.textContent = "Thank you. Your request has been submitted. We will contact you to confirm details.";
         messageEl.classList.add("success");
