@@ -1240,36 +1240,38 @@
         }
 
         // Insert order
-        const { data: newOrder, error: orderError } = await sb
-          .from("orders")
-          .insert([
-            {
-              order_id: generatedOrderId,
-              customer_id: customerId,
-              pickup_delivery_date,
-              event_date,
-              cookie_amount_dzns,
-              flavor,
-              dietary_option,
-              design_notes,
-              design_inspiration_photo,
-              gift_note,
-              gift_note_text,
-              consultation_requested,
-              discount_code_used,
-              referral_code_used,
-              status: "New",
-              event_type_name,
-              pickup_delivery_type
-            }
-          ])
-          .select("order_id")
-          .maybeSingle();
+const { data: newOrder, error: orderError } = await sb
+  .from("orders")
+  .insert([
+    {
+      order_id: generatedOrderId,
+      customer_id: customerId,
+      pickup_delivery_date,
+      event_date,
+      cookie_amount_dzns,
+      flavor,
+      dietary_option,
+      design_notes,
+      design_inspiration_photo,
+      gift_note,
+      gift_note_text,
+      consultation_requested,
+      discount_code_used,
+      referral_code_used,
+      status: "New",
+      event_type_name,
+      pickup_delivery_type
+    }
+  ])
+  .select("order_id")
+  .maybeSingle();
 
-        if (orderError) {
-          console.error("Order insert error", orderError);
-          throw new Error("There was a problem saving your order.");
-        }
+if (orderError) {
+  console.error("Order insert error full", JSON.stringify(orderError, null, 2));
+  // This shows the actual Postgres message in the UI so you do not have to dig in Network tab
+  throw new Error(orderError.message || "There was a problem saving your order.");
+}
+
 
         messageEl.textContent = "Thank you. Your request has been submitted. We will contact you to confirm details.";
         messageEl.classList.add("success");
