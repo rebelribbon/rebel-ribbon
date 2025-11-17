@@ -1433,7 +1433,8 @@
         const isGiftNote = o?.gift_note || false;
         const isConsultation = o?.consultation_requested || false;
         const rawPhone = c?.phone || '';
-document.getElementById('drawerTitle').textContent = Order #${formatOrderId(o.order_id)} (${currentStatus || 'In Review'});
+document.getElementById('drawerTitle').textContent =
+            Order #${formatOrderId(o.id)} (${currentStatus || 'In Review'});
         document.getElementById('cust_name').textContent =
             c ? `${c.first_name||''} ${c.last_name||''}`.trim() : 'N/A';
         document.getElementById('cust_id').textContent =
