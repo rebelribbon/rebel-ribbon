@@ -714,6 +714,7 @@
             title:'Discount Codes',
             table:'discount_codes',
             isSettings:true,
+            list_keys: ['code'],
             cols:[
                 { key:'code', label:'Code', type:'text', required:true, w:'20' },
                 { key:'type', label:'Type', type:'select', options:['percent','fixed'], required:true, w:'20' },
@@ -727,9 +728,10 @@
             title:'Referral Codes',
             table:'referral_codes',
             isSettings:true,
+            list_keys: ['code'],
             cols:[
                 { key:'code', label:'Code', type:'text', required:true, w:'20' },
-                { key:'associated_customer_id', label:'Associated Customer', type:'select-async', w:'20',
+                { key:'associated_customer_id', label:'Associated Customer ID', type:'select-async', w:'20',
                     asyncOptions: async () => {
                         const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
                         return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
@@ -810,9 +812,9 @@
         const s = status.toLowerCase().replace(/\s/g, '-');
         return `status-${s}`;
     };
-    function buildColGroup(conf){
+    function buildColGroup(conf, display_cols){
         const cg = document.getElementById('colgroup'); cg.innerHTML='';
-        const cols = conf.cols.slice();
+        let cols = display_cols.slice();
         if (activeKey !== 'order_list' && !conf.readOnly) cols.push({key:'__actions', w:'20'});
        
         const total = cols.reduce((s,c)=> s + (Number(c.w||0) || 0), 0) || 100;
@@ -823,9 +825,9 @@
             cg.appendChild(col);
         }
     }
-    function buildThead(conf){
+    function buildThead(conf, display_cols){
         const tr = document.getElementById('thead'); tr.innerHTML='';
-        for (const c of conf.cols){
+        for (const c of display_cols){
             const cls = 'thcell ' + (conf.center ? 'text-center' : 'text-left');
             tr.appendChild($('th', cls, c.label));
         }
@@ -853,8 +855,9 @@
             await loadPricingList();
             return;
         }
-        buildColGroup(conf);
-        buildThead(conf);
+        const display_cols = conf.list_keys ? conf.cols.filter(c => conf.list_keys.includes(c.key)) : conf.cols;
+        buildColGroup(conf, display_cols);
+        buildThead(conf, display_cols);
         const tbody = document.getElementById('tbody');
         tbody.innerHTML = '';
         if (conf.customLoader === 'loadOrderList') {
@@ -878,7 +881,7 @@
         totalCount = count || 0;
         for (const row of (data||[])){
             const tr = $('tr','border-b ' + (conf.center ? 'text-center' : ''));
-            for (const c of conf.cols){
+            for (const c of display_cols){
                 let val = row[c.key];
                 if (c.type === 'checkbox') val = !!val;
                 if (c.type === 'date') val = dateOnly(val);
