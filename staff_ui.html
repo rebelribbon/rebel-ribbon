@@ -1433,12 +1433,14 @@
         const isGiftNote = o?.gift_note || false;
         const isConsultation = o?.consultation_requested || false;
         const rawPhone = c?.phone || '';
+const displayOrderId = o?.order_id || formatOrderId(o.id);
+
 document.getElementById('drawerTitle').textContent =
-            Order #${formatOrderId(o.id)} (${currentStatus || 'In Review'});
+    `Order #${displayOrderId} (${currentStatus || 'In Review'})`;
         document.getElementById('cust_name').textContent =
             c ? `${c.first_name||''} ${c.last_name||''}`.trim() : 'N/A';
-        document.getElementById('cust_id').textContent =
-            c?.customer_id || o?.customer_id || 'N/A';
+document.getElementById('cust_id').textContent =
+    c?.customer_id || o?.order_id || 'N/A';
         const custEmailEl = document.getElementById('cust_email');
         custEmailEl.textContent = c?.email || 'N/A';
         custEmailEl.href = c?.email ? `mailto:${c.email}` : '#';
@@ -1620,7 +1622,7 @@ document.getElementById('ov_gift_text').textContent = o?.gift_note_text || 'None
         const customerName = document.getElementById('cust_name').textContent;
         const customerEmail = document.getElementById('cust_email').textContent;
         const customerPhone = document.getElementById('cust_phone_link').textContent;
-        const orderId = formatOrderId(activeOrder.id);
+const orderId = activeOrder.order_id || formatOrderId(activeOrder.id);
         const customerAddress =
             document.getElementById('cust_addr1').textContent +
             (document.getElementById('cust_addr2').textContent ? ', ' + document.getElementById('cust_addr2').textContent : '') +
