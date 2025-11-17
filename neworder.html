@@ -477,6 +477,99 @@
     </div>
   </section>
  
+    /* Footer */
+    footer {
+      background: var(--pink);
+      color: var(--black);
+      padding: 30px 20px;
+    }
+    footer .footer-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      justify-content: space-between;
+    }
+    footer .footer-section { flex: 1; min-width: 200px; }
+    footer h3 {
+      font-family: var(--heading-font);
+      font-size: 18px;
+      margin-bottom: 10px;
+    }
+    footer p, footer a {
+      font-size: 14px;
+      color: var(--black);
+      font-family: var(--body-font);
+    }
+    footer a:hover { text-decoration: underline; }
+    .footer-section.newsletter { text-align: left; }
+    .newsletter iframe { width: 100%; border: 0; }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <img src="horizontaltrans.png" alt="Rebel Ribbon Logo">
+    </div>
+    <div class="hamburger" onclick="toggleMenu()">&#9776;</div>
+    <nav>
+      <ul class="nav-menu" id="navMenu">
+        <li><a href="index.html">Home</a></li>
+        <li><a href="about.html">About Us</a></li>
+        <li><a href="ingredients.html">Ingredients</a></li>
+        <li><a href="gallery.html">Gallery</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="order.html">Order</a></li>
+      </ul>
+    </nav>
+  </header>
+  
+  <!-- Hero Section for Order Page -->
+  <section class="hero">
+    <div class="hero-content">
+      <h1>Place Your Order</h1>
+      <p>Indulge in our handcrafted cookies—order now!</p>
+    </div>
+  </section>
+  
+  <!-- Order Form Section -->
+  <section class="content-section">
+    <!-- Tally Embed Code for Custom Cookie Order -->
+    <iframe
+      data-tally-src="https://tally.so/embed/wkgz9d?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
+      loading="lazy"
+      width="100%"
+      height="194"
+      frameborder="0"
+      marginheight="0"
+      marginwidth="0"
+      title="Start Your Custom Cookie Order">
+    </iframe>
+    <script>
+      var d = document,
+          w = "https://tally.so/widgets/embed.js",
+          v = function() {
+            if (typeof Tally !== "undefined") {
+              Tally.loadEmbeds();
+            } else {
+              d.querySelectorAll("iframe[data-tally-src]:not([src])")
+               .forEach(function(e){ e.src = e.dataset.tallySrc; });
+            }
+          };
+      if (typeof Tally !== "undefined") {
+        v();
+      } else if (!d.querySelector('script[src="'+w+'"]')) {
+        var s = d.createElement("script");
+        s.src = w;
+        s.onload = v;
+        s.onerror = v;
+        d.body.appendChild(s);
+      }
+    </script>
+  </section>
+  
   <!-- Footer -->
   <footer>
     <div class="footer-content">
@@ -524,6 +617,7 @@
       </div>
     </div>
   </footer>
+  
   <!-- Supabase client -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <!DOCTYPE html>
