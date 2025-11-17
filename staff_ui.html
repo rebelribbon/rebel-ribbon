@@ -1475,10 +1475,11 @@
             photo.src = 'https://dummyimage.com/320x320/e5e7eb/6b7280.jpg&text=No+photo';
         }
         document.getElementById('ov_consultation').textContent = isConsultation ? 'Yes' : 'No';
-        const giftBadge = document.getElementById('ov_gift_note');
-        giftBadge.textContent = isGiftNote ? 'Yes' : 'No';
-        giftBadge.className = `status-badge ${isGiftNote ? 'status-approved' : 'status-canceled'}`;
-        document.getElementById('ov_gift_text').textContent = o?.gift_note_text || 'None';
+document.getElementById('ov_consultation').textContent = isConsultation ? 'Yes' : 'No';
+const giftEl = document.getElementById('ov_gift_note');
+giftEl.textContent = isGiftNote ? 'Yes' : 'No';
+giftEl.className = '';
+document.getElementById('ov_gift_text').textContent = o?.gift_note_text || 'None';
         const pdType = o?.pickup_delivery_type || o?.fulfillment_type || o?.delivery_method || '';
         document.getElementById('ov_pd_type').textContent = pdType || 'N/A';
         const discountLabelEl = document.getElementById('ov_discount_code');
