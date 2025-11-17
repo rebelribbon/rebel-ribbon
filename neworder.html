@@ -1258,15 +1258,20 @@ if (orderError) {
         appliedReferral = { type: null, amount: 0, label: "" };
         updateAddressVisibility();
         updateEstimate();
-      } catch (err) {
-        console.error(err);
-        messageEl.textContent = err.message || "Something went wrong. Please try again or contact us directly.";
-        messageEl.classList.add("error");
-      } finally {
-        submitButton.disabled = false;
-        submitButton.textContent = "Submit Request";
-      }
-    }
+} catch (err) {
+  console.error("Submit error:", err);
+  const msg =
+    err?.message ||
+    err?.details ||
+    err?.hint ||
+    "Something went wrong. Please try again or contact us directly.";
+  messageEl.textContent = msg;
+  messageEl.classList.add("error");
+} finally {
+  submitButton.disabled = false;
+  submitButton.textContent = "Submit Request";
+}
+
 
     document.addEventListener("DOMContentLoaded", function() {
       loadSelectOptions();
