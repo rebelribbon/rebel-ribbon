@@ -7,29 +7,19 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        /* --- TYPOGRAPHY & BASE STYLES --- */
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400;500;600;700&display=swap');
-
-        body { 
-            margin: 0; 
-            min-height: 100vh; 
-            display: flex; 
-            flex-direction: column;
-            font-family: 'Poppins', sans-serif;
-            color: #1f2937;
-        }
-        html { overflow-x: hidden; } /* CRITICAL: Prevents horizontal scroll */
+        /* BASE STYLES */
+        body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+        html { overflow-x: hidden; } /* Crucial: Prevents body from expanding beyond viewport */
         button { font-family: inherit; }
-
-        /* --- HEADER BANNER --- */
+        /* HEADER BANNER - Pinned Horizontal Top */
         #header-banner {
             position: fixed;
             top: 0;
             left: 0;
             right: 0;
-            height: 60px;
-            background-color: #fbcfe8;
-            color: #4c0519;
+            height: 60px; /* Fixed height for the banner */
+            background-color: #fbcfe8; /* Soft pink color */
+            color: #4c0519; /* Darker text for contrast */
             z-index: 100;
             display: flex;
             align-items: center;
@@ -37,52 +27,74 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
         #menuToggle {
+            /* Positioned on the far left */
             margin-right: 1rem;
-            background: #fdf2f8; 
-            color: #be185d; 
+            background: #fdf2f8;
+            color: #be185d;
             width: 40px;
             height: 40px;
             border-radius: 6px;
             font-size: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         }
         #logo-wrapper {
             display: flex;
             align-items: center;
             gap: 0.5rem;
+            /* Centering the logo and text within the header */
             position: absolute;
             left: 50%;
             transform: translateX(-50%);
         }
         #logo-text {
-            font-family: 'Playfair Display', serif; 
-            font-size: 1.5rem; 
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
             font-weight: 700;
-            letter-spacing: 0.08em; 
+            letter-spacing: 0.08em;
             color: #831843;
         }
-
-        /* --- SIDEBAR --- */
+        /* SIDEBAR NAVIGATION (Mobile Overlay) */
         #sidebar {
             width: 250px;
             background-color: #1f2937;
+            color: white;
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 100vh;
+            z-index: 90;
             padding-top: 60px;
             transform: translateX(-100%);
+            transition: transform 0.3s ease;
+            box-shadow: 4px 0 10px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
         }
-        .nav-item { padding: 0.75rem 1rem; }
-        .nav-active { border-left: 4px solid #3b82f6; padding-left: calc(1rem - 4px); }
-
-
-        /* --- MAIN CONTENT & LAYOUT --- */
-        #app-wrapper { padding-top: 60px; }
-        #content { flex-grow: 1; padding: 1.5rem; max-width: 100%; box-sizing: border-box; }
-        
-        /* Order Page Controls */
-        #orderPageControls {
+        #sidebar.open {
+            transform: translateX(0);
+        }
+        .nav-item { display: block; padding: 0.75rem 1rem; cursor: pointer; transition: background-color 0.15s; }
+        .nav-item:hover { background-color: #374151; }
+        .nav-active { background-color: #374151; font-weight: 600; border-left: 4px solid #3b82f6; padding-left: calc(1rem - 4px); }
+        .submenu-item { padding: 0.5rem 1rem 0.5rem 2rem; font-size: 0.875rem; }
+        #logout-sidebar { padding: 1rem; border-top: 1px solid #374151; }
+        /* MAIN CONTENT */
+        #app-wrapper {
+            display: flex;
             width: 100%;
-            box-sizing: border-box;
-            margin-bottom: 1rem;
+            padding-top: 60px; /* Space for fixed header */
         }
+        #app-wrapper.hidden { display: none; }
+        #content { flex-grow: 1; padding: 1rem; max-width: 100%; }
+        @media (min-width: 768px) {
+            #content { padding: 2rem; }
+        }
+        /* ORDER PAGE CONTROLS (Search Bar, Filters, Refresh) */
         #searchContainer {
             display: flex;
             gap: 0.5rem;
@@ -91,147 +103,252 @@
         }
         #globalSearch {
             padding: 0.4rem 0.75rem;
-            border-radius: 10px;
+            border-radius: 9999px;
+            border: 1px solid #d1d5db;
             flex-grow: 1;
+            width: 100%;
             max-width: 300px;
         }
-
-        /* Order Filters - Centered */
+        /* ORDER FILTERS - Centered */
         #orderFilters {
             display: flex;
             flex-wrap: wrap;
             gap: 0.5rem;
+            margin-bottom: 1rem;
             justify-content: center;
+            max-width: 100%;
+            margin-left: auto;
+            margin-right: auto;
             padding: 0 0.5rem;
         }
         .filter-tab {
             font-size: 0.75rem;
-            padding: 0.5rem 1rem;
-            border-radius: 10px; 
+            padding: 0.3rem 0.75rem;
+            flex-shrink: 1;
+            min-width: 0;
+            text-align: center;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+            background-color: #ffffff;
+            color: #374151;
+            transition: all 0.2s ease-in-out;
         }
-
-        /* --- TABLES (Universal Fixes) --- */
-        .table-wrap { overflow-x: hidden; border-radius: 12px; border: 1px solid #e5e7eb; }
-        table { width: 100%; table-layout: fixed; }
-        .thcell { padding: 0.8rem 0.75rem; }
-        .cell { padding: 0.9rem 0.75rem; vertical-align: middle; border-bottom: 1px solid #f3f4f6; }
+        .filter-active {
+            border: 2px solid #be185d;
+            background-color: #be185d;
+            color: white;
+            font-weight: 600;
+        }
+        /* TABLE & GRID - No horizontal scroll enforced + Improved Spacing */
+        .table-wrap {
+            overflow-x: auto;
+            border-radius: 0.75rem; border: 1px solid #e5e7eb; background: #fff;
+        }
+        table {
+            width: 100%;
+            border-collapse: separate; border-spacing: 0;
+            table-layout: fixed;
+        }
+        .thcell { padding: 0.75rem; font-weight: 600; white-space: nowrap; }
+        .cell {
+            padding: 1rem 0.75rem;
+            overflow-wrap: break-word;
+            vertical-align: middle;
+            overflow: hidden;
+        }
         .cell, .thcell { white-space: normal; }
-
-        /* Action Column Width Fix (Images 1, 2, 7 Fix) */
-        #grid #thead th:last-child {
-            width: 90px; /* Increased width to accommodate "Actions" text and Edit button */
-        }
-        #grid #tbody tr td:last-child {
-            width: 90px; 
-            text-align: right;
-            padding-right: 0.5rem;
-        }
-        
-        /* Order List Alignment */
-        #grid #thead th:nth-child(2), 
+        /* Order List Centering */
+        #grid #thead th:nth-child(2),
         #grid #tbody tr td:nth-child(2) {
-            text-align: center !important; 
+            text-align: center !important; /* Center the Status column content */
         }
-
-        /* --- PRICING LIST FIX (Image 5 Fix) --- */
-        .pricing-item { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            padding: 0.75rem 0; 
-            border-bottom: 1px solid #e5e7eb; 
+        /* Keep first column (Customer Name) left-aligned for readability */
+        #grid #thead th:nth-child(1),
+        #grid #tbody tr td:nth-child(1) {
+            text-align: left !important;
         }
-        .pricing-item-label { flex-grow: 1; }
-        .pricing-item-amount { 
-            width: 90px; /* Fixed width for amount */
-            text-align: right; 
-            flex-shrink: 0; 
-            color: #059669;
-            margin-right: 0.5rem;
-        }
+        /* Pricing List Layout */
+        .pricing-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb; }
+        .pricing-item-amount { width: 80px; text-align: right; flex-shrink: 0; }
         .pricing-edit-btn { padding: 0.3rem 0.6rem; font-size: 0.75rem; }
-
-        /* --- ORDER DRAWER (DETAILS PAGE) --- */
-        #orderDrawer { overflow-y: auto; overflow-x: hidden; }
-
-        /* Drawer Header Buttons (Strict Mobile Stack - Images 4, 6 Fix) */
-        #orderDrawer .sticky { 
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 0.5rem;
-            padding-bottom: 1rem;
+        /* Dialogs and Order Manager Responsiveness */
+        dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+        dialog { max-height: 90vh; overflow-y: auto; }
+        #orderDrawer {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            border-radius: 0;
+            height: 100%;
+            overflow-x: hidden; /* Ensure no horizontal scroll in drawer */
         }
-        
+      
+        /* Order Drawer Header Button Layout */
         #drawerHeaderActions {
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
             width: 100%;
-            margin-top: 0.5rem; /* Reduced margin */
         }
-        #drawerHeaderActions button {
+        /* Responsive stack for Edit/Invoice buttons */
+        #drawerHeaderActions > div:last-child {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
             width: 100%;
+            margin-top: 1rem;
+        }
+        #drawerHeaderActions > div:last-child button {
+            width: 100%;
+            display: flex;
             justify-content: center;
         }
-        
-        /* Status Bar Fix (Image 6 Fix) */
-        #orderDrawer .sticky > div:first-child .flex {
-            flex-wrap: wrap;
-            align-items: center;
-        }
-
         @media (min-width: 1024px) {
-            #orderDrawer .sticky { 
-                flex-direction: row;
-                align-items: center;
+             #orderDrawer {
+                max-width: 1080px;
+                height: auto;
+                border-radius: 1rem;
             }
             #drawerHeaderActions {
+                flex-direction: row;
+                width: auto;
+            }
+            #drawerHeaderActions > div:last-child {
                 flex-direction: row;
                 width: auto;
                 margin-top: 0;
             }
         }
-        
-        /* Button Aesthetics */
-        .btn { border-radius: 8px; font-weight: 500; padding: 0.6rem 1.2rem; }
-        .btn-primary { background: linear-gradient(145deg, #be185d, #831843); color: #fff; }
-        .btn-secondary { background-color: #ffffff; color: #1f2937; border-color: #e5e7eb; }
+      
+        /* Existing Order Drawer Header Flex Fixes */
+        #orderDrawer .sticky {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #orderDrawer .sticky > div:first-child {
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+        @media (min-width: 768px) {
+            #orderDrawer .sticky > div:first-child {
+                width: auto;
+                margin-bottom: 0;
+            }
+        }
+        /* Sign in overlay */
+        #signinCard {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; background-color: #f9fafb;
+        }
+        /* Custom font import */
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+        /* Button styles */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+        }
+        .btn-primary {
+            background-color: #be185d;
+            color: white;
+            border: none;
+        }
+        .btn-primary:hover {
+            background-color: #9d174d;
+        }
+        .btn-secondary {
+            background-color: white;
+            color: #be185d;
+            border: 1px solid #be185d;
+        }
+        .btn-secondary:hover {
+            background-color: #fdf2f8;
+        }
+        .btn-success {
+            background-color: #22c55e;
+            color: white;
+            border: none;
+        }
+        .btn-success:hover {
+            background-color: #16a34a;
+        }
+        .btn-danger {
+            background-color: #fee2e2;
+            color: #b91c1c;
+            border: 1px solid #f87171;
+        }
+        .btn-danger:hover {
+            background-color: #fecaca;
+        }
+        .btn-ghost {
+            background-color: transparent;
+            border: none;
+            color: inherit;
+        }
+        .btn-ghost:hover {
+            background-color: rgba(0,0,0,0.05);
+        }
+        .btn-icon {
+            padding: 0.25rem;
+            font-size: 1.25rem;
+        }
+        .btn-lg {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+        }
+        /* Status badge styles (if needed) */
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        /* Example status classes */
+        .status-in-review { background: #fef3c7; color: #92400e; }
+        .status-approved { background: #dcfce7; color: #15803d; }
+        .status-paid { background: #dbeafe; color: #1d4ed8; }
+        .status-production-complete { background: #d1fae5; color: #065f46; }
+        .status-fulfilled { background: #d1fae5; color: #065f46; }
+        .status-canceled { background: #fee2e2; color: #b91c1c; }
     </style>
 </head>
-
 <body class="bg-gray-50 text-gray-900">
     <div id="signinCard" class="flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow p-6">
             <h1 class="text-2xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
-            <p class="text-sm text-gray-600 mb-6">Use your @rebelribbon.com email and password.</p>
-            
-            <label class="block text-sm mb-2 font-medium">Email</label>
+            <p class="text-sm text-gray-600 mb-4">Use your @rebelribbon.com email and password.</p>
+          
+            <label class="block text-sm mb-2">Email</label>
             <input id="email" type="email" placeholder="you@rebelribbon.com" class="w-full px-3 py-2 rounded-lg border mb-4"/>
-            
-            <label class="block text-sm mb-2 font-medium">Password</label>
-            <input id="password" type="password" placeholder="Password" class="w-full px-3 py-2 rounded-lg border mb-6"/>
-            
+          
+            <label class="block text-sm mb-2">Password</label>
+            <input id="password" type="password" placeholder="Password" class="w-full px-3 py-2 rounded-lg border mb-4"/>
+          
             <button id="signInButton" class="w-full btn btn-primary">Sign In</button>
             <p id="authMsg" class="text-sm text-red-600 mt-3"></p>
-            <p class="text-xs text-gray-500 mt-4">If the button does nothing, check Supabase keys and ensure Email/Password provider is enabled.</p>
+            <p class="text-xs text-gray-500 mt-3">If the button does nothing, check Supabase keys and ensure Email/Password provider is enabled.</p>
         </div>
     </div>
-
     <div id="header-banner">
-        <div id="menuToggle" class="text-white">☰</div> 
+        <button id="menuToggle">☰</button>
         <div id="logo-wrapper">
             <img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" alt="Rebel Ribbon Logo" style="height: 40px; width: auto;">
             <span id="logo-text">Rebel Ribbon</span>
         </div>
     </div>
-
     <nav id="sidebar">
         <h1 class="text-xl font-semibold px-4 pt-4 mb-6 text-white/90 border-b border-gray-700">Navigation</h1>
-        <div id="main-nav" class="flex-grow">
+        <div id="main-nav">
             <button id="nav_orders" class="nav-item nav-active" data-key="order_list">Orders</button>
             <button id="nav_surveys" class="nav-item" data-key="surveys">Surveys</button>
         </div>
-
         <div class="mt-8">
             <h3 class="text-xs uppercase font-medium text-gray-400 px-4 mb-2">Admin / Settings</h3>
             <button id="nav_discount_codes" class="nav-item submenu-item" data-key="discount_codes">Discount Codes</button>
@@ -240,25 +357,21 @@
             <button id="nav_pricing" class="nav-item submenu-item" data-key="pricing">Pricing & Fees</button>
             <button id="nav_costs" class="nav-item submenu-item" data-key="costs">Costs</button>
         </div>
-
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
         </div>
     </nav>
-
     <div id="app-wrapper" class="hidden">
         <main id="content" class="max-w-full">
             <header class="flex flex-wrap items-center justify-between mb-4 lg:mb-6 gap-2">
                 <h2 id="pageTitle" class="text-2xl lg:text-3xl font-bold">Orders</h2>
             </header>
-
-            <div id="orderPageControls" class="hidden">
+            <div id="orderPageControls">
                 <div id="searchContainer">
                     <input id="globalSearch" type="search" placeholder="Search customer, ID, date" class="px-3 py-1.5 rounded-lg border shadow-sm text-sm"/>
                     <button id="refreshAll" class="btn btn-secondary shadow-sm">Refresh</button>
                 </div>
-
                 <div id="orderFilters" class="flex gap-2 mb-4">
                     <button class="filter-tab filter-active" data-filter="All">All Orders</button>
                     <button class="filter-tab" data-filter="In Review">⭐ New Orders</button>
@@ -268,23 +381,19 @@
                     <button class="filter-tab" data-filter="Fulfilled">✅ Completed</button>
                 </div>
             </div>
-
             <div id="dataActions" class="flex items-center justify-between mb-2 flex-wrap gap-2">
                 <div class="flex items-center gap-2">
                     <button id="addBtn" class="btn btn-primary shadow-md">Add New</button>
                     <button id="exportBtn" class="btn btn-secondary shadow-sm hidden">Export CSV</button>
                 </div>
-
                 <div class="flex items-center gap-2">
                     <button id="prev" class="btn btn-secondary disabled:opacity-50 text-sm px-3 py-1.5">Prev</button>
                     <span id="pageInfo" class="text-sm text-gray-600"></span>
                     <button id="next" class="btn btn-secondary disabled:opacity-50 text-sm px-3 py-1.5">Next</button>
                 </div>
             </div>
-
             <div id="pricingList" class="space-y-3 hidden">
                 </div>
-
             <div class="table-wrap">
                 <table id="grid" class="min-w-full text-sm table-fixed">
                     <colgroup id="colgroup"></colgroup>
@@ -292,11 +401,9 @@
                     <tbody id="tbody"></tbody>
                 </table>
             </div>
-
             <p id="netHint" class="text-yellow-700 text-sm mt-3 hidden"></p>
         </main>
     </div>
-
     <dialog id="editor" class="rounded-2xl p-0 w-full max-w-3xl shadow-2xl">
         <form method="dialog" class="p-0">
             <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
@@ -305,16 +412,15 @@
             </div>
             <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
-                <button id="deleteBtn" type="button" class="px-3 py-2 rounded-lg border text-red-700 border-red-300 hidden hover:bg-red-50">Delete</button>
+                <button id="deleteBtn" type="button" class="btn btn-danger hidden">Delete</button>
                 <button id="saveBtn" class="btn btn-primary">Save</button>
             </div>
         </form>
     </dialog>
-
     <dialog id="orderDrawer" class="rounded-2xl p-0 shadow-2xl drawer">
         <div class="p-0">
             <div class="sticky top-0 z-index-10 p-4 border-b bg-white flex flex-wrap items-center justify-between shadow-sm">
-                <div class="flex items-center gap-4 w-full lg:w-auto mb-3 lg:mb-0">
+                <div class="flex items-center gap-4">
                     <button value="close" id="backToOrders" class="btn btn-ghost btn-icon text-sm">← Back to Orders</button>
                     <div>
                         <h2 id="drawerTitle" class="text-xl font-semibold">Order #XXXX</h2>
@@ -332,13 +438,11 @@
                         </div>
                     </div>
                 </div>
-
                 <div id="drawerHeaderActions">
                     <button id="editFields" type="button" class="btn btn-secondary btn-lg">Edit All Fields</button>
                     <button id="viewInvoice" type="button" class="btn btn-primary btn-lg">Generate Invoice / Save PDF</button>
                 </div>
             </div>
-
             <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 space-y-6">
                     <div class="info-card">
@@ -354,10 +458,10 @@
                             <div id="cust_addr1"></div>
                             <div id="cust_addr2"></div>
                             <div id="cust_citystzip"></div>
-                            <button id="mapLocation" type="button" class="mt-2 text-xs text-blue-600 hover:underline">View on Map</button>
+                            <button id="mapLocation" type="button" class="btn btn-ghost text-xs text-blue-600">View on Map</button>
                         </div>
                     </div>
-                    
+                  
                     <div class="info-card">
                         <h3 class="text-lg font-semibold mb-3">📅 Event Info</h3>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
@@ -365,18 +469,17 @@
                             <div><span class="font-medium">Event Date:</span><div id="ov_event"></div></div>
                         </div>
                     </div>
-                    
+                  
                     <div class="info-card">
                         <h3 class="text-lg font-semibold mb-3">📝 Order Details</h3>
                         <div class="grid grid-cols-2 md:grid-cols-3 gap-3 text-sm mb-4">
                             <div><span class="font-medium">Date Submitted:</span><div id="ov_submitted"></div></div>
                             <div class="md:col-span-2"><span class="font-medium">Pickup / Delivery Date:</span><div id="ov_pickup"></div></div>
-                            
+                          
                             <div><span class="font-medium">Amount (Dozens):</span><div id="ov_dzns"></div></div>
                             <div><span class="font-medium">Flavor:</span><div id="ov_flavor"></div></div>
                             <div><span class="font-medium">Dietary Options:</span><div id="ov_dietary"></div></div>
                         </div>
-
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                             <div class="md:col-span-1">
                                 <span class="font-medium">Inspiration Photo:</span>
@@ -393,13 +496,13 @@
                             </div>
                         </div>
                     </div>
-                    
+                  
                     <div class="info-card">
                         <h3 class="text-lg font-semibold mb-3">✨ Extras</h3>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm mb-3">
+                             <div><span class="font-medium">Pickup / Delivery Type:</span><div id="ov_pd_type"></div></div>
                             <div><span class="font-medium">Consultation requested:</span><div id="ov_consultation"></div></div>
-                            <div><span class="font-medium">Gift note:</span><div id="ov_gift_note" class="status-badge"></div></div>
-                            <div><span class="font-medium">Pickup / Delivery Type:</span><div id="ov_pd_type"></div></div>
+                            <div><span class="font-medium">Gift note:</span><div id="ov_gift_note"></div></div>
                         </div>
                         <div class="mt-2 text-sm">
                             <span class="font-medium">Gift Note Text:</span>
@@ -407,7 +510,6 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="space-y-6">
                     <div class="info-card bg-white shadow-xl border-blue-200 border-2">
                         <h3 class="text-lg font-bold mb-3">💰 Pricing Breakdown</h3>
@@ -458,42 +560,27 @@
             </div>
         </div>
     </dialog>
-
     <script>
     // ---- Supabase client (no changes) ----
     const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    
-    // ---- Date Formatting Tool ----
-    const dateToMDY = (d) => { 
-        if(!d) return ''; 
-        const dt=new Date(d); 
-        // Use UTC date parts to prevent timezone shifts changing the visible day
-        const year = dt.getUTCFullYear();
-        const month = dt.getUTCMonth() + 1;
-        const day = dt.getUTCDate();
-        return `${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}/${year}`;
-    };
-
-    // ---- Auth and Initialization (no changes) ----
+  
+    // ---- Auth (Email & Password) ----
     const signinCard = document.getElementById('signinCard');
     const appWrapper = document.getElementById('app-wrapper');
     const authMsg = document.getElementById('authMsg');
-    
+  
     const signInButton = document.getElementById('signInButton');
     const emailInput = document.getElementById('email');
     const passwordInput = document.getElementById('password');
     const onlyCompanyEmail = (email) => /@rebelribbon\.com$/i.test(email);
-
     signInButton.addEventListener('click', async () => {
         try {
             authMsg.textContent = '';
             authMsg.classList.remove('text-red-600', 'text-green-700');
-
             const email = emailInput.value.trim();
             const password = passwordInput.value.trim();
-
             if (!onlyCompanyEmail(email)) {
                 authMsg.classList.add('text-red-600');
                 authMsg.textContent = 'Access denied. Use your @rebelribbon.com address.';
@@ -504,16 +591,13 @@
                 authMsg.textContent = 'Password is required.';
                 return;
             }
-            
+          
             signInButton.disabled = true;
             document.body.style.cursor = 'progress';
-
             const { data, error } = await sb.auth.signInWithPassword({ email, password });
             if (error) throw error;
-
             authMsg.classList.add('text-green-700');
             authMsg.textContent = 'Signed in. Loading app...';
-
             await bootstrap();
         } catch (e) {
             authMsg.classList.remove('text-green-700');
@@ -524,15 +608,12 @@
             document.body.style.cursor = 'default';
         }
     });
-
     async function bootstrap() {
         const { data: { session }, error } = await sb.auth.getSession();
         if (error) { authMsg.textContent = error.message; return; }
-
         if (!session) {
             signinCard.classList.remove('hidden');
             appWrapper.classList.add('hidden');
-
             if (SUPABASE_URL.includes('YOUR-PROJECT') || SUPABASE_ANON_KEY.includes('PASTE_')) {
                 const hint = document.getElementById('netHint');
                 hint.classList.remove('hidden');
@@ -540,7 +621,7 @@
             }
             return;
         }
-        
+      
         const email = session.user?.email || '';
         if (!onlyCompanyEmail(email)) {
             await sb.auth.signOut();
@@ -549,37 +630,33 @@
             appWrapper.classList.add('hidden');
             return;
         }
-        
-        document.getElementById('who').textContent = `Signed in as: ${email.split('@')[0]}`; 
+      
+        document.getElementById('who').textContent = `Signed in as: ${email.split('@')[0]}`;
         signinCard.classList.add('hidden');
         appWrapper.classList.remove('hidden');
-
         activeKey = 'order_list';
         activeOrderFilter = 'All';
         renderTabs();
         loadTable();
         wireRealtime();
     }
-
     document.getElementById('logout').addEventListener('click', async () => {
         await sb.auth.signOut();
         location.href = location.origin + location.pathname;
     });
-
-    // ---- Sidebar Toggle Logic (no changes) ----
+    // ---- Sidebar Toggle Logic (New implementation for fixed header) ----
     document.getElementById('menuToggle').addEventListener('click', () => {
         document.getElementById('sidebar').classList.toggle('open');
-        document.body.classList.toggle('overflow-hidden');
+        document.body.classList.toggle('overflow-hidden'); // Prevent content scroll when sidebar is open
     });
-
+    // Close sidebar when a navigation item is clicked
     document.getElementById('sidebar').addEventListener('click', (e) => {
         if (e.target.closest('.nav-item')) {
             document.getElementById('sidebar').classList.remove('open');
             document.body.classList.remove('overflow-hidden');
         }
     });
-
-    // ---- Tables config (no changes) ----
+    // ---- Tables config (Updated for visibility requirements) ----
     const tables = {
         order_list: {
             title: 'Orders',
@@ -634,22 +711,35 @@
             { key:'status', label:'Status', type:'select', w:'14',
                 options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled'] }
         ]},
-        discount_codes: { 
-            title:'Discount Codes', 
-            table:'discount_codes', 
-            isSettings:true, 
+        discount_codes: {
+            title:'Discount Codes',
+            table:'discount_codes',
+            isSettings:true,
+            list_keys: ['code'],
             cols:[
-                { key:'code', label:'Code', type:'text', required:true, w:'30' },
-                { key:'amount', label:'Amount', type:'number', step:'0.01', w:'20' },
+                { key:'code', label:'Code', type:'text', required:true, w:'20' },
                 { key:'type', label:'Type', type:'select', options:['percent','fixed'], required:true, w:'20' },
+                { key:'amount', label:'Amount', type:'number', step:'0.01', w:'20' },
+                { key:'uses_allowed', label:'Uses Allowed', type:'number', w:'20' },
+                { key:'email_allowed', label:'Email Allowed', type:'email', w:'20' },
+                { key:'good_through_date', label:'Good Through Date', type:'date', w:'20' },
             ]
         },
-        referral_codes: { 
-            title:'Referral Codes', 
-            table:'referral_codes', 
-            isSettings:true, 
+        referral_codes: {
+            title:'Referral Codes',
+            table:'referral_codes',
+            isSettings:true,
+            list_keys: ['code'],
             cols:[
-                { key:'code', label:'Code', type:'text', required:true, w:'100' },
+                { key:'code', label:'Code', type:'text', required:true, w:'20' },
+                { key:'associated_customer_id', label:'Associated Customer ID', type:'select-async', w:'20',
+                    asyncOptions: async () => {
+                        const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+                        return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+                    }},
+                { key:'good_through_date', label:'Good Through Date', type:'date', w:'20' },
+                { key:'referrer_discount', label:'Referrer Discount', type:'number', step:'0.01', w:'20' },
+                { key:'referee_discount', label:'Referee Discount', type:'number', step:'0.01', w:'20' },
             ]
         },
         flavors: { title:'Flavors', table:'flavors', isSettings:true, cols:[
@@ -658,11 +748,11 @@
         dietary_options: { title:'Dietary Options', table:'dietary_options', isSettings:true, cols:[
             { key:'name', label:'Dietary option', type:'text', required:true, w:'40' }
         ]},
-        pricing: { 
-            title:'Pricing', 
-            table:'pricing', 
-            isSettings:true, 
-            customLoader: 'loadPricingList', 
+        pricing: {
+            title:'Pricing',
+            table:'pricing',
+            isSettings:true,
+            customLoader: 'loadPricingList',
             cols:[
                 { key:'price_per_dozen', label:'Price per dozen', type:'number', step:'0.01', w:'20' },
                 { key:'delivery_fee', label:'Delivery fee', type:'number', step:'0.01', w:'20' },
@@ -671,10 +761,10 @@
                 { key:'rush_fee', label:'Rush fee', type:'number', step:'0.01', w:'20' }
             ]
         },
-        costs: { 
-            title:'Costs', 
-            table:'costs', 
-            isSettings:true, 
+        costs: {
+            title:'Costs',
+            table:'costs',
+            isSettings:true,
             cols:[
                 { key:'cost_date', label:'Date', type:'date', w:'25' },
                 { key:'item_name', label:'Item name', type:'text', required:true, w:'55' },
@@ -694,30 +784,16 @@
             { key:'website_review', label:'Website review', type:'textarea', w:'30' }
         ]}
     };
-
     const tabOrder = ['order_list','surveys'];
     const settingsOrder = ['discount_codes','referral_codes','flavors','dietary_options','pricing','costs'];
-
     let activeKey = 'order_list';
     let activeOrderFilter = 'All';
     const pageSize = 20;
     let page = 0;
     let totalCount = 0;
-
     const $ = (t,c,h)=>{ const e=document.createElement(t); if(c) e.className=c; if(h!==undefined) e.innerHTML=h; return e; };
     const fmt = (v)=> v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
-    
-    // NEW DATE FORMATTER: MM/DD/YYYY
-    const dateToMDY = (d) => { 
-        if(!d) return ''; 
-        const dt=new Date(d); 
-        // Use UTC date parts to prevent timezone shifts changing the visible day
-        const year = dt.getUTCFullYear();
-        const month = dt.getUTCMonth() + 1;
-        const day = dt.getUTCDate();
-        return `${month.toString().padStart(2, '0')}/${day.toString().padStart(2, '0')}/${year}`;
-    };
-
+    const dateOnly=(d)=>{ if(!d) return ''; const dt=new Date(d); const tz=new Date(dt.getTime()-dt.getTimezoneOffset()*60000); return tz.toISOString().slice(0,10); };
     const formatOrderId = (id) => {
         if (id == null) return '';
         const n = Number(id);
@@ -725,7 +801,6 @@
         const s = String(Math.trunc(n));
         return s.padStart(7, '0');
     };
-
     const isUrgent = (d) => {
         if (!d) return false;
         const today = new Date();
@@ -733,18 +808,16 @@
         const diffDays = Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
         return diffDays >= 0 && diffDays <= 7;
     };
-
     const getStatusClass = (status) => {
         if (!status) return 'status-in-review';
         const s = status.toLowerCase().replace(/\s/g, '-');
         return `status-${s}`;
     };
-
-    function buildColGroup(conf){
+    function buildColGroup(conf, display_cols){
         const cg = document.getElementById('colgroup'); cg.innerHTML='';
-        const cols = conf.cols.slice();
-        if (activeKey !== 'order_list' && !conf.readOnly) cols.push({key:'__actions', w:'10'}); 
-        
+        let cols = display_cols.slice();
+        if (activeKey !== 'order_list' && !conf.readOnly) cols.push({key:'__actions', w:'20'});
+      
         const total = cols.reduce((s,c)=> s + (Number(c.w||0) || 0), 0) || 100;
         for (const c of cols){
             const col = document.createElement('col');
@@ -753,59 +826,45 @@
             cg.appendChild(col);
         }
     }
-
-    function buildThead(conf){
+    function buildThead(conf, display_cols){
         const tr = document.getElementById('thead'); tr.innerHTML='';
-        for (const c of conf.cols){
-            // Custom alignment logic for table headers
-            let align = 'text-left';
-            if (activeKey === 'order_list' && c.key === 'status') {
-                 align = 'text-center'; 
-            } else if (c.type === 'number') {
-                align = 'text-right';
-            }
-            const cls = `thcell ${align}`;
+        for (const c of display_cols){
+            const cls = 'thcell ' + (conf.center ? 'text-center' : 'text-left');
             tr.appendChild($('th', cls, c.label));
         }
-        if (activeKey !== 'order_list' && !conf.readOnly) tr.appendChild($('th','thcell text-right','Actions'));
+        if (activeKey !== 'order_list' && !conf.readOnly) tr.appendChild($('th','thcell text-right','Action'));
     }
-
     async function loadTable(){
         const conf = tables[activeKey];
         document.getElementById('pageTitle').textContent = conf.title;
-        
+      
+        // Hide/Show elements based on active tab
         const isPricing = activeKey === 'pricing';
         const isOrderList = activeKey === 'order_list';
-
-        // CRITICAL FIX: STRICTLY control the visibility of the search/refresh/filters group
+        // STRICTLY control the visibility of the search/refresh/filters group
         document.getElementById('orderPageControls').classList.toggle('hidden', !isOrderList);
-        
+      
         document.getElementById('addBtn').classList.toggle('hidden', !!conf.readOnly || isPricing);
         document.getElementById('dataActions').classList.toggle('hidden', isPricing);
         document.getElementById('pricingList').classList.toggle('hidden', !isPricing);
         document.getElementById('grid').closest('.table-wrap').classList.toggle('hidden', isPricing);
-
         const exportBtn = document.getElementById('exportBtn');
         if (exportBtn) {
             exportBtn.classList.toggle('hidden', activeKey !== 'costs');
         }
-
         if (conf.customLoader === 'loadPricingList') {
             await loadPricingList();
             return;
         }
-
-        buildColGroup(conf);
-        buildThead(conf);
-
-        const tbody = document.getElementById('tbody'); 
+        const display_cols = conf.list_keys ? conf.cols.filter(c => conf.list_keys.includes(c.key)) : conf.cols;
+        buildColGroup(conf, display_cols);
+        buildThead(conf, display_cols);
+        const tbody = document.getElementById('tbody');
         tbody.innerHTML = '';
-
         if (conf.customLoader === 'loadOrderList') {
             await loadOrderList();
             return;
         }
-
         document.body.style.cursor = 'progress';
         let query = sb.from(conf.table).select('*', { count:'exact' });
         const q = document.getElementById('globalSearch').value?.trim();
@@ -813,43 +872,32 @@
             const orParts = conf.cols.map(c => `${c.key}.ilike.%${q}%`).join(',');
             if (orParts) query = query.or(orParts);
         }
-
         query = query.order('updated_at', { ascending:false }).range(page*pageSize, page*pageSize+pageSize-1);
         const { data, error, count } = await query;
         document.body.style.cursor = 'default';
-
         if (error) {
             tbody.appendChild($('tr','',`<td class="cell text-red-700" colspan="99">${error.message}</td>`));
             return;
         }
-
         totalCount = count || 0;
-
         for (const row of (data||[])){
             const tr = $('tr','border-b ' + (conf.center ? 'text-center' : ''));
-            for (const c of conf.cols){
+            for (const c of display_cols){
                 let val = row[c.key];
                 if (c.type === 'checkbox') val = !!val;
-                if (c.type === 'date') val = dateToMDY(val);
-                
-                let align = 'text-left';
-                if (c.type === 'number') align = 'text-right';
-                if (activeKey === 'order_list' && c.key === 'status') align = 'text-center';
-                
-                tr.appendChild($('td',`cell ${align}`, fmt(val)));
+                if (c.type === 'date') val = dateOnly(val);
+                tr.appendChild($('td','cell', fmt(val)));
             }
             if (!conf.readOnly && activeKey !== 'order_list') {
                 const td = $('td','cell text-right');
-                const edit = $('button','px-2 py-1 rounded border hover:bg-gray-100 pricing-edit-btn','Edit');
+                const edit = $('button','btn btn-secondary','Edit');
                 edit.addEventListener('click', () => openEditor(conf, row));
                 td.appendChild(edit);
                 tr.appendChild(td);
             }
             tbody.appendChild(tr);
         }
-
         updatePager();
-
         if (activeKey === 'costs' && exportBtn) {
             exportBtn.onclick = async () => {
                 const { data: allRows } = await sb.from(conf.table).select('*').order('updated_at',{ascending:false});
@@ -857,72 +905,58 @@
             };
         }
     }
-
     async function loadPricingList(){
         const listEl = document.getElementById('pricingList');
         listEl.innerHTML = '';
-
         document.body.style.cursor = 'progress';
         const { data, error } = await sb.from('pricing').select('*').limit(1);
         document.body.style.cursor = 'default';
-
         if (error || !data || data.length === 0) {
             listEl.innerHTML = '<p class="p-4 text-red-700">Error loading pricing or table is empty.</p>';
             return;
         }
-
         const pricingRow = data[0];
         const conf = tables.pricing;
-
         for (const col of conf.cols) {
             const item = $('div', 'pricing-item');
             const label = $('span', 'pricing-item-label', col.label);
             const amount = $('span', 'pricing-item-amount', money(pricingRow[col.key]));
-            const editBtn = $('button', 'pricing-edit-btn btn-secondary', 'Edit');
-
+            const editBtn = $('button', 'btn btn-secondary pricing-edit-btn', 'Edit');
             editBtn.addEventListener('click', () => {
-                const tempRow = { 
+                const tempRow = {
                     id: pricingRow.id,
-                    [col.key]: pricingRow[col.key] 
+                    [col.key]: pricingRow[col.key]
                 };
-                
+              
                 const tempConf = {
                     title: `Edit ${col.label}`,
                     table: 'pricing',
                     readOnly: false,
                     cols: [{...col, w: '100'}]
                 };
-
                 openEditor(tempConf, tempRow);
             });
-
             item.appendChild(label);
             item.appendChild(amount);
             item.appendChild(editBtn);
             listEl.appendChild(item);
         }
-
         document.getElementById('pageInfo').textContent = '';
         document.getElementById('prev').disabled = true;
         document.getElementById('next').disabled = true;
     }
-
-
     function orderMatchesSearch(order, customer, term) {
         if (!term) return true;
         const lowerTerm = term.toLowerCase();
-
         const idStr = String(order.id || '').toLowerCase();
         const formattedId = formatOrderId(order.id).toLowerCase();
         const statusStr = String(order.status || '').toLowerCase();
-        const created = dateToMDY(order.created_at).toLowerCase();
-        const pd = dateToMDY(order.pickup_delivery_date).toLowerCase();
-        const ev = dateToMDY(order.event_date).toLowerCase();
-
+        const created = dateOnly(order.created_at).toLowerCase();
+        const pd = dateOnly(order.pickup_delivery_date).toLowerCase();
+        const ev = dateOnly(order.event_date).toLowerCase();
         const custName = customer ? `${customer.first_name || ''} ${customer.last_name || ''}`.trim().toLowerCase() : '';
         const custEmail = customer?.email?.toLowerCase() || '';
         const custPhone = (customer?.phone || '').toLowerCase();
-
         return (
             idStr.includes(lowerTerm) ||
             formattedId.includes(lowerTerm) ||
@@ -935,29 +969,22 @@
             custPhone.includes(lowerTerm)
         );
     }
-
     async function loadOrderList(){
-        const tbody = document.getElementById('tbody'); 
+        const tbody = document.getElementById('tbody');
         tbody.innerHTML = '';
-
         document.body.style.cursor = 'progress';
-
         const searchRaw = document.getElementById('globalSearch').value || '';
         const searchTerm = searchRaw.trim().toLowerCase();
-
         let baseQuery = sb
             .from('orders')
-            .select('id, customer_id, status, event_date, pickup_delivery_date', { count:'exact' }) 
+            .select('id, customer_id, status, event_date, pickup_delivery_date', { count:'exact' })
             .order('created_at',{ascending:false});
-
         if (activeOrderFilter !== 'All') {
             baseQuery = baseQuery.eq('status', activeOrderFilter);
         }
-
         let orders = [];
         let count = 0;
         let error = null;
-
         if (searchTerm) {
             const { data, error: err, count: total } = await baseQuery;
             error = err;
@@ -969,19 +996,15 @@
             orders = data || [];
             count = total || 0;
         }
-
         document.body.style.cursor = 'default';
-
         if (error) {
             tbody.appendChild($('tr','',`<td class="cell text-red-700" colspan="99">${error.message}</td>`));
             totalCount = 0;
             updatePager();
             return;
         }
-
         const ids = [...new Set((orders||[]).map(o=>o.customer_id).filter(Boolean))];
         const map = new Map();
-
         if (ids.length){
             const { data: cust } = await sb
                 .from('customers')
@@ -989,48 +1012,40 @@
                 .in('id', ids);
             (cust||[]).forEach(c => map.set(c.id, c));
         }
-
         if (searchTerm) {
             const filtered = (orders || []).filter(o => {
                 const cust = map.get(o.customer_id);
                 return orderMatchesSearch(o, cust, searchTerm);
             });
             totalCount = filtered.length;
-
             const start = page * pageSize;
             const end = start + pageSize;
             orders = filtered.slice(start, end);
         } else {
             totalCount = count;
         }
-
         for (const r of (orders||[])){
             const cust = map.get(r.customer_id);
             const status = r.status || 'In Review';
             const custName = cust ? `${cust.first_name||''} ${cust.last_name||''}`.trim() : 'N/A';
-            const isUrgentOrder = isUrgent(r.event_date) || isUrgent(r.pickup_delivery_date); 
-
+            const isUrgentOrder = isUrgent(r.event_date) || isUrgent(r.pickup_delivery_date);
             const tr = $('tr','border-b hover:bg-gray-100 cursor-pointer');
-
             // Cell for Customer Name (Left aligned)
             tr.appendChild($('td', 'cell text-left font-medium', custName));
-            
+          
             // Cell for Status (Center aligned via CSS class)
             const statusCell = $('td', 'cell text-center');
             statusCell.appendChild($('span', `status-badge ${getStatusClass(status)}`, status));
             tr.appendChild(statusCell);
-
             tr.addEventListener('click', ()=> openOrderManager(r.id));
             tbody.appendChild(tr);
         }
-
         updatePager();
     }
-    
+  
     function exportCSV(rows, conf){
         const headers = conf.cols.map(c => c.label);
         const csvRows = [headers.join(',')];
-
         for (const r of rows){
             const vals = conf.cols.map(c => {
                 let v = r[c.key];
@@ -1039,14 +1054,11 @@
                     const [table, key] = c.key.split('.');
                     v = r[table]?.[key] ?? '';
                 }
-                if (c.type === 'date') v = dateToMDY(v);
-
                 const s = String(v).replaceAll('"', '""');
                 return `"${s}"`;
             });
             csvRows.push(vals.join(','));
         }
-
         const csv = csvRows.join('\n');
         const blob = new Blob([csv], { type: 'text/csv' });
         const url = URL.createObjectURL(blob);
@@ -1056,25 +1068,20 @@
         a.click();
         URL.revokeObjectURL(url);
     }
-
     function updatePager(){
         const prev = document.getElementById('prev');
         const next = document.getElementById('next');
         prev.disabled = page === 0;
         next.disabled = (page + 1) * pageSize >= totalCount;
-
         const shown = Math.min(totalCount, page*pageSize + Math.min(pageSize, Math.max(0,totalCount - page*pageSize)));
         document.getElementById('pageInfo').textContent = `${shown} of ${totalCount}`;
     }
-
     const dlg = document.getElementById('editor');
     const formBody = document.getElementById('formBody');
-
     async function optionEl(col, value){
         const wrap = $('label','block');
         wrap.appendChild($('span','text-sm block mb-1', col.label));
         let input;
-
         if (col.type === 'textarea'){
             input = $('textarea','px-3 py-2 rounded-lg border w-full');
             input.rows = 4;
@@ -1110,102 +1117,63 @@
             if (col.min !== undefined) input.min = col.min;
             if (col.max !== undefined) input.max = col.max;
         }
-
         input.id = `fld_${col.key}`;
         if (col.required) input.required = true;
-
         if (col.type === 'checkbox') input.checked = !!value;
-        else if (col.type === 'date') {
-            const dt = value ? new Date(value) : null;
-            if (dt && !isNaN(dt)) {
-                // Ensure value is in YYYY-MM-DD for the date input type
-                input.value = dt.toISOString().split('T')[0];
-            } else {
-                 input.value = '';
-            }
-        }
+        else if (col.type === 'date') input.value = dateOnly(value);
         else input.value = value ?? '';
-
         wrap.appendChild(input);
         return wrap;
     }
-
     async function openEditor(conf, row){
         document.getElementById('editorTitle').textContent = row ? `Edit ${conf.title}` : `New ${conf.title}`;
         formBody.innerHTML = '';
-
-        const baseConf = tables[conf.table];
-        const colsToRender = conf.cols.length === 1 && conf.table === 'pricing' ? conf.cols : baseConf.cols;
-
-        for (const c of colsToRender) formBody.appendChild(await optionEl(c, row?.[c.key]));
-
+        for (const c of conf.cols) formBody.appendChild(await optionEl(c, row?.[c.key]));
         const idHidden = document.createElement('input');
         idHidden.type='hidden';
         idHidden.id='row_id';
         idHidden.value=row?.id||'';
         formBody.appendChild(idHidden);
-
         const delBtn = document.getElementById('deleteBtn');
         const hideDelete = conf.table === 'orders' || conf.table === 'pricing';
         delBtn.classList.toggle('hidden', !row || !!conf.readOnly || hideDelete);
-
         delBtn.onclick = async () => {
             if (!row?.id || hideDelete) return;
             if (!confirm('Delete this record?')) return;
-
             const { error } = await sb.from(conf.table).delete().eq('id', row.id);
             if (error) { alert(error.message); return; }
-
             dlg.close();
             loadTable();
             if (conf.table === 'orders') drawer.close();
         };
-
         document.getElementById('saveBtn').onclick = async (e) => {
             e.preventDefault();
             await saveRecord(conf, row);
         };
-
         dlg.showModal();
     }
-
     async function saveRecord(conf, originalRow){
         const payload = {};
-        
-        const colsToSave = conf.cols.length === 1 && conf.table === 'pricing' ? conf.cols : tables[conf.table].cols;
-        
-        for (const c of colsToSave){
+        for (const c of conf.cols){
             const elx = document.getElementById(`fld_${c.key}`);
-            
-            if (!elx) continue;
-
             let val = (c.type === 'checkbox') ? elx.checked : elx.value || null;
             if (c.type === 'number' && val !== null) val = elx.value === '' ? null : Number(val);
-            
             payload[c.key] = val;
         }
-
         const id = document.getElementById('row_id').value;
         let resp;
-
         if (id) resp = await sb.from(conf.table).update(payload).eq('id', id).select('*').single();
-        else   resp = await sb.from(conf.table).insert(payload).select('*').single();
-
+        else resp = await sb.from(conf.table).insert(payload).select('*').single();
         if (resp.error) { alert(resp.error.message); return; }
-
         dlg.close();
         loadTable();
-
         if (conf.table === 'orders' && originalRow) {
             openOrderManager(originalRow.id);
         }
     }
-
     function renderTabs(){
         const sidebar = document.getElementById('sidebar');
-
         sidebar.querySelectorAll('.nav-item').forEach(b => b.classList.remove('nav-active'));
-
         [...tabOrder, ...settingsOrder].forEach(key => {
             const btn = document.querySelector(`.nav-item[data-key="${key}"]`);
             if (btn) {
@@ -1218,12 +1186,10 @@
                 };
             }
         });
-
         const filterBtns = document.querySelectorAll('#orderFilters .filter-tab');
         filterBtns.forEach(btn => {
             btn.classList.remove('filter-active');
             if (btn.dataset.filter === activeOrderFilter) btn.classList.add('filter-active');
-
             btn.onclick = () => {
                 activeOrderFilter = btn.dataset.filter;
                 page = 0;
@@ -1232,31 +1198,29 @@
                 loadTable();
             };
         });
-
         const addBtn = document.getElementById('addBtn');
         if (activeKey === 'pricing') {
             addBtn.classList.add('hidden');
         } else {
             addBtn.classList.toggle('hidden', !!tables[activeKey].readOnly);
         }
-
         addBtn.onclick = () => openEditor(tables[activeKey], null);
         document.getElementById('prev').onclick = () => { if (page>0) { page--; loadTable(); } };
         document.getElementById('next').onclick = () => { if ((page+1)*pageSize < totalCount) { page++; loadTable(); } };
-        
+      
+        // Re-enable globalSearch event handler (now part of orderPageControls)
         const globalSearch = document.getElementById('globalSearch');
         if (globalSearch) {
              globalSearch.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
-                    page = 0; 
+                    page = 0;
                     loadTable();
                 }
              });
         }
-        
+      
         document.getElementById('refreshAll').onclick = () => { page = 0; loadTable(); };
     }
-
     function wireRealtime(){
         for (const key of Object.keys(tables)){
             const table = (key==='order_list'?'orders':tables[key].table);
@@ -1266,18 +1230,15 @@
                 .subscribe();
         }
     }
-
     const drawer = document.getElementById('orderDrawer');
     let activeOrder = null;
     let activeCustomer = null;
     let pricing = null;
     let adjustments = [];
-
     let discountCodeDetails = null;
     let referralCodeDetails = null;
     let discountCodeAmount = 0;
     let referralDiscountAmount = 0;
-
     function isValidMimeType(mimeType) {
         const allowedMimeTypes = [
             'image/jpeg',
@@ -1287,27 +1248,22 @@
         ];
         return allowedMimeTypes.includes(mimeType);
     }
-
     document.addEventListener("DOMContentLoaded", () => {
         const uploadInput = document.getElementById('uploadPhoto');
         const previewImg = document.getElementById('ov_photo');
-
         if (uploadInput && previewImg) {
             uploadInput.addEventListener('change', (e) => {
                 const file = e.target.files?.[0];
                 if (!file) return;
-
                 if (!isValidMimeType(file.type)) {
                     alert('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.');
                     uploadInput.value = '';
                     return;
                 }
-
                 const previewUrl = URL.createObjectURL(file);
                 previewImg.src = previewUrl;
             });
         }
-
         if (previewImg) {
             previewImg.addEventListener('click', () => {
                 if (!previewImg.src) return;
@@ -1316,18 +1272,18 @@
                 w.document.close();
             });
         }
-        
+      
+        // Ensure initial setting of handler
         const globalSearch = document.getElementById('globalSearch');
         if (globalSearch) {
              globalSearch.addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') {
-                    page = 0; 
+                    page = 0;
                     loadTable();
                 }
              });
         }
     });
-
     async function fetchPricing(){
         const { data } = await sb.from('pricing').select('*').limit(1);
         const p = (data && data[0]) || {};
@@ -1339,93 +1295,71 @@
             rush_fee: Number(p.rush_fee||0)
         };
     }
-
     function isDatePast(d){
         if (!d) return false;
-        const today = new Date();
-        const eventDate = new Date(d);
-        const diffDays = Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
-        return diffDays >= 0 && diffDays <= 7;
+        const today = dateOnly(new Date());
+        return dateOnly(d) < today;
     }
-
     async function fetchDiscountCodeDetails(code, customerEmail){
         if (!code) return null;
         const result = { code, isValid:false, type:null, value:0 };
-
         const { data, error } = await sb
             .from('discount_codes')
             .select('*')
             .eq('code', code)
             .maybeSingle();
-
         if (error || !data) return result;
-
         if (data.good_through_date && isDatePast(data.good_through_date)) {
             return result;
         }
-
         if (data.email_allowed && customerEmail &&
             data.email_allowed.toLowerCase() !== customerEmail.toLowerCase()){
             return result;
         }
-
         const value = Number(data.amount ?? data.value ?? data.discount ?? 0);
         if (!value || value <= 0) return result;
-
         result.isValid = true;
         result.type = (data.type === 'percent') ? 'percent' : 'fixed';
         result.value = value;
         return result;
     }
-
     async function fetchReferralCodeDetails(code){
         if (!code) return null;
         const result = { code, isValid:false, type:'percent', value:0 };
-
         const { data, error } = await sb
             .from('referral_codes')
             .select('*')
             .eq('code', code)
             .maybeSingle();
-
         if (error || !data) return result;
-
         if (data.good_through_date && isDatePast(data.good_through_date)){
             return result;
         }
-
         const value = Number(data.referee_discount ?? 0);
         if (!value || value <= 0) return result;
-
         result.isValid = true;
         result.value = value;
         return result;
     }
-
     async function fetchAdjustments(order_id){
         const { data } = await sb.from('order_adjustments').select('*').eq('order_id', order_id).order('created_at',{ascending:false});
         return (data||[]).map(r => ({...r, amount: Number(r.amount||0)}));
     }
-
     async function deleteAdjustment(adjustmentId){
         if (!confirm('Are you sure you want to remove this adjustment?')) return;
-        
+      
         document.body.style.cursor = 'progress';
         const { error } = await sb.from('order_adjustments').delete().eq('id', adjustmentId);
         document.body.style.cursor = 'default';
-
         if (error) {
             alert(error.message + '\n\nMake sure the Supabase table has a DELETE RLS policy for authenticated users.');
             return;
         }
-
         adjustments = adjustments.filter(a => a.id !== adjustmentId);
         fillDrawer();
         loadTable();
     }
-
     function money(n){ return '$' + (Number(n||0)).toFixed(2); }
-
     function formatPhone(phone){
         if (!phone) return '';
         const cleaned = ('' + phone).replace(/\D/g, '');
@@ -1435,7 +1369,6 @@
         }
         return phone;
     }
-
     function computeTotals(){
         const ppd = pricing?.price_per_dozen || 0;
         const consult = (activeOrder?.consultation_requested ? (pricing?.consultation_fee||0) : 0);
@@ -1443,12 +1376,9 @@
         const base = (Number(activeOrder?.cookie_amount_dzns||0) * ppd);
         const feeSum = adjustments.filter(a=>a.kind==='fee').reduce((s,a)=>s+a.amount,0);
         const manualDiscSum = adjustments.filter(a=>a.kind==='discount').reduce((s,a)=>s+a.amount,0);
-
         const baseForCodes = base + consult + gift + feeSum;
-
         discountCodeAmount = 0;
         referralDiscountAmount = 0;
-
         if (discountCodeDetails && discountCodeDetails.isValid && baseForCodes > 0){
             const v = discountCodeDetails.value || 0;
             if (discountCodeDetails.type === 'percent') {
@@ -1458,15 +1388,12 @@
             }
             if (discountCodeAmount > baseForCodes) discountCodeAmount = baseForCodes;
         }
-
         if (referralCodeDetails && referralCodeDetails.isValid && baseForCodes > 0){
             const v = referralCodeDetails.value || 0;
             referralDiscountAmount = baseForCodes * (v / 100);
             if (referralDiscountAmount > baseForCodes) referralDiscountAmount = baseForCodes;
         }
-
         const total = base + consult + gift + feeSum - manualDiscSum - discountCodeAmount - referralDiscountAmount;
-
         document.getElementById('t_price').textContent = money(ppd);
         document.getElementById('t_base').textContent = money(base);
         document.getElementById('t_consult').textContent = money(consult);
@@ -1477,63 +1404,51 @@
         document.getElementById('t_adj_disc').textContent = manualDiscSum ? '- ' + money(manualDiscSum) : '- $0.00';
         document.getElementById('t_total').textContent = money(total);
     }
-
     function renderAdjustments(){
-        const tb = document.getElementById('adjTbody'); 
+        const tb = document.getElementById('adjTbody');
         tb.innerHTML='';
-
         if (adjustments.length === 0) {
             tb.innerHTML = '<tr><td colspan="5" class="p-2 text-center text-gray-500">No adjustments yet.</td></tr>';
             return;
         }
-
         for (const a of adjustments){
             const tr = $('tr','border-b');
             const amountText = a.kind === 'discount' ? '-' + money(a.amount) : money(a.amount);
-
-            tr.appendChild($('td','p-2 text-xs', dateToMDY(a.created_at)));
+            tr.appendChild($('td','p-2 text-xs', new Date(a.created_at).toLocaleDateString()));
             tr.appendChild($('td','p-2 text-xs', a.kind));
             tr.appendChild($('td','p-2', a.label||''));
             tr.appendChild($('td',`p-2 text-right ${a.kind === 'discount' ? 'text-red-600' : 'text-green-600'}`, amountText));
-            
+          
             const removeCell = $('td', 'p-2 text-right');
-            const removeBtn = $('button', 'text-red-500 hover:text-red-700 text-sm font-medium', 'Remove');
+            const removeBtn = $('button', 'btn btn-ghost text-red-500 hover:text-red-700 text-sm font-medium', 'Remove');
             removeBtn.onclick = () => deleteAdjustment(a.id);
             removeCell.appendChild(removeBtn);
             tr.appendChild(removeCell);
-
             tb.appendChild(tr);
         }
     }
-
     function fillDrawer(){
         const o = activeOrder, c = activeCustomer;
         const currentStatus = o?.status || 'In Review';
         const isGiftNote = o?.gift_note || false;
         const isConsultation = o?.consultation_requested || false;
         const rawPhone = c?.phone || '';
-
         document.getElementById('drawerTitle').textContent =
             `Order #${formatOrderId(o.id)} (${currentStatus || 'In Review'})`;
-
         document.getElementById('cust_name').textContent =
             c ? `${c.first_name||''} ${c.last_name||''}`.trim() : 'N/A';
         document.getElementById('cust_id').textContent =
             c?.customer_id || o?.customer_id || 'N/A';
-
         const custEmailEl = document.getElementById('cust_email');
         custEmailEl.textContent = c?.email || 'N/A';
         custEmailEl.href = c?.email ? `mailto:${c.email}` : '#';
-
         const custPhoneEl = document.getElementById('cust_phone_link');
         custPhoneEl.textContent = formatPhone(rawPhone) || 'N/A';
         custPhoneEl.href = rawPhone ? `tel:${rawPhone.replace(/\D/g, '')}` : '#';
-
         document.getElementById('cust_addr1').textContent = c?.street_address || '';
         document.getElementById('cust_addr2').textContent = c?.street_address_cont || '';
         const cityStZip = [c?.city, c?.state, c?.zip].filter(Boolean).join(', ');
         document.getElementById('cust_citystzip').textContent = cityStZip;
-
         document.getElementById('mapLocation').onclick = () => {
             const address = [c?.street_address, c?.street_address_cont, c?.city, c?.state, c?.zip]
                 .filter(Boolean).join(', ');
@@ -1543,35 +1458,30 @@
                 alert('No full address available to map.');
             }
         };
-
         const eventName = o?.event_type_name || o?.event_name || '';
         document.getElementById('ov_event_name').textContent = eventName || 'N/A';
-        document.getElementById('ov_event').textContent = dateToMDY(o?.event_date); 
-
-        document.getElementById('ov_submitted').textContent = dateToMDY(o?.created_at);
-        document.getElementById('ov_pickup').textContent = dateToMDY(o?.pickup_delivery_date);
-        
+        document.getElementById('ov_event').textContent = dateOnly(o?.event_date);
+        document.getElementById('ov_submitted').textContent = dateOnly(o?.created_at);
+        document.getElementById('ov_pickup').textContent = dateOnly(o?.pickup_delivery_date);
+      
         document.getElementById('ov_dzns').textContent = o?.cookie_amount_dzns ?? '0';
         document.getElementById('ov_flavor').textContent = o?.flavor || 'N/A';
         document.getElementById('ov_dietary').textContent = o?.dietary_option || 'None';
         document.getElementById('ov_notes').textContent = o?.design_notes || 'No design notes provided.';
-
         const photo = document.getElementById('ov_photo');
         if (o?.design_inspiration_photo) {
             photo.src = o.design_inspiration_photo;
         } else {
             photo.src = 'https://dummyimage.com/320x320/e5e7eb/6b7280.jpg&text=No+photo';
         }
-
         document.getElementById('ov_consultation').textContent = isConsultation ? 'Yes' : 'No';
-        const giftBadge = document.getElementById('ov_gift_note');
-        giftBadge.textContent = isGiftNote ? 'Yes' : 'No';
-        giftBadge.className = `status-badge ${isGiftNote ? 'status-approved' : 'status-canceled'}`;
-        document.getElementById('ov_gift_text').textContent = o?.gift_note_text || 'None';
-
+document.getElementById('ov_consultation').textContent = isConsultation ? 'Yes' : 'No';
+const giftEl = document.getElementById('ov_gift_note');
+giftEl.textContent = isGiftNote ? 'Yes' : 'No';
+giftEl.className = '';
+document.getElementById('ov_gift_text').textContent = o?.gift_note_text || 'None';
         const pdType = o?.pickup_delivery_type || o?.fulfillment_type || o?.delivery_method || '';
         document.getElementById('ov_pd_type').textContent = pdType || 'N/A';
-
         const discountLabelEl = document.getElementById('ov_discount_code');
         if (o?.discount_code_used) {
             if (discountCodeDetails && discountCodeDetails.isValid) {
@@ -1582,7 +1492,6 @@
         } else {
             discountLabelEl.textContent = 'None';
         }
-
         const referralLabelEl = document.getElementById('ov_referral_code');
         if (o?.referral_code_used) {
             if (referralCodeDetails && referralCodeDetails.isValid) {
@@ -1593,16 +1502,12 @@
         } else {
             referralLabelEl.textContent = 'None';
         }
-
         document.getElementById('statusSelect').value = currentStatus;
-
         renderAdjustments();
         computeTotals();
     }
-
     async function openOrderManager(orderId){
         document.body.style.cursor = 'progress';
-
         const [orderResp, customerResp, pricingData, adjustmentsData] = await Promise.all([
             sb.from('orders').select('*').eq('id', orderId).single(),
             (async () => {
@@ -1613,19 +1518,15 @@
             fetchPricing(),
             fetchAdjustments(orderId)
         ]);
-
         document.body.style.cursor = 'default';
-
         if (orderResp.error) {
             alert(orderResp.error.message);
             return;
         }
-
         activeOrder = orderResp.data;
         activeCustomer = customerResp.data;
         pricing = pricingData;
         adjustments = adjustmentsData;
-
         discountCodeDetails = null;
         referralCodeDetails = null;
         if (activeOrder.discount_code_used) {
@@ -1637,104 +1538,84 @@
         if (activeOrder.referral_code_used) {
             referralCodeDetails = await fetchReferralCodeDetails(activeOrder.referral_code_used);
         }
-
         fillDrawer();
         drawer.showModal();
     }
-
     document.getElementById('saveStatus').addEventListener('click', async ()=>{
         const status = document.getElementById('statusSelect').value;
         const { error } = await sb.from('orders').update({ status }).eq('id', activeOrder.id);
         if (error) { alert(error.message); return; }
-
         activeOrder.status = status;
         fillDrawer();
         loadTable();
     });
-
     document.getElementById('editFields').addEventListener('click', ()=>{
         if (!activeOrder) return;
         openEditor(tables.orders, activeOrder);
     });
-
     document.getElementById('backToOrders').addEventListener('click', (e) => {
         e.preventDefault();
         drawer.close();
     });
-
     document.getElementById('addAdjustment').addEventListener('click', async ()=>{
         const label = document.getElementById('adjLabel').value.trim();
         const amount = Number(document.getElementById('adjAmount').value);
         const kind = document.getElementById('adjKind').value;
-
         if (!label || !amount || amount <= 0) {
             alert('Enter a valid label and positive amount');
             return;
         }
-
         const payload = { order_id: activeOrder.id, label, amount, kind };
-
         const { data, error } = await sb.from('order_adjustments').insert(payload).select('*').single();
         if (error) {
             alert(error.message + '\n\nFix the RLS policy for INSERT on the "order_adjustments" table in Supabase.');
             return;
         }
-
         adjustments.unshift({...data, amount: Number(data.amount||0)});
-
         document.getElementById('adjLabel').value = '';
         document.getElementById('adjAmount').value = '';
         document.getElementById('adjKind').value = 'fee';
-
         renderAdjustments();
         computeTotals();
     });
-
     document.getElementById('btnUploadPhoto').addEventListener('click', async ()=>{
         const file = document.getElementById('uploadPhoto').files?.[0];
         if (!file) {
             alert('Choose an image file first.');
             return;
         }
-        
+      
         if (!isValidMimeType(file.type)) {
             alert('Invalid file type. Only JPEG, PNG, GIF, and WebP are allowed.');
             document.getElementById('uploadPhoto').value = '';
             return;
         }
-
         document.body.style.cursor = 'progress';
         const ext = file.name.split('.').pop();
         const path = `${activeOrder.id}/inspiration_${Date.now()}.${ext}`;
-        
+      
         const { data, error } = await sb.storage.from('order_uploads').upload(path, file, { upsert:true, contentType:file.type });
         document.body.style.cursor = 'default';
-
         if (error) {
             alert(error.message + '\n\nMake sure Storage bucket "order_uploads" exists and allows authenticated uploads.');
             return;
         }
-
         const { data: publicUrl } = sb.storage.from('order_uploads').getPublicUrl(data.path);
         const url = publicUrl?.publicUrl;
-
         const { error: upErr } = await sb.from('orders').update({ design_inspiration_photo: url }).eq('id', activeOrder.id);
         if (upErr) {
             alert(upErr.message);
             return;
         }
-
         activeOrder.design_inspiration_photo = url;
         document.getElementById('ov_photo').src = url;
         document.getElementById('uploadPhoto').value = '';
     });
-
     document.getElementById('viewInvoice').addEventListener('click', ()=>{
         if (!activeOrder || !activeCustomer) {
             alert('Please load a complete order first to generate the invoice.');
             return;
         }
-
         const totalDue = document.getElementById('t_total').textContent;
         const customerName = document.getElementById('cust_name').textContent;
         const customerEmail = document.getElementById('cust_email').textContent;
@@ -1744,44 +1625,35 @@
             document.getElementById('cust_addr1').textContent +
             (document.getElementById('cust_addr2').textContent ? ', ' + document.getElementById('cust_addr2').textContent : '') +
             (document.getElementById('cust_citystzip').textContent ? ', ' + document.getElementById('cust_citystzip').textContent : '');
-
         const baseLine = `Base price (${activeOrder.cookie_amount_dzns || 0} dozen @ ${document.getElementById('t_price').textContent})`;
-
         const lineItems = [
             { label: baseLine, amount: document.getElementById('t_base').textContent },
         ];
-
         if (activeOrder.consultation_requested) {
             lineItems.push({ label: 'Consultation fee', amount: document.getElementById('t_consult').textContent });
         }
         if (activeOrder.gift_note) {
             lineItems.push({ label: 'Gift note fee', amount: document.getElementById('t_gift').textContent });
         }
-
         adjustments.filter(a => a.kind === 'fee').forEach(a => {
             lineItems.push({ label: a.label + ' (Fee)', amount: money(a.amount) });
         });
-
         if (activeOrder.discount_code_used && discountCodeAmount > 0 && discountCodeDetails?.isValid) {
             lineItems.push({
                 label: `Discount code (${activeOrder.discount_code_used})`,
                 amount: '- ' + money(discountCodeAmount)
             });
         }
-
         if (activeOrder.referral_code_used && referralDiscountAmount > 0 && referralCodeDetails?.isValid) {
             lineItems.push({
                 label: `Referral code (${activeOrder.referral_code_used})`,
                 amount: '- ' + money(referralDiscountAmount)
             });
         }
-
         adjustments.filter(a => a.kind === 'discount').forEach(a => {
             lineItems.push({ label: a.label + ' (Discount)', amount: '-' + money(a.amount) });
         });
-
-        const invoiceDate = dateToMDY(new Date());
-
+        const invoiceDate = new Date().toLocaleDateString();
         const invoiceContent = `
         <html>
         <head>
@@ -1992,9 +1864,7 @@
                                 <div><strong>Date:</strong> ${invoiceDate}</div>
                             </div>
                         </div>
-
                         <hr class="divider"/>
-
                         <div class="info-row">
                             <div>
                                 <div class="info-block-title">Bill to</div>
@@ -2016,7 +1886,6 @@
                                 </div>
                             </div>
                         </div>
-
                         <div class="table-wrapper">
                             <table>
                                 <thead>
@@ -2039,7 +1908,6 @@
                                 </tbody>
                             </table>
                         </div>
-
                         <div class="footer-row">
                             <div class="note-card">
                                 <div class="note-label">Order notes</div>
@@ -2047,30 +1915,26 @@
                             </div>
                             <div class="terms-card">
                                 <strong>Payment terms</strong><br/>
-                                Orders are not locked in until full payment is received.  
+                                Orders are not locked in until full payment is received.
                                 Once paid, we begin planning, baking, and hand decorating your cookies just for you.
                             </div>
                         </div>
-
                         <div class="footer-tagline">
                             Thank you for supporting <span>handmade custom cookies</span> and a woman owned small business!
                         </div>
                     </div>
                 </div>
             </div>
-
             <script>
                 window.onload = function() { window.print(); }
             <\/script>
         </body>
         </html>
         `;
-
         const printWindow = window.open('', '_blank', 'width=900,height=900,scrollbars=yes');
         printWindow.document.write(invoiceContent);
         printWindow.document.close();
     });
-
     bootstrap();
     </script>
 </body>
