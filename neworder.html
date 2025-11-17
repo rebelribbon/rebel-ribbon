@@ -568,23 +568,39 @@
       return "$" + amount.toFixed(2);
     }
 
-    // helper to generate numeric IDs
+    // helpers for IDs and referral codes
     function generateNumericId(length) {
       let result = "";
       for (let i = 0; i < length; i++) {
-        result += Math.floor(Math.random() * 10);
+        result += Math.floor(Math.random() * 10).toString();
       }
       return result;
     }
 
-    // helper to generate referral code
     function generateReferralCode(firstName, lastName) {
-      const fn = (firstName || "").trim().toUpperCase();
-      const ln = (lastName || "").trim().toUpperCase();
-      const fnPart = (fn.slice(0, 3) || "").padEnd(3, "X");
-      const lnPart = (ln.slice(0, 3) || "").padEnd(3, "X");
-      const nums = generateNumericId(3);
-      return fnPart + lnPart + nums;
+      const firstPart = (firstName || "").trim().toUpperCase().slice(0, 3).padEnd(3, "X");
+      const lastPart = (lastName || "").trim().toUpperCase().slice(0, 3).padEnd(3, "X");
+      const numbers = generateNumericId(3);
+      return firstPart + lastPart + numbers;
+    }
+
+    async function generateUniqueReferralCode(firstName, lastName) {
+      let attempt = 0;
+      while (attempt < 5) {
+        const code = generateReferralCode(firstName, lastName);
+        const { data, error } = await sb
+          .from("referral_codes")
+          .select("id")
+          .eq("code", code)
+          .limit(1);
+
+        if (!error && (!data || data.length === 0)) {
+          return code;
+        }
+        attempt++;
+      }
+      // fallback if collisions keep happening
+      return "REF" + generateNumericId(6);
     }
 
     async function loadSelectOptions() {
@@ -721,6 +737,17 @@
       }
     }
 
+    function getDaysFromToday(dateStr) {
+      if (!dateStr) return null;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const d = new Date(dateStr);
+      d.setHours(0, 0, 0, 0);
+      if (isNaN(d.getTime())) return null;
+      const diffMs = d.getTime() - today.getTime();
+      return Math.round(diffMs / 86400000);
+    }
+
     function updateEstimate() {
       const box = document.getElementById("estimateBox");
       if (!box) return;
@@ -732,6 +759,7 @@
 
       const qtyInput = document.getElementById("cookie_amount_dzns");
       const pickupType = document.getElementById("pickup_delivery_type");
+      const pickupDateInput = document.getElementById("pickup_delivery_date");
       const giftNoteCheckbox = document.getElementById("gift_note");
       const consultCheckbox = document.getElementById("consultation_requested");
 
@@ -740,13 +768,23 @@
       const deliveryFee = parseFloat(currentPricing.delivery_fee || 0);
       const consultFee = parseFloat(currentPricing.consultation_fee || 0);
       const giftNoteFee = parseFloat(currentPricing.gift_note_fee || 0);
+      const rushFee = parseFloat(currentPricing.rush_fee || 0);
 
       const baseSubtotal = dzns > 0 ? dzns * pricePerDozen : 0;
       const deliveryCharge = pickupType && pickupType.value === "Delivery" ? deliveryFee : 0;
       const consultCharge = consultCheckbox && consultCheckbox.checked ? consultFee : 0;
       const giftCharge = giftNoteCheckbox && giftNoteCheckbox.checked ? giftNoteFee : 0;
 
-      const totalBeforeDiscount = baseSubtotal + deliveryCharge + consultCharge + giftCharge;
+      // Rush fee: pickup/delivery between 5 and 13 days from today
+      let rushCharge = 0;
+      if (pickupDateInput && pickupDateInput.value && rushFee > 0) {
+        const daysOut = getDaysFromToday(pickupDateInput.value);
+        if (daysOut !== null && daysOut >= 5 && daysOut <= 13) {
+          rushCharge = rushFee;
+        }
+      }
+
+      const totalBeforeDiscount = baseSubtotal + deliveryCharge + consultCharge + giftCharge + rushCharge;
 
       // discounts
       let discountTotal = 0;
@@ -798,6 +836,9 @@
 
       html += "<div class='estimate-row'><span>Gift note</span><span>" +
         formatMoney(giftCharge) + "</span></div>";
+
+      html += "<div class='estimate-row'><span>Rush fee</span><span>" +
+        formatMoney(rushCharge) + "</span></div>";
 
       html += "<div class='estimate-row'><span>Subtotal before discounts</span><span>" +
         formatMoney(totalBeforeDiscount) + "</span></div>";
@@ -979,6 +1020,7 @@
         "phone",
         "pickup_delivery_type",
         "pickup_delivery_date",
+        "event_date",
         "event_type_name",
         "cookie_amount_dzns",
         "flavor",
@@ -1046,15 +1088,29 @@
         return;
       }
 
-      // Event date (if filled) cannot be before pickup date
+      // Event date rules: at least 5 days from today and not before pickup/delivery date
       if (event_date_value) {
         const eventDateObj = new Date(event_date_value);
         const pickupDateObj = new Date(pickup_delivery_date);
-        if (!isNaN(eventDateObj.getTime()) && eventDateObj < pickupDateObj) {
+        const minEvent = new Date();
+        minEvent.setHours(0, 0, 0, 0);
+        minEvent.setDate(minEvent.getDate() + 5);
+
+        if (isNaN(eventDateObj.getTime()) || eventDateObj < minEvent) {
+          messageEl.textContent = "Event date must be at least 5 days from today.";
+          messageEl.classList.add("error");
+          return;
+        }
+
+        if (!isNaN(eventDateObj.getTime()) && !isNaN(pickupDateObj.getTime()) && eventDateObj < pickupDateObj) {
           messageEl.textContent = "Event date cannot be before the pickup or delivery date.";
           messageEl.classList.add("error");
           return;
         }
+      } else {
+        messageEl.textContent = "Please select an event date.";
+        messageEl.classList.add("error");
+        return;
       }
 
       submitButton.disabled = true;
@@ -1072,9 +1128,13 @@
         const state = document.getElementById("state").value.trim();
         const zip = document.getElementById("zip").value.trim();
 
+        // Generate IDs
+        const generatedCustomerId = generateNumericId(7);
+        const generatedOrderId = generateNumericId(9);
+
         // Order values
         const pickup_delivery_type = pickupTypeVal;
-        const event_date = event_date_value || null; // still optional
+        const event_date = event_date_value || null;
         const event_type_name = document.getElementById("event_type_name").value.trim();
         const cookie_amount_dzns = parseFloat(document.getElementById("cookie_amount_dzns").value);
         const flavor = document.getElementById("flavor").value;
@@ -1090,11 +1150,6 @@
         if (isNaN(cookie_amount_dzns) || cookie_amount_dzns <= 0) {
           throw new Error("Please enter a valid number of dozens.");
         }
-
-        // Generate IDs and referral code
-        const generatedCustomerId = generateNumericId(7);
-        const generatedOrderId = generateNumericId(9);
-        const generatedReferralCode = generateReferralCode(first_name, last_name);
 
         // File upload handling for inspiration photo (optional)
         const inspirationFileInput = document.getElementById("design_inspiration_photo");
@@ -1125,11 +1180,10 @@
 
         // Find or create customer by email
         let customerId = null;
-        let customerPublicId = null;
 
         const { data: existingCustomers, error: customerLookupError } = await sb
           .from("customers")
-          .select("id, customer_id")
+          .select("id")
           .eq("email", email);
 
         if (customerLookupError) {
@@ -1138,41 +1192,8 @@
         }
 
         if (existingCustomers && existingCustomers.length > 0) {
-          const existing = existingCustomers[0];
-          customerId = existing.id;
-          customerPublicId = existing.customer_id;
-
-          // Update contact details, and set customer_id if not already set
-          const updatePayload = {
-            first_name,
-            last_name,
-            email,
-            phone,
-            street_address,
-            street_address_cont,
-            city,
-            state,
-            zip
-          };
-          if (!customerPublicId) {
-            updatePayload.customer_id = generatedCustomerId;
-          }
-
-          const { error: custUpdateError } = await sb
-            .from("customers")
-            .update(updatePayload)
-            .eq("id", customerId);
-
-          if (custUpdateError) {
-            console.error("Customer update error", custUpdateError);
-            throw new Error("There was a problem updating your customer record.");
-          }
-
-          if (!customerPublicId) {
-            customerPublicId = generatedCustomerId;
-          }
+          customerId = existingCustomers[0].id;
         } else {
-          customerPublicId = generatedCustomerId;
           const { data: newCustomer, error: newCustomerError } = await sb
             .from("customers")
             .insert([
@@ -1186,10 +1207,10 @@
                 city,
                 state,
                 zip,
-                customer_id: customerPublicId
+                customer_id: generatedCustomerId
               }
             ])
-            .select("id, customer_id")
+            .select("id")
             .single();
 
           if (newCustomerError) {
@@ -1199,56 +1220,56 @@
           customerId = newCustomer.id;
         }
 
-        // Insert referral code for this customer (does not block order if it fails)
+        // Create and attach referral code for this customer
         try {
-          const { error: refInsertError } = await sb
+          const referralCode = await generateUniqueReferralCode(first_name, last_name);
+          const { error: referralInsertError } = await sb
             .from("referral_codes")
             .insert([
               {
-                code: generatedReferralCode,
+                code: referralCode,
                 associated_customer_id: customerId
               }
             ]);
 
-          if (refInsertError) {
-            console.error("Referral insert error", refInsertError);
+          if (referralInsertError) {
+            console.error("Referral insert error", referralInsertError);
           }
         } catch (refErr) {
-          console.error("Unexpected referral insert error", refErr);
+          console.error("Unexpected referral creation error", refErr);
         }
 
-        // Insert order including generated order_id
- // Insert order including generated order_id
-const { error: orderError } = await sb
-  .from("orders")
-  .insert([
-    {
-      order_id: generatedOrderId,
-      customer_id: customerId,
-      pickup_delivery_date,
-      event_date,
-      cookie_amount_dzns,
-      flavor,
-      dietary_option,
-      design_notes,
-      design_inspiration_photo,
-      gift_note,
-      gift_note_text,
-      consultation_requested,
-      discount_code_used,
-      referral_code_used,
-      status: "New",
-      event_type_name,
-      pickup_delivery_type
-    }
-  ]);
+        // Insert order
+        const { data: newOrder, error: orderError } = await sb
+          .from("orders")
+          .insert([
+            {
+              order_id: generatedOrderId,
+              customer_id: customerId,
+              pickup_delivery_date,
+              event_date,
+              cookie_amount_dzns,
+              flavor,
+              dietary_option,
+              design_notes,
+              design_inspiration_photo,
+              gift_note,
+              gift_note_text,
+              consultation_requested,
+              discount_code_used,
+              referral_code_used,
+              status: "New",
+              event_type_name,
+              pickup_delivery_type
+            }
+          ])
+          .select("order_id")
+          .maybeSingle();
 
-if (orderError) {
-  console.error("Order insert error", orderError);
-  // Let the real Supabase error bubble up so we can see message/details/hint
-  throw orderError;
-}
-
+        if (orderError) {
+          console.error("Order insert error", orderError);
+          throw new Error("There was a problem saving your order.");
+        }
 
         messageEl.textContent = "Thank you. Your request has been submitted. We will contact you to confirm details.";
         messageEl.classList.add("success");
@@ -1258,35 +1279,54 @@ if (orderError) {
         appliedReferral = { type: null, amount: 0, label: "" };
         updateAddressVisibility();
         updateEstimate();
-} catch (err) {
-  console.error("Submit error:", err);
-  const msg =
-    err?.message ||
-    err?.details ||
-    err?.hint ||
-    "Something went wrong. Please try again or contact us directly.";
-  messageEl.textContent = msg;
-  messageEl.classList.add("error");
-} finally {
-  submitButton.disabled = false;
-  submitButton.textContent = "Submit Request";
-}
-
+      } catch (err) {
+        console.error(err);
+        messageEl.textContent = err.message || "Something went wrong. Please try again or contact us directly.";
+        messageEl.classList.add("error");
+      } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = "Submit Request";
+      }
+    }
 
     document.addEventListener("DOMContentLoaded", function() {
       loadSelectOptions();
       loadPricing();
 
-      // Set min pickup date to today + 5 days
       const pickupDateInput = document.getElementById("pickup_delivery_date");
+      const eventDateInput = document.getElementById("event_date");
+
+      // Base min date (today + 5 days)
+      const baseMin = new Date();
+      baseMin.setHours(0, 0, 0, 0);
+      baseMin.setDate(baseMin.getDate() + 5);
+      const yyyy = baseMin.getFullYear();
+      const mm = String(baseMin.getMonth() + 1).padStart(2, "0");
+      const dd = String(baseMin.getDate()).padStart(2, "0");
+      const baseMinStr = yyyy + "-" + mm + "-" + dd;
+
       if (pickupDateInput) {
-        const today = new Date();
-        today.setDate(today.getDate() + 5);
-        const yyyy = today.getFullYear();
-        const mm = String(today.getMonth() + 1).padStart(2, "0");
-        const dd = String(today.getDate()).padStart(2, "0");
-        const minDate = yyyy + "-" + mm + "-" + dd;
-        pickupDateInput.min = minDate;
+        pickupDateInput.min = baseMinStr;
+        pickupDateInput.addEventListener("change", function() {
+          // Adjust event date min to be max(baseMin, pickup date)
+          if (eventDateInput && pickupDateInput.value) {
+            const pickupStr = pickupDateInput.value;
+            const pickupDateObj = new Date(pickupStr);
+            pickupDateObj.setHours(0, 0, 0, 0);
+            const maxMinDate = pickupDateObj.getTime() > baseMin.getTime() ? pickupDateObj : baseMin;
+            const yyyy2 = maxMinDate.getFullYear();
+            const mm2 = String(maxMinDate.getMonth() + 1).padStart(2, "0");
+            const dd2 = String(maxMinDate.getDate()).padStart(2, "0");
+            eventDateInput.min = yyyy2 + "-" + mm2 + "-" + dd2;
+          }
+          updateEstimate();
+        });
+        pickupDateInput.addEventListener("input", updateEstimate);
+      }
+
+      if (eventDateInput) {
+        // Initial min for event date at load
+        eventDateInput.min = baseMinStr;
       }
 
       const giftNoteCheckbox = document.getElementById("gift_note");
