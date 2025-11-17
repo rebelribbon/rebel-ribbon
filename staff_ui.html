@@ -461,12 +461,14 @@
                             <button id="mapLocation" type="button" class="btn btn-ghost text-xs text-blue-600">View on Map</button>
                         </div>
                         <div class="mt-4 text-sm">
-    <span class="font-medium">Referral code for this customer:</span>
+<div class="mt-4 text-sm">
+    <span class="font-medium">Referral Code:</span>
     <div id="cust_referral_code" class="mt-1 text-pink-700 font-semibold text-sm"></div>
     <p class="text-xs text-gray-500 mt-1">
-        Share this code with the customer so their friends can get a discount and they earn rewards.
+        This is their unique referral code. Share it with the customer.
     </p>
 </div>
+
 
                     </div>
                   
@@ -1469,16 +1471,16 @@ document.getElementById('cust_id').textContent =
             }
         };
         // Referral code for this customer
-const referralEl = document.getElementById('cust_referral_code');
-if (referralEl) {
-    const referralCode = c?.referral_code_assigned || '';
-    if (referralCode) {
-        referralEl.textContent = referralCode;
-        referralEl.classList.remove('text-gray-500');
-    } else {
-        referralEl.textContent = 'No referral code assigned yet';
-        referralEl.classList.add('text-gray-500');
-    }
+// Referral code display block
+const rcEl = document.getElementById('cust_referral_code');
+if (activeCustomerReferralCode) {
+    rcEl.textContent = activeCustomerReferralCode;
+    rcEl.classList.remove('text-gray-500');
+} else {
+    rcEl.textContent = 'No referral code assigned';
+    rcEl.classList.add('text-gray-500');
+}
+
 }
 
         const eventName = o?.event_type_name || o?.event_name || '';
@@ -1531,16 +1533,29 @@ document.getElementById('ov_gift_text').textContent = o?.gift_note_text || 'None
     }
     async function openOrderManager(orderId){
         document.body.style.cursor = 'progress';
-        const [orderResp, customerResp, pricingData, adjustmentsData] = await Promise.all([
-            sb.from('orders').select('*').eq('id', orderId).single(),
-            (async () => {
-                const { data: ord } = await sb.from('orders').select('customer_id').eq('id', orderId).single();
-                if (ord?.customer_id) return sb.from('customers').select('*').eq('id', ord.customer_id).single();
-                return { data: null };
-            })(),
-            fetchPricing(),
-            fetchAdjustments(orderId)
-        ]);
+const [orderResp, customerResp, pricingData, adjustmentsData, referralData] = await Promise.all([
+    sb.from('orders').select('*').eq('id', orderId).single(),
+
+    (async () => {
+        const { data: ord } = await sb.from('orders').select('customer_id').eq('id', orderId).single();
+        if (ord?.customer_id) return sb.from('customers').select('*').eq('id', ord.customer_id).single();
+        return { data: null };
+    })(),
+
+    fetchPricing(),
+    fetchAdjustments(orderId),
+
+    // NEW: Fetch referral code based on associated_customer_id
+    (async () => {
+        const { data } = await sb
+            .from('referral_codes')
+            .select('code')
+            .eq('associated_customer_id', (await sb.from('orders').select('customer_id').eq('id', orderId).single()).data.customer_id)
+            .maybeSingle();
+        return data || null;
+    })()
+]);
+
         document.body.style.cursor = 'default';
         if (orderResp.error) {
             alert(orderResp.error.message);
@@ -1550,6 +1565,7 @@ document.getElementById('ov_gift_text').textContent = o?.gift_note_text || 'None
         activeCustomer = customerResp.data;
         pricing = pricingData;
         adjustments = adjustmentsData;
+        activeCustomerReferralCode = referralData?.code || null;
         discountCodeDetails = null;
         referralCodeDetails = null;
         if (activeOrder.discount_code_used) {
