@@ -715,9 +715,12 @@
             table:'discount_codes',
             isSettings:true,
             cols:[
-                { key:'code', label:'Code', type:'text', required:true, w:'30' },
-                { key:'amount', label:'Amount', type:'number', step:'0.01', w:'20' },
+                { key:'code', label:'Code', type:'text', required:true, w:'20' },
                 { key:'type', label:'Type', type:'select', options:['percent','fixed'], required:true, w:'20' },
+                { key:'amount', label:'Amount', type:'number', step:'0.01', w:'20' },
+                { key:'uses_allowed', label:'Uses Allowed', type:'number', w:'20' },
+                { key:'email_allowed', label:'Email Allowed', type:'email', w:'20' },
+                { key:'good_through_date', label:'Good Through Date', type:'date', w:'20' },
             ]
         },
         referral_codes: {
@@ -725,7 +728,15 @@
             table:'referral_codes',
             isSettings:true,
             cols:[
-                { key:'code', label:'Code', type:'text', required:true, w:'100' },
+                { key:'code', label:'Code', type:'text', required:true, w:'20' },
+                { key:'associated_customer_id', label:'Associated Customer', type:'select-async', w:'20',
+                    asyncOptions: async () => {
+                        const { data } = await sb.from('customers').select('id, first_name, last_name').limit(1000);
+                        return (data||[]).map(c => ({ value:c.id, label:`${c.first_name} ${c.last_name}` }));
+                    }},
+                { key:'good_through_date', label:'Good Through Date', type:'date', w:'20' },
+                { key:'referrer_discount', label:'Referrer Discount', type:'number', step:'0.01', w:'20' },
+                { key:'referee_discount', label:'Referee Discount', type:'number', step:'0.01', w:'20' },
             ]
         },
         flavors: { title:'Flavors', table:'flavors', isSettings:true, cols:[
