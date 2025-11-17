@@ -1051,7 +1051,7 @@
       let rushCharge = 0;
       if (pickupDateInput && pickupDateInput.value && rushFee > 0) {
         const daysOut = getDaysFromToday(pickupDateInput.value);
-        if (daysOut !== null && daysOut >= 5 && daysOut <= 13) {
+        if (daysOut !== null && daysOut >= 0 && daysOut <= 13) {
           rushCharge = rushFee;
         }
       }
@@ -1648,4 +1648,5 @@
   </script>
 </body>
 </html>
+
 
