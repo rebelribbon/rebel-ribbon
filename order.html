@@ -1048,11 +1048,11 @@
       const consultCharge = consultCheckbox && consultCheckbox.checked ? consultFee : 0;
       const giftCharge = giftNoteCheckbox && giftNoteCheckbox.checked ? giftNoteFee : 0;
 
-      // Rush fee - pickup or delivery between 5 and 13 days from today
+      // Rush fee - pickup or delivery between 5 and 10 days from today
       let rushCharge = 0;
       if (pickupDateInput && pickupDateInput.value && rushFee > 0) {
         const daysOut = getDaysFromToday(pickupDateInput.value);
-        if (daysOut !== null && daysOut >= 0 && daysOut <= 13) {
+        if (daysOut !== null && daysOut >= 0 && daysOut <= 10) {
           rushCharge = rushFee;
         }
       }
@@ -1649,6 +1649,7 @@
   </script>
 </body>
 </html>
+
 
 
 
