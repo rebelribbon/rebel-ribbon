@@ -1332,7 +1332,7 @@
         const pickupDateObj = new Date(pickup_delivery_date);
         const minPickup = new Date();
         minPickup.setHours(0, 0, 0, 0);
-        minPickup.setDate(minPickup.getDate() + 5);
+        minPickup.setDate(minPickup.getDate() + 4);
 
         if (isNaN(pickupDateObj.getTime()) || pickupDateObj < minPickup) {
           messageEl.textContent = "Pickup or delivery date must be at least 5 days from today.";
@@ -1351,7 +1351,7 @@
         const pickupDateObj = new Date(pickup_delivery_date);
         const minEvent = new Date();
         minEvent.setHours(0, 0, 0, 0);
-        minEvent.setDate(minEvent.getDate() + 5);
+        minEvent.setDate(minEvent.getDate() + 4);
 
         if (isNaN(eventDateObj.getTime()) || eventDateObj < minEvent) {
           messageEl.textContent = "Event date must be at least 5 days from today.";
@@ -1648,6 +1648,7 @@
   </script>
 </body>
 </html>
+
 
 
 
