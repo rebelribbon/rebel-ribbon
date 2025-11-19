@@ -654,7 +654,7 @@
       // Load Dietary
       const dietarySelect = document.getElementById("dietary_option");
       const { data: diets } = await sb.from("dietary_options").select("name").order("name");
-      dietarySelect.innerHTML = '<option value="">None</option>';
+      dietarySelect.innerHTML = '<option value="">Select</option>';
       if (diets) diets.forEach(d => dietarySelect.innerHTML += `<option value="${d.name}">${d.name}</option>`);
       // Load Pricing
       const box = document.getElementById("estimateBox");
@@ -1012,3 +1012,4 @@
   </script>
 </body>
 </html>
+
