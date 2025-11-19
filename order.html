@@ -7,11 +7,11 @@
   <!-- Google Fonts: Playfair Display + Open Sans -->
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
   <style>
-    /* --- RESET & BASE --- */
+    /* RESET & BASE */
     html, body {
       margin: 0;
       padding: 0;
-      overflow-x: hidden; /* Critical for mobile */
+      overflow-x: hidden;
       width: 100%;
       min-height: 100vh;
     }
@@ -46,7 +46,8 @@
       height: auto;
       display: block;
     }
-    /* --- HEADER (Restored to Original Style) --- */
+
+    /* HEADER */
     header {
       background: #fff;
       padding: 20px;
@@ -61,7 +62,7 @@
       height: 50px;
       width: auto;
     }
-   
+
     /* Desktop Nav */
     nav ul {
       list-style: none;
@@ -81,6 +82,7 @@
     nav a:hover {
       color: var(--pink);
     }
+
     /* Mobile Nav Toggle */
     .hamburger {
       display: none;
@@ -98,7 +100,8 @@
       justify-content: center;
       user-select: none;
     }
-    /* --- MOBILE STYLES (Restored Original Media Query) --- */
+
+    /* MOBILE STYLES */
     @media (max-width: 768px) {
       header { padding: 15px; }
       nav ul {
@@ -119,7 +122,8 @@
         display: inline-flex;
       }
     }
-    /* --- HERO (Restored Original Style) --- */
+
+    /* HERO */
     .hero {
       position: relative;
       height: 30vh;
@@ -135,7 +139,7 @@
       top: 0; left: 0;
       width: 100%;
       height: 100%;
-      background-color: rgba(255,192,203,0.5); /* Restored pink overlay */
+      background-color: rgba(255,192,203,0.5);
     }
     .hero-content {
       position: relative;
@@ -153,7 +157,8 @@
       color: var(--black);
       font-family: var(--body-font);
     }
-    /* --- FORM LAYOUT --- */
+
+    /* FORM LAYOUT */
     .content-section {
       padding: 30px 16px 60px;
       max-width: 800px;
@@ -193,6 +198,7 @@
       border-bottom: 1px solid #ddd;
       padding-bottom: 6px;
     }
+
     /* Grid System */
     .two-column {
       display: grid;
@@ -201,9 +207,10 @@
     }
     @media (max-width: 600px) {
       .two-column {
-        grid-template-columns: 1fr; /* Stack on mobile */
+        grid-template-columns: 1fr;
       }
     }
+
     /* Inputs */
     .form-group {
       margin-bottom: 14px;
@@ -234,11 +241,11 @@
       width: 100%;
       padding: 12px;
       border: 1px solid #ccc;
-      border-radius: 8px; /* Slightly less rounded for better mobile keyboard support */
+      border-radius: 8px;
       font-family: var(--body-font);
-      font-size: 16px; /* Prevents iOS zoom on focus */
+      font-size: 16px;
       background: #fff;
-      appearance: none; /* Removes default styling */
+      appearance: none;
     }
     textarea {
       min-height: 80px;
@@ -249,6 +256,7 @@
       border-color: var(--pink);
       box-shadow: 0 0 0 3px var(--pink-soft);
     }
+
     /* Buttons */
     .primary-button {
       width: 100%;
@@ -270,7 +278,6 @@
       opacity: 0.7;
       cursor: not-allowed;
     }
-   
     .secondary-button {
       margin-top: 6px;
       padding: 8px 14px;
@@ -281,6 +288,7 @@
       font-weight: 600;
       cursor: pointer;
     }
+
     /* Messages */
     .form-message {
       text-align: center;
@@ -290,6 +298,7 @@
     }
     .form-message.error { color: #d32f2f; }
     .form-message.success { color: #388e3c; }
+
     /* Estimate Box */
     .estimate-box {
       background: var(--pink-soft);
@@ -310,6 +319,7 @@
       border-top: 1px solid rgba(0,0,0,0.1);
       font-size: 16px;
     }
+
     /* Footer */
     footer {
       background: var(--pink);
@@ -333,7 +343,7 @@
     .footer-section a {
       text-decoration: underline;
     }
-   
+
     /* Utility */
     .inline-checkbox {
       display: flex;
@@ -353,7 +363,7 @@
   </style>
 </head>
 <body>
-  <!-- Header (Restored Original HTML) -->
+  <!-- Header -->
   <header>
     <div class="logo">
       <img src="horizontaltrans.png" alt="Rebel Ribbon Logo">
@@ -370,13 +380,15 @@
       </ul>
     </nav>
   </header>
-  <!-- Hero (Restored Original HTML) -->
+
+  <!-- Hero -->
   <section class="hero">
     <div class="hero-content">
       <h1>Place Your Order</h1>
       <p>Indulge in our handcrafted cookies.</p>
     </div>
   </section>
+
   <!-- Order Form -->
   <section class="content-section">
     <div class="order-form-header">
@@ -384,7 +396,6 @@
       <p class="order-form-subtitle">Fill out this form and we will confirm details and pricing.</p>
     </div>
     <form id="orderForm" novalidate>
-     
       <!-- Contact Info -->
       <div class="form-section">
         <div class="form-section-heading">Your Info</div>
@@ -409,6 +420,7 @@
           </div>
         </div>
       </div>
+
       <!-- Delivery/Pickup -->
       <div class="form-section">
         <div class="form-section-heading">Delivery or Pickup</div>
@@ -452,6 +464,7 @@
           </div>
         </div>
       </div>
+
       <!-- Order Details -->
       <div class="form-section">
         <div class="form-section-heading">Order Details</div>
@@ -492,6 +505,7 @@
           <input type="file" id="design_inspiration_photo" accept="image/*">
         </div>
       </div>
+
       <!-- Extras -->
       <div class="form-section">
         <div class="form-section-heading">Extras</div>
@@ -508,6 +522,7 @@
           <label for="consultation_requested">Request design consultation?</label>
         </div>
       </div>
+
       <!-- Discounts -->
       <div class="form-section">
         <div class="form-section-heading">Codes</div>
@@ -526,6 +541,7 @@
           </div>
         </div>
       </div>
+
       <!-- Total -->
       <div class="form-section">
         <div class="form-section-heading">Estimated Total</div>
@@ -533,6 +549,7 @@
           Enter details to see estimate.
         </div>
       </div>
+
       <!-- Actions -->
       <div class="form-actions">
         <button type="submit" id="submitButton" class="primary-button">Submit Request</button>
@@ -540,6 +557,7 @@
       </div>
     </form>
   </section>
+
   <!-- Footer -->
   <footer>
     <div class="footer-content">
@@ -564,11 +582,12 @@
       </div>
     </div>
   </footer>
+
   <!-- Supabase & Logic -->
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   <script src="https://tally.so/widgets/embed.js"></script>
   <script>
-    // --- Toggle Menu Logic ---
+    // Toggle Menu Logic
     function toggleMenu() {
       const menu = document.getElementById('navMenu');
       if (menu.style.display === 'flex') {
@@ -578,7 +597,8 @@
         menu.style.flexDirection = 'column';
       }
     }
-    // --- Supabase Setup ---
+
+    // Supabase Setup
     const SUPABASE_URL = "https://zyntkwammltmjjvgelwg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A";
     const { createClient } = supabase;
@@ -586,31 +606,64 @@
     let currentPricing = null;
     let appliedDiscount = { type: null, amount: 0, label: "" };
     let appliedReferral = { type: null, amount: 0, label: "" };
-    // --- Helpers (Defined first to resolve scope errors) ---
+
+    // Helpers
     function generateNumericId(length) {
       let result = "";
       for (let i = 0; i < length; i++) result += Math.floor(Math.random() * 10).toString();
       return result;
     }
+
     function formatMoney(amount) {
       return "$" + (amount || 0).toFixed(2);
     }
+
+    // UTC safe days from today for YYYY-MM-DD string
     function getDaysFromToday(dateStr) {
       if (!dateStr) return null;
-      const [y, m, d] = dateStr.split('-').map(Number);
-      const date = new Date(Date.UTC(y, m - 1, d));
+
+      const parts = dateStr.split("-");
+      if (parts.length !== 3) return null;
+
+      const year = Number(parts[0]);
+      const month = Number(parts[1]);
+      const day = Number(parts[2]);
+      if (!year || !month || !day) return null;
+
       const now = new Date();
-      const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-      return Math.floor((date - today) / 86400000);
+      const todayUtc = Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate()
+      );
+      const targetUtc = Date.UTC(year, month - 1, day);
+
+      return Math.floor((targetUtc - todayUtc) / 86400000);
     }
-   
+
+    // UTC safe relative date string
+    function getRelativeDateStr(daysOffset) {
+      const now = new Date();
+      const targetUtc = new Date(Date.UTC(
+        now.getUTCFullYear(),
+        now.getUTCMonth(),
+        now.getUTCDate() + daysOffset
+      ));
+
+      const year = targetUtc.getUTCFullYear();
+      const month = String(targetUtc.getUTCMonth() + 1).padStart(2, "0");
+      const day = String(targetUtc.getUTCDate()).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+    }
+
     function generateReferralCode(firstName, lastName) {
       const firstPart = (firstName || "").trim().toUpperCase().slice(0, 3).padEnd(3, "X");
       const lastPart = (lastName || "").trim().toUpperCase().slice(0, 3).padEnd(3, "X");
       const numbers = generateNumericId(3);
       return firstPart + lastPart + numbers;
     }
-   
+
     async function generateUniqueReferralCode(firstName, lastName) {
       let attempt = 0;
       while (attempt < 5) {
@@ -627,28 +680,25 @@
       }
       return "REF" + generateNumericId(6);
     }
-   
-    function getRelativeDateStr(daysOffset) {
-      const now = new Date();
-      const d = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + daysOffset));
-      return d.toISOString().split('T')[0];
-    }
-    // --- Load Data (Flavors, Pricing) ---
+
+    // Load Data
     async function init() {
       // Load Flavors
       const flavorSelect = document.getElementById("flavor");
       const { data: flavors } = await sb.from("flavors").select("name").order("name");
       flavorSelect.innerHTML = '<option value="">Select Flavor</option>';
       if (flavors) flavors.forEach(f => flavorSelect.innerHTML += `<option value="${f.name}">${f.name}</option>`);
+
       // Load Dietary
       const dietarySelect = document.getElementById("dietary_option");
       const { data: diets } = await sb.from("dietary_options").select("name").order("name");
       dietarySelect.innerHTML = '<option value="">None</option>';
       if (diets) diets.forEach(d => dietarySelect.innerHTML += `<option value="${d.name}">${d.name}</option>`);
+
       // Load Pricing
       const box = document.getElementById("estimateBox");
       const { data: priceData } = await sb.from("pricing").select("*").order("created_at", {ascending:false}).limit(1).maybeSingle();
-     
+
       if (priceData) {
         currentPricing = {
           price_per_dozen: Number(priceData.price_per_dozen),
@@ -662,8 +712,8 @@
         box.innerHTML = "<div class='estimate-note'>Pricing is not available right now. We will send your quote manually.</div>";
       }
     }
-   
-    // --- UI/Estimate Logic ---
+
+    // UI / Estimate Logic
     function updateAddressVisibility() {
       const typeSelect = document.getElementById("pickup_delivery_type");
       const addressFields = document.getElementById("addressFields");
@@ -678,37 +728,40 @@
         });
       }
     }
-   
+
     function updateEstimate() {
       const box = document.getElementById("estimateBox");
       if (!currentPricing) return;
+
       const qty = parseFloat(document.getElementById("cookie_amount_dzns").value) || 0;
       const isDelivery = document.getElementById("pickup_delivery_type").value === "Delivery";
       const isConsult = document.getElementById("consultation_requested").checked;
       const isGift = document.getElementById("gift_note").checked;
       const dateVal = document.getElementById("pickup_delivery_date").value;
+
       const pricePerDozen = parseFloat(currentPricing.price_per_dozen || 0);
       const deliveryFee = parseFloat(currentPricing.delivery_fee || 0);
       const consultFee = parseFloat(currentPricing.consultation_fee || 0);
       const giftNoteFee = parseFloat(currentPricing.gift_note_fee || 0);
       const rushFee = parseFloat(currentPricing.rush_fee || 0);
       const baseSubtotal = qty * pricePerDozen;
-     
-      // Calculate conditional charges
+
+      // Conditional charges
       const deliveryCharge = isDelivery ? deliveryFee : 0;
       const consultCharge = isConsult ? consultFee : 0;
       const giftCharge = isGift ? giftNoteFee : 0;
       let rushCharge = 0;
+
       const daysOut = getDaysFromToday(dateVal);
-      // Rush fee only applies if date is 0-10 days out (Min 5 days required)
       if (daysOut !== null && daysOut >= 0 && daysOut <= 10) {
         rushCharge = rushFee;
       }
+
       const totalBeforeDiscount = baseSubtotal + deliveryCharge + consultCharge + giftCharge + rushCharge;
       let discountTotal = 0;
       let discountLines = "";
-     
-      // Apply discounts
+
+      // Discounts
       if (appliedDiscount && appliedDiscount.amount > 0) {
         let discountAmount = appliedDiscount.type === "percent"
           ? totalBeforeDiscount * (appliedDiscount.amount / 100)
@@ -718,6 +771,7 @@
           (appliedDiscount.label || "Discount") +
           "</span><span>-" + formatMoney(discountAmount) + "</span></div>";
       }
+
       if (appliedReferral && appliedReferral.amount > 0) {
         let referralAmount = appliedReferral.type === "percent"
           ? totalBeforeDiscount * (appliedReferral.amount / 100)
@@ -727,17 +781,18 @@
           (appliedReferral.label || "Referral discount") +
           "</span><span>-" + formatMoney(referralAmount) + "</span></div>";
       }
-     
+
       if (discountTotal > totalBeforeDiscount) {
         discountTotal = totalBeforeDiscount;
       }
+
       const totalAfterDiscount = totalBeforeDiscount - discountTotal;
       let html = "";
+
       html += "<div class='estimate-row'><span>Cookies (" +
         (qty || 0) + " dz @ " + formatMoney(pricePerDozen) + ")</span><span>" +
         formatMoney(baseSubtotal) + "</span></div>";
-     
-      // --- CONDITIONAL FEES DISPLAY ---
+
       if (deliveryCharge > 0) {
         html += "<div class='estimate-row'><span>Delivery Fee</span><span>" +
           formatMoney(deliveryCharge) + "</span></div>";
@@ -754,28 +809,29 @@
         html += "<div class='estimate-row'><span>Rush Fee (0-10 days)</span><span>" +
           formatMoney(rushCharge) + "</span></div>";
       }
-     
+
       if (discountLines) {
         html += discountLines;
       }
+
       html += "<div class='estimate-total'><span>Estimated Total: </span><span>" +
         formatMoney(totalAfterDiscount) + "</span></div>";
       html += "<div class='estimate-note'>This is an estimate based on current menu pricing. Final pricing, discounts, and tax are confirmed manually.</div>";
-     
+
       box.innerHTML = html;
     }
-    // --- Discount Apply Functions ---
+
+    // Discount Apply Functions (still mocked)
     async function applyDiscount() {
-      // This function uses global state appliedDiscount and calls updateEstimate
       const discountHelp = document.getElementById("discountHelp");
       const discountCode = document.getElementById("discount_code_used").value.trim();
       const email = document.getElementById("email").value.trim();
       appliedDiscount = { type: null, amount: 0, label: "" };
+
       if (discountCode) {
-        // Mock API call to keep function callable
         const { data: disc } = await sb.from("discount_codes").select("*").eq("code", discountCode).maybeSingle();
         if (disc) {
-          appliedDiscount = { type: "percent", amount: 10, label: "Discount (10%)" }; // MOCK RESULT
+          appliedDiscount = { type: "percent", amount: 10, label: "Discount (10%)" };
           discountHelp.textContent = "Discount applied!";
         } else {
           discountHelp.textContent = "Discount not found.";
@@ -785,16 +841,16 @@
       }
       updateEstimate();
     }
+
     async function applyReferral() {
-      // This function uses global state appliedReferral and calls updateEstimate
       const referralHelp = document.getElementById("referralHelp");
       const referralCode = document.getElementById("referral_code_used").value.trim();
       appliedReferral = { type: null, amount: 0, label: "" };
+
       if (referralCode) {
-        // Mock API call to keep function callable
         const { data: ref } = await sb.from("referral_codes").select("*").eq("code", referralCode).maybeSingle();
         if (ref) {
-          appliedReferral = { type: "percent", amount: 5, label: "Referral (5%)" }; // MOCK RESULT
+          appliedReferral = { type: "percent", amount: 5, label: "Referral (5%)" };
           referralHelp.textContent = "Referral applied!";
         } else {
           referralHelp.textContent = "Referral code not found.";
@@ -804,14 +860,16 @@
       }
       updateEstimate();
     }
-    // --- Submission Function (The core worker) ---
+
+    // Submission
     async function handleOrderSubmit(event) {
       event.preventDefault();
       const submitButton = document.getElementById("submitButton");
       const messageEl = document.getElementById("formMessage");
       messageEl.textContent = "";
       messageEl.className = "form-message";
-      // --- 1. Client-Side Validation ---
+
+      // Required fields
       const requiredIds = [
         "first_name", "last_name", "email", "phone", "pickup_delivery_type",
         "pickup_delivery_date", "event_date", "event_type_name",
@@ -822,7 +880,7 @@
         const el = document.getElementById(id);
         if (el && !el.value.trim()) { missing.push(id); }
       });
-     
+
       const pickupTypeVal = document.getElementById("pickup_delivery_type").value;
       if (pickupTypeVal === "Delivery") {
         ["street_address", "city", "state", "zip"].forEach(id => {
@@ -830,43 +888,45 @@
           if (el && !el.value.trim()) { missing.push(id); }
         });
       }
+
       const giftNoteCheckbox = document.getElementById("gift_note");
       const giftNoteTextEl = document.getElementById("gift_note_text");
       if (giftNoteCheckbox && giftNoteCheckbox.checked && !giftNoteTextEl.value.trim()) {
         missing.push("gift_note_text");
       }
+
       if (missing.length > 0) {
         messageEl.textContent = "Please fill in all required fields.";
         messageEl.classList.add("error");
         return;
       }
-      // --- 2. Date Validation (Using reliable T00:00:00 check) ---
+
+      // Date validation using UTC based helpers
       const pickup_delivery_date = document.getElementById("pickup_delivery_date").value;
       const event_date_value = document.getElementById("event_date").value;
-     
-      const pickupDateObj = document.getElementById("pickup_delivery_date").valueAsDate;
-      const eventDateObj = document.getElementById("event_date").valueAsDate;
-      const now = new Date();
-      const today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-      const minAllowedDate = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 5));
-      if (!pickupDateObj || pickupDateObj.getTime() < minAllowedDate.getTime()) {
+
+      const daysToPickup = getDaysFromToday(pickup_delivery_date);
+      const daysToEvent = getDaysFromToday(event_date_value);
+
+      if (daysToPickup === null || daysToPickup < 5) {
         messageEl.textContent = "Pickup date must be at least 5 days from today.";
         messageEl.classList.add("error");
         return;
       }
-      if (!eventDateObj || eventDateObj.getTime() < minAllowedDate.getTime() || eventDateObj.getTime() < pickupDateObj.getTime()) {
+
+      if (daysToEvent === null || daysToEvent < 5 || daysToEvent < daysToPickup) {
         messageEl.textContent = "Event date must be after the pickup date and at least 5 days out.";
         messageEl.classList.add("error");
         return;
       }
+
       submitButton.disabled = true;
       submitButton.textContent = "Submitting...";
+
       try {
-        // --- 3. Data Collection and Coercion ---
-        // FIX: Using || null to ensure empty optional fields are sent as NULL, not empty strings
+        // Data collection
         const getVal = (id) => document.getElementById(id)?.value.trim() || null;
-       
-        // Customer fields
+
         const first_name = getVal("first_name");
         const last_name = getVal("last_name");
         const email = getVal("email");
@@ -876,8 +936,16 @@
         const city = getVal("city");
         const state = getVal("state");
         const zip = getVal("zip");
-        // Order fields
-        const cookie_amount_dzns = parseFloat(getVal("cookie_amount_dzns"));
+
+        const cookie_amount_dzns_raw = getVal("cookie_amount_dzns");
+        const cookie_amount_dzns = cookie_amount_dzns_raw ? parseFloat(cookie_amount_dzns_raw) : null;
+
+        if (!cookie_amount_dzns || Number.isNaN(cookie_amount_dzns) || cookie_amount_dzns <= 0) {
+          messageEl.textContent = "Please enter a valid cookie quantity.";
+          messageEl.classList.add("error");
+          return;
+        }
+
         const dietary_option = getVal("dietary_option");
         const design_notes = getVal("design_notes");
         const gift_note = document.getElementById("gift_note").checked;
@@ -885,32 +953,34 @@
         const consultation_requested = document.getElementById("consultation_requested").checked;
         const discount_code_used = getVal("discount_code_used");
         const referral_code_used = getVal("referral_code_used");
-       
-        // File upload logic (omitted for brevity, assume getVal(id) is sufficient)
+
         let design_inspiration_photo = null;
-        // NOTE: Actual file upload code omitted for brevity but should be here if needed.
-        // --- 4. Database Operations ---
+        // File upload placeholder here if needed
+
+        // Customer lookup or create
         let customerId = null;
-        // Find or create customer
         const { data: existingCustomers } = await sb.from("customers").select("id").eq("email", email);
         if (existingCustomers?.length) {
           customerId = existingCustomers[0].id;
         } else {
           const { data: newCustomer, error: custErr } = await sb.from("customers").insert([{
-            first_name, last_name, email, phone, street_address, street_address_cont, city, state, zip, customer_id: generateNumericId(7)
+            first_name, last_name, email, phone,
+            street_address, street_address_cont, city, state, zip,
+            customer_id: generateNumericId(7)
           }]).select("id").single();
           if (custErr) throw new Error("Customer Insert Error: " + custErr.message);
           customerId = newCustomer.id;
         }
-        // Create referral code (non-critical, catches its own errors)
+
+        // Referral code creation (non critical)
         try {
           const referralCode = await generateUniqueReferralCode(first_name, last_name);
           await sb.from("referral_codes").insert([{ code: referralCode, associated_customer_id: customerId }]);
         } catch (refErr) {
-          console.error("Referral creation failed (non-critical):", refErr);
+          console.error("Referral creation failed (non critical):", refErr);
         }
-        // Insert order
-        const { error: ordErr, data: newOrder } = await sb.from("orders").insert([{
+
+        const orderPayload = {
           order_id: generateNumericId(9),
           customer_id: customerId,
           pickup_delivery_type: getVal("pickup_delivery_type"),
@@ -928,31 +998,49 @@
           discount_code_used,
           referral_code_used,
           status: "In Review"
-        }]).select("id").maybeSingle();
-        // The specific RLS error is caught here
-        if (ordErr) throw new Error("Order Save Error: new row violates row-level security policy for table \"orders\"");
-       
-        // Optional rush fee adjustment entry
+        };
+
+        console.log("Order payload being sent to Supabase:", orderPayload);
+
+        const { error: ordErr, data: newOrder } = await sb
+          .from("orders")
+          .insert([orderPayload])
+          .select("id")
+          .maybeSingle();
+
+        if (ordErr) {
+          console.error("Supabase order insert error:", JSON.stringify(ordErr, null, 2));
+          throw new Error("Order Save Error: " + (ordErr.message || ordErr.details || "Unknown insert error"));
+        }
+
+        // Rush fee adjustment
         if (newOrder && newOrder.id && currentPricing && currentPricing.rush_fee > 0) {
           const daysOut = getDaysFromToday(pickup_delivery_date);
           if (daysOut !== null && daysOut >= 0 && daysOut <= 10) {
             try {
-              await sb.from("order_adjustments").insert([{ order_id: newOrder.id, label: "Rush fee", amount: currentPricing.rush_fee, kind: "fee" }]);
+              await sb.from("order_adjustments").insert([{
+                order_id: newOrder.id,
+                label: "Rush fee",
+                amount: currentPricing.rush_fee,
+                kind: "fee"
+              }]);
             } catch (adjErr) {
-              console.error("Order adjustment insert failed (non-critical):", adjErr);
+              console.error("Order adjustment insert failed (non critical):", adjErr);
             }
           }
         }
-        // --- 5. Success ---
+
+        // Success
         messageEl.textContent = "Thank you. Your request has been submitted.";
         messageEl.classList.add("success");
         document.getElementById("orderForm").reset();
-       
-        // Redirect after success
-        setTimeout(() => window.location.href = "https://rebelribbon.com/thanks.html", 1500);
+
+        setTimeout(() => {
+          window.location.href = "https://rebelribbon.com/thanks.html";
+        }, 1500);
+
       } catch (err) {
         console.error("FINAL CATCH BLOCK ERROR:", err);
-        // Display the specific RLS error if it's the issue
         messageEl.textContent = err.message;
         messageEl.classList.add("error");
       } finally {
@@ -961,45 +1049,50 @@
         updateEstimate();
       }
     }
-    // --- DOMContentLoaded Listener ---
+
+    // DOMContentLoaded
     document.addEventListener("DOMContentLoaded", function() {
-      // Call initialization functions
       init();
+
       const pickupDateInput = document.getElementById("pickup_delivery_date");
       const eventDateInput = document.getElementById("event_date");
-      // Set initial min date (Today + 5 days)
+
       const baseMinDateStr = getRelativeDateStr(5);
       if (pickupDateInput) pickupDateInput.min = baseMinDateStr;
       if (eventDateInput) eventDateInput.min = baseMinDateStr;
-      // Event Listeners
-      pickupDateInput.addEventListener("change", function() {
-        // Adjust event date min based on pickup date
-        if (eventDateInput && pickupDateInput.value) {
-          eventDateInput.min = pickupDateInput.value;
-        }
-        updateEstimate();
-      });
-      pickupDateInput.addEventListener("input", updateEstimate);
-      eventDateInput.addEventListener("input", updateEstimate);
-     
+
+      if (pickupDateInput) {
+        pickupDateInput.addEventListener("change", function() {
+          if (eventDateInput && pickupDateInput.value) {
+            eventDateInput.min = pickupDateInput.value;
+          }
+          updateEstimate();
+        });
+        pickupDateInput.addEventListener("input", updateEstimate);
+      }
+
+      if (eventDateInput) {
+        eventDateInput.addEventListener("input", updateEstimate);
+      }
+
       document.getElementById("gift_note").addEventListener("change", function() {
         document.getElementById("gift_note_text_group").style.display = this.checked ? "block" : "none";
         updateEstimate();
       });
+
       const pickupTypeSelect = document.getElementById("pickup_delivery_type");
       pickupTypeSelect.addEventListener("change", function() {
         updateAddressVisibility();
         updateEstimate();
       });
-     
+
       document.getElementById("cookie_amount_dzns").addEventListener("input", updateEstimate);
       document.getElementById("consultation_requested").addEventListener("change", updateEstimate);
-     
+
       document.getElementById("applyDiscountButton").addEventListener("click", applyDiscount);
       document.getElementById("applyReferralButton").addEventListener("click", applyReferral);
       document.getElementById("orderForm").addEventListener("submit", handleOrderSubmit);
-     
-      // Initialize visibility and estimate
+
       updateAddressVisibility();
       updateEstimate();
     });
