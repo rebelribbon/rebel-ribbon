@@ -861,6 +861,18 @@
       updateEstimate();
     }
 
+    const fileInput = document.getElementById('design_inspiration_photo');
+let design_inspiration_photo = null;
+if (fileInput.files?.[0]) {
+  const file = fileInput.files[0];
+  const ext = file.name.split('.').pop();
+  const path = `inspirations/inspiration_${Date.now()}.${ext}`;
+  const { error: uploadErr } = await sb.storage.from('order_uploads').upload(path, file);
+  if (uploadErr) throw new Error('Upload failed: ' + uploadErr.message);
+  const { data: { publicUrl } } = sb.storage.from('order_uploads').getPublicUrl(path);
+  design_inspiration_photo = publicUrl;
+}
+
     // Submission
     async function handleOrderSubmit(event) {
       event.preventDefault();
@@ -1099,3 +1111,4 @@
   </script>
 </body>
 </html>
+
