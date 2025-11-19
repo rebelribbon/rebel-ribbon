@@ -141,7 +141,6 @@
       color: var(--black);
       font-family: var(--body-font);
     }
-    
 
     /* Content Section */
     .content-section {
@@ -572,66 +571,64 @@
         </div>
 
         <!-- Delivery or Pickup Details -->
-<div class="two-column">
-  <div class="form-group">
-    <label for="pickup_delivery_type">
-      Pickup or Delivery
-      <span class="label-tag">Required</span>
-    </label>
-    <select id="pickup_delivery_type" name="pickup_delivery_type" required>
-      <option value="">Select one</option>
-      <option value="Pickup">Pickup</option>
-      <option value="Delivery">Delivery</option>
-    </select>
-  </div>
+        <div class="two-column">
+          <div class="form-group">
+            <label for="pickup_delivery_type">
+              Pickup or Delivery
+              <span class="label-tag">Required</span>
+            </label>
+            <select id="pickup_delivery_type" name="pickup_delivery_type" required>
+              <option value="">Select one</option>
+              <option value="Pickup">Pickup</option>
+              <option value="Delivery">Delivery</option>
+            </select>
+          </div>
+          <div></div> <!-- empty cell to keep the grid balanced -->
+        </div>
 
-  <div></div> <!-- empty cell to keep the grid balanced -->
-</div>
+        <div class="two-column">
+          <div class="form-group">
+            <label for="pickup_delivery_date">
+              Preferred Pickup or Delivery Date
+              <span class="label-tag">Required</span>
+            </label>
+            <input type="date" id="pickup_delivery_date" name="pickup_delivery_date" required>
+          </div>
+          <div class="form-group">
+            <label for="event_date">
+              Event Date
+              <span class="label-tag">Required</span>
+            </label>
+            <input type="date" id="event_date" name="event_date" required>
+          </div>
+        </div>
 
+        <div id="addressFields" style="display:none; margin-top:8px;">
+          <div class="form-group">
+            <label for="street_address">
+              Street Address (for delivery)
+            </label>
+            <input type="text" id="street_address" name="street_address" autocomplete="address-line1">
+          </div>
+          <div class="form-group">
+            <label for="street_address_cont">
+              Address Line 2
+            </label>
+            <input type="text" id="street_address_cont" name="street_address_cont" autocomplete="address-line2">
+          </div>
           <div class="two-column">
             <div class="form-group">
-              <label for="pickup_delivery_date">
-                Preferred Pickup or Delivery Date
-                <span class="label-tag">Required</span>
-              </label>
-              <input type="date" id="pickup_delivery_date" name="pickup_delivery_date" required>
+              <label for="city">City</label>
+              <input type="text" id="city" name="city" autocomplete="address-level2">
             </div>
             <div class="form-group">
-              <label for="event_date">
-                Event Date
-                <span class="label-tag">Required</span>
-              </label>
-              <input type="date" id="event_date" name="event_date" required>
+              <label for="state">State</label>
+              <input type="text" id="state" name="state" autocomplete="address-level1">
             </div>
           </div>
-
-          <div id="addressFields" style="display:none; margin-top:8px;">
-            <div class="form-group">
-              <label for="street_address">
-                Street Address (for delivery)
-              </label>
-              <input type="text" id="street_address" name="street_address" autocomplete="address-line1">
-            </div>
-            <div class="form-group">
-              <label for="street_address_cont">
-                Address Line 2
-              </label>
-              <input type="text" id="street_address_cont" name="street_address_cont" autocomplete="address-line2">
-            </div>
-            <div class="two-column">
-              <div class="form-group">
-                <label for="city">City</label>
-                <input type="text" id="city" name="city" autocomplete="address-level2">
-              </div>
-              <div class="form-group">
-                <label for="state">State</label>
-                <input type="text" id="state" name="state" autocomplete="address-level1">
-              </div>
-            </div>
-            <div class="form-group">
-              <label for="zip">Zip Code</label>
-              <input type="text" id="zip" name="zip" autocomplete="postal-code">
-            </div>
+          <div class="form-group">
+            <label for="zip">Zip Code</label>
+            <input type="text" id="zip" name="zip" autocomplete="postal-code">
           </div>
         </div>
 
@@ -1515,29 +1512,35 @@
               discount_code_used,
               referral_code_used,
               event_type_name,
-              pickup_delivery_type
+              pickup_delivery_type,
               status: "In Review"
             }
           ])
-          .select("order_id")
+          .select("id, order_id")
           .maybeSingle();
 
         if (orderError) {
           console.error("Order insert error full", JSON.stringify(orderError, null, 2));
           throw new Error("There was a problem saving your order. Please try again or contact us directly.");
         }
-        if (currentPricing && currentPricing.rush_fee > 0) {
-  const daysOut = getDaysFromToday(pickup_delivery_date);
-  if (daysOut !== null && daysOut >= 0 && daysOut <= 10) {
-    const adj = {
-      order_id: newOrder.id,
-      label: "Rush fee",
-      amount: currentPricing.rush_fee,
-      kind: "fee"
-    };
-    await sb.from("order_adjustments").insert([adj]);
-  }
-}
+
+        // Optional rush fee adjustment entry
+        if (newOrder && newOrder.id && currentPricing && currentPricing.rush_fee > 0) {
+          const daysOut = getDaysFromToday(pickup_delivery_date);
+          if (daysOut !== null && daysOut >= 0 && daysOut <= 10) {
+            const adj = {
+              order_id: newOrder.id,
+              label: "Rush fee",
+              amount: currentPricing.rush_fee,
+              kind: "fee"
+            };
+            try {
+              await sb.from("order_adjustments").insert([adj]);
+            } catch (adjErr) {
+              console.error("Order adjustment insert error", adjErr);
+            }
+          }
+        }
 
         messageEl.textContent = "Thank you. Your request has been submitted. We will contact you to confirm details.";
         messageEl.classList.add("success");
@@ -1662,10 +1665,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
