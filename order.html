@@ -47,7 +47,7 @@
       display: block;
     }
 
-    /* --- HEADER (Reverted to Original Style) --- */
+    /* --- HEADER (Restored to Original Style) --- */
     header {
       background: #fff;
       padding: 20px;
@@ -124,7 +124,7 @@
       }
     }
 
-    /* --- HERO (Reverted to Original Style) --- */
+    /* --- HERO (Restored Original Style) --- */
     .hero {
       position: relative;
       height: 30vh; /* Restored to 30vh */
@@ -644,6 +644,35 @@
       d.setDate(d.getDate() + daysOffset);
       return d.toISOString().split('T')[0];
     }
+    
+    // FIX 1: Moving this function definition out of handleOrderSubmit's reliance 
+    // and into the global scope (above its use) to resolve ReferenceError
+    function generateReferralCode(firstName, lastName) {
+      const firstPart = (firstName || "").trim().toUpperCase().slice(0, 3).padEnd(3, "X");
+      const lastPart = (lastName || "").trim().toUpperCase().slice(0, 3).padEnd(3, "X");
+      const numbers = generateNumericId(3);
+      return firstPart + lastPart + numbers;
+    }
+    
+    // FIX 1: Making sure generateUniqueReferralCode is in scope
+    async function generateUniqueReferralCode(firstName, lastName) {
+      let attempt = 0;
+      while (attempt < 5) {
+        const code = generateReferralCode(firstName, lastName);
+        const { data, error } = await sb
+          .from("referral_codes")
+          .select("id")
+          .eq("code", code)
+          .limit(1);
+        if (!error && (!data || data.length === 0)) {
+          return code;
+        }
+        attempt++;
+      }
+      // fallback if collisions keep happening
+      return "REF" + generateNumericId(6);
+    }
+
 
     // --- Data Load Functions ---
     async function loadSelectOptions() {
@@ -1184,6 +1213,7 @@
           }
         } catch (refErr) {
           console.error("Unexpected referral creation error", refErr);
+          // throw refErr; // Do not re-throw if it's non-critical
         }
 
         // Insert order
@@ -1356,6 +1386,6 @@
         menu.style.display = 'none';
       }
     }
-  </script>
+  </script>
 </body>
 </html>
