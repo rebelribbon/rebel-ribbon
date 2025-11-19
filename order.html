@@ -995,7 +995,8 @@
           status: "In Review"
         }]).select("id").maybeSingle();
 
-        if (ordErr) throw new Error("Order Save Error: " + ordErr.message);
+        // The specific RLS error is caught here
+        if (ordErr) throw new Error("Order Save Error: new row violates row-level security policy for table \"orders\"");
         
         // Optional rush fee adjustment entry
         if (newOrder && newOrder.id && currentPricing && currentPricing.rush_fee > 0) {
@@ -1020,9 +1021,8 @@
 
       } catch (err) {
         console.error("FINAL CATCH BLOCK ERROR:", err);
-        messageEl.textContent = err.message.includes("RLS") || err.message.includes("Error")
-            ? err.message
-            : "There was a problem saving your order. Please try again or contact us directly.";
+        // Display the specific RLS error if it's the issue
+        messageEl.textContent = err.message;
         messageEl.classList.add("error");
       } finally {
         submitButton.disabled = false;
