@@ -1516,6 +1516,7 @@
               referral_code_used,
               event_type_name,
               pickup_delivery_type
+              status: "In Review"
             }
           ])
           .select("order_id")
@@ -1525,6 +1526,18 @@
           console.error("Order insert error full", JSON.stringify(orderError, null, 2));
           throw new Error("There was a problem saving your order. Please try again or contact us directly.");
         }
+        if (currentPricing && currentPricing.rush_fee > 0) {
+  const daysOut = getDaysFromToday(pickup_delivery_date);
+  if (daysOut !== null && daysOut >= 0 && daysOut <= 10) {
+    const adj = {
+      order_id: newOrder.id,
+      label: "Rush fee",
+      amount: currentPricing.rush_fee,
+      kind: "fee"
+    };
+    await sb.from("order_adjustments").insert([adj]);
+  }
+}
 
         messageEl.textContent = "Thank you. Your request has been submitted. We will contact you to confirm details.";
         messageEl.classList.add("success");
@@ -1649,6 +1662,7 @@
   </script>
 </body>
 </html>
+
 
 
 
