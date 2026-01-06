@@ -946,8 +946,19 @@
       
       try {
         debugLog("Collecting form data...");
-        // Data collection
-        const getVal = (id) => document.getElementById(id)?.value.trim() || null;
+        
+        // NEW IMPROVED getVal function with logging
+        const getVal = (id) => {
+          const el = document.getElementById(id);
+          if (!el) {
+            debugLog(`getVal(${id}): ELEMENT NOT FOUND`);
+            return null;
+          }
+          const val = el.value?.trim();
+          debugLog(`getVal(${id}): "${val}" (length: ${val?.length || 0})`);
+          return val || null;
+        };
+        
         const first_name = getVal("first_name");
         const last_name = getVal("last_name");
         const email = getVal("email");
@@ -961,6 +972,7 @@
         const cookie_amount_dzns = cookie_amount_dzns_raw ? parseFloat(cookie_amount_dzns_raw) : null;
         
         debugLog("Customer: " + first_name + " " + last_name + " (" + email + ")");
+        debugLog("Phone: " + phone);
         debugLog("Cookies: " + cookie_amount_dzns + " dozen");
         
         if (!cookie_amount_dzns || Number.isNaN(cookie_amount_dzns) || cookie_amount_dzns <= 0) {
@@ -996,9 +1008,21 @@
           debugLog("Found existing customer: " + customerId);
         } else {
           debugLog("Creating new customer...");
-          const { data: newCustomer, error: custErr } = await sb.from("customers").insert([{
+          debugLog("Customer data being inserted: " + JSON.stringify({
             first_name, last_name, email, phone,
-            street_address, street_address_cont, city, state, zip,
+            street_address, street_address_cont, city, state, zip
+          }));
+          
+          const { data: newCustomer, error: custErr } = await sb.from("customers").insert([{
+            first_name, 
+            last_name, 
+            email, 
+            phone,
+            street_address, 
+            street_address_cont, 
+            city, 
+            state, 
+            zip,
             customer_id: generateNumericId(7)
           }]).select("id").single();
           
