@@ -347,9 +347,31 @@
       margin: 0;
       font-weight: 400;
     }
+    /* Debug Console */
+    #debugConsole {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0,0,0,0.9);
+      color: #0f0;
+      font-family: monospace;
+      font-size: 11px;
+      padding: 10px;
+      max-height: 200px;
+      overflow-y: auto;
+      z-index: 9999;
+      display: none;
+    }
+    #debugConsole.show {
+      display: block;
+    }
   </style>
 </head>
 <body>
+  <!-- Debug Console -->
+  <div id="debugConsole"></div>
+  
   <!-- Header -->
   <header>
     <div class="logo">
@@ -561,9 +583,21 @@
     </div>
   </footer>
   <!-- Supabase & Logic -->
-  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
   <script src="https://tally.so/widgets/embed.js"></script>
   <script>
+    // Debug Logger
+    const debugLog = (msg) => {
+      const debug = document.getElementById('debugConsole');
+      if (debug) {
+        debug.classList.add('show');
+        const timestamp = new Date().toLocaleTimeString();
+        debug.innerHTML += `[${timestamp}] ${msg}<br>`;
+        debug.scrollTop = debug.scrollHeight;
+      }
+      console.log(msg);
+    };
+
     // Toggle Menu Logic
     function toggleMenu() {
       const menu = document.getElementById('navMenu');
@@ -574,14 +608,20 @@
         menu.style.flexDirection = 'column';
       }
     }
+    
     // Supabase Setup
     const SUPABASE_URL = "https://zyntkwammltmjjvgelwg.supabase.co";
     const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A";
+    
+    debugLog("Initializing Supabase client...");
     const { createClient } = supabase;
     const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    debugLog("Supabase client created");
+    
     let currentPricing = null;
     let appliedDiscount = { type: null, amount: 0, label: "" };
     let appliedReferral = { type: null, amount: 0, label: "" };
+    
     // Helpers
     function generateNumericId(length) {
       let result = "";
@@ -644,22 +684,43 @@
       }
       return "REF" + generateNumericId(6);
     }
+    
     // Load Data
     async function init() {
+      debugLog("Starting init()...");
+      
       // Load Flavors
+      debugLog("Loading flavors...");
       const flavorSelect = document.getElementById("flavor");
-      const { data: flavors } = await sb.from("flavors").select("name").order("name");
+      const { data: flavors, error: flavorError } = await sb.from("flavors").select("name").order("name");
+      if (flavorError) {
+        debugLog("ERROR loading flavors: " + flavorError.message);
+      } else {
+        debugLog("Loaded " + (flavors?.length || 0) + " flavors");
+      }
       flavorSelect.innerHTML = '<option value="">Select Flavor</option>';
       if (flavors) flavors.forEach(f => flavorSelect.innerHTML += `<option value="${f.name}">${f.name}</option>`);
+      
       // Load Dietary
+      debugLog("Loading dietary options...");
       const dietarySelect = document.getElementById("dietary_option");
-      const { data: diets } = await sb.from("dietary_options").select("name").order("name");
+      const { data: diets, error: dietError } = await sb.from("dietary_options").select("name").order("name");
+      if (dietError) {
+        debugLog("ERROR loading dietary: " + dietError.message);
+      } else {
+        debugLog("Loaded " + (diets?.length || 0) + " dietary options");
+      }
       dietarySelect.innerHTML = '<option value="">Select</option>';
       if (diets) diets.forEach(d => dietarySelect.innerHTML += `<option value="${d.name}">${d.name}</option>`);
+      
       // Load Pricing
+      debugLog("Loading pricing...");
       const box = document.getElementById("estimateBox");
-      const { data: priceData } = await sb.from("pricing").select("*").order("created_at", {ascending:false}).limit(1).maybeSingle();
-      if (priceData) {
+      const { data: priceData, error: priceError } = await sb.from("pricing").select("*").order("created_at", {ascending:false}).limit(1).maybeSingle();
+      if (priceError) {
+        debugLog("ERROR loading pricing: " + priceError.message);
+      } else if (priceData) {
+        debugLog("Loaded pricing: $" + priceData.price_per_dozen + " per dozen");
         currentPricing = {
           price_per_dozen: Number(priceData.price_per_dozen),
           delivery_fee: Number(priceData.delivery_fee),
@@ -669,9 +730,13 @@
         };
         updateEstimate();
       } else {
+        debugLog("No pricing data found");
         box.innerHTML = "<div class='estimate-note'>Pricing is not available right now. We will send your quote manually.</div>";
       }
+      
+      debugLog("Init complete");
     }
+    
     // UI / Estimate Logic
     function updateAddressVisibility() {
       const typeSelect = document.getElementById("pickup_delivery_type");
@@ -764,18 +829,24 @@
       html += "<div class='estimate-note'>This is an estimate based on current menu pricing. Final pricing, discounts, and tax are confirmed manually.</div>";
       box.innerHTML = html;
     }
-    // Discount Apply Functions (still mocked)
+    
+    // Discount Apply Functions
     async function applyDiscount() {
       const discountHelp = document.getElementById("discountHelp");
       const discountCode = document.getElementById("discount_code_used").value.trim();
-      const email = document.getElementById("email").value.trim();
       appliedDiscount = { type: null, amount: 0, label: "" };
       if (discountCode) {
-        const { data: disc } = await sb.from("discount_codes").select("*").eq("code", discountCode).maybeSingle();
-        if (disc) {
+        debugLog("Checking discount code: " + discountCode);
+        const { data: disc, error } = await sb.from("discount_codes").select("*").eq("code", discountCode).maybeSingle();
+        if (error) {
+          debugLog("ERROR checking discount: " + error.message);
+          discountHelp.textContent = "Error checking discount.";
+        } else if (disc) {
+          debugLog("Discount found");
           appliedDiscount = { type: "percent", amount: 10, label: "Discount (10%)" };
           discountHelp.textContent = "Discount applied!";
         } else {
+          debugLog("Discount not found");
           discountHelp.textContent = "Discount not found.";
         }
       } else {
@@ -783,16 +854,23 @@
       }
       updateEstimate();
     }
+    
     async function applyReferral() {
       const referralHelp = document.getElementById("referralHelp");
       const referralCode = document.getElementById("referral_code_used").value.trim();
       appliedReferral = { type: null, amount: 0, label: "" };
       if (referralCode) {
-        const { data: ref } = await sb.from("referral_codes").select("*").eq("code", referralCode).maybeSingle();
-        if (ref) {
+        debugLog("Checking referral code: " + referralCode);
+        const { data: ref, error } = await sb.from("referral_codes").select("*").eq("code", referralCode).maybeSingle();
+        if (error) {
+          debugLog("ERROR checking referral: " + error.message);
+          referralHelp.textContent = "Error checking referral.";
+        } else if (ref) {
+          debugLog("Referral found");
           appliedReferral = { type: "percent", amount: 5, label: "Referral (5%)" };
           referralHelp.textContent = "Referral applied!";
         } else {
+          debugLog("Referral not found");
           referralHelp.textContent = "Referral code not found.";
         }
       } else {
@@ -800,13 +878,17 @@
       }
       updateEstimate();
     }
+    
     // Submission
     async function handleOrderSubmit(event) {
       event.preventDefault();
+      debugLog("===== FORM SUBMISSION STARTED =====");
+      
       const submitButton = document.getElementById("submitButton");
       const messageEl = document.getElementById("formMessage");
       messageEl.textContent = "";
       messageEl.className = "form-message";
+      
       // Required fields
       const requiredIds = [
         "first_name", "last_name", "email", "phone", "pickup_delivery_type",
@@ -831,28 +913,39 @@
         missing.push("gift_note_text");
       }
       if (missing.length > 0) {
+        debugLog("Missing required fields: " + missing.join(", "));
         messageEl.textContent = "Please fill in all required fields.";
         messageEl.classList.add("error");
         return;
       }
-      // Date validation using UTC based helpers
+      
+      // Date validation
       const pickup_delivery_date = document.getElementById("pickup_delivery_date").value;
       const event_date_value = document.getElementById("event_date").value;
       const daysToPickup = getDaysFromToday(pickup_delivery_date);
       const daysToEvent = getDaysFromToday(event_date_value);
+      
+      debugLog("Days to pickup: " + daysToPickup);
+      debugLog("Days to event: " + daysToEvent);
+      
       if (daysToPickup === null || daysToPickup < 5) {
+        debugLog("Pickup date validation failed");
         messageEl.textContent = "Pickup date must be at least 5 days from today.";
         messageEl.classList.add("error");
         return;
       }
       if (daysToEvent === null || daysToEvent < 5 || daysToEvent < daysToPickup) {
+        debugLog("Event date validation failed");
         messageEl.textContent = "Event date must be after the pickup date and at least 5 days out.";
         messageEl.classList.add("error");
         return;
       }
+      
       submitButton.disabled = true;
       submitButton.textContent = "Submitting...";
+      
       try {
+        debugLog("Collecting form data...");
         // Data collection
         const getVal = (id) => document.getElementById(id)?.value.trim() || null;
         const first_name = getVal("first_name");
@@ -866,11 +959,19 @@
         const zip = getVal("zip");
         const cookie_amount_dzns_raw = getVal("cookie_amount_dzns");
         const cookie_amount_dzns = cookie_amount_dzns_raw ? parseFloat(cookie_amount_dzns_raw) : null;
+        
+        debugLog("Customer: " + first_name + " " + last_name + " (" + email + ")");
+        debugLog("Cookies: " + cookie_amount_dzns + " dozen");
+        
         if (!cookie_amount_dzns || Number.isNaN(cookie_amount_dzns) || cookie_amount_dzns <= 0) {
+          debugLog("Invalid cookie quantity");
           messageEl.textContent = "Please enter a valid cookie quantity.";
           messageEl.classList.add("error");
+          submitButton.disabled = false;
+          submitButton.textContent = "Submit Request";
           return;
         }
+        
         const dietary_option = getVal("dietary_option");
         const design_notes = getVal("design_notes");
         const gift_note = document.getElementById("gift_note").checked;
@@ -879,37 +980,69 @@
         const discount_code_used = getVal("discount_code_used");
         const referral_code_used = getVal("referral_code_used");
         let design_inspiration_photo = null;
+        
         // Customer lookup or create
+        debugLog("Looking up customer by email...");
         let customerId = null;
-        const { data: existingCustomers } = await sb.from("customers").select("id").eq("email", email);
+        const { data: existingCustomers, error: lookupErr } = await sb.from("customers").select("id").eq("email", email);
+        
+        if (lookupErr) {
+          debugLog("ERROR looking up customer: " + lookupErr.message);
+          throw new Error("Customer lookup error: " + lookupErr.message);
+        }
+        
         if (existingCustomers?.length) {
           customerId = existingCustomers[0].id;
+          debugLog("Found existing customer: " + customerId);
         } else {
+          debugLog("Creating new customer...");
           const { data: newCustomer, error: custErr } = await sb.from("customers").insert([{
             first_name, last_name, email, phone,
             street_address, street_address_cont, city, state, zip,
             customer_id: generateNumericId(7)
           }]).select("id").single();
-          if (custErr) throw new Error("Customer Insert Error: " + custErr.message);
+          
+          if (custErr) {
+            debugLog("ERROR creating customer: " + JSON.stringify(custErr));
+            throw new Error("Customer Insert Error: " + custErr.message);
+          }
           customerId = newCustomer.id;
+          debugLog("Created new customer: " + customerId);
         }
+        
         // Referral code creation (non critical)
         try {
+          debugLog("Creating referral code...");
           const referralCode = await generateUniqueReferralCode(first_name, last_name);
           await sb.from("referral_codes").insert([{ code: referralCode, associated_customer_id: customerId }]);
+          debugLog("Referral code created: " + referralCode);
         } catch (refErr) {
-          console.error("Referral creation failed (non critical):", refErr);
+          debugLog("Referral creation failed (non critical): " + refErr.message);
         }
+        
+        // File upload
         const fileInput = document.getElementById('design_inspiration_photo');
         if (fileInput.files?.[0]) {
-          const file = fileInput.files[0];
-          const ext = file.name.split('.').pop();
-          const path = `inspirations/inspiration_${Date.now()}.${ext}`;
-          const { error: uploadErr } = await sb.storage.from('order_uploads').upload(path, file);
-          if (uploadErr) throw new Error('Upload failed: ' + uploadErr.message);
-          const { data: { publicUrl } } = sb.storage.from('order_uploads').getPublicUrl(path);
-          design_inspiration_photo = publicUrl;
+          try {
+            debugLog("Uploading photo...");
+            const file = fileInput.files[0];
+            const ext = file.name.split('.').pop();
+            const path = `inspirations/inspiration_${Date.now()}.${ext}`;
+            const { error: uploadErr } = await sb.storage.from('order_uploads').upload(path, file);
+            if (uploadErr) {
+              debugLog("Photo upload error: " + uploadErr.message);
+              throw new Error('Upload failed: ' + uploadErr.message);
+            }
+            const { data: { publicUrl } } = sb.storage.from('order_uploads').getPublicUrl(path);
+            design_inspiration_photo = publicUrl;
+            debugLog("Photo uploaded: " + publicUrl);
+          } catch (uploadErr) {
+            debugLog("Photo upload failed: " + uploadErr.message);
+            // Continue without photo
+          }
         }
+        
+        debugLog("Building order payload...");
         const orderPayload = {
           order_id: generateNumericId(9),
           customer_id: customerId,
@@ -929,33 +1062,48 @@
           referral_code_used,
           status: "In Review"
         };
-        console.log("Order payload being sent to Supabase:", orderPayload);
+        
+        debugLog("Order payload: " + JSON.stringify(orderPayload));
+        debugLog("Inserting order into database...");
+        
         const { error: ordErr, data: newOrder } = await sb
           .from("orders")
           .insert([orderPayload])
           .select("id")
           .maybeSingle();
+        
         if (ordErr) {
-          console.error("Supabase order insert error:", JSON.stringify(ordErr, null, 2));
-          throw new Error("Order Save Error: " + (ordErr.message || ordErr.details || "Unknown insert error"));
+          debugLog("ORDER INSERT ERROR: " + JSON.stringify(ordErr));
+          debugLog("Error message: " + ordErr.message);
+          debugLog("Error details: " + ordErr.details);
+          debugLog("Error hint: " + ordErr.hint);
+          debugLog("Error code: " + ordErr.code);
+          throw new Error("Order Save Error: " + (ordErr.message || ordErr.details || ordErr.hint || "Unknown insert error"));
         }
+        
+        debugLog("Order inserted successfully! ID: " + newOrder.id);
+        
         // Rush fee adjustment
         if (newOrder && newOrder.id && currentPricing && currentPricing.rush_fee > 0) {
           const daysOut = getDaysFromToday(pickup_delivery_date);
           if (daysOut !== null && daysOut >= 0 && daysOut <= 10) {
             try {
+              debugLog("Adding rush fee adjustment...");
               await sb.from("order_adjustments").insert([{
                 order_id: newOrder.id,
                 label: "Rush fee",
                 amount: currentPricing.rush_fee,
                 kind: "fee"
               }]);
+              debugLog("Rush fee added");
             } catch (adjErr) {
-              console.error("Order adjustment insert failed (non critical):", adjErr);
+              debugLog("Order adjustment insert failed (non critical): " + adjErr.message);
             }
           }
         }
+        
         // Success
+        debugLog("===== ORDER SUBMISSION COMPLETE =====");
         messageEl.textContent = "Thank you. Your request has been submitted.";
         messageEl.classList.add("success");
         document.getElementById("orderForm").reset();
@@ -963,8 +1111,14 @@
           window.location.href = "https://rebelribbon.com/thanks.html";
         }, 1500);
       } catch (err) {
-        console.error("FINAL CATCH BLOCK ERROR:", err);
-        messageEl.textContent = err.message;
+        debugLog("===== ERROR IN SUBMISSION =====");
+        debugLog("Error type: " + err.constructor.name);
+        debugLog("Error message: " + err.message);
+        debugLog("Error stack: " + err.stack);
+        console.error("FULL ERROR OBJECT:", err);
+        console.error("ERROR MESSAGE:", err.message);
+        console.error("ERROR STACK:", err.stack);
+        messageEl.textContent = "Order Save Error: " + err.message;
         messageEl.classList.add("error");
       } finally {
         submitButton.disabled = false;
@@ -972,12 +1126,15 @@
         updateEstimate();
       }
     }
+    
     // DOMContentLoaded
     document.addEventListener("DOMContentLoaded", function() {
+      debugLog("DOM Content Loaded");
       init();
       const pickupDateInput = document.getElementById("pickup_delivery_date");
       const eventDateInput = document.getElementById("event_date");
       const baseMinDateStr = getRelativeDateStr(5);
+      debugLog("Min date set to: " + baseMinDateStr);
       if (pickupDateInput) pickupDateInput.min = baseMinDateStr;
       if (eventDateInput) eventDateInput.min = baseMinDateStr;
       if (pickupDateInput) {
@@ -1008,8 +1165,8 @@
       document.getElementById("orderForm").addEventListener("submit", handleOrderSubmit);
       updateAddressVisibility();
       updateEstimate();
+      debugLog("All event listeners attached");
     });
   </script>
 </body>
 </html>
-
