@@ -1677,7 +1677,7 @@
             fetchAdjustments(orderId),
 
             // Fetch referral code based on associated_customer_id
-            (async () => {
+(async () => {
                 const { data: ord2 } = await sb
                     .from('orders')
                     .select('customer_id')
@@ -1686,13 +1686,20 @@
 
                 if (!ord2?.customer_id) return null;
 
-                const { data } = await sb
+                // Robust check: orders by date and limits to 1 to ignore test duplicates
+                const { data, error } = await sb
                     .from('referral_codes')
                     .select('code')
                     .eq('associated_customer_id', ord2.customer_id)
-                    .maybeSingle();
+                    .order('created_at', { ascending: false })
+                    .limit(1);
 
-                return data || null;
+                if (error) {
+                    console.error("Referral Fetch Error:", error);
+                    return null;
+                }
+
+                return (data && data.length > 0) ? data[0] : null;
             })()
         ]);
 
@@ -1707,7 +1714,7 @@
         activeCustomer = customerResp.data;
         pricing = pricingData;
         adjustments = adjustmentsData;
-        activeCustomerReferralCode = referralData?.code || null;
+        // Ensure the drawer variable is updated from the new logic result         activeCustomerReferralCode = referralData?.code || null;
 
         discountCodeDetails = null;
         referralCodeDetails = null;
