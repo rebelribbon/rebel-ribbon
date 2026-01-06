@@ -1050,9 +1050,12 @@
           try {
             debugLog("Uploading photo...");
             const file = fileInput.files[0];
-            const ext = file.name.split('.').pop();
-            const path = `${activeOrder.id}/inspiration_${Date.now()}.${ext}`;
-            const { error: uploadErr } = await sb.storage.from('order_uploads').upload(path, file);
+const ext = file.name.split('.').pop();
+// Generate a unique ID for this specific upload folder
+const uploadFolderId = generateNumericId(9); 
+const path = `inspirations/${uploadFolderId}_${Date.now()}.${ext}`;
+
+const { error: uploadErr } = await sb.storage.from('order_uploads').upload(path, file);
             if (uploadErr) {
               debugLog("Photo upload error: " + uploadErr.message);
               throw new Error('Upload failed: ' + uploadErr.message);
@@ -1194,4 +1197,5 @@
   </script>
 </body>
 </html>
+
 
