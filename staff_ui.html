@@ -1782,7 +1782,7 @@
 
         document.body.style.cursor = 'progress';
         const ext = file.name.split('.').pop();
-        const path = `inspirations/inspiration_${Date.now()}.${ext}`;
+        const path = `${activeOrder.id}/inspiration_${Date.now()}.${ext}`;
 
         const { data, error } = await sb.storage.from('order_uploads').upload(path, file, { upsert:true, contentType:file.type });
         document.body.style.cursor = 'default';
