@@ -1051,7 +1051,7 @@
             debugLog("Uploading photo...");
             const file = fileInput.files[0];
             const ext = file.name.split('.').pop();
-            const path = `inspirations/inspiration_${Date.now()}.${ext}`;
+            const path = `${activeOrder.id}/inspiration_${Date.now()}.${ext}`;
             const { error: uploadErr } = await sb.storage.from('order_uploads').upload(path, file);
             if (uploadErr) {
               debugLog("Photo upload error: " + uploadErr.message);
@@ -1194,3 +1194,4 @@
   </script>
 </body>
 </html>
+
