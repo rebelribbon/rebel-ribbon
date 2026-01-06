@@ -1664,7 +1664,7 @@
     async function openOrderManager(orderId){
         document.body.style.cursor = 'progress';
 
-        const [orderResp, customerResp, pricingData, adjustmentsData, referralData] = await Promise.all([
+        const [orderResp, customerResp, pricingData, adjustmentsData, referralResult] = await Promise.all([
             sb.from('orders').select('*').eq('id', orderId).single(),
 
             (async () => {
@@ -1713,7 +1713,7 @@
         
         // Ensure the drawer variable is updated from the new logic result         
         
-activeCustomerReferralCode = referralData?.code || 'None';
+// We use 'referralResult' because that is what caught the data from the Promise activeCustomerReferralCode = referralResult?.code || 'None';
 
         discountCodeDetails = null;
         referralCodeDetails = null;
