@@ -1678,29 +1678,24 @@
 
             // Fetch referral code based on associated_customer_id
 (async () => {
-                const { data: ord2 } = await sb
-                    .from('orders')
-                    .select('customer_id')
-                    .eq('id', orderId)
-                    .single();
+    // 1. Get the order's specific customer_id
+    const { data: orderRow } = await sb.from('orders').select('customer_id').eq('id', orderId).single();
+    if (!orderRow?.customer_id) return null;
 
-                if (!ord2?.customer_id) return null;
+    // 2. Fetch the code using the ID. We use .limit(1) to avoid errors if testing created multiples.
+    const { data, error } = await sb
+        .from('referral_codes')
+        .select('code')
+        .eq('associated_customer_id', orderRow.customer_id)
+        .order('created_at', { ascending: false })
+        .limit(1);
 
-                // Robust check: orders by date and limits to 1 to ignore test duplicates
-                const { data, error } = await sb
-                    .from('referral_codes')
-                    .select('code')
-                    .eq('associated_customer_id', ord2.customer_id)
-                    .order('created_at', { ascending: false })
-                    .limit(1);
-
-                if (error) {
-                    console.error("Referral Fetch Error:", error);
-                    return null;
-                }
-
-                return (data && data.length > 0) ? data[0] : null;
-            })()
+    if (error) {
+        console.error("Referral Fetch Error:", error.message);
+        return null;
+    }
+    return (data && data.length > 0) ? data[0] : null;
+})()
         ]);
 
         document.body.style.cursor = 'default';
