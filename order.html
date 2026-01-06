@@ -1045,29 +1045,36 @@
         }
         
         // File upload
-        const fileInput = document.getElementById('design_inspiration_photo');
-        if (fileInput.files?.[0]) {
-          try {
-            debugLog("Uploading photo...");
-            const file = fileInput.files[0];
-const ext = file.name.split('.').pop();
-// Generate a unique ID for this specific upload folder
-const uploadFolderId = generateNumericId(9); 
-const path = `inspirations/${uploadFolderId}_${Date.now()}.${ext}`;
+// File upload
+const fileInput = document.getElementById('design_inspiration_photo');
+if (fileInput.files?.[0]) {
+  try {
+    debugLog("Uploading photo...");
+    const file = fileInput.files[0];
+    const ext = file.name.split('.').pop();
+    const uploadFolderId = generateNumericId(9); 
+    const path = `inspirations/${uploadFolderId}_${Date.now()}.${ext}`;
 
-const { error: uploadErr } = await sb.storage.from('order_uploads').upload(path, file);
-            if (uploadErr) {
-              debugLog("Photo upload error: " + uploadErr.message);
-              throw new Error('Upload failed: ' + uploadErr.message);
-            }
-            const { data: { publicUrl } } = sb.storage.from('order_uploads').getPublicUrl(path);
-            design_inspiration_photo = publicUrl;
-            debugLog("Photo uploaded: " + publicUrl);
-          } catch (uploadErr) {
-            debugLog("Photo upload failed: " + uploadErr.message);
-            // Continue without photo
-          }
-        }
+    const { data: uploadData, error: uploadErr } = await sb.storage
+      .from('order_uploads')
+      .upload(path, file);
+      
+    if (uploadErr) {
+      debugLog("Photo upload error: " + uploadErr.message);
+      throw new Error('Upload failed: ' + uploadErr.message);
+    }
+    
+    const { data: urlData } = sb.storage
+      .from('order_uploads')
+      .getPublicUrl(path);
+      
+    design_inspiration_photo = urlData?.publicUrl || null;
+    debugLog("Photo URL generated: " + design_inspiration_photo);
+  } catch (uploadErr) {
+    debugLog("Photo upload failed: " + uploadErr.message);
+    // Continue without photo
+  }
+}
         
         debugLog("Building order payload...");
         const orderPayload = {
@@ -1197,5 +1204,6 @@ const { error: uploadErr } = await sb.storage.from('order_uploads').upload(path,
   </script>
 </body>
 </html>
+
 
 
