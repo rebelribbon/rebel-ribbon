@@ -1709,7 +1709,11 @@
         activeCustomer = customerResp.data;
         pricing = pricingData;
         adjustments = adjustmentsData;
-        // Ensure the drawer variable is updated from the new logic result         activeCustomerReferralCode = referralData?.code || null;
+
+        
+        // Ensure the drawer variable is updated from the new logic result         
+        
+activeCustomerReferralCode = referralData?.code || 'None';
 
         discountCodeDetails = null;
         referralCodeDetails = null;
