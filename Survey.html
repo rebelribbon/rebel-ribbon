@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rebel Ribbon - Tell Us About Your Cookies!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;700&family=Nunito:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --pink-50: #fdf2f8;
+            --pink-100: #fce7f3;
+            --pink-200: #fbcfe8;
+            --pink-300: #f9a8d4;
+            --pink-400: #f472b6;
+            --pink-500: #ec4899;
+            --pink-600: #db2777;
+            --pink-700: #be185d;
+            --pink-800: #9d174d;
+            --pink-900: #831843;
+            --gold: #d4a574;
+            --gold-light: #e8c9a0;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(135deg, var(--pink-50) 0%, #fff5f8 50%, var(--pink-100) 100%);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+
+        .brand-font {
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Decorative background elements */
+        .bg-decor {
+            position: fixed;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .bg-decor-1 {
+            top: -100px;
+            right: -100px;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, var(--pink-200) 0%, transparent 70%);
+            opacity: 0.5;
+        }
+        .bg-decor-2 {
+            bottom: -150px;
+            left: -150px;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, var(--pink-300) 0%, transparent 70%);
+            opacity: 0.3;
+        }
+
+        .survey-container {
+            position: relative;
+            z-index: 1;
+            max-width: 640px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .survey-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 25px 60px rgba(190, 24, 93, 0.12), 0 8px 24px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+
+        .survey-header {
+            background: linear-gradient(135deg, var(--pink-700) 0%, var(--pink-600) 100%);
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .survey-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.5;
+        }
+        .survey-header img {
+            height: 70px;
+            margin-bottom: 0.75rem;
+            position: relative;
+        }
+        .survey-header h1 {
+            color: white;
+            font-size: 1.75rem;
+            margin: 0;
+            position: relative;
+        }
+        .survey-header p {
+            color: var(--pink-200);
+            margin: 0.5rem 0 0;
+            font-size: 0.95rem;
+            position: relative;
+        }
+
+        .survey-body {
+            padding: 2rem;
+        }
+
+        .question-group {
+            margin-bottom: 2rem;
+        }
+        .question-label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 0.75rem;
+            display: block;
+            font-size: 1rem;
+        }
+        .question-sublabel {
+            font-weight: 400;
+            color: #6b7280;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Star Rating */
+        .star-rating {
+            display: flex;
+            gap: 0.5rem;
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+        .star-rating input {
+            display: none;
+        }
+        .star-rating label {
+            cursor: pointer;
+            font-size: 2.5rem;
+            color: #e5e7eb;
+            transition: all 0.15s ease;
+        }
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input:checked ~ label {
+            color: #fbbf24;
+            transform: scale(1.1);
+        }
+        .star-rating label:active {
+            transform: scale(0.95);
+        }
+
+        /* Text inputs */
+        .text-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            resize: vertical;
+        }
+        .text-input:focus {
+            outline: none;
+            border-color: var(--pink-400);
+            box-shadow: 0 0 0 4px rgba(244, 114, 182, 0.15);
+        }
+        .text-input::placeholder {
+            color: #9ca3af;
+        }
+
+        /* Checkbox styling */
+        .checkbox-group {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: var(--pink-50);
+            border-radius: 12px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .checkbox-group:hover {
+            border-color: var(--pink-300);
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: 22px;
+            height: 22px;
+            accent-color: var(--pink-600);
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+        .checkbox-label {
+            font-weight: 500;
+            color: #374151;
+            line-height: 1.4;
+        }
+        .checkbox-sublabel {
+            color: #6b7280;
+            font-size: 0.85rem;
+            margin-top: 0.25rem;
+        }
+
+        /* Review section */
+        .review-section {
+            background: linear-gradient(135deg, #fef3c7 0%, #fef9c3 100%);
+            border: 2px solid #fbbf24;
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 1.5rem;
+            display: none;
+        }
+        .review-section.visible {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .review-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+        .review-icon {
+            font-size: 1.5rem;
+        }
+        .review-title {
+            font-weight: 700;
+            color: #92400e;
+            font-size: 1.1rem;
+        }
+        .review-subtitle {
+            color: #a16207;
+            font-size: 0.9rem;
+        }
+
+        /* Submit button */
+        .submit-btn {
+            width: 100%;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, var(--pink-600) 0%, var(--pink-700) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-family: inherit;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 14px rgba(190, 24, 93, 0.35);
+        }
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(190, 24, 93, 0.45);
+        }
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        .submit-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Status messages */
+        .status-card {
+            text-align: center;
+            padding: 3rem 2rem;
+        }
+        .status-icon {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        .status-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+        .status-message {
+            color: #6b7280;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid var(--pink-200);
+            border-top-color: var(--pink-600);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Error state */
+        .error-card {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+        }
+        .error-card .status-icon {
+            color: #dc2626;
+        }
+
+        /* Success state */
+        .success-card {
+            background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+        }
+        .success-card .status-icon {
+            color: #059669;
+        }
+
+        /* Footer */
+        .survey-footer {
+            text-align: center;
+            padding: 1.5rem 2rem;
+            background: #f9fafb;
+            border-top: 1px solid #e5e7eb;
+        }
+        .survey-footer p {
+            color: #9ca3af;
+            font-size: 0.85rem;
+            margin: 0;
+        }
+        .survey-footer a {
+            color: var(--pink-600);
+            text-decoration: none;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-decor bg-decor-1"></div>
+    <div class="bg-decor bg-decor-2"></div>
+
+    <div class="survey-container">
+        <div class="survey-card">
+            <!-- Loading State -->
+            <div id="loading-state" class="status-card">
+                <div class="spinner"></div>
+                <p class="status-message">Loading your survey...</p>
+            </div>
+
+            <!-- Error State (Invalid/Used Token) -->
+            <div id="error-state" class="status-card error-card" style="display: none;">
+                <div class="status-icon">😕</div>
+                <h2 class="status-title">Survey Not Available</h2>
+                <p class="status-message" id="error-message">This survey link is invalid or has already been completed.</p>
+            </div>
+
+            <!-- Success State (After Submit) -->
+            <div id="success-state" class="status-card success-card" style="display: none;">
+                <div class="status-icon">🎉</div>
+                <h2 class="status-title">Thank You!</h2>
+                <p class="status-message">Your feedback means the world to us. We can't wait to bake for you again!</p>
+            </div>
+
+            <!-- Survey Form -->
+            <div id="survey-form-container" style="display: none;">
+                <div class="survey-header">
+                    <img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" alt="Rebel Ribbon">
+                    <h1 class="brand-font">How'd We Do?</h1>
+                    <p>We'd love to hear about your experience!</p>
+                </div>
+
+                <form id="survey-form" class="survey-body">
+                    <input type="hidden" id="survey-token" name="token">
+                    <input type="hidden" id="order-id" name="order_id">
+                    <input type="hidden" id="customer-id" name="customer_id">
+
+                    <!-- Cookies Rating -->
+                    <div class="question-group">
+                        <label class="question-label">
+                            How were the cookies? 🍪
+                            <span class="question-sublabel">Taste, freshness, and overall yumminess</span>
+                        </label>
+                        <div class="star-rating">
+                            <input type="radio" id="cookies-5" name="cookies_stars" value="5" required>
+                            <label for="cookies-5">★</label>
+                            <input type="radio" id="cookies-4" name="cookies_stars" value="4">
+                            <label for="cookies-4">★</label>
+                            <input type="radio" id="cookies-3" name="cookies_stars" value="3">
+                            <label for="cookies-3">★</label>
+                            <input type="radio" id="cookies-2" name="cookies_stars" value="2">
+                            <label for="cookies-2">★</label>
+                            <input type="radio" id="cookies-1" name="cookies_stars" value="1">
+                            <label for="cookies-1">★</label>
+                        </div>
+                    </div>
+
+                    <!-- Service Rating -->
+                    <div class="question-group">
+                        <label class="question-label">
+                            How was the service? 💝
+                            <span class="question-sublabel">Communication, delivery, and overall experience</span>
+                        </label>
+                        <div class="star-rating">
+                            <input type="radio" id="service-5" name="service_stars" value="5" required>
+                            <label for="service-5">★</label>
+                            <input type="radio" id="service-4" name="service_stars" value="4">
+                            <label for="service-4">★</label>
+                            <input type="radio" id="service-3" name="service_stars" value="3">
+                            <label for="service-3">★</label>
+                            <input type="radio" id="service-2" name="service_stars" value="2">
+                            <label for="service-2">★</label>
+                            <input type="radio" id="service-1" name="service_stars" value="1">
+                            <label for="service-1">★</label>
+                        </div>
+                    </div>
+
+                    <!-- Recommend -->
+                    <div class="question-group">
+                        <label class="checkbox-group">
+                            <input type="checkbox" id="recommend" name="recommend">
+                            <div>
+                                <div class="checkbox-label">I'd recommend Rebel Ribbon to family & friends!</div>
+                                <div class="checkbox-sublabel">Let us know if we've earned your recommendation</div>
+                            </div>
+                        </label>
+                    </div>
+
+                    <!-- Improvements -->
+                    <div class="question-group">
+                        <label class="question-label">
+                            Anything we could improve?
+                            <span class="question-sublabel">Optional - we're always looking to get better</span>
+                        </label>
+                        <textarea 
+                            class="text-input" 
+                            id="improvements" 
+                            name="improvements" 
+                            rows="3" 
+                            placeholder="Share any suggestions..."></textarea>
+                    </div>
+
+                    <!-- Website Review Section (shows if ratings are good) -->
+                    <div class="review-section" id="review-section">
+                        <div class="review-header">
+                            <span class="review-icon">⭐</span>
+                            <div>
+                                <div class="review-title">We're so glad you loved it!</div>
+                                <div class="review-subtitle">Would you like to leave a review for our website?</div>
+                            </div>
+                        </div>
+                        <textarea 
+                            class="text-input" 
+                            id="website_review" 
+                            name="website_review" 
+                            rows="4" 
+                            placeholder="Share what you loved about your Rebel Ribbon experience! Your review may be featured on our website."></textarea>
+                    </div>
+
+                    <button type="submit" class="submit-btn" id="submit-btn">
+                        Submit Feedback
+                    </button>
+                </form>
+
+                <div class="survey-footer">
+                    <p>Made with 💖 by <a href="https://rebelribbon.com" target="_blank">Rebel Ribbon</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase config - same as staff UI
+        const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // DOM elements
+        const loadingState = document.getElementById('loading-state');
+        const errorState = document.getElementById('error-state');
+        const successState = document.getElementById('success-state');
+        const formContainer = document.getElementById('survey-form-container');
+        const surveyForm = document.getElementById('survey-form');
+        const errorMessage = document.getElementById('error-message');
+        const reviewSection = document.getElementById('review-section');
+        const submitBtn = document.getElementById('submit-btn');
+
+        // Get token from URL
+        function getTokenFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('token');
+        }
+
+        // Show/hide states
+        function showState(state) {
+            loadingState.style.display = 'none';
+            errorState.style.display = 'none';
+            successState.style.display = 'none';
+            formContainer.style.display = 'none';
+            
+            if (state === 'loading') loadingState.style.display = 'block';
+            else if (state === 'error') errorState.style.display = 'block';
+            else if (state === 'success') successState.style.display = 'block';
+            else if (state === 'form') formContainer.style.display = 'block';
+        }
+
+        // Validate token and load survey
+        async function initSurvey() {
+            const token = getTokenFromUrl();
+            
+            if (!token) {
+                errorMessage.textContent = 'No survey token provided. Please use the link from your email.';
+                showState('error');
+                return;
+            }
+
+            try {
+                // Check if token exists and hasn't been used
+                const { data: surveyToken, error } = await sb
+                    .from('survey_tokens')
+                    .select('*, orders(id, customer_id)')
+                    .eq('token', token)
+                    .single();
+
+                if (error || !surveyToken) {
+                    errorMessage.textContent = 'This survey link is invalid. Please check your email for the correct link.';
+                    showState('error');
+                    return;
+                }
+
+                if (surveyToken.used) {
+                    errorMessage.textContent = 'This survey has already been completed. Thank you for your feedback!';
+                    showState('error');
+                    return;
+                }
+
+                if (surveyToken.expires_at && new Date(surveyToken.expires_at) < new Date()) {
+                    errorMessage.textContent = 'This survey link has expired. Please contact us if you\'d still like to share feedback.';
+                    showState('error');
+                    return;
+                }
+
+                // Store token and order info in form
+                document.getElementById('survey-token').value = token;
+                document.getElementById('order-id').value = surveyToken.order_id;
+                document.getElementById('customer-id').value = surveyToken.orders?.customer_id || '';
+
+                showState('form');
+
+            } catch (err) {
+                console.error('Error loading survey:', err);
+                errorMessage.textContent = 'Something went wrong. Please try again later.';
+                showState('error');
+            }
+        }
+
+        // Check if ratings are good (4+ stars on both)
+        function checkShowReviewSection() {
+            const cookiesRating = document.querySelector('input[name="cookies_stars"]:checked');
+            const serviceRating = document.querySelector('input[name="service_stars"]:checked');
+
+            if (cookiesRating && serviceRating) {
+                const cookiesValue = parseInt(cookiesRating.value);
+                const serviceValue = parseInt(serviceRating.value);
+
+                if (cookiesValue >= 4 && serviceValue >= 4) {
+                    reviewSection.classList.add('visible');
+                } else {
+                    reviewSection.classList.remove('visible');
+                }
+            }
+        }
+
+        // Listen for rating changes
+        document.querySelectorAll('input[name="cookies_stars"], input[name="service_stars"]').forEach(input => {
+            input.addEventListener('change', checkShowReviewSection);
+        });
+
+        // Handle form submission
+        surveyForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const token = document.getElementById('survey-token').value;
+            const orderId = document.getElementById('order-id').value;
+            const customerId = document.getElementById('customer-id').value;
+
+            const cookiesStars = parseInt(document.querySelector('input[name="cookies_stars"]:checked')?.value || 0);
+            const serviceStars = parseInt(document.querySelector('input[name="service_stars"]:checked')?.value || 0);
+            const recommend = document.getElementById('recommend').checked;
+            const improvements = document.getElementById('improvements').value.trim();
+            const websiteReview = document.getElementById('website_review').value.trim();
+
+            if (!cookiesStars || !serviceStars) {
+                alert('Please rate both the cookies and the service.');
+                return;
+            }
+
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Submitting...';
+
+            try {
+                // Insert survey response
+                const surveyPayload = {
+                    order_id: orderId || null,
+                    customer_id: customerId || null,
+                    cookies_stars: cookiesStars,
+                    service_stars: serviceStars,
+                    recommend: recommend,
+                    improvements: improvements || null,
+                    website_review: websiteReview || null
+                };
+
+                const { error: surveyError } = await sb
+                    .from('surveys')
+                    .insert(surveyPayload);
+
+                if (surveyError) throw surveyError;
+
+                // If there's a website review, also add it to pending reviews
+                if (websiteReview) {
+                    // Get customer name for the review
+                    let customerName = 'Anonymous';
+                    if (customerId) {
+                        const { data: customer } = await sb
+                            .from('customers')
+                            .select('first_name, last_name')
+                            .eq('id', customerId)
+                            .single();
+                        if (customer) {
+                            customerName = `${customer.first_name || ''} ${customer.last_name || ''}`.trim() || 'Anonymous';
+                        }
+                    }
+
+                    await sb
+                        .from('website_reviews')
+                        .insert({
+                            order_id: orderId || null,
+                            customer_id: customerId || null,
+                            customer_name: customerName,
+                            review_text: websiteReview,
+                            stars: Math.round((cookiesStars + serviceStars) / 2),
+                            status: 'pending'
+                        });
+                }
+
+                // Mark token as used
+                await sb
+                    .from('survey_tokens')
+                    .update({ used: true, used_at: new Date().toISOString() })
+                    .eq('token', token);
+
+                showState('success');
+
+            } catch (err) {
+                console.error('Error submitting survey:', err);
+                alert('Something went wrong. Please try again.');
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Submit Feedback';
+            }
+        });
+
+        // Initialize on page load
+        initSurvey();
+    </script>
+</body>
+</html>
