@@ -576,29 +576,9 @@
       .footer-brand { grid-column: span 1; }
     }
 
-    /* Debug Console (hidden by default) */
-    #debugConsole {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: rgba(0,0,0,0.9);
-      color: #0f0;
-      font-family: monospace;
-      font-size: 11px;
-      padding: 10px;
-      max-height: 200px;
-      overflow-y: auto;
-      z-index: 9999;
-      display: none;
-    }
-    #debugConsole.show { display: block; }
   </style>
 </head>
 <body>
-
-  <!-- Debug Console -->
-  <div id="debugConsole"></div>
 
   <!-- Header -->
   <header id="header">
@@ -899,15 +879,8 @@
   <!-- Supabase & Logic -->
   <script src="https://unpkg.com/@supabase/supabase-js@2.39.0"></script>
   <script>
-    // Debug Logger
+    // Debug Logger (console only)
     const debugLog = (msg) => {
-      const debug = document.getElementById('debugConsole');
-      if (debug) {
-        debug.classList.add('show');
-        const timestamp = new Date().toLocaleTimeString();
-        debug.innerHTML += `[${timestamp}] ${msg}<br>`;
-        debug.scrollTop = debug.scrollHeight;
-      }
       console.log(msg);
     };
 
