@@ -1,299 +1,727 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rebel Ribbon - Contact</title>
-  <!-- Google Fonts: Playfair Display + Open Sans -->
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact Us | Rebel Ribbon Custom Cookies</title>
+  <meta name="description" content="Get in touch with Rebel Ribbon. Questions about custom cookies? We'd love to hear from you.">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
   <style>
-    /* Prevent horizontal scroll */
-    html, body {
-      overflow-x: hidden;
+    :root {
+      --pink: #F4B4B8;
+      --pink-light: #FAE0E2;
+      --pink-soft: #FFF8F8;
+      --rose: #E8A0A4;
+      --brown: #5D4E4E;
+      --brown-light: #7A6B6B;
+      --cream: #FFFCFB;
+      --white: #FFFFFF;
+      
+      --font-display: 'Playfair Display', serif;
+      --font-body: 'Nunito', sans-serif;
     }
-    /* Base & Reset */
+
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
-    :root {
-      --heading-font: 'Playfair Display', serif;
-      --body-font: 'Open Sans', sans-serif;
-      --pink: #FFC0CB;
-      --black: #000;
-      --dark-gray: #333;
-    }
+
+    html { scroll-behavior: smooth; }
+
     body {
-      font-family: var(--body-font);
-      color: var(--dark-gray);
-      background: #fff;
+      font-family: var(--font-body);
+      background: var(--cream);
+      color: var(--brown);
       line-height: 1.6;
+      overflow-x: hidden;
     }
-    a {
-      text-decoration: none;
-      color: inherit;
+
+    img { max-width: 100%; display: block; }
+    a { color: inherit; text-decoration: none; }
+
+    .container {
+      width: 90%;
+      max-width: 1100px;
+      margin: 0 auto;
     }
-    img {
-      max-width: 100%;
-      display: block;
-    }
-    /* Header & Navigation */
+
+    /* Header */
     header {
-      background: #fff;
-      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: var(--cream);
+      padding: 1rem 0;
+      transition: box-shadow 0.3s ease;
+    }
+
+    header.scrolled {
+      box-shadow: 0 2px 20px rgba(93, 78, 78, 0.08);
+    }
+
+    header .container {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      position: relative;
     }
-    .logo img {
-      height: 50px;
-    }
-    nav ul {
-      list-style: none;
-      display: flex;
-    }
-    nav li {
-      margin-left: 20px;
-    }
-    nav a {
-      font-size: 16px;
-      color: var(--black);
-      font-family: var(--body-font);
-      transition: color 0.3s;
-    }
-    nav a:hover {
-      color: var(--pink);
-      text-decoration: underline;
-    }
-    .hamburger {
-      display: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: var(--black);
-      background-color: var(--pink);
-      padding: 10px;
-      border-radius: 50%;
-      z-index: 1000;
-      margin-left: auto;
-      margin-right: 10px;
-      width: 40px;
-      height: 40px;
-    }
-    @media (max-width: 768px) {
-      header {
-        padding: 15px;
-      }
-      nav ul {
-        display: none;
-        flex-direction: column;
-        position: absolute;
-        top: 70px;
-        left: 0;
-        right: 0;
-        background: #fff;
-        padding: 20px 0;
-        text-align: center;
-        z-index: 999;
-      }
-      nav li {
-        margin: 10px 0;
-      }
-      .hamburger {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
-    }
-    /* Hero Section */
-    .hero {
-      position: relative;
-      height: 30vh;
-      background: url('https://via.placeholder.com/1920x1080?text=Contact+Us') center/cover no-repeat;
+
+    .logo {
       display: flex;
       align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logo img { height: 36px; }
+
+    .logo span {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 500;
+      color: var(--brown);
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    nav a {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--brown-light);
+      transition: color 0.2s;
+    }
+
+    nav a:hover { color: var(--rose); }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
       justify-content: center;
+      gap: 0.5rem;
+      background: var(--pink);
+      color: var(--brown);
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+      font-family: var(--font-body);
+    }
+
+    .btn:hover {
+      background: var(--rose);
+      transform: translateY(-2px);
+    }
+
+    .btn-primary {
+      background: var(--brown);
+      color: var(--white);
+    }
+
+    .btn-primary:hover {
+      background: var(--brown-light);
+    }
+
+    .mobile-menu {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .mobile-menu span {
+      width: 22px;
+      height: 2px;
+      background: var(--brown);
+      border-radius: 2px;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-menu { display: flex; }
+      
+      nav {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 280px;
+        height: 100vh;
+        background: var(--white);
+        flex-direction: column;
+        justify-content: center;
+        gap: 1.5rem;
+        transition: right 0.3s ease;
+        box-shadow: -5px 0 30px rgba(0,0,0,0.1);
+      }
+      
+      nav.open { right: 0; }
+      nav a { font-size: 1.1rem; }
+    }
+
+    /* Page Hero */
+    .page-hero {
+      padding: 160px 0 80px;
+      background: linear-gradient(135deg, var(--pink-soft) 0%, var(--pink-light) 50%, var(--cream) 100%);
       text-align: center;
+      position: relative;
+      overflow: hidden;
     }
-    .hero::before {
-      content: "";
+
+    .page-hero::before {
+      content: '';
       position: absolute;
-      top: 0; left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(255,192,203,0.5);
+      top: -30%;
+      right: -10%;
+      width: 50%;
+      height: 70%;
+      background: radial-gradient(ellipse, var(--pink) 0%, transparent 70%);
+      opacity: 0.3;
+      pointer-events: none;
     }
-    .hero-content {
+
+    .page-hero .container {
       position: relative;
       z-index: 1;
     }
-    .hero h1 {
-      font-size: 36px;
-      color: var(--black);
-      font-family: var(--heading-font);
-      margin-bottom: 10px;
+
+    .page-hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(2.25rem, 5vw, 3.5rem);
+      color: var(--brown);
+      margin-bottom: 1rem;
+      line-height: 1.2;
     }
-    .hero p {
-      font-size: 18px;
-      color: var(--black);
-      font-family: var(--body-font);
+
+    .page-hero h1 span {
+      display: block;
+      font-style: italic;
+      font-weight: 400;
+      color: var(--rose);
+      font-size: 0.7em;
     }
-    /* Content Section */
-    .content-section {
-      padding: 40px 20px;
-      max-width: 900px;
-      margin: 20px auto;
+
+    .page-hero p {
+      font-size: 1.1rem;
+      color: var(--brown-light);
+      max-width: 550px;
+      margin: 0 auto;
+    }
+
+    /* Contact Section */
+    .contact-section {
+      padding: 4rem 0 5rem;
+    }
+
+    .contact-grid {
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 3rem;
+      align-items: start;
+    }
+
+    @media (max-width: 768px) {
+      .contact-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+    }
+
+    /* Contact Info */
+    .contact-info {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 50px rgba(93, 78, 78, 0.08);
+    }
+
+    .contact-info h2 {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      color: var(--brown);
+      margin-bottom: 1.5rem;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .contact-item:last-child {
+      margin-bottom: 0;
+    }
+
+    .contact-icon {
+      width: 50px;
+      height: 50px;
+      background: var(--pink-soft);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .contact-icon svg {
+      width: 24px;
+      height: 24px;
+      stroke: var(--rose);
+    }
+
+    .contact-details h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--brown);
+      margin-bottom: 0.25rem;
+    }
+
+    .contact-details p,
+    .contact-details a {
+      font-size: 0.95rem;
+      color: var(--brown-light);
+      line-height: 1.5;
+    }
+
+    .contact-details a:hover {
+      color: var(--rose);
+    }
+
+    /* Social Links */
+    .social-section {
+      margin-top: 2rem;
+      padding-top: 2rem;
+      border-top: 1px solid var(--pink-light);
+    }
+
+    .social-section h3 {
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--brown);
+      margin-bottom: 1rem;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .social-links a {
+      width: 46px;
+      height: 46px;
+      background: var(--pink-soft);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .social-links a:hover {
+      background: var(--pink);
+      transform: translateY(-3px);
+    }
+
+    .social-links svg {
+      width: 22px;
+      height: 22px;
+      fill: var(--brown);
+    }
+
+    /* Contact Form Styling */
+    .contact-form-wrapper {
+      background: var(--white);
+      border-radius: 24px;
+      padding: 2.5rem;
+      box-shadow: 0 10px 50px rgba(93, 78, 78, 0.08);
+    }
+
+    .contact-form-wrapper h2 {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      color: var(--brown);
+      margin-bottom: 0.5rem;
+    }
+
+    .contact-form-wrapper > p {
+      color: var(--brown-light);
+      font-size: 0.95rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.25rem;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      color: var(--brown);
+    }
+
+    .form-group input, 
+    .form-group textarea {
+      width: 100%;
+      padding: 0.8rem 1rem;
+      border: 1px solid var(--pink-light);
+      border-radius: 12px;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: var(--brown);
+      background: var(--pink-soft);
+      transition: all 0.2s ease;
+    }
+
+    .form-group input:focus, 
+    .form-group textarea:focus {
+      outline: none;
+      border-color: var(--pink);
+      background: var(--white);
+      box-shadow: 0 0 0 4px rgba(244, 180, 184, 0.1);
+    }
+
+    /* FAQ Teaser */
+    .faq-teaser {
+      margin-top: 3rem;
+      padding: 2rem;
+      background: var(--pink-soft);
+      border-radius: 16px;
       text-align: center;
     }
+
+    .faq-teaser h3 {
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      color: var(--brown);
+      margin-bottom: 0.5rem;
+    }
+
+    .faq-teaser p {
+      color: var(--brown-light);
+      font-size: 0.95rem;
+      margin-bottom: 1rem;
+    }
+
+    /* CTA */
+    .cta-section {
+      padding: 4rem 0;
+      background: var(--pink);
+      text-align: center;
+    }
+
+    .cta-section h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      color: var(--brown);
+      margin-bottom: 0.5rem;
+    }
+
+    .cta-section p {
+      color: var(--brown);
+      margin-bottom: 1.5rem;
+      font-size: 1rem;
+    }
+
     /* Footer */
     footer {
-      background: var(--pink);
-      color: var(--black);
-      padding: 30px 20px;
+      background: var(--cream);
+      padding: 4rem 0 2rem;
+      border-top: 1px solid var(--pink-light);
     }
-    footer .footer-content {
-      max-width: 1200px;
-      margin: 0 auto;
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .footer-brand .logo { margin-bottom: 1rem; }
+
+    .footer-brand p {
+      color: var(--brown-light);
+      font-size: 0.95rem;
+      max-width: 280px;
+    }
+
+    .footer-social {
       display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: space-between;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
     }
-    footer .footer-section { flex: 1; min-width: 200px; }
-    footer h3 {
-      font-family: var(--heading-font);
-      font-size: 18px;
-      margin-bottom: 10px;
+
+    .footer-social a {
+      width: 38px;
+      height: 38px;
+      background: var(--pink-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
     }
-    footer p, footer a {
-      font-size: 14px;
-      color: var(--black);
-      font-family: var(--body-font);
+
+    .footer-social a:hover {
+      background: var(--pink);
+      transform: translateY(-2px);
     }
-    footer a:hover { text-decoration: underline; }
-    .footer-section.newsletter { text-align: left; }
-    .newsletter iframe { width: 100%; border: 0; }
+
+    .footer-col h4 {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--brown);
+    }
+
+    .footer-col ul { list-style: none; }
+    .footer-col li { margin-bottom: 0.6rem; }
+
+    .footer-col a {
+      font-size: 0.95rem;
+      color: var(--brown-light);
+      transition: color 0.2s;
+    }
+
+    .footer-col a:hover { color: var(--rose); }
+
+    .footer-bottom {
+      text-align: center;
+      padding-top: 2rem;
+      border-top: 1px solid var(--pink-light);
+      font-size: 0.9rem;
+      color: var(--brown-light);
+    }
+
+    @media (max-width: 768px) {
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .footer-brand { grid-column: span 2; }
+    }
+
+    @media (max-width: 480px) {
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-brand { grid-column: span 1; }
+    }
   </style>
 </head>
 <body>
-  <!-- Header -->
-  <header>
-    <div class="logo">
-      <img src="horizontaltrans.png" alt="Rebel Ribbon Logo">
+
+  <header id="header">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <img src="Bowtrans.png" alt="Rebel Ribbon">
+        <span>Rebel Ribbon</span>
+      </a>
+      
+      <div class="mobile-menu" onclick="toggleNav()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+      
+      <nav id="nav">
+        <a href="index.html#about">About</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="index.html#how">How It Works</a>
+        <a href="contact.html">Contact</a>
+        <a href="order.html" class="btn">Order Cookies</a>
+      </nav>
     </div>
-    <div class="hamburger" onclick="toggleMenu()">&#9776;</div>
-    <nav>
-      <ul class="nav-menu" id="navMenu">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About Us</a></li>
-        <li><a href="ingredients.html">Ingredients</a></li>
-        <li><a href="gallery.html">Gallery</a></li>
-        <li><a href="contact.html">Contact</a></li>
-        <li><a href="order.html">Order</a></li>
-      </ul>
-    </nav>
   </header>
-  
-  <!-- Hero Section for Contact Page -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>Contact Us</h1>
-      <p>We'd love to hear from you!</p>
+
+  <section class="page-hero">
+    <div class="container">
+      <h1>Get In Touch <span>We would love to hear from you</span></h1>
+      <p>Have a question about custom cookies? Want to discuss a special order? Drop us a line and we will get back to you within 24 hours.</p>
     </div>
   </section>
-  
-  <!-- Contact Form Section -->
-  <section class="content-section">
-    <!-- Tally Embed Code for Contact Form -->
-    <iframe data-tally-src="https://tally.so/embed/3NRldB?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
-            loading="lazy" width="100%" height="600" frameborder="0" marginheight="0" marginwidth="0"
-            title="Contact Form"></iframe>
-    <script>
-      var d = document,
-          w = "https://tally.so/widgets/embed.js",
-          v = function(){
-            if(typeof Tally !== "undefined"){
-              Tally.loadEmbeds();
-            } else {
-              d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function(e){
-                e.src = e.dataset.tallySrc;
-              });
-            }
-          };
-      if(typeof Tally !== "undefined"){
-        v();
-      } else if(d.querySelector('script[src="'+w+'"]') === null){
-        var s = d.createElement("script");
-        s.src = w;
-        s.onload = v;
-        s.onerror = v;
-        d.body.appendChild(s);
-      }
-    </script>
+
+  <section class="contact-section">
+    <div class="container">
+      <div class="contact-grid">
+        
+        <div class="contact-info">
+          <h2>Contact Information</h2>
+          
+          <div class="contact-item">
+            <div class="contact-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75" />
+              </svg>
+            </div>
+            <div class="contact-details">
+              <h3>Email</h3>
+              <a href="mailto:info@rebelribbon.com">info@rebelribbon.com</a>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 002.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 01-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 00-1.091-.852H4.5A2.25 2.25 0 002.25 4.5v2.25z" />
+              </svg>
+            </div>
+            <div class="contact-details">
+              <h3>Phone</h3>
+              <a href="tel:2102397471">(210) 239-7471</a>
+              <p>Text or call anytime</p>
+            </div>
+          </div>
+
+          <div class="contact-item">
+            <div class="contact-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+              </svg>
+            </div>
+            <div class="contact-details">
+              <h3>Location</h3>
+              <p>San Antonio, Texas</p>
+              <p>Local pickup and delivery available</p>
+            </div>
+          </div>
+
+          <div class="social-section">
+            <h3>Follow Us</h3>
+            <div class="social-links">
+              <a href="https://instagram.com/rebel_ribbon" aria-label="Instagram">
+                <svg viewBox="0 0 24 24">
+                  <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+                </svg>
+              </a>
+              
+            </div>
+          </div>
+        </div>
+
+        <div class="contact-form-wrapper">
+          <h2>Send Us a Message</h2>
+          <p>Have a question or just want to say hi? Fill out the form below.</p>
+          
+          <div class="form-container">
+            <form action="https://formspree.io/f/info@rebelribbon.com" method="POST">
+              <div class="form-group">
+                <label for="name">Your Name</label>
+                <input type="text" id="name" name="name" placeholder="Name" required>
+              </div>
+
+              <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" placeholder="email@example.com" required>
+              </div>
+
+              <div class="form-group">
+                <label for="message">Your Message</label>
+                <textarea id="message" name="message" rows="5" placeholder="How can we help you today?" required></textarea>
+              </div>
+
+              <input type="hidden" name="_subject" value="New Website Inquiry">
+              
+              <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Send Message</button>
+            </form>
+          </div>
+
+          <div class="faq-teaser">
+            <h3>Ready to Order?</h3>
+            <p>Skip the contact form and head straight to our order page to get started on your custom cookies.</p>
+            <a href="order.html" class="btn btn-primary">Start Your Order</a>
+          </div>
+        </div>
+
+      </div>
+    </div>
   </section>
-  
-  <!-- Footer -->
+
+  <section class="cta-section">
+    <div class="container">
+      <h2>Let Us Create Something Sweet</h2>
+      <p>Custom orders need at least 5 days notice</p>
+      <a href="order.html" class="btn btn-primary">Order Now</a>
+    </div>
+  </section>
+
   <footer>
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3>Contact Us</h3>
-        <p>Email: <a href="mailto:info@rebelribbon.com">info@rebelribbon.com</a></p>
-        <p>Phone: <a href="tel:2102397471">(210) 239-7471</a></p>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <img src="Bowtrans.png" alt="Rebel Ribbon" style="height: 32px;">
+            <span>Rebel Ribbon</span>
+          </div>
+          <p>Custom decorated cookies made by two sisters in San Antonio, Texas. Every cookie is a little work of art.</p>
+          <div class="footer-social">
+            <a href="https://instagram.com/rebel_ribbon" aria-label="Instagram">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </a>
+           
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Pages</h4>
+          <ul>
+            <li><a href="index.html#about">About Us</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="order.html">Order</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Info</h4>
+          <ul>
+            <li><a href="ingredients.html">Ingredients</a></li>
+            <li><a href="privacy.html">Privacy</a></li>
+            <li><a href="terms.html">Terms</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul>
+            <li><a href="mailto:info@rebelribbon.com">info@rebelribbon.com</a></li>
+            <li><a href="tel:2102397471">(210) 239-7471</a></li>
+            <li>San Antonio, TX</li>
+          </ul>
+        </div>
       </div>
-      <div class="footer-section">
-        <h3>Quick Links</h3>
-        <p><a href="index.html">Home</a></p>
-        <p><a href="about.html">About Us</a></p>
-        <p><a href="ingredients.html">Ingredients</a></p>
-        <p><a href="gallery.html">Gallery</a></p>
-        <p><a href="contact.html">Contact</a></p>
-        <p><a href="order.html">Order</a></p>
-      </div>
-      <div class="footer-section newsletter">
-        <h3>Newsletter</h3>
-        <!-- Tally Embed Code for Newsletter Signup -->
-        <iframe data-tally-src="https://tally.so/embed/wokM7x?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
-                loading="lazy" width="100%" height="157" frameborder="0" marginheight="0" marginwidth="0"
-                title="News Letter"></iframe>
-        <script>
-          var d = document,
-              w = "https://tally.so/widgets/embed.js",
-              v = function(){
-                if(typeof Tally !== "undefined"){
-                  Tally.loadEmbeds();
-                } else {
-                  d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function(e){
-                    e.src = e.dataset.tallySrc;
-                  });
-                }
-              };
-          if(typeof Tally !== "undefined"){
-            v();
-          } else if(d.querySelector('script[src="'+w+'"]') === null){
-            var s = d.createElement("script");
-            s.src = w;
-            s.onload = v;
-            s.onerror = v;
-            d.body.appendChild(s);
-          }
-        </script>
+      <div class="footer-bottom">
+        © 2025 Rebel Ribbon. Made with love in San Antonio.
       </div>
     </div>
   </footer>
-  
-  <!-- Minimal JavaScript for Mobile Menu -->
+
   <script>
-    function toggleMenu() {
-      var menu = document.getElementById('navMenu');
-      var currentDisplay = window.getComputedStyle(menu).display;
-      if (currentDisplay === 'none') {
-        menu.style.display = 'flex';
-        menu.style.flexDirection = 'column';
-      } else {
-        menu.style.display = 'none';
-      }
+    // Header scroll effect
+    window.addEventListener('scroll', () => {
+      document.getElementById('header').classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Mobile nav toggle
+    function toggleNav() {
+      document.getElementById('nav').classList.toggle('open');
     }
+
+    // Close nav on link click
+    document.querySelectorAll('nav a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.getElementById('nav').classList.remove('open');
+      });
+    });
   </script>
+
 </body>
 </html>
