@@ -144,24 +144,53 @@
       nav.open { right: 0; }
     }
 
-    /* Gallery Hero */
-    .gallery-hero {
-      padding-top: 140px;
-      padding-bottom: 60px;
-      background: linear-gradient(to bottom, var(--pink-light), var(--cream));
+  /* Page Hero (Corrected Palette) */
+    .page-hero {
+      padding: 160px 0 80px;
+      background: linear-gradient(135deg, var(--pink-soft) 0%, var(--pink-light) 50%, var(--cream) 100%);
       text-align: center;
+      position: relative;
+      overflow: hidden;
     }
 
-    .gallery-hero h1 {
+    .page-hero::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      right: -10%;
+      width: 50%;
+      height: 70%;
+      background: radial-gradient(ellipse, var(--pink) 0%, transparent 70%);
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .page-hero .container {
+      position: relative;
+      z-index: 1;
+    }
+
+    .page-hero h1 {
       font-family: var(--font-display);
-      font-size: clamp(2.5rem, 5vw, 3.5rem);
+      font-size: clamp(2.25rem, 5vw, 3.5rem);
+      color: var(--brown);
       margin-bottom: 1rem;
+      line-height: 1.2;
     }
 
-    .gallery-hero p {
-      max-width: 600px;
-      margin: 0 auto;
+    .page-hero h1 span {
+      display: block;
+      font-style: italic;
+      font-weight: 400;
+      color: var(--rose);
+      font-size: 0.7em;
+    }
+
+    .page-hero p {
+      font-size: 1.1rem;
       color: var(--brown-light);
+      max-width: 550px;
+      margin: 0 auto;
     }
 
     /* Main Gallery Section */
@@ -317,3 +346,4 @@
 
 </body>
 </html>
+
