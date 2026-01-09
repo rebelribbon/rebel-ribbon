@@ -1316,6 +1316,12 @@
     async function loadOrderList(){ 
       const tbody=document.getElementById('tbody'); tbody.innerHTML=''; 
       const st=(document.getElementById('globalSearch').value||'').trim().toLowerCase();
+      const conf = tables['order_list'];
+  buildColGroup(conf, conf.cols);
+  buildThead(conf, conf.cols);
+  
+  const tbody=document.getElementById('tbody'); tbody.innerHTML=''; 
+  const st=(document.getElementById('globalSearch').value||'').trim().toLowerCase();
       let q=sb.from('orders').select('id,customer_id,status',{count:'exact'}).order('created_at',{ascending:false}); 
       if(activeOrderFilter!=='All')q=q.eq('status',activeOrderFilter);
       let orders,count; 
