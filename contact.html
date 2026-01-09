@@ -50,7 +50,7 @@
       margin: 0 auto;
     }
 
-    /* Header */
+   /* Header */
     header {
       position: fixed;
       top: 0;
@@ -105,7 +105,6 @@
     .btn {
       display: inline-flex;
       align-items: center;
-      justify-content: center;
       gap: 0.5rem;
       background: var(--pink);
       color: var(--brown);
@@ -116,7 +115,6 @@
       transition: all 0.2s ease;
       border: none;
       cursor: pointer;
-      font-family: var(--font-body);
     }
 
     .btn:hover {
@@ -124,13 +122,13 @@
       transform: translateY(-2px);
     }
 
-    .btn-primary {
-      background: var(--brown);
-      color: var(--white);
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--pink);
     }
 
-    .btn-primary:hover {
-      background: var(--brown-light);
+    .btn-outline:hover {
+      background: var(--pink-light);
     }
 
     .mobile-menu {
@@ -519,6 +517,7 @@
 </head>
 <body>
 
+ <!-- Header -->
   <header id="header">
     <div class="container">
       <a href="index.html" class="logo">
@@ -533,10 +532,10 @@
       </div>
       
       <nav id="nav">
-        <a href="index.html#about">About</a>
-        <a href="gallery.html">Gallery</a>
-        <a href="index.html#how">How It Works</a>
-        <a href="contact.html">Contact</a>
+        <a href="#about">About</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#how">How It Works</a>
+        <a href="#contact">Contact</a>
         <a href="order.html" class="btn">Order Cookies</a>
       </nav>
     </div>
@@ -725,4 +724,5 @@
 
 </body>
 </html>
+
 
