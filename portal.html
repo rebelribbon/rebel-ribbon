@@ -1313,45 +1313,72 @@
       updatePager();
     }
 
-    async function loadOrderList(){ 
-      const tbody=document.getElementById('tbody'); tbody.innerHTML=''; 
-      const st=(document.getElementById('globalSearch').value||'').trim().toLowerCase();
-      const conf = tables['order_list'];
+async function loadOrderList(){ 
+  // Rebuild headers first
+  const conf = tables['order_list'];
   buildColGroup(conf, conf.cols);
   buildThead(conf, conf.cols);
   
-  const tbody=document.getElementById('tbody'); tbody.innerHTML=''; 
-  const st=(document.getElementById('globalSearch').value||'').trim().toLowerCase();
-      let q=sb.from('orders').select('id,customer_id,status',{count:'exact'}).order('created_at',{ascending:false}); 
-      if(activeOrderFilter!=='All')q=q.eq('status',activeOrderFilter);
-      let orders,count; 
-      if(st){const{data,count:c}=await q;orders=data||[];count=c;}
-      else{const{data,count:c}=await q.range(page*pageSize,page*pageSize+pageSize-1);orders=data||[];count=c;} 
-      totalCount=count||0;
-      const ids=[...new Set(orders.map(o=>o.customer_id).filter(Boolean))]; 
-      const map=new Map(); 
-      if(ids.length){const{data}=await sb.from('customers').select('id,first_name,last_name').in('id',ids);(data||[]).forEach(c=>map.set(c.id,c));}
-      if(st){
-        const f=orders.filter(o=>{
-          const c=map.get(o.customer_id);
-          return[String(o.id),formatOrderId(o.id),o.status||'',c?`${c.first_name} ${c.last_name}`:''].some(x=>x.toLowerCase().includes(st));
-        });
-        totalCount=f.length;
-        orders=f.slice(page*pageSize,page*pageSize+pageSize);
-      }
-      for(const r of orders){
-        const c=map.get(r.customer_id);
-        const tr=$('tr','');
-        tr.style.cursor='pointer';
-        tr.appendChild($('td','cell font-medium',c?`${c.first_name||''} ${c.last_name||''}`.trim():'N/A'));
-        const sc=$('td','cell text-center');
-        sc.appendChild($('span',`status-badge ${getStatusClass(r.status)}`,r.status||'In Review'));
-        tr.appendChild(sc);
-        tr.onclick=()=>openOrderManager(r.id);
-        tbody.appendChild(tr);
-      }
-      updatePager();
-    }
+  // Get tbody and search term
+  const tbody = document.getElementById('tbody'); 
+  tbody.innerHTML = ''; 
+  const st = (document.getElementById('globalSearch').value || '').trim().toLowerCase();
+  
+  // Query orders
+  let q = sb.from('orders').select('id,customer_id,status', {count: 'exact'}).order('created_at', {ascending: false}); 
+  if(activeOrderFilter !== 'All') q = q.eq('status', activeOrderFilter);
+  
+  let orders, count; 
+  if(st) {
+    const {data, count: c} = await q;
+    orders = data || [];
+    count = c;
+  } else {
+    const {data, count: c} = await q.range(page * pageSize, page * pageSize + pageSize - 1);
+    orders = data || [];
+    count = c;
+  } 
+  
+  totalCount = count || 0;
+  
+  // Fetch customer names
+  const ids = [...new Set(orders.map(o => o.customer_id).filter(Boolean))]; 
+  const map = new Map(); 
+  if(ids.length) {
+    const {data} = await sb.from('customers').select('id,first_name,last_name').in('id', ids);
+    (data || []).forEach(c => map.set(c.id, c));
+  }
+  
+  // Filter by search term if present
+  if(st) {
+    const f = orders.filter(o => {
+      const c = map.get(o.customer_id);
+      return [
+        String(o.id),
+        formatOrderId(o.id),
+        o.status || '',
+        c ? `${c.first_name} ${c.last_name}` : ''
+      ].some(x => x.toLowerCase().includes(st));
+    });
+    totalCount = f.length;
+    orders = f.slice(page * pageSize, page * pageSize + pageSize);
+  }
+  
+  // Render rows
+  for(const r of orders) {
+    const c = map.get(r.customer_id);
+    const tr = $('tr', '');
+    tr.style.cursor = 'pointer';
+    tr.appendChild($('td', 'cell font-medium', c ? `${c.first_name || ''} ${c.last_name || ''}`.trim() : 'N/A'));
+    const sc = $('td', 'cell text-center');
+    sc.appendChild($('span', `status-badge ${getStatusClass(r.status)}`, r.status || 'In Review'));
+    tr.appendChild(sc);
+    tr.onclick = () => openOrderManager(r.id);
+    tbody.appendChild(tr);
+  }
+  
+  updatePager();
+}}
 
     async function loadPricingList(){ 
       const el=document.getElementById('pricingList'); el.innerHTML=''; 
