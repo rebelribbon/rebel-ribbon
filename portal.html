@@ -568,6 +568,11 @@
       border-radius: 0 0 20px 20px;
     }
 
+    #surveyViewer {
+  width: 100%;
+  max-width: 650px;
+}
+    
     /* Form Inputs */
     .form-grid {
       display: grid;
@@ -1194,8 +1199,9 @@
     </div>
   </dialog>
 
-  <!-- Survey Viewer Dialog -->
-  <dialog id="surveyViewer">
+<!-- Survey Viewer Dialog -->
+<dialog id="surveyViewer">
+  <form method="dialog">
     <div class="dialog-header">
       <h2 id="surveyTitle">Survey Response</h2>
       <button value="close" class="btn btn-ghost">✕</button>
@@ -1239,9 +1245,10 @@
       </div>
     </div>
     <div class="dialog-footer">
-      <button id="editSurvey" class="btn btn-primary">Edit Response</button>
+      <button id="editSurvey" type="button" class="btn btn-primary">Edit Response</button>
     </div>
-  </dialog>
+  </form>
+</dialog>
   
   <!-- Scripts -->
   <script>
