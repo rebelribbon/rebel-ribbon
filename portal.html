@@ -514,6 +514,7 @@
       margin-top: 1rem;
       padding-top: 1rem;
       border-top: 1px solid var(--pink-light);
+      flex-wrap: wrap;
     }
 
     /* Dialogs */
@@ -569,9 +570,14 @@
     }
 
     #surveyViewer {
-  width: 100%;
-  max-width: 650px;
-}
+      width: 100%;
+      max-width: 650px;
+    }
+
+    #reviewEditor {
+      width: 100%;
+      max-width: 600px;
+    }
     
     /* Form Inputs */
     .form-grid {
@@ -1199,56 +1205,86 @@
     </div>
   </dialog>
 
-<!-- Survey Viewer Dialog -->
-<dialog id="surveyViewer">
-  <form method="dialog">
-    <div class="dialog-header">
-      <h2 id="surveyTitle">Survey Response</h2>
-      <button value="close" class="btn btn-ghost">✕</button>
-    </div>
-    <div class="dialog-body" style="max-width: 600px;">
-      <div class="space-y-4">
-        <div class="info-card">
-          <h3>👤 Customer</h3>
-          <div id="survey_customer" class="font-bold" style="font-size:1.1rem;margin-top:0.5rem"></div>
-          <div id="survey_date" class="text-muted" style="font-size:0.85rem"></div>
-        </div>
-        
-        <div class="info-card">
-          <h3>⭐ Ratings</h3>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.5rem">
-            <div>
-              <div class="label">Cookies</div>
-              <div id="survey_cookies" style="color:#fbbf24;font-size:1.5rem"></div>
-            </div>
-            <div>
-              <div class="label">Service</div>
-              <div id="survey_service" style="color:#fbbf24;font-size:1.5rem"></div>
+  <!-- Survey Viewer Dialog -->
+  <dialog id="surveyViewer">
+    <form method="dialog">
+      <div class="dialog-header">
+        <h2 id="surveyTitle">Survey Response</h2>
+        <button value="close" class="btn btn-ghost">✕</button>
+      </div>
+      <div class="dialog-body" style="max-width: 600px;">
+        <div class="space-y-4">
+          <div class="info-card">
+            <h3>👤 Customer</h3>
+            <div id="survey_customer" class="font-bold" style="font-size:1.1rem;margin-top:0.5rem"></div>
+            <div id="survey_date" class="text-muted" style="font-size:0.85rem"></div>
+          </div>
+          
+          <div class="info-card">
+            <h3>⭐ Ratings</h3>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.5rem">
+              <div>
+                <div class="label">Cookies</div>
+                <div id="survey_cookies" style="color:#fbbf24;font-size:1.5rem"></div>
+              </div>
+              <div>
+                <div class="label">Service</div>
+                <div id="survey_service" style="color:#fbbf24;font-size:1.5rem"></div>
+              </div>
             </div>
           </div>
-        </div>
-        
-        <div class="info-card">
-          <h3>💬 Would Recommend?</h3>
-          <div id="survey_recommend" style="font-size:1.1rem;margin-top:0.5rem"></div>
-        </div>
-        
-        <div class="info-card">
-          <h3>📝 Improvements</h3>
-          <p id="survey_improvements" style="background:var(--pink-soft);padding:0.75rem;border-radius:10px;margin-top:0.5rem"></p>
-        </div>
-        
-        <div class="info-card">
-          <h3>🌟 Website Review</h3>
-          <p id="survey_review" style="background:var(--pink-soft);padding:0.75rem;border-radius:10px;margin-top:0.5rem"></p>
+          
+          <div class="info-card">
+            <h3>💬 Would Recommend?</h3>
+            <div id="survey_recommend" style="font-size:1.1rem;margin-top:0.5rem"></div>
+          </div>
+          
+          <div class="info-card">
+            <h3>📝 Improvements</h3>
+            <p id="survey_improvements" style="background:var(--pink-soft);padding:0.75rem;border-radius:10px;margin-top:0.5rem"></p>
+          </div>
+          
+          <div class="info-card">
+            <h3>🌟 Website Review</h3>
+            <p id="survey_review" style="background:var(--pink-soft);padding:0.75rem;border-radius:10px;margin-top:0.5rem"></p>
+          </div>
         </div>
       </div>
-    </div>
-    <div class="dialog-footer">
-      <button id="editSurvey" type="button" class="btn btn-primary">Edit Response</button>
-    </div>
-  </form>
-</dialog>
+      <div class="dialog-footer">
+        <button id="editSurvey" type="button" class="btn btn-primary">Edit Response</button>
+      </div>
+    </form>
+  </dialog>
+
+  <!-- Review Editor Dialog -->
+  <dialog id="reviewEditor">
+    <form method="dialog">
+      <div class="dialog-header">
+        <h2>Edit Review</h2>
+        <button value="close" class="btn btn-ghost">✕</button>
+      </div>
+      <div class="dialog-body">
+        <div class="space-y-4">
+          <div class="form-group">
+            <label for="review_edit_name">Customer Name</label>
+            <input id="review_edit_name" type="text" placeholder="Customer Name">
+          </div>
+          <div class="form-group">
+            <label for="review_edit_stars">Rating (1-5 stars)</label>
+            <input id="review_edit_stars" type="number" min="1" max="5" value="5">
+          </div>
+          <div class="form-group">
+            <label for="review_edit_text">Review Text</label>
+            <textarea id="review_edit_text" rows="6" placeholder="Review text..."></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="dialog-footer">
+        <button id="deleteReview" type="button" class="btn btn-danger">Delete</button>
+        <button id="saveReview" type="button" class="btn btn-primary">Save Changes</button>
+      </div>
+    </form>
+  </dialog>
   
   <!-- Scripts -->
   <script>
@@ -1298,6 +1334,7 @@
 
     let activeKey='order_list', activeOrderFilter='All', activeReviewTab='pending', page=0, totalCount=0;
     const pageSize=20;
+    let currentReview = null;
 
     document.getElementById('signInButton').onclick = async()=>{ 
       const e=document.getElementById('email').value.trim(), p=document.getElementById('password').value.trim(); 
@@ -1538,20 +1575,30 @@
         const card=$('div','review-card'); 
         card.innerHTML=`<div class="flex justify-between mb-2"><div><div class="font-bold">${escapeHtml(r.customer_name||'Anonymous')}</div><div class="review-stars">${'★'.repeat(r.stars||5)}${'☆'.repeat(5-(r.stars||5))}</div></div><span class="status-badge status-${r.status}">${r.status}</span></div><p style="color:var(--brown-light);margin-bottom:0.5rem">"${escapeHtml(r.review_text)}"</p><div style="font-size:0.75rem;color:var(--brown-light)">${new Date(r.created_at).toLocaleDateString()}</div><div class="review-actions" id="ra-${r.id}"></div>`;
         const act=card.querySelector(`#ra-${r.id}`);
+        
         if(activeReviewTab==='pending'){
+          const eb=$('button','btn btn-secondary','✏️ Edit');eb.onclick=()=>openReviewEditor(r);
           const ab=$('button','btn btn-success','✓ Approve');ab.onclick=()=>updateReview(r.id,'approved');
           const rb=$('button','btn btn-danger','✕ Reject');rb.onclick=()=>updateReview(r.id,'rejected');
-          act.appendChild(ab);act.appendChild(rb);
+          act.appendChild(eb);
+          act.appendChild(ab);
+          act.appendChild(rb);
         }
         else if(activeReviewTab==='approved'){
+          const eb=$('button','btn btn-secondary','✏️ Edit');eb.onclick=()=>openReviewEditor(r);
           const cb=$('button','btn btn-secondary','📋 Copy');cb.onclick=()=>{navigator.clipboard.writeText(`"${r.review_text}"\n— ${r.customer_name}`);cb.textContent='✓ Copied!';};
           const ub=$('button','btn btn-warning','Unpublish');ub.onclick=()=>updateReview(r.id,'pending');
-          act.appendChild(cb);act.appendChild(ub);
+          const db=$('button','btn btn-danger','Delete');db.onclick=async()=>{if(confirm('Delete this review permanently?')){await sb.from('website_reviews').delete().eq('id',r.id);loadReviews();}};
+          act.appendChild(eb);
+          act.appendChild(cb);
+          act.appendChild(ub);
+          act.appendChild(db);
         }
         else{
           const rb=$('button','btn btn-secondary','Restore');rb.onclick=()=>updateReview(r.id,'pending');
           const db=$('button','btn btn-danger','Delete');db.onclick=async()=>{if(confirm('Delete?')){await sb.from('website_reviews').delete().eq('id',r.id);loadReviews();}};
-          act.appendChild(rb);act.appendChild(db);
+          act.appendChild(rb);
+          act.appendChild(db);
         }
         list.appendChild(card);
       }
@@ -1567,6 +1614,50 @@
       await sb.from('website_reviews').update(u).eq('id',id); 
       loadReviews(); 
     }
+
+    function openReviewEditor(review) {
+      currentReview = review;
+      document.getElementById('review_edit_name').value = review.customer_name || '';
+      document.getElementById('review_edit_stars').value = review.stars || 5;
+      document.getElementById('review_edit_text').value = review.review_text || '';
+      document.getElementById('reviewEditor').showModal();
+    }
+
+    document.getElementById('saveReview').onclick = async () => {
+      if (!currentReview) return;
+      
+      const updates = {
+        customer_name: document.getElementById('review_edit_name').value.trim(),
+        stars: Number(document.getElementById('review_edit_stars').value),
+        review_text: document.getElementById('review_edit_text').value.trim()
+      };
+      
+      const {error} = await sb.from('website_reviews').update(updates).eq('id', currentReview.id);
+      
+      if (error) {
+        alert(error.message);
+        return;
+      }
+      
+      document.getElementById('reviewEditor').close();
+      loadReviews();
+    };
+
+    document.getElementById('deleteReview').onclick = async () => {
+      if (!currentReview) return;
+      
+      if (!confirm('Delete this review permanently?')) return;
+      
+      const {error} = await sb.from('website_reviews').delete().eq('id', currentReview.id);
+      
+      if (error) {
+        alert(error.message);
+        return;
+      }
+      
+      document.getElementById('reviewEditor').close();
+      loadReviews();
+    };
 
     async function loadSurveySection(orderId){ 
       const s=document.getElementById('surveyLinkSection'); 
@@ -1700,6 +1791,9 @@
         const t=k==='order_list'?'orders':tables[k].table;
         sb.channel(`${k}-ch`).on('postgres_changes',{event:'*',schema:'public',table:t},()=>{if(k===activeKey)loadTable();}).subscribe();
       }
+      
+      // Listen for website_reviews changes
+      sb.channel('reviews-ch').on('postgres_changes',{event:'*',schema:'public',table:'website_reviews'},()=>{if(activeKey==='reviews')loadReviews();}).subscribe();
     }
 
     const drawer=document.getElementById('orderDrawer');
