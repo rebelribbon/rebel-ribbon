@@ -573,11 +573,6 @@
       width: 100%;
       max-width: 650px;
     }
-
-    #reviewEditor {
-      width: 100%;
-      max-width: 600px;
-    }
     
     /* Form Inputs */
     .form-grid {
@@ -1256,35 +1251,6 @@
     </form>
   </dialog>
 
-  <!-- Review Editor Dialog -->
-  <dialog id="reviewEditor">
-    <form method="dialog">
-      <div class="dialog-header">
-        <h2>Edit Review</h2>
-        <button value="close" class="btn btn-ghost">✕</button>
-      </div>
-      <div class="dialog-body">
-        <div class="space-y-4">
-          <div class="form-group">
-            <label for="review_edit_name">Customer Name</label>
-            <input id="review_edit_name" type="text" placeholder="Customer Name">
-          </div>
-          <div class="form-group">
-            <label for="review_edit_stars">Rating (1-5 stars)</label>
-            <input id="review_edit_stars" type="number" min="1" max="5" value="5">
-          </div>
-          <div class="form-group">
-            <label for="review_edit_text">Review Text</label>
-            <textarea id="review_edit_text" rows="6" placeholder="Review text..."></textarea>
-          </div>
-        </div>
-      </div>
-      <div class="dialog-footer">
-        <button id="deleteReview" type="button" class="btn btn-danger">Delete</button>
-        <button id="saveReview" type="button" class="btn btn-primary">Save Changes</button>
-      </div>
-    </form>
-  </dialog>
   
   <!-- Scripts -->
   <script>
@@ -1334,7 +1300,6 @@
 
     let activeKey='order_list', activeOrderFilter='All', activeReviewTab='pending', page=0, totalCount=0;
     const pageSize=20;
-    let currentReview = null;
 
     document.getElementById('signInButton').onclick = async()=>{ 
       const e=document.getElementById('email').value.trim(), p=document.getElementById('password').value.trim(); 
@@ -1362,19 +1327,19 @@
 
     async function loadTable(){ 
       const conf=tables[activeKey]; 
-      document.getElementById('pageTitle').textContent=conf.title; 
+      document.getElementById('pageTitle').textContent=conf?.title || 'Website Reviews'; 
       const isP=activeKey==='pricing',isO=activeKey==='order_list',isR=activeKey==='reviews',isS=activeKey==='surveys';
       document.getElementById('orderPageControls').classList.toggle('hidden',!isO); 
-      document.getElementById('addBtn').classList.toggle('hidden',!!conf.readOnly||isP||isR||isS); 
-      document.getElementById('dataActions').classList.toggle('hidden',isP||isR||isS);
+      document.getElementById('addBtn').classList.toggle('hidden',!!conf?.readOnly||isP||isR||isS); 
+      document.getElementById('dataActions').classList.toggle('hidden',isP||isS);
       document.getElementById('pricingList').style.display=isP?'block':'none'; 
-      document.getElementById('reviewsContainer').style.display=isR?'block':'none'; 
-      document.getElementById('grid').closest('.table-wrap').classList.toggle('hidden',isP||isR);
+      document.getElementById('reviewsContainer').style.display='none'; 
+      document.getElementById('grid').closest('.table-wrap').classList.toggle('hidden',isP);
       document.getElementById('exportBtn').classList.toggle('hidden',activeKey!=='costs');
-      if(conf.customLoader==='loadPricingList'){await loadPricingList();return;} 
-      if(conf.customLoader==='loadReviews'){await loadReviews();return;} 
-      if(conf.customLoader==='loadOrderList'){await loadOrderList();return;}
-      if(conf.customLoader==='loadSurveyList'){await loadSurveyList();return;}
+      if(conf?.customLoader==='loadPricingList'){await loadPricingList();return;} 
+      if(isR){await loadReviews();return;} 
+      if(conf?.customLoader==='loadOrderList'){await loadOrderList();return;}
+      if(conf?.customLoader==='loadSurveyList'){await loadSurveyList();return;}
       const dc=conf.list_keys?conf.cols.filter(c=>conf.list_keys.includes(c.key)):conf.cols; 
       buildColGroup(conf,dc); 
       buildThead(conf,dc);
@@ -1556,108 +1521,60 @@
     }
 
     async function loadReviews(){ 
-      const c=document.getElementById('reviewsContainer'); c.innerHTML='';
-      const[pC,aC,rC]=await Promise.all([
-        sb.from('website_reviews').select('id',{count:'exact',head:true}).eq('status','pending'),
-        sb.from('website_reviews').select('id',{count:'exact',head:true}).eq('status','approved'),
-        sb.from('website_reviews').select('id',{count:'exact',head:true}).eq('status','rejected')
-      ]);
-      c.innerHTML=`<div class="review-tabs">
-        <button class="review-tab ${activeReviewTab==='pending'?'active':''}" data-t="pending">🔔 Pending<span class="review-count">${pC.count||0}</span></button>
-        <button class="review-tab ${activeReviewTab==='approved'?'active':''}" data-t="approved">✅ Approved<span class="review-count">${aC.count||0}</span></button>
-        <button class="review-tab ${activeReviewTab==='rejected'?'active':''}" data-t="rejected">❌ Rejected<span class="review-count">${rC.count||0}</span></button>
-      </div><div id="reviewsList"></div>`;
-      c.querySelectorAll('.review-tab').forEach(t=>t.onclick=()=>{activeReviewTab=t.dataset.t;loadReviews();});
-      const{data:reviews}=await sb.from('website_reviews').select('*').eq('status',activeReviewTab).order('created_at',{ascending:false}); 
-      const list=document.getElementById('reviewsList');
-      if(!reviews?.length){list.innerHTML=`<div class="text-center" style="padding:3rem;color:var(--brown-light)">No ${activeReviewTab} reviews</div>`;return;}
-      for(const r of reviews){ 
-        const card=$('div','review-card'); 
-        card.innerHTML=`<div class="flex justify-between mb-2"><div><div class="font-bold">${escapeHtml(r.customer_name||'Anonymous')}</div><div class="review-stars">${'★'.repeat(r.stars||5)}${'☆'.repeat(5-(r.stars||5))}</div></div><span class="status-badge status-${r.status}">${r.status}</span></div><p style="color:var(--brown-light);margin-bottom:0.5rem">"${escapeHtml(r.review_text)}"</p><div style="font-size:0.75rem;color:var(--brown-light)">${new Date(r.created_at).toLocaleDateString()}</div><div class="review-actions" id="ra-${r.id}"></div>`;
-        const act=card.querySelector(`#ra-${r.id}`);
+      const conf = { title: 'Website Reviews', readOnly: true };
+      buildColGroup(conf, [{key:'customer_name',w:'50'},{key:'review',w:'30'},{key:'date',w:'20'}]);
+      buildThead(conf, [{key:'customer_name',label:'Customer'},{key:'review',label:'Review Preview'},{key:'date',label:'Date'}]);
+      
+      const tbody = document.getElementById('tbody');
+      tbody.innerHTML = '';
+      
+      // Get surveys that have website reviews
+      let q = sb.from('surveys')
+        .select('*', {count: 'exact'})
+        .not('website_review', 'is', null)
+        .neq('website_review', '')
+        .order('created_at', {ascending: false});
+      
+      const {data: surveys, error, count} = await q.range(page * pageSize, page * pageSize + pageSize - 1);
+      
+      if (error) {
+        tbody.innerHTML = `<tr><td class="cell text-error" colspan="99">${error.message}</td></tr>`;
+        return;
+      }
+      
+      totalCount = count || 0;
+      
+      // Get customer names
+      const ids = [...new Set(surveys.map(s => s.customer_id).filter(Boolean))];
+      const map = new Map();
+      if (ids.length) {
+        const {data} = await sb.from('customers').select('id,first_name,last_name').in('id', ids);
+        (data || []).forEach(c => map.set(c.id, c));
+      }
+      
+      for (const s of surveys) {
+        const c = map.get(s.customer_id);
+        const tr = $('tr', '');
+        tr.style.cursor = 'pointer';
         
-        if(activeReviewTab==='pending'){
-          const eb=$('button','btn btn-secondary','✏️ Edit');eb.onclick=()=>openReviewEditor(r);
-          const ab=$('button','btn btn-success','✓ Approve');ab.onclick=()=>updateReview(r.id,'approved');
-          const rb=$('button','btn btn-danger','✕ Reject');rb.onclick=()=>updateReview(r.id,'rejected');
-          act.appendChild(eb);
-          act.appendChild(ab);
-          act.appendChild(rb);
-        }
-        else if(activeReviewTab==='approved'){
-          const eb=$('button','btn btn-secondary','✏️ Edit');eb.onclick=()=>openReviewEditor(r);
-          const cb=$('button','btn btn-secondary','📋 Copy');cb.onclick=()=>{navigator.clipboard.writeText(`"${r.review_text}"\n— ${r.customer_name}`);cb.textContent='✓ Copied!';};
-          const ub=$('button','btn btn-warning','Unpublish');ub.onclick=()=>updateReview(r.id,'pending');
-          const db=$('button','btn btn-danger','Delete');db.onclick=async()=>{if(confirm('Delete this review permanently?')){await sb.from('website_reviews').delete().eq('id',r.id);loadReviews();}};
-          act.appendChild(eb);
-          act.appendChild(cb);
-          act.appendChild(ub);
-          act.appendChild(db);
-        }
-        else{
-          const rb=$('button','btn btn-secondary','Restore');rb.onclick=()=>updateReview(r.id,'pending');
-          const db=$('button','btn btn-danger','Delete');db.onclick=async()=>{if(confirm('Delete?')){await sb.from('website_reviews').delete().eq('id',r.id);loadReviews();}};
-          act.appendChild(rb);
-          act.appendChild(db);
-        }
-        list.appendChild(card);
-      }
-    }
-
-    async function updateReview(id,status){ 
-      const u={status}; 
-      if(status==='approved'){
-        u.approved_at=new Date().toISOString();
-        const{data:{session}}=await sb.auth.getSession();
-        u.approved_by=session?.user?.email;
-      } 
-      await sb.from('website_reviews').update(u).eq('id',id); 
-      loadReviews(); 
-    }
-
-    function openReviewEditor(review) {
-      currentReview = review;
-      document.getElementById('review_edit_name').value = review.customer_name || '';
-      document.getElementById('review_edit_stars').value = review.stars || 5;
-      document.getElementById('review_edit_text').value = review.review_text || '';
-      document.getElementById('reviewEditor').showModal();
-    }
-
-    document.getElementById('saveReview').onclick = async () => {
-      if (!currentReview) return;
-      
-      const updates = {
-        customer_name: document.getElementById('review_edit_name').value.trim(),
-        stars: Number(document.getElementById('review_edit_stars').value),
-        review_text: document.getElementById('review_edit_text').value.trim()
-      };
-      
-      const {error} = await sb.from('website_reviews').update(updates).eq('id', currentReview.id);
-      
-      if (error) {
-        alert(error.message);
-        return;
+        // Customer name
+        tr.appendChild($('td', 'cell font-medium', c ? `${c.first_name || ''} ${c.last_name || ''}`.trim() : 'N/A'));
+        
+        // Review preview (first 60 chars)
+        const reviewPreview = s.website_review.length > 60 
+          ? s.website_review.substring(0, 60) + '...' 
+          : s.website_review;
+        tr.appendChild($('td', 'cell', `"${reviewPreview}"`));
+        
+        // Date
+        tr.appendChild($('td', 'cell', new Date(s.created_at).toLocaleDateString()));
+        
+        tr.onclick = () => openSurveyViewer(s.id);
+        tbody.appendChild(tr);
       }
       
-      document.getElementById('reviewEditor').close();
-      loadReviews();
-    };
-
-    document.getElementById('deleteReview').onclick = async () => {
-      if (!currentReview) return;
-      
-      if (!confirm('Delete this review permanently?')) return;
-      
-      const {error} = await sb.from('website_reviews').delete().eq('id', currentReview.id);
-      
-      if (error) {
-        alert(error.message);
-        return;
-      }
-      
-      document.getElementById('reviewEditor').close();
-      loadReviews();
-    };
+      updatePager();
+    }
 
     async function loadSurveySection(orderId){ 
       const s=document.getElementById('surveyLinkSection'); 
@@ -1792,8 +1709,8 @@
         sb.channel(`${k}-ch`).on('postgres_changes',{event:'*',schema:'public',table:t},()=>{if(k===activeKey)loadTable();}).subscribe();
       }
       
-      // Listen for website_reviews changes
-      sb.channel('reviews-ch').on('postgres_changes',{event:'*',schema:'public',table:'website_reviews'},()=>{if(activeKey==='reviews')loadReviews();}).subscribe();
+      // Listen for survey changes to update reviews section
+      sb.channel('reviews-surveys-ch').on('postgres_changes',{event:'*',schema:'public',table:'surveys'},()=>{if(activeKey==='reviews')loadTable();}).subscribe();
     }
 
     const drawer=document.getElementById('orderDrawer');
