@@ -573,6 +573,11 @@
       width: 100%;
       max-width: 650px;
     }
+
+    #reviewDialog {
+      width: 100%;
+      max-width: 600px;
+    }
     
     /* Form Inputs */
     .form-grid {
@@ -1251,6 +1256,35 @@
     </form>
   </dialog>
 
+  <!-- Review Management Dialog -->
+  <dialog id="reviewDialog">
+    <form method="dialog">
+      <div class="dialog-header">
+        <h2>Website Review</h2>
+        <button value="close" class="btn btn-ghost">✕</button>
+      </div>
+      <div class="dialog-body" style="max-width: 600px;">
+        <div class="space-y-4">
+          <div class="info-card">
+            <h3>👤 Customer</h3>
+            <div id="review_customer" class="font-bold" style="font-size:1.1rem;margin-top:0.5rem"></div>
+            <div id="review_date" class="text-muted" style="font-size:0.85rem"></div>
+          </div>
+          
+          <div class="info-card">
+            <h3>🌟 Review</h3>
+            <p id="review_text" style="background:var(--pink-soft);padding:0.75rem;border-radius:10px;margin-top:0.5rem;white-space:pre-wrap"></p>
+          </div>
+        </div>
+      </div>
+      <div class="dialog-footer" id="reviewDialogFooter">
+        <button id="editReviewBtn" type="button" class="btn btn-secondary">Edit</button>
+        <button id="approveReviewBtn" type="button" class="btn btn-success">Approve</button>
+        <button id="rejectReviewBtn" type="button" class="btn btn-danger">Reject</button>
+      </div>
+    </form>
+  </dialog>
+
   
   <!-- Scripts -->
   <script>
@@ -1411,6 +1445,94 @@
       updatePager();
     }
 
+    let activeReviewSurvey = null;
+
+    function openReviewDialog(survey, customer) {
+      activeReviewSurvey = survey;
+      
+      document.getElementById('review_customer').textContent = customer ? `${customer.first_name} ${customer.last_name}` : 'N/A';
+      document.getElementById('review_date').textContent = `Submitted: ${new Date(survey.created_at).toLocaleString()}`;
+      document.getElementById('review_text').textContent = survey.website_review || 'No review provided';
+      
+      updateReviewDialogButtons();
+      document.getElementById('reviewDialog').showModal();
+    }
+
+    function updateReviewDialogButtons() {
+      const footer = document.getElementById('reviewDialogFooter');
+      const status = activeReviewSurvey?.review_approval_status;
+      
+      footer.innerHTML = '';
+      
+      const editBtn = $('button', 'btn btn-secondary', 'Edit');
+      editBtn.type = 'button';
+      editBtn.onclick = () => {
+        document.getElementById('reviewDialog').close();
+        openEditor(tables.surveys, activeReviewSurvey);
+      };
+      
+      if (status === 'approved') {
+        const deleteBtn = $('button', 'btn btn-danger', 'Delete');
+        deleteBtn.type = 'button';
+        deleteBtn.onclick = async () => {
+          if (confirm('Delete this review permanently?')) {
+            const {error} = await sb.from('surveys').delete().eq('id', activeReviewSurvey.id);
+            if (error) {
+              alert(error.message);
+              return;
+            }
+            document.getElementById('reviewDialog').close();
+            loadReviews();
+          }
+        };
+        footer.appendChild(editBtn);
+        footer.appendChild(deleteBtn);
+      } else if (status === 'rejected') {
+        const deleteBtn = $('button', 'btn btn-danger', 'Delete');
+        deleteBtn.type = 'button';
+        deleteBtn.onclick = async () => {
+          if (confirm('Are you sure you want to delete this?')) {
+            const {error} = await sb.from('surveys').delete().eq('id', activeReviewSurvey.id);
+            if (error) {
+              alert(error.message);
+              return;
+            }
+            document.getElementById('reviewDialog').close();
+            loadReviews();
+          }
+        };
+        footer.appendChild(deleteBtn);
+      } else {
+        const approveBtn = $('button', 'btn btn-success', 'Approve');
+        approveBtn.type = 'button';
+        approveBtn.onclick = async () => {
+          const {error} = await sb.from('surveys').update({review_approval_status: 'approved'}).eq('id', activeReviewSurvey.id);
+          if (error) {
+            alert(error.message);
+            return;
+          }
+          activeReviewSurvey.review_approval_status = 'approved';
+          updateReviewDialogButtons();
+        };
+        
+        const rejectBtn = $('button', 'btn btn-danger', 'Reject');
+        rejectBtn.type = 'button';
+        rejectBtn.onclick = async () => {
+          const {error} = await sb.from('surveys').update({review_approval_status: 'rejected'}).eq('id', activeReviewSurvey.id);
+          if (error) {
+            alert(error.message);
+            return;
+          }
+          activeReviewSurvey.review_approval_status = 'rejected';
+          updateReviewDialogButtons();
+        };
+        
+        footer.appendChild(editBtn);
+        footer.appendChild(approveBtn);
+        footer.appendChild(rejectBtn);
+      }
+    }
+
     async function loadOrderList(){ 
       const conf = tables['order_list'];
       buildColGroup(conf, conf.cols);
@@ -1522,8 +1644,8 @@
 
     async function loadReviews(){ 
       const conf = { title: 'Website Reviews', readOnly: true };
-      buildColGroup(conf, [{key:'customer_name',w:'50'},{key:'review',w:'30'},{key:'date',w:'20'}]);
-      buildThead(conf, [{key:'customer_name',label:'Customer'},{key:'review',label:'Review Preview'},{key:'date',label:'Date'}]);
+      buildColGroup(conf, [{key:'customer_name',w:'40'},{key:'review',w:'60'}]);
+      buildThead(conf, [{key:'customer_name',label:'Customer'},{key:'review',label:'Review'}]);
       
       const tbody = document.getElementById('tbody');
       tbody.innerHTML = '';
@@ -1560,16 +1682,10 @@
         // Customer name
         tr.appendChild($('td', 'cell font-medium', c ? `${c.first_name || ''} ${c.last_name || ''}`.trim() : 'N/A'));
         
-        // Review preview (first 60 chars)
-        const reviewPreview = s.website_review.length > 60 
-          ? s.website_review.substring(0, 60) + '...' 
-          : s.website_review;
-        tr.appendChild($('td', 'cell', `"${reviewPreview}"`));
+        // Full review text
+        tr.appendChild($('td', 'cell', `"${s.website_review}"`));
         
-        // Date
-        tr.appendChild($('td', 'cell', new Date(s.created_at).toLocaleDateString()));
-        
-        tr.onclick = () => openSurveyViewer(s.id);
+        tr.onclick = () => openReviewDialog(s, c);
         tbody.appendChild(tr);
       }
       
