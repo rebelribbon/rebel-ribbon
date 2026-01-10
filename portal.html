@@ -1194,6 +1194,55 @@
     </div>
   </dialog>
 
+  <!-- Survey Viewer Dialog -->
+<dialog id="surveyViewer">
+  <div class="dialog-header">
+    <h2 id="surveyTitle">Survey Response</h2>
+    <button value="close" class="btn btn-ghost">✕</button>
+  </div>
+  <div class="dialog-body" style="max-width: 600px;">
+    <div class="space-y-4">
+      <div class="info-card">
+        <h3>👤 Customer</h3>
+        <div id="survey_customer" class="font-bold" style="font-size:1.1rem;margin-top:0.5rem"></div>
+        <div id="survey_date" class="text-muted" style="font-size:0.85rem"></div>
+      </div>
+      
+      <div class="info-card">
+        <h3>⭐ Ratings</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.5rem">
+          <div>
+            <div class="label">Cookies</div>
+            <div id="survey_cookies" style="color:#fbbf24;font-size:1.5rem"></div>
+          </div>
+          <div>
+            <div class="label">Service</div>
+            <div id="survey_service" style="color:#fbbf24;font-size:1.5rem"></div>
+          </div>
+        </div>
+      </div>
+      
+      <div class="info-card">
+        <h3>💬 Would Recommend?</h3>
+        <div id="survey_recommend" style="font-size:1.1rem;margin-top:0.5rem"></div>
+      </div>
+      
+      <div class="info-card">
+        <h3>📝 Improvements</h3>
+        <p id="survey_improvements" style="background:var(--pink-soft);padding:0.75rem;border-radius:10px;margin-top:0.5rem"></p>
+      </div>
+      
+      <div class="info-card">
+        <h3>🌟 Website Review</h3>
+        <p id="survey_review" style="background:var(--pink-soft);padding:0.75rem;border-radius:10px;margin-top:0.5rem"></p>
+      </div>
+    </div>
+  </div>
+  <div class="dialog-footer">
+    <button id="editSurvey" class="btn btn-primary">Edit Response</button>
+  </div>
+</dialog>
+  
   <!-- Scripts -->
   <script>
     // =====================================================
@@ -1233,8 +1282,14 @@
         dietary_options: { title:'Dietary Options', table:'dietary_options', isSettings:true, cols:[{key:'name',label:'Name',type:'text',required:true,w:'40'}] },
         pricing: { title:'Pricing', table:'pricing', isSettings:true, customLoader:'loadPricingList', cols:[{key:'price_per_dozen',label:'Price/dozen',type:'number',step:'0.01',w:'20'},{key:'delivery_fee',label:'Delivery fee',type:'number',step:'0.01',w:'20'},{key:'consultation_fee',label:'Consult fee',type:'number',step:'0.01',w:'20'},{key:'gift_note_fee',label:'Gift fee',type:'number',step:'0.01',w:'20'},{key:'rush_fee',label:'Rush fee',type:'number',step:'0.01',w:'20'}] },
         costs: { title:'Costs', table:'costs', isSettings:true, cols:[{key:'cost_date',label:'Date',type:'date',w:'25'},{key:'item_name',label:'Item',type:'text',required:true,w:'55'},{key:'amount',label:'Amount',type:'number',step:'0.01',required:true,w:'20'}] },
-        surveys: { title:'Surveys', table:'surveys', cols:[{key:'customer_id',label:'Customer',type:'select-async',w:'22',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},{key:'cookies_stars',label:'Cookies',type:'number',min:1,max:5,w:'18'},{key:'service_stars',label:'Service',type:'number',min:1,max:5,w:'18'},{key:'recommend',label:'Recommend',type:'checkbox',w:'22'},{key:'improvements',label:'Improvements',type:'textarea',w:'30'},{key:'website_review',label:'Review',type:'textarea',w:'30'}] },
-        reviews: { title:'Website Reviews', table:'website_reviews', customLoader:'loadReviews', readOnly:true, cols:[] }
+       surveys: { title:'Surveys', table:'surveys', readOnly:true, customLoader:'loadSurveyList', cols:[
+  {key:'customer_id',label:'Customer',type:'select-async',w:'22',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},
+  {key:'cookies_stars',label:'Cookies',type:'number',min:1,max:5,w:'18'},
+  {key:'service_stars',label:'Service',type:'number',min:1,max:5,w:'18'},
+  {key:'recommend',label:'Recommend',type:'checkbox',w:'22'},
+  {key:'improvements',label:'Improvements',type:'textarea',w:'30'},
+  {key:'website_review',label:'Review',type:'textarea',w:'30'}
+]},
     };
 
     let activeKey='order_list', activeOrderFilter='All', activeReviewTab='pending', page=0, totalCount=0;
@@ -1313,73 +1368,79 @@
       updatePager();
     }
 
-async function loadOrderList(){ 
-  // Rebuild headers first
-  const conf = tables['order_list'];
-  buildColGroup(conf, conf.cols);
-  buildThead(conf, conf.cols);
+async function loadSurveyList() {
+  // Rebuild headers
+  const conf = tables['surveys'];
+  buildColGroup(conf, [{key:'customer_name',w:'60'},{key:'date',w:'40'}]);
+  buildThead(conf, [{key:'customer_name',label:'Customer'},{key:'date',label:'Date'}]);
   
-  // Get tbody and search term
-  const tbody = document.getElementById('tbody'); 
-  tbody.innerHTML = ''; 
-  const st = (document.getElementById('globalSearch').value || '').trim().toLowerCase();
+  const tbody = document.getElementById('tbody');
+  tbody.innerHTML = '';
   
-  // Query orders
-  let q = sb.from('orders').select('id,customer_id,status', {count: 'exact'}).order('created_at', {ascending: false}); 
-  if(activeOrderFilter !== 'All') q = q.eq('status', activeOrderFilter);
+  // Get surveys with count
+  let q = sb.from('surveys').select('*', {count: 'exact'}).order('created_at', {ascending: false});
+  const {data: surveys, error, count} = await q.range(page * pageSize, page * pageSize + pageSize - 1);
   
-  let orders, count; 
-  if(st) {
-    const {data, count: c} = await q;
-    orders = data || [];
-    count = c;
-  } else {
-    const {data, count: c} = await q.range(page * pageSize, page * pageSize + pageSize - 1);
-    orders = data || [];
-    count = c;
-  } 
+  if (error) {
+    tbody.innerHTML = `<tr><td class="cell text-error" colspan="99">${error.message}</td></tr>`;
+    return;
+  }
   
   totalCount = count || 0;
   
   // Fetch customer names
-  const ids = [...new Set(orders.map(o => o.customer_id).filter(Boolean))]; 
-  const map = new Map(); 
-  if(ids.length) {
+  const ids = [...new Set(surveys.map(s => s.customer_id).filter(Boolean))];
+  const map = new Map();
+  if (ids.length) {
     const {data} = await sb.from('customers').select('id,first_name,last_name').in('id', ids);
     (data || []).forEach(c => map.set(c.id, c));
   }
   
-  // Filter by search term if present
-  if(st) {
-    const f = orders.filter(o => {
-      const c = map.get(o.customer_id);
-      return [
-        String(o.id),
-        formatOrderId(o.id),
-        o.status || '',
-        c ? `${c.first_name} ${c.last_name}` : ''
-      ].some(x => x.toLowerCase().includes(st));
-    });
-    totalCount = f.length;
-    orders = f.slice(page * pageSize, page * pageSize + pageSize);
-  }
-  
   // Render rows
-  for(const r of orders) {
-    const c = map.get(r.customer_id);
+  for (const s of surveys) {
+    const c = map.get(s.customer_id);
     const tr = $('tr', '');
     tr.style.cursor = 'pointer';
     tr.appendChild($('td', 'cell font-medium', c ? `${c.first_name || ''} ${c.last_name || ''}`.trim() : 'N/A'));
-    const sc = $('td', 'cell text-center');
-    sc.appendChild($('span', `status-badge ${getStatusClass(r.status)}`, r.status || 'In Review'));
-    tr.appendChild(sc);
-    tr.onclick = () => openOrderManager(r.id);
+    tr.appendChild($('td', 'cell', new Date(s.created_at).toLocaleDateString()));
+    tr.onclick = () => openSurveyViewer(s.id);
     tbody.appendChild(tr);
   }
   
   updatePager();
 }
+    }
+let activeSurvey = null;
 
+async function openSurveyViewer(surveyId) {
+  const {data: survey, error} = await sb.from('surveys').select('*').eq('id', surveyId).single();
+  if (error) {
+    alert(error.message);
+    return;
+  }
+  
+  activeSurvey = survey;
+  
+  // Get customer name
+  const {data: customer} = await sb.from('customers').select('first_name,last_name').eq('id', survey.customer_id).single();
+  
+  document.getElementById('survey_customer').textContent = customer ? `${customer.first_name} ${customer.last_name}` : 'N/A';
+  document.getElementById('survey_date').textContent = `Submitted: ${new Date(survey.created_at).toLocaleString()}`;
+  document.getElementById('survey_cookies').textContent = '★'.repeat(survey.cookies_stars || 0) + '☆'.repeat(5 - (survey.cookies_stars || 0));
+  document.getElementById('survey_service').textContent = '★'.repeat(survey.service_stars || 0) + '☆'.repeat(5 - (survey.service_stars || 0));
+  document.getElementById('survey_recommend').textContent = survey.recommend ? '✅ Yes' : '❌ No';
+  document.getElementById('survey_improvements').textContent = survey.improvements || 'No feedback provided';
+  document.getElementById('survey_review').textContent = survey.website_review || 'No review provided';
+  
+  document.getElementById('surveyViewer').showModal();
+}
+
+document.getElementById('editSurvey').onclick = () => {
+  if (activeSurvey) {
+    document.getElementById('surveyViewer').close();
+    openEditor(tables.surveys, activeSurvey);
+  }
+};
     async function loadPricingList(){ 
       const el=document.getElementById('pricingList'); el.innerHTML=''; 
       const{data}=await sb.from('pricing').select('*').limit(1); 
