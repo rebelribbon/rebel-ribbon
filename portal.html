@@ -1,13 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Rebel Ribbon Staff</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rebel Ribbon | Custom Cookies in San Antonio</title>
+  <meta name="description" content="Custom decorated cookies for any occasion. Handmade with love by two sisters in San Antonio, TX.">
+  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  
   <style>
     :root {
       --pink: #F4B4B8;
@@ -18,2000 +21,1081 @@
       --brown-light: #7A6B6B;
       --cream: #FFFCFB;
       --white: #FFFFFF;
-      --error: #c94a4a;
-      --success: #5a9a6e;
-      --warning: #d4a24c;
-      --info: #5a8fc9;
       
       --font-display: 'Playfair Display', serif;
       --font-body: 'Nunito', sans-serif;
-      
-      --sidebar-width: 260px;
-      --header-height: 64px;
     }
 
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html { overflow-x: hidden; }
-    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html { scroll-behavior: smooth; }
+
     body {
       font-family: var(--font-body);
       background: var(--cream);
       color: var(--brown);
       line-height: 1.6;
-      min-height: 100vh;
+      overflow-x: hidden;
     }
 
     img { max-width: 100%; display: block; }
     a { color: inherit; text-decoration: none; }
-    button { font-family: inherit; cursor: pointer; }
+
+    .container {
+      width: 90%;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
 
     /* Header */
-    #header-banner {
+    header {
       position: fixed;
       top: 0;
       left: 0;
       right: 0;
-      height: var(--header-height);
-      background: var(--white);
-      border-bottom: 1px solid var(--pink-light);
       z-index: 100;
+      background: var(--cream);
+      padding: 1rem 0;
+      transition: box-shadow 0.3s ease;
+    }
+
+    header.scrolled {
+      box-shadow: 0 2px 20px rgba(93, 78, 78, 0.08);
+    }
+
+    header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
       display: flex;
       align-items: center;
-      padding: 0 1.5rem;
-      box-shadow: 0 2px 12px rgba(93, 78, 78, 0.06);
+      gap: 0.5rem;
     }
 
-    #menuToggle {
-      width: 42px;
-      height: 42px;
-      background: var(--pink-soft);
-      border: 1px solid var(--pink-light);
-      border-radius: 10px;
-      font-size: 1.25rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      color: var(--brown);
-      transition: all 0.2s;
-    }
+    .logo img { height: 36px; }
 
-    #menuToggle:hover {
-      background: var(--pink-light);
-    }
-
-    #logo-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-    }
-
-    #logo-wrapper img { height: 38px; }
-
-    #logo-text {
+    .logo span {
       font-family: var(--font-display);
-      font-size: 1.4rem;
-      font-weight: 600;
-      color: var(--brown);
-    }
-
-    /* Sidebar */
-    #sidebar {
-      width: var(--sidebar-width);
-      background: var(--brown);
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100vh;
-      z-index: 90;
-      padding-top: var(--header-height);
-      transform: translateX(-100%);
-      transition: transform 0.3s ease;
-      box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-    }
-
-    #sidebar.open { transform: translateX(0); }
-
-    #sidebar h1 {
-      font-family: var(--font-display);
-      font-size: 1.1rem;
+      font-size: 1.5rem;
       font-weight: 500;
-      color: rgba(255,255,255,0.9);
-      padding: 1.5rem 1.25rem 1rem;
-      border-bottom: 1px solid rgba(255,255,255,0.1);
+      color: var(--brown);
     }
 
-    .nav-item {
-      display: block;
-      width: 100%;
-      padding: 0.85rem 1.25rem;
-      background: transparent;
-      border: none;
-      text-align: left;
-      color: rgba(255,255,255,0.75);
+    nav {
+      display: flex;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    nav a {
       font-size: 0.95rem;
       font-weight: 500;
-      cursor: pointer;
-      transition: all 0.15s;
+      color: var(--brown-light);
+      transition: color 0.2s;
     }
 
-    .nav-item:hover {
-      background: rgba(255,255,255,0.08);
-      color: var(--white);
-    }
+    nav a:hover { color: var(--rose); }
 
-    .nav-active {
-      background: rgba(244, 180, 184, 0.15);
-      color: var(--pink);
-      border-left: 3px solid var(--pink);
-      padding-left: calc(1.25rem - 3px);
-    }
-
-    .submenu-item {
-      padding-left: 2rem;
-      font-size: 0.9rem;
-    }
-
-    #sidebar h3 {
-      font-size: 0.7rem;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: rgba(255,255,255,0.4);
-      padding: 1.5rem 1.25rem 0.5rem;
-      font-weight: 600;
-    }
-
-    #logout-sidebar {
-      margin-top: auto;
-      padding: 1.25rem;
-      border-top: 1px solid rgba(255,255,255,0.1);
-    }
-
-    #who {
-      display: block;
-      color: rgba(255,255,255,0.5);
-      font-size: 0.8rem;
-      margin-bottom: 0.75rem;
-    }
-
-    /* Main Content */
-    #app-wrapper {
-      display: flex;
-      width: 100%;
-      padding-top: var(--header-height);
-    }
-
-    #app-wrapper.hidden { display: none; }
-
-    #content {
-      flex-grow: 1;
-      padding: 1.5rem;
-      max-width: 100%;
-    }
-
-    @media (min-width: 768px) {
-      #content { padding: 2rem; }
-    }
-
-    /* Page Header */
-    #pageTitle {
-      font-family: var(--font-display);
-      font-size: 1.75rem;
-      font-weight: 600;
-      color: var(--brown);
-      margin-bottom: 1.5rem;
-    }
-
-    /* Buttons */
     .btn {
       display: inline-flex;
       align-items: center;
+      gap: 0.5rem;
+      background: var(--pink);
+      color: var(--brown);
+      padding: 0.75rem 1.5rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: all 0.2s ease;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn:hover {
+      background: var(--rose);
+      transform: translateY(-2px);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid var(--pink);
+    }
+
+    .btn-outline:hover {
+      background: var(--pink-light);
+    }
+
+    .mobile-menu {
+      display: none;
+      flex-direction: column;
+      gap: 5px;
+      cursor: pointer;
+      padding: 8px;
+    }
+
+    .mobile-menu span {
+      width: 22px;
+      height: 2px;
+      background: var(--brown);
+      border-radius: 2px;
+    }
+
+    @media (max-width: 768px) {
+      .mobile-menu { display: flex; }
+      
+      nav {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 70%;
+        max-width: 280px;
+        height: 100vh;
+        background: var(--white);
+        flex-direction: column;
+        justify-content: center;
+        gap: 1.5rem;
+        transition: right 0.3s ease;
+        box-shadow: -5px 0 30px rgba(0,0,0,0.1);
+      }
+      
+      nav.open { right: 0; }
+      nav a { font-size: 1.1rem; }
+    }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
       justify-content: center;
-      gap: 0.4rem;
-      padding: 0.6rem 1.25rem;
-      border-radius: 10px;
-      font-size: 0.9rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-      border: none;
-      font-family: var(--font-body);
+      position: relative;
+      background: linear-gradient(135deg, var(--pink-soft) 0%, var(--pink-light) 50%, var(--cream) 100%);
+      overflow: hidden;
     }
 
-    .btn-primary {
-      background: var(--brown);
-      color: var(--white);
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -30%;
+      right: -10%;
+      width: 60%;
+      height: 80%;
+      background: radial-gradient(ellipse, var(--pink) 0%, transparent 70%);
+      opacity: 0.4;
+      pointer-events: none;
     }
 
-    .btn-primary:hover {
-      background: var(--brown-light);
-      transform: translateY(-1px);
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -20%;
+      left: -10%;
+      width: 50%;
+      height: 60%;
+      background: radial-gradient(ellipse, var(--rose) 0%, transparent 70%);
+      opacity: 0.3;
+      pointer-events: none;
     }
 
-    .btn-secondary {
-      background: var(--white);
-      color: var(--brown);
-      border: 2px solid var(--pink-light);
+    .hero-content {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 800px;
+      padding: 2rem;
     }
 
-    .btn-secondary:hover {
-      background: var(--pink-soft);
-      border-color: var(--pink);
+    .hero-bow {
+      width: 100px;
+      height: auto;
+      margin: 0 auto 2rem;
+      animation: gentle-float 4s ease-in-out infinite;
     }
 
-    .btn-success {
-      background: var(--success);
-      color: var(--white);
+    @keyframes gentle-float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
     }
 
-    .btn-success:hover {
-      background: #4a8a5e;
-    }
-
-    .btn-danger {
-      background: #fee2e2;
-      color: var(--error);
-      border: 1px solid #f5a5a5;
-    }
-
-    .btn-danger:hover {
-      background: #fdd;
-    }
-
-    .btn-warning {
-      background: #fef3c7;
-      color: #92400e;
-      border: 1px solid #fbbf24;
-    }
-
-    .btn-ghost {
-      background: transparent;
-      color: var(--brown-light);
-      border: none;
-    }
-
-    .btn-ghost:hover {
-      background: var(--pink-soft);
-      color: var(--brown);
-    }
-
-    .btn-lg {
-      padding: 0.85rem 2rem;
-      font-size: 1rem;
-    }
-
-    .btn:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    /* Search & Filters */
-    #searchContainer {
-      display: flex;
-      gap: 0.75rem;
-      align-items: center;
-      margin-bottom: 1rem;
-    }
-
-    #globalSearch {
-      padding: 0.65rem 1rem;
-      border-radius: 50px;
-      border: 2px solid var(--pink-light);
-      font-family: var(--font-body);
-      font-size: 0.95rem;
-      flex-grow: 1;
-      max-width: 320px;
-      background: var(--white);
-      transition: all 0.2s;
-    }
-
-    #globalSearch:focus {
-      outline: none;
-      border-color: var(--rose);
-      box-shadow: 0 0 0 4px rgba(232, 160, 164, 0.15);
-    }
-
-    #orderFilters {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1.25rem;
-    }
-
-    .filter-tab {
-      font-size: 0.8rem;
-      padding: 0.5rem 1rem;
-      border-radius: 50px;
-      border: 2px solid var(--pink-light);
-      background: var(--white);
-      color: var(--brown-light);
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .filter-tab:hover {
-      border-color: var(--pink);
-      background: var(--pink-soft);
-    }
-
-    .filter-active {
-      border-color: var(--brown);
-      background: var(--brown);
-      color: var(--white);
-    }
-
-    .filter-active:hover {
-      background: var(--brown-light);
-      border-color: var(--brown-light);
-    }
-
-    /* Data Actions */
-    #dataActions {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      margin-bottom: 1rem;
-      flex-wrap: wrap;
-      gap: 0.75rem;
-    }
-
-    /* Table */
-    .table-wrap {
-      overflow-x: auto;
-      border-radius: 16px;
-      border: 1px solid var(--pink-light);
-      background: var(--white);
-      box-shadow: 0 4px 20px rgba(93, 78, 78, 0.05);
-    }
-
-    table {
-      width: 100%;
-      border-collapse: separate;
-      border-spacing: 0;
-      table-layout: fixed;
-    }
-
-    .thcell {
-      padding: 1rem;
-      font-weight: 700;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 0.03em;
-      color: var(--brown-light);
-      background: var(--pink-soft);
-      border-bottom: 2px solid var(--pink-light);
-    }
-
-    .cell {
-      padding: 1rem;
-      overflow-wrap: break-word;
-      vertical-align: middle;
-      border-bottom: 1px solid var(--pink-light);
-    }
-
-    tbody tr:hover {
-      background: var(--pink-soft);
-    }
-
-    tbody tr:last-child .cell {
-      border-bottom: none;
-    }
-
-    /* Status Badges */
-    .status-badge {
-      display: inline-block;
-      padding: 0.3rem 0.75rem;
-      border-radius: 50px;
-      font-size: 0.75rem;
-      font-weight: 600;
-    }
-
-    .status-in-review { background: #fef3c7; color: #92400e; }
-    .status-approved { background: #dcfce7; color: #15803d; }
-    .status-paid { background: #dbeafe; color: #1d4ed8; }
-    .status-production-complete, .status-fulfilled { background: #d1fae5; color: #065f46; }
-    .status-canceled, .status-rejected { background: #fee2e2; color: #b91c1c; }
-    .status-pending { background: #fef3c7; color: #92400e; }
-
-    /* Pricing List */
-    #pricingList { display: none; }
-
-    .pricing-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 1.25rem;
-      background: var(--white);
-      border-radius: 12px;
-      border: 1px solid var(--pink-light);
-      margin-bottom: 0.75rem;
-    }
-
-    .pricing-item span:first-child {
-      font-weight: 600;
-      color: var(--brown);
-    }
-
-    .pricing-item span:nth-child(2) {
+    .hero h1 {
       font-family: var(--font-display);
-      font-size: 1.25rem;
+      font-size: clamp(2.75rem, 7vw, 4.5rem);
       color: var(--brown);
-    }
-
-    /* Reviews */
-    #reviewsContainer { display: none; }
-
-    .review-tabs {
-      display: flex;
-      gap: 0.5rem;
+      line-height: 1.15;
       margin-bottom: 1.5rem;
-      border-bottom: 2px solid var(--pink-light);
-      padding-bottom: 0.75rem;
+      letter-spacing: -0.02em;
     }
 
-    .review-tab {
-      padding: 0.6rem 1.25rem;
-      border-radius: 10px 10px 0 0;
-      font-weight: 600;
-      cursor: pointer;
-      border: none;
-      background: transparent;
+    .hero h1 span {
+      display: block;
+      font-style: italic;
+      font-weight: 400;
+      color: var(--rose);
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1rem, 2vw, 1.25rem);
       color: var(--brown-light);
-      font-size: 0.9rem;
-      transition: all 0.2s;
+      margin-bottom: 2.5rem;
+      max-width: 550px;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.7;
     }
 
-    .review-tab:hover {
-      background: var(--pink-soft);
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 3rem;
     }
 
-    .review-tab.active {
+    .hero .btn-primary {
+      background: var(--brown);
+      color: var(--white);
+      padding: 1rem 2.5rem;
+      font-size: 1.1rem;
+      box-shadow: 0 8px 30px rgba(93, 78, 78, 0.25);
+    }
+
+    .hero .btn-primary:hover {
+      background: var(--brown-light);
+      transform: translateY(-3px);
+      box-shadow: 0 12px 40px rgba(93, 78, 78, 0.3);
+    }
+
+    .hero .btn-secondary {
+      background: transparent;
+      border: 2px solid var(--brown);
+      color: var(--brown);
+      padding: 1rem 2rem;
+      font-size: 1.1rem;
+    }
+
+    .hero .btn-secondary:hover {
       background: var(--brown);
       color: var(--white);
     }
 
-    .review-count {
-      background: rgba(0,0,0,0.1);
-      padding: 0.15rem 0.5rem;
-      border-radius: 50px;
-      font-size: 0.7rem;
-      margin-left: 0.4rem;
-    }
-
-    .review-tab.active .review-count {
-      background: rgba(255,255,255,0.25);
-    }
-
-    .review-card {
-      background: var(--white);
-      border: 1px solid var(--pink-light);
-      border-radius: 16px;
-      padding: 1.5rem;
-      margin-bottom: 1rem;
-      transition: box-shadow 0.2s;
-    }
-
-    .review-card:hover {
-      box-shadow: 0 6px 20px rgba(93, 78, 78, 0.1);
-    }
-
-    .review-stars {
-      color: #fbbf24;
-      font-size: 1.1rem;
-      letter-spacing: 0.1em;
-    }
-
-    .review-actions {
-      display: flex;
+    .hero-location {
+      display: inline-flex;
+      align-items: center;
       gap: 0.5rem;
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid var(--pink-light);
-      flex-wrap: wrap;
-    }
-
-    /* Dialogs */
-    dialog {
-      border: none;
-      border-radius: 20px;
-      padding: 0;
-      box-shadow: 0 25px 60px rgba(93, 78, 78, 0.2);
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    dialog::backdrop {
-      background: rgba(93, 78, 78, 0.4);
-      backdrop-filter: blur(4px);
-    }
-
-    #editor {
-      width: 100%;
-      max-width: 700px;
-    }
-
-    .dialog-header {
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--pink-light);
-      background: var(--pink-soft);
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      border-radius: 20px 20px 0 0;
-    }
-
-    .dialog-header h2 {
-      font-family: var(--font-display);
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--brown);
-    }
-
-    .dialog-body {
-      padding: 1.5rem;
-    }
-
-    .dialog-footer {
-      padding: 1rem 1.5rem;
-      border-top: 1px solid var(--pink-light);
-      background: var(--pink-soft);
-      display: flex;
-      align-items: center;
-      justify-content: flex-end;
-      gap: 0.75rem;
-      border-radius: 0 0 20px 20px;
-    }
-
-    #surveyViewer {
-      width: 100%;
-      max-width: 650px;
-    }
-
-    #reviewDialog {
-      width: 100%;
-      max-width: 600px;
-    }
-    
-    /* Form Inputs */
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
-
-    @media (max-width: 600px) {
-      .form-grid { grid-template-columns: 1fr; }
-    }
-
-    .form-group label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--brown);
-      margin-bottom: 0.4rem;
-    }
-
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      padding: 0.7rem 1rem;
-      border: 2px solid var(--pink-light);
-      border-radius: 10px;
-      font-family: var(--font-body);
       font-size: 0.95rem;
-      color: var(--brown);
-      background: var(--white);
-      transition: all 0.2s;
+      color: var(--brown-light);
     }
 
-    .form-group input:focus,
-    .form-group select:focus,
-    .form-group textarea:focus {
-      outline: none;
-      border-color: var(--rose);
-      box-shadow: 0 0 0 4px rgba(232, 160, 164, 0.15);
+    .hero-location svg {
+      width: 18px;
+      height: 18px;
     }
 
-    .form-group textarea {
-      min-height: 80px;
-      resize: vertical;
+    .scroll-hint {
+      position: absolute;
+      bottom: 2rem;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--brown-light);
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      animation: bounce 2s ease-in-out infinite;
     }
 
-    .form-group input[type="checkbox"] {
+    .scroll-hint svg {
       width: 20px;
       height: 20px;
-      accent-color: var(--rose);
     }
 
-    /* Order Drawer */
-    #orderDrawer {
-      width: 100%;
-      max-width: 100%;
-      margin: 0;
-      border-radius: 0;
-      height: 100%;
-      overflow-x: hidden;
+    @keyframes bounce {
+      0%, 100% { transform: translateX(-50%) translateY(0); }
+      50% { transform: translateX(-50%) translateY(6px); }
     }
 
-    @media (min-width: 1024px) {
-      #orderDrawer {
-        max-width: 1100px;
-        height: auto;
-        border-radius: 20px;
-      }
+    @media (max-width: 768px) {
+      .hero-bow { width: 80px; }
+      .hero h1 { margin-bottom: 1rem; }
+      .hero-subtitle { margin-bottom: 2rem; }
+      .scroll-hint { display: none; }
     }
 
-    .drawer-header {
-      position: sticky;
-      top: 0;
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--pink-light);
-      background: var(--white);
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
-      gap: 1rem;
-      z-index: 10;
-    }
+    /* Section Styles */
+    section { padding: 5rem 0; }
 
-    .drawer-title {
-      font-family: var(--font-display);
-      font-size: 1.35rem;
-      font-weight: 600;
-      color: var(--brown);
-    }
-
-    .drawer-body {
-      padding: 1.5rem;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 1.5rem;
-    }
-
-    @media (min-width: 1024px) {
-      .drawer-body {
-        grid-template-columns: 2fr 1fr;
-        padding: 2rem;
-      }
-    }
-
-    .info-card {
-      background: var(--white);
-      border: 1px solid var(--pink-light);
-      border-radius: 16px;
-      padding: 1.25rem;
-    }
-
-    .info-card h3 {
-      font-family: var(--font-display);
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--brown);
-      margin-bottom: 1rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .info-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 0.75rem;
-      font-size: 0.9rem;
-    }
-
-    .info-grid .label {
-      font-weight: 600;
-      color: var(--brown);
-      font-size: 0.8rem;
-      margin-bottom: 0.2rem;
-    }
-
-    .info-grid .value {
-      color: var(--brown-light);
-    }
-
-    /* Pricing Card */
-    .pricing-card {
-      background: linear-gradient(135deg, var(--pink-soft) 0%, var(--pink-light) 100%);
-      border: 2px solid var(--pink);
-      border-radius: 16px;
-      padding: 1.25rem;
-    }
-
-    .pricing-card h3 {
-      font-family: var(--font-display);
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: var(--brown);
-      margin-bottom: 1rem;
-    }
-
-    .pricing-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.35rem 0;
-      font-size: 0.9rem;
-      color: var(--brown-light);
-    }
-
-    .pricing-total {
-      display: flex;
-      justify-content: space-between;
-      font-weight: 700;
-      font-size: 1.3rem;
-      color: var(--brown);
-      padding-top: 0.75rem;
-      margin-top: 0.5rem;
-      border-top: 2px solid rgba(93, 78, 78, 0.15);
-    }
-
-    /* Adjustments */
-    .adj-input-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-    }
-
-    .adj-input-row input,
-    .adj-input-row select {
-      padding: 0.5rem 0.75rem;
-      border: 2px solid var(--pink-light);
-      border-radius: 8px;
-      font-size: 0.85rem;
-      font-family: var(--font-body);
-    }
-
-    .adj-input-row input:first-child { flex: 1; min-width: 100px; }
-    .adj-input-row input[type="number"] { width: 80px; }
-
-    .adj-table {
-      font-size: 0.8rem;
-      width: 100%;
-    }
-
-    .adj-table th {
-      text-align: left;
-      padding: 0.5rem;
-      background: var(--pink-soft);
-      font-weight: 600;
-      color: var(--brown-light);
-    }
-
-    .adj-table td {
-      padding: 0.5rem;
-      border-bottom: 1px solid var(--pink-light);
-    }
-
-    /* Survey Link */
-    .survey-link-box {
-      background: var(--pink-soft);
-      border: 2px solid var(--pink);
-      border-radius: 12px;
-      padding: 1rem;
-    }
-
-    .survey-link-box.active {
-      background: #f0fdf4;
-      border-color: var(--success);
-    }
-
-    .survey-link-box.expired {
-      background: #fef3c7;
-      border-color: var(--warning);
-    }
-
-    .survey-link-input {
-      width: 100%;
-      padding: 0.6rem;
-      border: 1px solid var(--pink-light);
-      border-radius: 8px;
-      font-size: 0.85rem;
-      margin: 0.5rem 0;
-      background: var(--white);
-    }
-
-    /* Sign In Card */
-    #signinCard {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 1000;
-      background: linear-gradient(135deg, var(--pink-soft) 0%, var(--pink-light) 50%, var(--cream) 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 1rem;
-    }
-
-    .signin-box {
-      width: 100%;
-      max-width: 400px;
-      background: var(--white);
-      border-radius: 24px;
-      padding: 2.5rem;
-      box-shadow: 0 20px 60px rgba(93, 78, 78, 0.15);
-    }
-
-    .signin-box .logo {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.6rem;
-      margin-bottom: 2rem;
-    }
-
-    .signin-box .logo img { height: 48px; }
-
-    .signin-box .logo span {
-      font-family: var(--font-display);
-      font-size: 1.75rem;
-      font-weight: 600;
-      color: var(--brown);
-    }
-
-    .signin-box h1 {
-      font-family: var(--font-display);
-      font-size: 1.5rem;
+    .section-header {
       text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .section-header h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
       color: var(--brown);
       margin-bottom: 0.5rem;
     }
 
-    .signin-box p {
-      text-align: center;
+    .section-header p {
       color: var(--brown-light);
+      font-size: 1.05rem;
+    }
+
+    /* Features */
+    .features-section { background: var(--white); }
+
+    .features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+    }
+
+    .feature {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      background: var(--pink-soft);
+      border-radius: 20px;
+      transition: transform 0.3s ease;
+    }
+
+    .feature:hover { transform: translateY(-5px); }
+
+    .feature-icon {
+      width: 70px;
+      height: 70px;
+      background: var(--white);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1.25rem;
+      box-shadow: 0 5px 20px rgba(244, 180, 184, 0.3);
+    }
+
+    .feature-icon svg {
+      width: 32px;
+      height: 32px;
+      stroke: var(--rose);
+    }
+
+    .feature h3 {
+      font-size: 1.2rem;
+      margin-bottom: 0.5rem;
+      color: var(--brown);
+    }
+
+    .feature p {
+      font-size: 0.95rem;
+      color: var(--brown-light);
+    }
+
+    @media (max-width: 768px) {
+      .features {
+        grid-template-columns: 1fr;
+        max-width: 350px;
+        margin: 0 auto;
+      }
+    }
+
+    /* Gallery */
+    .gallery-section { background: var(--cream); }
+
+    .gallery-feed {
+      min-height: 300px;
+    }
+
+    .gallery-cta {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    /* How It Works */
+    .process-section { background: var(--white); }
+
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      position: relative;
+    }
+
+    .steps::before {
+      content: '';
+      position: absolute;
+      top: 35px;
+      left: 10%;
+      right: 10%;
+      height: 3px;
+      background: var(--pink-light);
+      z-index: 0;
+    }
+
+    .step {
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+
+    .step-num {
+      width: 70px;
+      height: 70px;
+      background: var(--pink);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--font-display);
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--brown);
+      margin: 0 auto 1rem;
+      border: 4px solid var(--white);
+      box-shadow: 0 5px 20px rgba(244, 180, 184, 0.4);
+    }
+
+    .step h3 {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: var(--brown);
+    }
+
+    .step p {
       font-size: 0.9rem;
+      color: var(--brown-light);
+      max-width: 200px;
+      margin: 0 auto;
+    }
+
+    @media (max-width: 768px) {
+      .steps {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+      }
+      .steps::before { display: none; }
+    }
+
+    @media (max-width: 480px) {
+      .steps { grid-template-columns: 1fr; }
+    }
+
+    /* Testimonial Slider */
+    .testimonial-section { background: var(--pink-soft); }
+
+    .testimonial-slider {
+      position: relative;
+      max-width: 700px;
+      margin: 0 auto;
+      overflow: hidden;
+    }
+
+    .testimonial-track {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .testimonial-card {
+      min-width: 100%;
+      flex-shrink: 0;
+      text-align: center;
+      background: var(--white);
+      padding: 3rem 2rem;
+      border-radius: 24px;
+      box-shadow: 0 10px 40px rgba(93, 78, 78, 0.08);
+    }
+
+    .testimonial-stars {
+      color: #FFB800;
+      font-size: 1.5rem;
+      letter-spacing: 0.2em;
       margin-bottom: 1.5rem;
     }
 
-    .signin-box label {
-      display: block;
-      font-size: 0.85rem;
-      font-weight: 600;
+    .testimonial-text {
+      font-size: 1.2rem;
       color: var(--brown);
-      margin-bottom: 0.4rem;
+      line-height: 1.8;
+      margin-bottom: 1.5rem;
+      font-style: italic;
     }
 
-    .signin-box input {
+    .testimonial-author {
+      font-weight: 700;
+      color: var(--brown);
+    }
+
+    .slider-controls {
+      position: absolute;
+      top: 50%;
       width: 100%;
-      padding: 0.85rem 1rem;
-      border: 2px solid var(--pink-light);
-      border-radius: 12px;
-      font-family: var(--font-body);
-      font-size: 1rem;
-      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      transform: translateY(-50%);
+      pointer-events: none;
+      padding: 0 1rem;
+    }
+
+    .slider-btn {
+      pointer-events: all;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 2px solid var(--pink);
+      color: var(--brown);
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 15px rgba(93, 78, 78, 0.1);
+      line-height: 1;
+      padding-bottom: 4px;
+    }
+
+    .slider-btn:hover {
+      background: var(--pink);
+      transform: scale(1.1);
+    }
+
+    .slider-dots {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--pink-light);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .dot.active {
+      background: var(--brown);
+      width: 12px;
+      height: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .slider-controls {
+        padding: 0;
+      }
+      
+      .slider-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 1.5rem;
+      }
+      
+      .testimonial-card {
+        padding: 2rem 1.5rem;
+      }
+    }
+
+    /* CTA */
+    .cta-section {
+      padding: 5rem 0;
+      background: var(--pink);
+      text-align: center;
+    }
+
+    .cta-section h2 {
+      font-family: var(--font-display);
+      font-size: clamp(1.75rem, 4vw, 2.5rem);
+      color: var(--brown);
+      margin-bottom: 0.5rem;
+    }
+
+    .cta-section p {
+      color: var(--brown);
+      margin-bottom: 2rem;
+      font-size: 1.1rem;
+    }
+
+    .cta-section .btn {
+      background: var(--brown);
+      color: var(--white);
+      padding: 1rem 2.5rem;
+      font-size: 1.1rem;
+    }
+
+    .cta-section .btn:hover {
+      background: var(--brown-light);
+    }
+
+    /* Footer */
+    footer {
+      background: var(--cream);
+      padding: 4rem 0 2rem;
+      border-top: 1px solid var(--pink-light);
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 3rem;
+    }
+
+    .footer-brand .logo { margin-bottom: 1rem; }
+
+    .footer-brand p {
+      color: var(--brown-light);
+      font-size: 0.95rem;
+      max-width: 280px;
+    }
+
+    .footer-social {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.25rem;
+    }
+
+    .footer-social a {
+      width: 38px;
+      height: 38px;
+      background: var(--pink-light);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       transition: all 0.2s;
     }
 
-    .signin-box input:focus {
-      outline: none;
-      border-color: var(--rose);
-      box-shadow: 0 0 0 4px rgba(232, 160, 164, 0.15);
+    .footer-social a:hover {
+      background: var(--pink);
+      transform: translateY(-2px);
     }
 
-    .signin-box .btn {
-      width: 100%;
-      padding: 1rem;
+    .footer-col h4 {
       font-size: 1rem;
-      border-radius: 12px;
-      margin-top: 0.5rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: var(--brown);
     }
 
-    #authMsg {
+    .footer-col ul { list-style: none; }
+    .footer-col li { margin-bottom: 0.6rem; }
+
+    .footer-col a {
+      font-size: 0.95rem;
+      color: var(--brown-light);
+      transition: color 0.2s;
+    }
+
+    .footer-col a:hover { color: var(--rose); }
+
+    .footer-bottom {
       text-align: center;
-      color: var(--error);
+      padding-top: 2rem;
+      border-top: 1px solid var(--pink-light);
       font-size: 0.9rem;
-      margin-top: 1rem;
-      min-height: 1.5rem;
-    }
-
-    /* Pager */
-    #pageInfo {
-      font-size: 0.85rem;
       color: var(--brown-light);
     }
 
-    /* Utility */
-    .hidden { display: none !important; }
-    .text-center { text-align: center; }
-    .text-right { text-align: right; }
-    .text-left { text-align: left; }
-    .text-success { color: var(--success); }
-    .text-error { color: var(--error); }
-    .text-muted { color: var(--brown-light); }
-    .font-medium { font-weight: 500; }
-    .font-bold { font-weight: 700; }
-    .mb-2 { margin-bottom: 0.5rem; }
-    .mb-3 { margin-bottom: 0.75rem; }
-    .mb-4 { margin-bottom: 1rem; }
-    .mt-2 { margin-top: 0.5rem; }
-    .mt-4 { margin-top: 1rem; }
-    .gap-2 { gap: 0.5rem; }
-    .flex { display: flex; }
-    .items-center { align-items: center; }
-    .justify-between { justify-content: space-between; }
-    .flex-wrap { flex-wrap: wrap; }
-    .space-y-2 > * + * { margin-top: 0.5rem; }
-    .space-y-4 > * + * { margin-top: 1rem; }
-    .w-full { width: 100%; }
-    .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    @media (max-width: 768px) {
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .footer-brand { grid-column: span 2; }
+    }
+
+    @media (max-width: 480px) {
+      .footer-grid { grid-template-columns: 1fr; }
+      .footer-brand { grid-column: span 1; }
+    }
   </style>
 </head>
 <body>
 
-  <!-- Sign In -->
-  <div id="signinCard">
-    <div class="signin-box">
-      <div class="logo">
+  <!-- Header -->
+  <header id="header">
+    <div class="container">
+      <a href="index.html" class="logo">
         <img src="Bowtrans.png" alt="Rebel Ribbon">
         <span>Rebel Ribbon</span>
-      </div>
-      <h1>Staff Sign In</h1>
-      <p>Use your @rebelribbon.com email</p>
-      <label for="email">Email</label>
-      <input id="email" type="email" placeholder="you@rebelribbon.com">
-      <label for="password">Password</label>
-      <input id="password" type="password" placeholder="Password">
-      <button id="signInButton" class="btn btn-primary">Sign In</button>
-      <p id="authMsg"></p>
-    </div>
-  </div>
-
-  <!-- Header -->
-  <div id="header-banner">
-    <button id="menuToggle">☰</button>
-    <div id="logo-wrapper">
-      <img src="Bowtrans.png" alt="Rebel Ribbon Logo">
-      <span id="logo-text">Rebel Ribbon</span>
-    </div>
-  </div>
-
-  <!-- Sidebar -->
-  <nav id="sidebar">
-    <h1>Navigation</h1>
-    <div id="main-nav">
-      <button class="nav-item nav-active" data-key="order_list">Orders</button>
-      <button class="nav-item" data-key="surveys">Surveys</button>
-      <button class="nav-item" data-key="reviews">Website Reviews</button>
-    </div>
-    <h3>Admin / Settings</h3>
-    <button class="nav-item submenu-item" data-key="discount_codes">Discount Codes</button>
-    <button class="nav-item submenu-item" data-key="referral_codes">Referral Codes</button>
-    <button class="nav-item submenu-item" data-key="flavors">Flavors & Options</button>
-    <button class="nav-item submenu-item" data-key="pricing">Pricing & Fees</button>
-    <button class="nav-item submenu-item" data-key="costs">Costs</button>
-    <div id="logout-sidebar">
-      <span id="who"></span>
-      <button id="logout" class="btn btn-secondary w-full">Sign Out</button>
-    </div>
-  </nav>
-
-  <!-- Main App -->
-  <div id="app-wrapper" class="hidden">
-    <main id="content">
-      <h2 id="pageTitle">Orders</h2>
+      </a>
       
-      <div id="orderPageControls">
-        <div id="searchContainer">
-          <input id="globalSearch" type="search" placeholder="Search customer, ID, date...">
-          <button id="refreshAll" class="btn btn-secondary">Refresh</button>
-        </div>
-        <div id="orderFilters">
-          <button class="filter-tab filter-active" data-filter="All">All Orders</button>
-          <button class="filter-tab" data-filter="In Review">⭐ New</button>
-          <button class="filter-tab" data-filter="Approved">💸 Payment</button>
-          <button class="filter-tab" data-filter="Paid">🏭 Production</button>
-          <button class="filter-tab" data-filter="Production Complete">🚚 Ready</button>
-          <button class="filter-tab" data-filter="Fulfilled">✅ Done</button>
-        </div>
+      <div class="mobile-menu" onclick="toggleNav()">
+        <span></span>
+        <span></span>
+        <span></span>
       </div>
+      
+      <nav id="nav">
+        <a href="#about">About</a>
+        <a href="#gallery">Gallery</a>
+        <a href="#how">How It Works</a>
+        <a href="#contact">Contact</a>
+        <a href="order.html" class="btn">Order Cookies</a>
+      </nav>
+    </div>
+  </header>
 
-      <div id="dataActions">
-        <div class="flex items-center gap-2">
-          <button id="addBtn" class="btn btn-primary">Add New</button>
-          <button id="exportBtn" class="btn btn-secondary hidden">Export CSV</button>
-        </div>
-        <div class="flex items-center gap-2">
-          <button id="prev" class="btn btn-secondary">Prev</button>
-          <span id="pageInfo"></span>
-          <button id="next" class="btn btn-secondary">Next</button>
-        </div>
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-content">
+      <img src="Bowtrans.png" alt="" class="hero-bow">
+      <h1>Custom Cookies <span>for Your Sweetest Moments</span></h1>
+      <p class="hero-subtitle">Handcrafted edible art by two sisters in San Antonio. We turn your ideas into beautiful, delicious cookies for birthdays, weddings, baby showers, and every celebration in between.</p>
+      <div class="hero-cta">
+        <a href="order.html" class="btn btn-primary">Order Now</a>
+        <a href="#gallery" class="btn btn-secondary">See Our Work</a>
       </div>
-
-      <div id="pricingList" class="space-y-2"></div>
-      <div id="reviewsContainer"></div>
-
-      <div class="table-wrap">
-        <table id="grid">
-          <colgroup id="colgroup"></colgroup>
-          <thead><tr id="thead"></tr></thead>
-          <tbody id="tbody"></tbody>
-        </table>
-      </div>
-    </main>
-  </div>
-
-  <!-- Editor Dialog -->
-  <dialog id="editor">
-    <form method="dialog">
-      <div class="dialog-header">
-        <h2 id="editorTitle">Edit</h2>
-        <button value="close" class="btn btn-ghost">✕</button>
-      </div>
-      <div id="formBody" class="dialog-body form-grid"></div>
-      <div class="dialog-footer">
-        <button id="deleteBtn" type="button" class="btn btn-danger hidden">Delete</button>
-        <button id="saveBtn" class="btn btn-primary">Save</button>
-      </div>
-    </form>
-  </dialog>
-
-  <!-- Order Drawer -->
-  <dialog id="orderDrawer">
-    <div class="drawer-header">
-      <div>
-        <button id="backToOrders" class="btn btn-ghost">← Back</button>
-        <h2 id="drawerTitle" class="drawer-title">Order #XXXX</h2>
-        <div class="flex items-center gap-2 mt-2">
-          <span class="font-medium text-muted" style="font-size:0.85rem">Status:</span>
-          <select id="statusSelect" style="padding:0.4rem 0.75rem;border:2px solid var(--pink-light);border-radius:8px;font-size:0.85rem;">
-            <option value="In Review">In Review</option>
-            <option value="Approved">Approved</option>
-            <option value="Paid">Paid</option>
-            <option value="Production Complete">Production Complete</option>
-            <option value="Fulfilled">Fulfilled</option>
-            <option value="Canceled">Canceled</option>
-          </select>
-          <button id="saveStatus" class="btn btn-success" style="padding:0.4rem 1rem;font-size:0.85rem;">Save</button>
-        </div>
-      </div>
-      <div class="flex gap-2 flex-wrap">
-        <button id="editFields" class="btn btn-secondary">Edit Fields</button>
-        <button id="viewInvoice" class="btn btn-primary">Invoice</button>
+      <div class="hero-location">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 11-6 0 3 3 0 016 0z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1115 0z" />
+        </svg>
+        San Antonio, Texas
       </div>
     </div>
+    <div class="scroll-hint">
+      Scroll
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 8.25l-7.5 7.5-7.5-7.5" />
+      </svg>
+    </div>
+  </section>
 
-    <div class="drawer-body">
-      <div class="space-y-4">
-        <!-- Customer Info -->
-        <div class="info-card">
-          <h3>👤 Customer Info</h3>
-          <div class="info-grid">
-            <div><div class="label">Name</div><div id="cust_name" class="value"></div></div>
-            <div><div class="label">ID</div><div id="cust_id" class="value"></div></div>
-            <div><div class="label">Phone</div><a id="cust_phone_link" class="value" style="color:var(--info)"></a></div>
-            <div><div class="label">Email</div><a id="cust_email" class="value" style="color:var(--info);word-break:break-all"></a></div>
-          </div>
-          <div class="mt-4" style="font-size:0.9rem">
-            <div class="label">Address</div>
-            <div id="cust_addr1" class="value"></div>
-            <div id="cust_addr2" class="value"></div>
-            <div id="cust_citystzip" class="value"></div>
-            <button id="mapLocation" class="btn btn-ghost mt-2" style="font-size:0.8rem;color:var(--info)">View on Map</button>
-          </div>
-          <div class="mt-4" style="font-size:0.9rem">
-            <div class="label">Referral Code</div>
-            <div id="cust_referral_code" class="value" style="color:var(--rose);font-weight:600"></div>
-          </div>
-        </div>
-
-        <!-- Event Info -->
-        <div class="info-card">
-          <h3>📅 Event Info</h3>
-          <div class="info-grid">
-            <div><div class="label">Event</div><div id="ov_event_name" class="value"></div></div>
-            <div><div class="label">Date</div><div id="ov_event" class="value"></div></div>
-          </div>
-        </div>
-
-        <!-- Order Details -->
-        <div class="info-card">
-          <h3>📝 Order Details</h3>
-          <div class="info-grid mb-4">
-            <div><div class="label">Submitted</div><div id="ov_submitted" class="value"></div></div>
-            <div><div class="label">Pickup/Delivery</div><div id="ov_pickup" class="value"></div></div>
-            <div><div class="label">Dozens</div><div id="ov_dzns" class="value"></div></div>
-            <div><div class="label">Flavor</div><div id="ov_flavor" class="value"></div></div>
-            <div><div class="label">Dietary</div><div id="ov_dietary" class="value"></div></div>
-          </div>
-          <div class="info-grid" style="grid-template-columns:auto 1fr">
-            <div>
-              <div class="label">Photo</div>
-              <img id="ov_photo" style="width:120px;height:120px;object-fit:cover;border-radius:12px;border:1px solid var(--pink-light);cursor:pointer;margin-top:0.5rem">
-              <input id="uploadPhoto" type="file" accept="image/*" style="margin-top:0.5rem;font-size:0.75rem;width:120px">
-              <button id="btnUploadPhoto" class="btn btn-secondary mt-2" style="font-size:0.75rem;padding:0.3rem 0.6rem">Upload</button>
-            </div>
-            <div>
-              <div class="label">Design Notes</div>
-              <p id="ov_notes" style="padding:0.75rem;background:var(--pink-soft);border-radius:10px;margin-top:0.5rem;font-size:0.9rem"></p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Extras -->
-        <div class="info-card">
-          <h3>✨ Extras</h3>
-          <div class="info-grid">
-            <div><div class="label">Type</div><div id="ov_pd_type" class="value"></div></div>
-            <div><div class="label">Consult</div><div id="ov_consultation" class="value"></div></div>
-            <div><div class="label">Gift Note</div><div id="ov_gift_note" class="value"></div></div>
-          </div>
-          <div class="mt-2">
-            <div class="label">Gift Text</div>
-            <p id="ov_gift_text" style="padding:0.5rem;background:var(--pink-soft);border-radius:8px;margin-top:0.25rem;font-size:0.85rem"></p>
-          </div>
-        </div>
-
-        <!-- Survey -->
-        <div class="info-card">
-          <h3>📋 Customer Survey</h3>
-          <div id="surveyLinkSection"><p class="text-muted">Loading...</p></div>
-        </div>
+  <!-- Features -->
+  <section class="features-section" id="about">
+    <div class="container">
+      <div class="section-header">
+        <h2>Why Rebel Ribbon?</h2>
+        <p>Here is what makes our cookies special</p>
       </div>
-
-      <!-- Right Column -->
-      <div class="space-y-4">
-        <!-- Pricing -->
-        <div class="pricing-card">
-          <h3>💰 Pricing</h3>
-          <div class="pricing-row"><span>Price/dz:</span><span id="t_price"></span></div>
-          <div class="pricing-row"><span>Base:</span><span id="t_base"></span></div>
-          <div class="pricing-row"><span>Consult:</span><span id="t_consult"></span></div>
-          <div class="pricing-row"><span>Gift fee:</span><span id="t_gift"></span></div>
-          <div class="pricing-row"><span>Fees:</span><span id="t_adj_fees" class="text-success"></span></div>
-          <div class="pricing-row"><span>Code disc:</span><span id="t_disc_code" class="text-error"></span></div>
-          <div class="pricing-row"><span>Referral:</span><span id="t_disc_referral" class="text-error"></span></div>
-          <div class="pricing-row"><span>Other disc:</span><span id="t_adj_disc" class="text-error"></span></div>
-          <div class="pricing-total"><span>Total:</span><span id="t_total"></span></div>
-          <div class="mt-4" style="font-size:0.85rem">
-            <div><span class="font-medium">Discount:</span> <span id="ov_discount_code"></span></div>
-            <div><span class="font-medium">Referral:</span> <span id="ov_referral_code"></span></div>
+      <div class="features">
+        <div class="feature">
+          <div class="feature-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9.53 16.122a3 3 0 00-5.78 1.128 2.25 2.25 0 01-2.4 2.245 4.5 4.5 0 008.4-2.245c0-.399-.078-.78-.22-1.128zm0 0a15.998 15.998 0 003.388-1.62m-5.043-.025a15.994 15.994 0 011.622-3.39m3.421 3.415a15.995 15.995 0 004.764-4.648l3.876-5.814a1.151 1.151 0 00-1.597-1.597L14.146 6.32a15.996 15.996 0 00-4.649 4.764m3.42 3.417a6.776 6.776 0 00-3.42-3.417" />
+            </svg>
           </div>
+          <h3>100% Custom</h3>
+          <p>Every design is made just for you. Send us your theme, colors, or inspiration and we will make it happen.</p>
         </div>
-
-        <!-- Adjustments -->
-        <div class="info-card">
-          <h3>➕ Fees & Discounts</h3>
-          <div class="adj-input-row">
-            <input id="adjLabel" placeholder="Label">
-            <input id="adjAmount" type="number" step="0.01" placeholder="Amt">
-            <select id="adjKind">
-              <option value="fee">Fee</option>
-              <option value="discount">Disc</option>
-            </select>
-            <button id="addAdjustment" class="btn btn-primary" style="padding:0.5rem 0.75rem;font-size:0.8rem">Add</button>
+        <div class="feature">
+          <div class="feature-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z" />
+            </svg>
           </div>
-          <div style="max-height:150px;overflow-y:auto">
-            <table class="adj-table">
-              <thead><tr><th>When</th><th>Type</th><th>Label</th><th class="text-right">Amt</th><th></th></tr></thead>
-              <tbody id="adjTbody"></tbody>
-            </table>
+          <h3>Handmade Fresh</h3>
+          <p>Baked from scratch with premium ingredients. No shortcuts, no mass production, just real homemade goodness.</p>
+        </div>
+        <div class="feature">
+          <div class="feature-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+            </svg>
           </div>
+          <h3>Sister Owned</h3>
+          <p>We are Alinka and Tabata, two sisters who turned our passion into a business. Every order gets our personal touch.</p>
         </div>
       </div>
     </div>
-  </dialog>
+  </section>
 
-  <!-- Survey Viewer Dialog -->
-  <dialog id="surveyViewer">
-    <form method="dialog">
-      <div class="dialog-header">
-        <h2 id="surveyTitle">Survey Response</h2>
-        <button value="close" class="btn btn-ghost">✕</button>
+  <!-- Gallery -->
+  <section class="gallery-section" id="gallery">
+    <div class="container">
+      <div class="section-header">
+        <h2>Our Creations</h2>
+        <p>A peek at some of our favorite designs</p>
       </div>
-      <div class="dialog-body" style="max-width: 600px;">
-        <div class="space-y-4">
-          <div class="info-card">
-            <h3>👤 Customer</h3>
-            <div id="survey_customer" class="font-bold" style="font-size:1.1rem;margin-top:0.5rem"></div>
-            <div id="survey_date" class="text-muted" style="font-size:0.85rem"></div>
-          </div>
-          
-          <div class="info-card">
-            <h3>⭐ Ratings</h3>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:0.5rem">
-              <div>
-                <div class="label">Cookies</div>
-                <div id="survey_cookies" style="color:#fbbf24;font-size:1.5rem"></div>
-              </div>
-              <div>
-                <div class="label">Service</div>
-                <div id="survey_service" style="color:#fbbf24;font-size:1.5rem"></div>
-              </div>
-            </div>
-          </div>
-          
-          <div class="info-card">
-            <h3>💬 Would Recommend?</h3>
-            <div id="survey_recommend" style="font-size:1.1rem;margin-top:0.5rem"></div>
-          </div>
-          
-          <div class="info-card">
-            <h3>📝 Improvements</h3>
-            <p id="survey_improvements" style="background:var(--pink-soft);padding:0.75rem;border-radius:10px;margin-top:0.5rem"></p>
-          </div>
-          
-          <div class="info-card">
-            <h3>🌟 Website Review</h3>
-            <p id="survey_review" style="background:var(--pink-soft);padding:0.75rem;border-radius:10px;margin-top:0.5rem"></p>
-          </div>
+      <div class="gallery-feed">
+        <!-- Elfsight Instagram Feed | Signature Creations (#signaturecreations) -->
+        <script src="https://static.elfsight.com/platform/platform.js" async></script>
+        <div class="elfsight-app-b8dc1a76-5140-4c69-af16-0f092a4baf6a" data-elfsight-app-lazy></div>
+      </div>
+      <div class="gallery-cta">
+        <a href="gallery.html" class="btn btn-outline">View Full Gallery</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works -->
+  <section class="process-section" id="how">
+    <div class="container">
+      <div class="section-header">
+        <h2>How It Works</h2>
+        <p>Ordering is easy</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <h3>Submit Your Request</h3>
+          <p>Fill out our order form with your event details and design ideas</p>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <h3>We Reach Out</h3>
+          <p>We will confirm details, pricing, and finalize your design within 48 hours</p>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <h3>We Bake and Decorate</h3>
+          <p>Each cookie is hand decorated with care in our San Antonio kitchen</p>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <h3>Pickup or Delivery</h3>
+          <p>Grab your cookies fresh or we will bring them right to you</p>
         </div>
       </div>
-      <div class="dialog-footer">
-        <button id="editSurvey" type="button" class="btn btn-primary">Edit Response</button>
-      </div>
-    </form>
-  </dialog>
+    </div>
+  </section>
 
-  <!-- Review Management Dialog -->
-  <dialog id="reviewDialog">
-    <form method="dialog">
-      <div class="dialog-header">
-        <h2>Website Review</h2>
-        <button value="close" class="btn btn-ghost">✕</button>
+  <!-- Testimonials Slider -->
+  <section class="testimonial-section">
+    <div class="container">
+      <div class="section-header">
+        <h2>Happy Customers</h2>
       </div>
-      <div class="dialog-body" style="max-width: 600px;">
-        <div class="space-y-4">
-          <div class="info-card">
-            <h3>👤 Customer</h3>
-            <div id="review_customer" class="font-bold" style="font-size:1.1rem;margin-top:0.5rem"></div>
-            <div id="review_date" class="text-muted" style="font-size:0.85rem"></div>
-          </div>
-          
-          <div class="info-card">
-            <h3>🌟 Review</h3>
-            <p id="review_text" style="background:var(--pink-soft);padding:0.75rem;border-radius:10px;margin-top:0.5rem;white-space:pre-wrap"></p>
+      <div class="testimonial-slider">
+        <div class="testimonial-track" id="testimonialTrack">
+          <!-- Default testimonial shown while loading -->
+          <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Loading reviews..."</p>
+            <div class="testimonial-author"></div>
           </div>
         </div>
+        <div class="slider-controls">
+          <button class="slider-btn" id="prevBtn" aria-label="Previous">‹</button>
+          <button class="slider-btn" id="nextBtn" aria-label="Next">›</button>
+        </div>
+        <div class="slider-dots" id="sliderDots"></div>
       </div>
-      <div class="dialog-footer" id="reviewDialogFooter">
-        <button id="editReviewBtn" type="button" class="btn btn-secondary">Edit</button>
-        <button id="approveReviewBtn" type="button" class="btn btn-success">Approve</button>
-        <button id="rejectReviewBtn" type="button" class="btn btn-danger">Reject</button>
-      </div>
-    </form>
-  </dialog>
+    </div>
+  </section>
 
-  
-  <!-- Scripts -->
+  <!-- CTA -->
+  <section class="cta-section" id="contact">
+    <div class="container">
+      <h2>Ready to Order?</h2>
+      <p>Custom orders need at least 5 days notice. Let us make something sweet for you!</p>
+      <a href="order.html" class="btn">Start Your Order</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <img src="Bowtrans.png" alt="Rebel Ribbon" style="height: 32px;">
+            <span>Rebel Ribbon</span>
+          </div>
+          <p>Custom decorated cookies made by two sisters in San Antonio, Texas. Every cookie is a little work of art.</p>
+          <div class="footer-social">
+            <a href="https://instagram.com/rebelribbon" aria-label="Instagram">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Pages</h4>
+          <ul>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#gallery">Gallery</a></li>
+            <li><a href="order.html">Order</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Info</h4>
+          <ul>
+            <li><a href="ingredients.html">Ingredients</a></li>
+            <li><a href="privacy.html">Privacy</a></li>
+            <li><a href="terms.html">Terms</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul>
+            <li><a href="mailto:info@rebelribbon.com">info@rebelribbon.com</a></li>
+            <li><a href="tel:2102397471">(210) 239-7471</a></li>
+            <li>San Antonio, TX</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        © 2025 Rebel Ribbon. Made with love in San Antonio.
+      </div>
+    </div>
+  </footer>
+
   <script>
+    // Supabase Setup
     const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
-    const SURVEY_BASE_URL = 'https://rebelribbon.com/survey.html';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const onlyCompanyEmail = e => /@rebelribbon\.com$/i.test(e);
-    const $ = (t,c,h)=>{ const e=document.createElement(t); if(c)e.className=c; if(h!==undefined)e.innerHTML=h; return e; };
-    const fmt = v => v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
-    const dateOnly = d => { if(!d)return''; const dt=new Date(d); return new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,10); };
-    const formatOrderId = id => { if(id==null)return''; const n=Number(id); return Number.isFinite(n)?String(Math.trunc(n)).padStart(7,'0'):String(id); };
-    const getStatusClass = s => s ? `status-${s.toLowerCase().replace(/\s/g,'-')}` : 'status-in-review';
-    const money = n => '$'+(Number(n||0)).toFixed(2);
-    const formatPhone = p => { if(!p)return''; const c=(''+p).replace(/\D/g,''); const m=c.match(/^(\d{3})(\d{3})(\d{4})$/); return m?`(${m[1]}) ${m[2]}-${m[3]}`:p; };
-    const escapeHtml = t => { if(!t)return''; const d=document.createElement('div'); d.textContent=t; return d.innerHTML; };
+    // Testimonials Slider
+    let reviews = [];
+    let currentSlide = 0;
+    let autoSlideInterval;
 
-    const tables = {
-        order_list: { title:'Orders', table:'orders', readOnly:true, customLoader:'loadOrderList', center:true, cols:[{key:'customer_name',label:'Customer',type:'text',w:'50'},{key:'status',label:'Status',type:'text',w:'50'}] },
-        orders: { title:'Orders', table:'orders', cols:[
-            {key:'order_id',label:'Order ID',type:'text',w:'12'},{key:'customer_id',label:'Customer',type:'select-async',w:'20',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},
-            {key:'event_type_name',label:'Event',type:'text',w:'20'},{key:'pickup_delivery_date',label:'Pickup date',type:'date',w:'18'},{key:'event_date',label:'Event date',type:'date',w:'14'},
-            {key:'pickup_delivery_type',label:'Type',type:'select',w:'18',options:['Pickup','Delivery']},{key:'cookie_amount_dzns',label:'Dozens',type:'number',step:'0.01',w:'18'},
-            {key:'flavor',label:'Flavor',type:'select-async',w:'14',asyncOptions:async()=>(await sb.from('flavors').select('name')).data?.map(r=>r.name)||[]},
-            {key:'dietary_option',label:'Dietary',type:'select-async',w:'16',asyncOptions:async()=>(await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[]},
-            {key:'design_notes',label:'Notes',type:'textarea',w:'20'},{key:'design_inspiration_photo',label:'Photo URL',type:'url',w:'20'},
-            {key:'gift_note',label:'Gift note',type:'checkbox',w:'10'},{key:'gift_note_text',label:'Gift text',type:'textarea',w:'16'},
-            {key:'consultation_requested',label:'Consult',type:'checkbox',w:'20'},{key:'discount_code_used',label:'Discount code',type:'text',w:'16'},
-            {key:'referral_code_used',label:'Referral code',type:'text',w:'16'},{key:'status',label:'Status',type:'select',w:'14',options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled']}
-        ]},
-        discount_codes: { title:'Discount Codes', table:'discount_codes', isSettings:true, list_keys:['code'], cols:[{key:'code',label:'Code',type:'text',required:true,w:'20'},{key:'type',label:'Type',type:'select',options:['percent','fixed'],required:true,w:'20'},{key:'amount',label:'Amount',type:'number',step:'0.01',w:'20'},{key:'uses_allowed',label:'Uses',type:'number',w:'20'},{key:'email_allowed',label:'Email',type:'email',w:'20'},{key:'good_through_date',label:'Expires',type:'date',w:'20'}] },
-        referral_codes: { title:'Referral Codes', table:'referral_codes', isSettings:true, list_keys:['code'], cols:[{key:'code',label:'Code',type:'text',required:true,w:'20'},{key:'associated_customer_id',label:'Customer',type:'select-async',w:'20',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},{key:'good_through_date',label:'Expires',type:'date',w:'20'},{key:'referrer_discount',label:'Referrer %',type:'number',step:'0.01',w:'20'},{key:'referee_discount',label:'Referee %',type:'number',step:'0.01',w:'20'}] },
-        flavors: { title:'Flavors', table:'flavors', isSettings:true, cols:[{key:'name',label:'Name',type:'text',required:true,w:'40'}] },
-        dietary_options: { title:'Dietary Options', table:'dietary_options', isSettings:true, cols:[{key:'name',label:'Name',type:'text',required:true,w:'40'}] },
-        pricing: { title:'Pricing', table:'pricing', isSettings:true, customLoader:'loadPricingList', cols:[{key:'price_per_dozen',label:'Price/dozen',type:'number',step:'0.01',w:'20'},{key:'delivery_fee',label:'Delivery fee',type:'number',step:'0.01',w:'20'},{key:'consultation_fee',label:'Consult fee',type:'number',step:'0.01',w:'20'},{key:'gift_note_fee',label:'Gift fee',type:'number',step:'0.01',w:'20'},{key:'rush_fee',label:'Rush fee',type:'number',step:'0.01',w:'20'}] },
-        costs: { title:'Costs', table:'costs', isSettings:true, cols:[{key:'cost_date',label:'Date',type:'date',w:'25'},{key:'item_name',label:'Item',type:'text',required:true,w:'55'},{key:'amount',label:'Amount',type:'number',step:'0.01',required:true,w:'20'}] },
-        surveys: { title:'Surveys', table:'surveys', readOnly:true, customLoader:'loadSurveyList', cols:[
-          {key:'customer_id',label:'Customer',type:'select-async',w:'22',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},
-          {key:'cookies_stars',label:'Cookies',type:'number',min:1,max:5,w:'18'},
-          {key:'service_stars',label:'Service',type:'number',min:1,max:5,w:'18'},
-          {key:'recommend',label:'Recommend',type:'checkbox',w:'22'},
-          {key:'improvements',label:'Improvements',type:'textarea',w:'30'},
-          {key:'website_review',label:'Review',type:'textarea',w:'30'}
-        ]},
-    };
+    async function loadReviews() {
+      try {
+        // Fetch approved reviews
+        const {data, error} = await sb
+          .from('surveys')
+          .select('*, customers(first_name, last_name)')
+          .eq('review_approval_status', 'approved')
+          .not('website_review', 'is', null)
+          .neq('website_review', '');
 
-    let activeKey='order_list', activeOrderFilter='All', activeReviewTab='pending', page=0, totalCount=0;
-    const pageSize=20;
+        if (error) throw error;
 
-    document.getElementById('signInButton').onclick = async()=>{ 
-      const e=document.getElementById('email').value.trim(), p=document.getElementById('password').value.trim(); 
-      if(!onlyCompanyEmail(e)){document.getElementById('authMsg').textContent='Use @rebelribbon.com email';return;} 
-      const{error}=await sb.auth.signInWithPassword({email:e,password:p}); 
-      if(error){document.getElementById('authMsg').textContent=error.message;return;} 
-      bootstrap(); 
-    };
-    document.getElementById('logout').onclick = async()=>{ await sb.auth.signOut(); location.reload(); };
-
-    async function bootstrap(){ 
-      const{data:{session}}=await sb.auth.getSession(); 
-      if(!session){document.getElementById('signinCard').classList.remove('hidden');document.getElementById('app-wrapper').classList.add('hidden');return;} 
-      if(!onlyCompanyEmail(session.user?.email)){await sb.auth.signOut();return;} 
-      document.getElementById('who').textContent=session.user.email.split('@')[0]; 
-      document.getElementById('signinCard').classList.add('hidden'); 
-      document.getElementById('app-wrapper').classList.remove('hidden'); 
-      renderTabs(); 
-      loadTable(); 
-      wireRealtime(); 
-    }
-
-    document.getElementById('menuToggle').onclick=()=>{document.getElementById('sidebar').classList.toggle('open');};
-    document.getElementById('sidebar').onclick=e=>{if(e.target.closest('.nav-item'))document.getElementById('sidebar').classList.remove('open');};
-
-    async function loadTable(){ 
-      const conf=tables[activeKey]; 
-      document.getElementById('pageTitle').textContent=conf?.title || 'Website Reviews'; 
-      const isP=activeKey==='pricing',isO=activeKey==='order_list',isR=activeKey==='reviews',isS=activeKey==='surveys';
-      document.getElementById('orderPageControls').classList.toggle('hidden',!isO); 
-      document.getElementById('addBtn').classList.toggle('hidden',!!conf?.readOnly||isP||isR||isS); 
-      document.getElementById('dataActions').classList.toggle('hidden',isP||isS);
-      document.getElementById('pricingList').style.display=isP?'block':'none'; 
-      document.getElementById('reviewsContainer').style.display='none'; 
-      document.getElementById('grid').closest('.table-wrap').classList.toggle('hidden',isP);
-      document.getElementById('exportBtn').classList.toggle('hidden',activeKey!=='costs');
-      if(conf?.customLoader==='loadPricingList'){await loadPricingList();return;} 
-      if(isR){await loadReviews();return;} 
-      if(conf?.customLoader==='loadOrderList'){await loadOrderList();return;}
-      if(conf?.customLoader==='loadSurveyList'){await loadSurveyList();return;}
-      const dc=conf.list_keys?conf.cols.filter(c=>conf.list_keys.includes(c.key)):conf.cols; 
-      buildColGroup(conf,dc); 
-      buildThead(conf,dc);
-      const tbody=document.getElementById('tbody'); tbody.innerHTML='';
-      let q=sb.from(conf.table).select('*',{count:'exact'}); 
-      const s=document.getElementById('globalSearch').value?.trim(); 
-      if(s)q=q.or(conf.cols.map(c=>`${c.key}.ilike.%${s}%`).join(','));
-      q=q.order('updated_at',{ascending:false}).range(page*pageSize,page*pageSize+pageSize-1); 
-      const{data,error,count}=await q;
-      if(error){tbody.innerHTML=`<tr><td class="cell text-error" colspan="99">${error.message}</td></tr>`;return;} 
-      totalCount=count||0;
-      for(const row of(data||[])){ 
-        const tr=$('tr',''); 
-        for(const c of dc){
-          let v=row[c.key];
-          if(c.type==='checkbox')v=!!v;
-          if(c.type==='date')v=dateOnly(v);
-          tr.appendChild($('td','cell',fmt(v)));
-        } 
-        if(!conf.readOnly){
-          const td=$('td','cell text-right');
-          const btn=$('button','btn btn-secondary','Edit');
-          btn.style.fontSize='0.8rem';
-          btn.style.padding='0.4rem 0.8rem';
-          btn.onclick=()=>openEditor(conf,row);
-          td.appendChild(btn);
-          tr.appendChild(td);
-        } 
-        tbody.appendChild(tr); 
-      }
-      updatePager();
-    }
-
-    async function loadSurveyList() {
-      const conf = tables['surveys'];
-      buildColGroup(conf, [{key:'customer_name',w:'60'},{key:'date',w:'40'}]);
-      buildThead(conf, [{key:'customer_name',label:'Customer'},{key:'date',label:'Date'}]);
-      
-      const tbody = document.getElementById('tbody');
-      tbody.innerHTML = '';
-      
-      let q = sb.from('surveys').select('*', {count: 'exact'}).order('created_at', {ascending: false});
-      const {data: surveys, error, count} = await q.range(page * pageSize, page * pageSize + pageSize - 1);
-      
-      if (error) {
-        tbody.innerHTML = `<tr><td class="cell text-error" colspan="99">${error.message}</td></tr>`;
-        return;
-      }
-      
-      totalCount = count || 0;
-      
-      const ids = [...new Set(surveys.map(s => s.customer_id).filter(Boolean))];
-      const map = new Map();
-      if (ids.length) {
-        const {data} = await sb.from('customers').select('id,first_name,last_name').in('id', ids);
-        (data || []).forEach(c => map.set(c.id, c));
-      }
-      
-      for (const s of surveys) {
-        const c = map.get(s.customer_id);
-        const tr = $('tr', '');
-        tr.style.cursor = 'pointer';
-        tr.appendChild($('td', 'cell font-medium', c ? `${c.first_name || ''} ${c.last_name || ''}`.trim() : 'N/A'));
-        tr.appendChild($('td', 'cell', new Date(s.created_at).toLocaleDateString()));
-        tr.onclick = () => openSurveyViewer(s.id);
-        tbody.appendChild(tr);
-      }
-      
-      updatePager();
-    }
-
-    let activeReviewSurvey = null;
-
-    function openReviewDialog(survey, customer) {
-      activeReviewSurvey = survey;
-      
-      document.getElementById('review_customer').textContent = customer ? `${customer.first_name} ${customer.last_name}` : 'N/A';
-      document.getElementById('review_date').textContent = `Submitted: ${new Date(survey.created_at).toLocaleString()}`;
-      document.getElementById('review_text').textContent = survey.website_review || 'No review provided';
-      
-      updateReviewDialogButtons();
-      document.getElementById('reviewDialog').showModal();
-    }
-
-    function updateReviewDialogButtons() {
-      const footer = document.getElementById('reviewDialogFooter');
-      const status = activeReviewSurvey?.review_approval_status;
-      
-      footer.innerHTML = '';
-      
-      const editBtn = $('button', 'btn btn-secondary', 'Edit');
-      editBtn.type = 'button';
-      editBtn.onclick = () => {
-        document.getElementById('reviewDialog').close();
-        openEditor(tables.surveys, activeReviewSurvey);
-      };
-      
-      if (status === 'approved') {
-        const deleteBtn = $('button', 'btn btn-danger', 'Delete');
-        deleteBtn.type = 'button';
-        deleteBtn.onclick = async () => {
-          if (confirm('Delete this review permanently?')) {
-            const {error} = await sb.from('surveys').delete().eq('id', activeReviewSurvey.id);
-            if (error) {
-              alert(error.message);
-              return;
-            }
-            document.getElementById('reviewDialog').close();
-            loadReviews();
-          }
-        };
-        footer.appendChild(editBtn);
-        footer.appendChild(deleteBtn);
-      } else if (status === 'rejected') {
-        const deleteBtn = $('button', 'btn btn-danger', 'Delete');
-        deleteBtn.type = 'button';
-        deleteBtn.onclick = async () => {
-          if (confirm('Are you sure you want to delete this?')) {
-            const {error} = await sb.from('surveys').delete().eq('id', activeReviewSurvey.id);
-            if (error) {
-              alert(error.message);
-              return;
-            }
-            document.getElementById('reviewDialog').close();
-            loadReviews();
-          }
-        };
-        footer.appendChild(deleteBtn);
-      } else {
-        const approveBtn = $('button', 'btn btn-success', 'Approve');
-        approveBtn.type = 'button';
-        approveBtn.onclick = async () => {
-          const {error} = await sb.from('surveys').update({review_approval_status: 'approved'}).eq('id', activeReviewSurvey.id);
-          if (error) {
-            alert(error.message);
-            return;
-          }
-          activeReviewSurvey.review_approval_status = 'approved';
-          updateReviewDialogButtons();
-        };
-        
-        const rejectBtn = $('button', 'btn btn-danger', 'Reject');
-        rejectBtn.type = 'button';
-        rejectBtn.onclick = async () => {
-          const {error} = await sb.from('surveys').update({review_approval_status: 'rejected'}).eq('id', activeReviewSurvey.id);
-          if (error) {
-            alert(error.message);
-            return;
-          }
-          activeReviewSurvey.review_approval_status = 'rejected';
-          updateReviewDialogButtons();
-        };
-        
-        footer.appendChild(editBtn);
-        footer.appendChild(approveBtn);
-        footer.appendChild(rejectBtn);
-      }
-    }
-
-    async function loadOrderList(){ 
-      const conf = tables['order_list'];
-      buildColGroup(conf, conf.cols);
-      buildThead(conf, conf.cols);
-      
-      const tbody = document.getElementById('tbody'); 
-      tbody.innerHTML = ''; 
-      const st = (document.getElementById('globalSearch').value || '').trim().toLowerCase();
-      
-      let q = sb.from('orders').select('id,customer_id,status', {count: 'exact'}).order('created_at', {ascending: false}); 
-      if(activeOrderFilter !== 'All') q = q.eq('status', activeOrderFilter);
-      
-      let orders, count; 
-      if(st) {
-        const {data, count: c} = await q;
-        orders = data || [];
-        count = c;
-      } else {
-        const {data, count: c} = await q.range(page * pageSize, page * pageSize + pageSize - 1);
-        orders = data || [];
-        count = c;
-      } 
-      
-      totalCount = count || 0;
-      
-      const ids = [...new Set(orders.map(o => o.customer_id).filter(Boolean))]; 
-      const map = new Map(); 
-      if(ids.length) {
-        const {data} = await sb.from('customers').select('id,first_name,last_name').in('id', ids);
-        (data || []).forEach(c => map.set(c.id, c));
-      }
-      
-      if(st) {
-        const f = orders.filter(o => {
-          const c = map.get(o.customer_id);
-          return [
-            String(o.id),
-            formatOrderId(o.id),
-            o.status || '',
-            c ? `${c.first_name} ${c.last_name}` : ''
-          ].some(x => x.toLowerCase().includes(st));
-        });
-        totalCount = f.length;
-        orders = f.slice(page * pageSize, page * pageSize + pageSize);
-      }
-      
-      for(const r of orders) {
-        const c = map.get(r.customer_id);
-        const tr = $('tr', '');
-        tr.style.cursor = 'pointer';
-        tr.appendChild($('td', 'cell font-medium', c ? `${c.first_name || ''} ${c.last_name || ''}`.trim() : 'N/A'));
-        const sc = $('td', 'cell text-center');
-        sc.appendChild($('span', `status-badge ${getStatusClass(r.status)}`, r.status || 'In Review'));
-        tr.appendChild(sc);
-        tr.onclick = () => openOrderManager(r.id);
-        tbody.appendChild(tr);
-      }
-      
-      updatePager();
-    }
-
-    let activeSurvey = null;
-
-    async function openSurveyViewer(surveyId) {
-      const {data: survey, error} = await sb.from('surveys').select('*').eq('id', surveyId).single();
-      if (error) {
-        alert(error.message);
-        return;
-      }
-      
-      activeSurvey = survey;
-      
-      const {data: customer} = await sb.from('customers').select('first_name,last_name').eq('id', survey.customer_id).single();
-      
-      document.getElementById('survey_customer').textContent = customer ? `${customer.first_name} ${customer.last_name}` : 'N/A';
-      document.getElementById('survey_date').textContent = `Submitted: ${new Date(survey.created_at).toLocaleString()}`;
-      document.getElementById('survey_cookies').textContent = '★'.repeat(survey.cookies_stars || 0) + '☆'.repeat(5 - (survey.cookies_stars || 0));
-      document.getElementById('survey_service').textContent = '★'.repeat(survey.service_stars || 0) + '☆'.repeat(5 - (survey.service_stars || 0));
-      document.getElementById('survey_recommend').textContent = survey.recommend ? '✅ Yes' : '❌ No';
-      document.getElementById('survey_improvements').textContent = survey.improvements || 'No feedback provided';
-      document.getElementById('survey_review').textContent = survey.website_review || 'No review provided';
-      
-      document.getElementById('surveyViewer').showModal();
-    }
-
-    document.getElementById('editSurvey').onclick = () => {
-      if (activeSurvey) {
-        document.getElementById('surveyViewer').close();
-        openEditor(tables.surveys, activeSurvey);
-      }
-    };
-
-    async function loadPricingList(){ 
-      const el=document.getElementById('pricingList'); el.innerHTML=''; 
-      const{data}=await sb.from('pricing').select('*').limit(1); 
-      if(!data?.length)return;
-      for(const col of tables.pricing.cols){
-        const item=$('div','pricing-item');
-        item.appendChild($('span','',col.label));
-        item.appendChild($('span','',money(data[0][col.key])));
-        const btn=$('button','btn btn-secondary','Edit');
-        btn.style.fontSize='0.8rem';
-        btn.style.padding='0.4rem 0.8rem';
-        btn.onclick=()=>openEditor({title:`Edit ${col.label}`,table:'pricing',cols:[col]},{id:data[0].id,[col.key]:data[0][col.key]});
-        item.appendChild(btn);
-        el.appendChild(item);
-      }
-    }
-
-    async function loadReviews(){ 
-      const conf = { title: 'Website Reviews', readOnly: true };
-      buildColGroup(conf, [{key:'customer_name',w:'40'},{key:'review',w:'60'}]);
-      buildThead(conf, [{key:'customer_name',label:'Customer'},{key:'review',label:'Review'}]);
-      
-      const tbody = document.getElementById('tbody');
-      tbody.innerHTML = '';
-      
-      // Get surveys that have website reviews
-      let q = sb.from('surveys')
-        .select('*', {count: 'exact'})
-        .not('website_review', 'is', null)
-        .neq('website_review', '')
-        .order('created_at', {ascending: false});
-      
-      const {data: surveys, error, count} = await q.range(page * pageSize, page * pageSize + pageSize - 1);
-      
-      if (error) {
-        tbody.innerHTML = `<tr><td class="cell text-error" colspan="99">${error.message}</td></tr>`;
-        return;
-      }
-      
-      totalCount = count || 0;
-      
-      // Get customer names
-      const ids = [...new Set(surveys.map(s => s.customer_id).filter(Boolean))];
-      const map = new Map();
-      if (ids.length) {
-        const {data} = await sb.from('customers').select('id,first_name,last_name').in('id', ids);
-        (data || []).forEach(c => map.set(c.id, c));
-      }
-      
-      for (const s of surveys) {
-        const c = map.get(s.customer_id);
-        const tr = $('tr', '');
-        tr.style.cursor = 'pointer';
-        
-        // Customer name
-        tr.appendChild($('td', 'cell font-medium', c ? `${c.first_name || ''} ${c.last_name || ''}`.trim() : 'N/A'));
-        
-        // Full review text
-        tr.appendChild($('td', 'cell', `"${s.website_review}"`));
-        
-        tr.onclick = () => openReviewDialog(s, c);
-        tbody.appendChild(tr);
-      }
-      
-      updatePager();
-    }
-
-    async function loadSurveySection(orderId){ 
-      const s=document.getElementById('surveyLinkSection'); 
-      s.innerHTML='<p class="text-muted">Loading...</p>';
-      const{data:tok}=await sb.from('survey_tokens').select('*').eq('order_id',orderId).order('created_at',{ascending:false}).limit(1).maybeSingle();
-      if(tok){ 
-        const url=`${SURVEY_BASE_URL}?token=${tok.token}`, used=tok.used, exp=tok.expires_at&&new Date(tok.expires_at)<new Date();
-        s.innerHTML=`<div class="survey-link-box ${used?'':'active'} ${exp?'expired':''}">
-          <div class="flex justify-between items-center mb-2">
-            <span class="font-bold">${used?'✅ Completed':exp?'⚠️ Expired':'📨 Active'}</span>
-            ${!used?`<button id="copyLink" class="btn btn-secondary" style="font-size:0.75rem;padding:0.3rem 0.6rem">📋 Copy</button>`:''}
-          </div>
-          ${!used?`<input class="survey-link-input" value="${url}" readonly/>
-          <div style="font-size:0.75rem;color:var(--brown-light)">Expires: ${tok.expires_at?new Date(tok.expires_at).toLocaleDateString():'Never'}</div>`:`<div style="font-size:0.85rem;color:var(--brown-light)">Completed: ${tok.used_at?new Date(tok.used_at).toLocaleDateString():''}</div>`}
-          ${exp&&!used?`<button id="regenLink" class="btn btn-warning w-full mt-2">🔄 Regenerate</button>`:''}
-        </div>`;
-        document.getElementById('copyLink')?.addEventListener('click',function(){navigator.clipboard.writeText(url);this.textContent='✓ Copied!';});
-        document.getElementById('regenLink')?.addEventListener('click',()=>genSurveyLink(orderId));
-      }else{ 
-        s.innerHTML=`<div class="survey-link-box"><p style="color:var(--brown-light);margin-bottom:0.75rem">No survey link yet.</p><button id="genLink" class="btn btn-primary w-full">📝 Generate Link</button></div>`; 
-        document.getElementById('genLink').onclick=()=>genSurveyLink(orderId); 
-      }
-    }
-
-    async function genSurveyLink(orderId){ 
-      const s=document.getElementById('surveyLinkSection'); 
-      s.innerHTML='<p class="text-muted">Generating...</p>';
-      const bytes=new Uint8Array(24); crypto.getRandomValues(bytes); 
-      const token=btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-      const exp=new Date(); exp.setDate(exp.getDate()+30);
-      const{error}=await sb.from('survey_tokens').insert({token,order_id:orderId,expires_at:exp.toISOString()});
-      if(error){s.innerHTML=`<div style="color:var(--error);padding:0.75rem;background:#fee2e2;border-radius:8px">Error: ${error.message}</div>`;return;}
-      loadSurveySection(orderId);
-    }
-
-    function buildColGroup(conf,cols){
-      const cg=document.getElementById('colgroup');cg.innerHTML='';
-      let c=cols.slice();
-      if(!conf.readOnly)c.push({w:'20'});
-      const t=c.reduce((s,x)=>s+(Number(x.w)||0),0)||100;
-      for(const x of c){const col=document.createElement('col');col.style.width=((Number(x.w)||0)/t*100)+'%';cg.appendChild(col);}
-    }
-    
-    function buildThead(conf,cols){
-      const tr=document.getElementById('thead');tr.innerHTML='';
-      for(const c of cols)tr.appendChild($('th','thcell '+(conf.center?'text-center':'text-left'),c.label));
-      if(!conf.readOnly)tr.appendChild($('th','thcell text-right',''));
-    }
-    
-    function updatePager(){
-      document.getElementById('prev').disabled=page===0;
-      document.getElementById('next').disabled=(page+1)*pageSize>=totalCount;
-      document.getElementById('pageInfo').textContent=`${Math.min(totalCount,(page+1)*pageSize)} of ${totalCount}`;
-    }
-
-    const dlg=document.getElementById('editor'), formBody=document.getElementById('formBody');
-    
-    async function optionEl(col,val){ 
-      const w=$('label','form-group'); 
-      w.appendChild($('span','',col.label)); 
-      let inp;
-      if(col.type==='textarea'){inp=$('textarea','');inp.rows=3;}
-      else if(col.type==='checkbox'){inp=$('input','');inp.type='checkbox';inp.style.width='20px';inp.style.height='20px';}
-      else if(col.type==='select'||col.type==='select-async'){
-        inp=$('select','');
-        const opts=col.type==='select'?col.options:await col.asyncOptions();
-        for(const o of(opts||[])){
-          const opt=document.createElement('option');
-          if(typeof o==='string'){opt.value=o;opt.textContent=o;}
-          else{opt.value=o.value;opt.textContent=o.label;}
-          inp.appendChild(opt);
+        if (data && data.length > 0) {
+          // Randomize the reviews
+          reviews = data.sort(() => Math.random() - 0.5);
+          renderSlider();
+          startAutoSlide();
         }
+      } catch (err) {
+        console.error('Error loading reviews:', err);
       }
-      else{inp=$('input','');inp.type=col.type||'text';if(col.step)inp.step=col.step;}
-      inp.id=`fld_${col.key}`;
-      if(col.required)inp.required=true;
-      if(col.type==='checkbox')inp.checked=!!val;
-      else if(col.type==='date')inp.value=dateOnly(val);
-      else inp.value=val??'';
-      w.appendChild(inp);
-      return w;
-    }
-    
-    async function openEditor(conf,row){
-      document.getElementById('editorTitle').textContent=row?`Edit ${conf.title}`:`New ${conf.title}`;
-      formBody.innerHTML='';
-      for(const c of conf.cols)formBody.appendChild(await optionEl(c,row?.[c.key]));
-      const h=document.createElement('input');h.type='hidden';h.id='row_id';h.value=row?.id||'';formBody.appendChild(h);
-      document.getElementById('deleteBtn').classList.toggle('hidden',!row||conf.table==='orders'||conf.table==='pricing');
-      document.getElementById('deleteBtn').onclick=async()=>{if(row?.id&&confirm('Delete?')){await sb.from(conf.table).delete().eq('id',row.id);dlg.close();loadTable();}};
-      document.getElementById('saveBtn').onclick=async e=>{e.preventDefault();await saveRecord(conf,row);};
-      dlg.showModal();
-    }
-    
-    async function saveRecord(conf,orig){
-      const p={};
-      for(const c of conf.cols){
-        const el=document.getElementById(`fld_${c.key}`);
-        let v=c.type==='checkbox'?el.checked:el.value||null;
-        if(c.type==='number'&&v!==null)v=el.value===''?null:Number(v);
-        p[c.key]=v;
-      }
-      const id=document.getElementById('row_id').value;
-      const r=id?await sb.from(conf.table).update(p).eq('id',id).select('*').single():await sb.from(conf.table).insert(p).select('*').single();
-      if(r.error){alert(r.error.message);return;}
-      dlg.close();
-      loadTable();
-      if(conf.table==='orders'&&orig)openOrderManager(orig.id);
     }
 
-    function renderTabs(){
-      document.querySelectorAll('.nav-item').forEach(b=>{
-        b.classList.remove('nav-active');
-        if(b.dataset.key===activeKey)b.classList.add('nav-active');
-        b.onclick=()=>{activeKey=b.dataset.key;page=0;renderTabs();loadTable();};
+    function renderSlider() {
+      const track = document.getElementById('testimonialTrack');
+      const dotsContainer = document.getElementById('sliderDots');
+
+      if (reviews.length === 0) return;
+
+      // Clear existing content
+      track.innerHTML = '';
+      dotsContainer.innerHTML = '';
+
+      // Create slides
+      reviews.forEach((review, index) => {
+        const card = document.createElement('div');
+        card.className = 'testimonial-card';
+
+        const stars = '★'.repeat(review.cookies_stars || 5) + '☆'.repeat(5 - (review.cookies_stars || 5));
+        
+        let customerName = 'Anonymous';
+        if (review.manual_customer_name) {
+          customerName = review.manual_customer_name;
+        } else if (review.customers) {
+          const firstInitial = review.customers.first_name ? review.customers.first_name.charAt(0) : '';
+          const lastName = review.customers.last_name || '';
+          customerName = `${review.customers.first_name || ''} ${firstInitial && lastName ? lastName.charAt(0) : lastName}${firstInitial && lastName ? '.' : ''}`.trim();
+        }
+
+        card.innerHTML = `
+          <div class="testimonial-stars">${stars}</div>
+          <p class="testimonial-text">"${review.website_review}"</p>
+          <div class="testimonial-author">${customerName}</div>
+        `;
+
+        track.appendChild(card);
+
+        // Create dot
+        const dot = document.createElement('div');
+        dot.className = `dot ${index === 0 ? 'active' : ''}`;
+        dot.onclick = () => goToSlide(index);
+        dotsContainer.appendChild(dot);
       });
-      document.querySelectorAll('#orderFilters .filter-tab').forEach(b=>{
-        b.classList.toggle('filter-active',b.dataset.filter===activeOrderFilter);
-        b.onclick=()=>{activeOrderFilter=b.dataset.filter;page=0;loadTable();};
+
+      // Hide controls if only one review
+      if (reviews.length === 1) {
+        document.querySelector('.slider-controls').style.display = 'none';
+        document.querySelector('.slider-dots').style.display = 'none';
+      }
+    }
+
+    function goToSlide(index) {
+      if (reviews.length === 0) return;
+
+      currentSlide = index;
+      const track = document.getElementById('testimonialTrack');
+      track.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+      // Update dots
+      document.querySelectorAll('.dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentSlide);
       });
-      document.getElementById('addBtn').classList.toggle('hidden',!!tables[activeKey]?.readOnly);
-      document.getElementById('addBtn').onclick=()=>openEditor(tables[activeKey],null);
-      document.getElementById('prev').onclick=()=>{if(page>0){page--;loadTable();}};
-      document.getElementById('next').onclick=()=>{if((page+1)*pageSize<totalCount){page++;loadTable();}};
-      document.getElementById('globalSearch').onkeydown=e=>{if(e.key==='Enter'){page=0;loadTable();}};
-      document.getElementById('refreshAll').onclick=()=>{page=0;loadTable();};
-    }
-    
-    function wireRealtime(){
-      for(const k of Object.keys(tables)){
-        const t=k==='order_list'?'orders':tables[k].table;
-        sb.channel(`${k}-ch`).on('postgres_changes',{event:'*',schema:'public',table:t},()=>{if(k===activeKey)loadTable();}).subscribe();
-      }
-      
-      // Listen for survey changes to update reviews section
-      sb.channel('reviews-surveys-ch').on('postgres_changes',{event:'*',schema:'public',table:'surveys'},()=>{if(activeKey==='reviews')loadTable();}).subscribe();
+
+      // Reset auto-slide timer
+      resetAutoSlide();
     }
 
-    const drawer=document.getElementById('orderDrawer');
-    let activeOrder=null,activeCustomer=null,pricing=null,adjustments=[],discountCodeDetails=null,referralCodeDetails=null,discountCodeAmount=0,referralDiscountAmount=0,activeCustomerReferralCode=null;
-
-    async function fetchPricing(){const{data}=await sb.from('pricing').select('*').limit(1);const p=(data&&data[0])||{};return{price_per_dozen:Number(p.price_per_dozen||0),consultation_fee:Number(p.consultation_fee||0),gift_note_fee:Number(p.gift_note_fee||0)};}
-    function isDatePast(d){return d&&dateOnly(d)<dateOnly(new Date());}
-    
-    async function fetchDiscountCodeDetails(code,email){
-      if(!code)return null;
-      const r={code,isValid:false,type:null,value:0};
-      const{data}=await sb.from('discount_codes').select('*').eq('code',code).maybeSingle();
-      if(!data)return r;
-      if(data.good_through_date&&isDatePast(data.good_through_date))return r;
-      if(data.email_allowed&&email&&data.email_allowed.toLowerCase()!==email.toLowerCase())return r;
-      const v=Number(data.amount||0);
-      if(v<=0)return r;
-      r.isValid=true;r.type=data.type==='percent'?'percent':'fixed';r.value=v;
-      return r;
-    }
-    
-    async function fetchReferralCodeDetails(code){
-      if(!code)return null;
-      const r={code,isValid:false,value:0};
-      const{data}=await sb.from('referral_codes').select('*').eq('code',code).maybeSingle();
-      if(!data||data.good_through_date&&isDatePast(data.good_through_date))return r;
-      const v=Number(data.referee_discount||0);
-      if(v<=0)return r;
-      r.isValid=true;r.value=v;
-      return r;
-    }
-    
-    async function fetchAdjustments(id){const{data}=await sb.from('order_adjustments').select('*').eq('order_id',id).order('created_at',{ascending:false});return(data||[]).map(r=>({...r,amount:Number(r.amount||0)}));}
-
-    function computeTotals(){
-      const ppd=pricing?.price_per_dozen||0,
-            consult=activeOrder?.consultation_requested?pricing?.consultation_fee||0:0,
-            gift=activeOrder?.gift_note?pricing?.gift_note_fee||0:0,
-            base=Number(activeOrder?.cookie_amount_dzns||0)*ppd,
-            feeSum=adjustments.filter(a=>a.kind==='fee').reduce((s,a)=>s+a.amount,0),
-            discSum=adjustments.filter(a=>a.kind==='discount').reduce((s,a)=>s+a.amount,0),
-            baseForCodes=base+consult+gift+feeSum;
-      discountCodeAmount=0;referralDiscountAmount=0;
-      if(discountCodeDetails?.isValid&&baseForCodes>0){
-        discountCodeAmount=discountCodeDetails.type==='percent'?baseForCodes*(discountCodeDetails.value/100):discountCodeDetails.value;
-        if(discountCodeAmount>baseForCodes)discountCodeAmount=baseForCodes;
-      }
-      if(referralCodeDetails?.isValid&&baseForCodes>0){
-        referralDiscountAmount=baseForCodes*(referralCodeDetails.value/100);
-        if(referralDiscountAmount>baseForCodes)referralDiscountAmount=baseForCodes;
-      }
-      const total=base+consult+gift+feeSum-discSum-discountCodeAmount-referralDiscountAmount;
-      document.getElementById('t_price').textContent=money(ppd);
-      document.getElementById('t_base').textContent=money(base);
-      document.getElementById('t_consult').textContent=money(consult);
-      document.getElementById('t_gift').textContent=money(gift);
-      document.getElementById('t_adj_fees').textContent=money(feeSum);
-      document.getElementById('t_disc_code').textContent=discountCodeAmount?'-'+money(discountCodeAmount):'-$0.00';
-      document.getElementById('t_disc_referral').textContent=referralDiscountAmount?'-'+money(referralDiscountAmount):'-$0.00';
-      document.getElementById('t_adj_disc').textContent=discSum?'-'+money(discSum):'-$0.00';
-      document.getElementById('t_total').textContent=money(total);
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % reviews.length;
+      goToSlide(currentSlide);
     }
 
-    function renderAdjustments(){
-      const tb=document.getElementById('adjTbody');tb.innerHTML='';
-      if(!adjustments.length){tb.innerHTML='<tr><td colspan="5" class="text-center text-muted" style="padding:0.75rem">None</td></tr>';return;}
-      for(const a of adjustments){
-        const tr=$('tr','');
-        tr.appendChild($('td','',new Date(a.created_at).toLocaleDateString()));
-        tr.appendChild($('td','',a.kind));
-        tr.appendChild($('td','',a.label||''));
-        tr.appendChild($('td',`text-right ${a.kind==='discount'?'text-error':'text-success'}`,(a.kind==='discount'?'-':'')+money(a.amount)));
-        const rc=$('td','text-right');
-        const rb=$('button','btn btn-ghost text-error','×');
-        rb.style.padding='0.2rem 0.5rem';
-        rb.onclick=async()=>{if(confirm('Remove?')){await sb.from('order_adjustments').delete().eq('id',a.id);adjustments=adjustments.filter(x=>x.id!==a.id);renderAdjustments();computeTotals();}};
-        rc.appendChild(rb);
-        tr.appendChild(rc);
-        tb.appendChild(tr);
+    function prevSlide() {
+      currentSlide = (currentSlide - 1 + reviews.length) % reviews.length;
+      goToSlide(currentSlide);
+    }
+
+    function startAutoSlide() {
+      if (reviews.length > 1) {
+        autoSlideInterval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
       }
     }
 
-    function fillDrawer(){
-      const o=activeOrder,c=activeCustomer;
-      document.getElementById('drawerTitle').textContent=`Order #${o?.order_id||formatOrderId(o.id)} (${o?.status||'In Review'})`;
-      document.getElementById('cust_name').textContent=c?`${c.first_name||''} ${c.last_name||''}`.trim():'N/A';
-      document.getElementById('cust_id').textContent=c?.customer_id||o?.order_id||'N/A';
-      document.getElementById('cust_email').textContent=c?.email||'N/A';
-      document.getElementById('cust_email').href=c?.email?`mailto:${c.email}`:'#';
-      document.getElementById('cust_phone_link').textContent=formatPhone(c?.phone)||'N/A';
-      document.getElementById('cust_phone_link').href=c?.phone?`tel:${c.phone.replace(/\D/g,'')}`:'#';
-      document.getElementById('cust_addr1').textContent=c?.street_address||'';
-      document.getElementById('cust_addr2').textContent=c?.street_address_cont||'';
-      document.getElementById('cust_citystzip').textContent=[c?.city,c?.state,c?.zip].filter(Boolean).join(', ');
-      document.getElementById('mapLocation').onclick=()=>{const addr=[c?.street_address,c?.city,c?.state,c?.zip].filter(Boolean).join(', ');if(addr)window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`,'_blank');};
-      document.getElementById('cust_referral_code').textContent=activeCustomerReferralCode||'None';
-      document.getElementById('ov_event_name').textContent=o?.event_type_name||'N/A';
-      document.getElementById('ov_event').textContent=dateOnly(o?.event_date);
-      document.getElementById('ov_submitted').textContent=dateOnly(o?.created_at);
-      document.getElementById('ov_pickup').textContent=dateOnly(o?.pickup_delivery_date);
-      document.getElementById('ov_dzns').textContent=o?.cookie_amount_dzns??'0';
-      document.getElementById('ov_flavor').textContent=o?.flavor||'N/A';
-      document.getElementById('ov_dietary').textContent=o?.dietary_option||'None';
-      document.getElementById('ov_notes').textContent=o?.design_notes||'None';
-      document.getElementById('ov_photo').src=o?.design_inspiration_photo||'https://dummyimage.com/320x320/FAE0E2/5D4E4E.jpg&text=No+photo';
-      document.getElementById('ov_consultation').textContent=o?.consultation_requested?'Yes':'No';
-      document.getElementById('ov_gift_note').textContent=o?.gift_note?'Yes':'No';
-      document.getElementById('ov_gift_text').textContent=o?.gift_note_text||'None';
-      document.getElementById('ov_pd_type').textContent=o?.pickup_delivery_type||'N/A';
-      document.getElementById('ov_discount_code').textContent=o?.discount_code_used?`${o.discount_code_used} (${discountCodeDetails?.isValid?'applied':'invalid'})`:'None';
-      document.getElementById('ov_referral_code').textContent=o?.referral_code_used?`${o.referral_code_used} (${referralCodeDetails?.isValid?'applied':'invalid'})`:'None';
-      document.getElementById('statusSelect').value=o?.status||'In Review';
-      renderAdjustments();
-      computeTotals();
+    function resetAutoSlide() {
+      clearInterval(autoSlideInterval);
+      startAutoSlide();
     }
 
-    async function openOrderManager(orderId){
-      document.body.style.cursor='progress';
-      const[orderResp,pricingData,adjustmentsData]=await Promise.all([
-        sb.from('orders').select('*').eq('id',orderId).single(),
-        fetchPricing(),
-        fetchAdjustments(orderId)
-      ]);
-      if(orderResp.error){alert(orderResp.error.message);document.body.style.cursor='default';return;}
-      activeOrder=orderResp.data;
-      pricing=pricingData;
-      adjustments=adjustmentsData;
-      if(activeOrder.customer_id){const{data}=await sb.from('customers').select('*').eq('id',activeOrder.customer_id).single();activeCustomer=data;}else activeCustomer=null;
-      if(activeOrder.customer_id){const{data}=await sb.from('referral_codes').select('code').eq('associated_customer_id',activeOrder.customer_id).order('created_at',{ascending:false}).limit(1).maybeSingle();activeCustomerReferralCode=data?.code||null;}else activeCustomerReferralCode=null;
-      discountCodeDetails=activeOrder.discount_code_used?await fetchDiscountCodeDetails(activeOrder.discount_code_used,activeCustomer?.email):null;
-      referralCodeDetails=activeOrder.referral_code_used?await fetchReferralCodeDetails(activeOrder.referral_code_used):null;
-      document.body.style.cursor='default';
-      fillDrawer();
-      loadSurveySection(orderId);
-      drawer.showModal();
+    // Event listeners
+    document.getElementById('nextBtn').addEventListener('click', nextSlide);
+    document.getElementById('prevBtn').addEventListener('click', prevSlide);
+
+    // Load reviews on page load
+    loadReviews();
+
+    // Header scroll effect
+    window.addEventListener('scroll', () => {
+      document.getElementById('header').classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    // Mobile menu toggle
+    function toggleNav() {
+      document.getElementById('nav').classList.toggle('open');
     }
 
-    document.getElementById('saveStatus').onclick=async()=>{const s=document.getElementById('statusSelect').value;await sb.from('orders').update({status:s}).eq('id',activeOrder.id);activeOrder.status=s;fillDrawer();loadTable();};
-    document.getElementById('editFields').onclick=()=>{if(activeOrder)openEditor(tables.orders,activeOrder);};
-    document.getElementById('backToOrders').onclick=e=>{e.preventDefault();drawer.close();};
-    
-    document.getElementById('addAdjustment').onclick=async()=>{
-      const l=document.getElementById('adjLabel').value.trim(),
-            a=Number(document.getElementById('adjAmount').value),
-            k=document.getElementById('adjKind').value;
-      if(!l||!a||a<=0){alert('Enter label and amount');return;}
-      const{data,error}=await sb.from('order_adjustments').insert({order_id:activeOrder.id,label:l,amount:a,kind:k}).select('*').single();
-      if(error){alert(error.message);return;}
-      adjustments.unshift({...data,amount:Number(data.amount||0)});
-      document.getElementById('adjLabel').value='';
-      document.getElementById('adjAmount').value='';
-      renderAdjustments();
-      computeTotals();
-    };
-    
-    document.getElementById('btnUploadPhoto').onclick=async()=>{
-      const f=document.getElementById('uploadPhoto').files?.[0];
-      if(!f){alert('Choose file');return;}
-      const path=`${activeOrder.id}/photo_${Date.now()}.${f.name.split('.').pop()}`;
-      const{data,error}=await sb.storage.from('order_uploads').upload(path,f,{upsert:true});
-      if(error){alert(error.message);return;}
-      const{data:pub}=sb.storage.from('order_uploads').getPublicUrl(data.path);
-      await sb.from('orders').update({design_inspiration_photo:pub?.publicUrl}).eq('id',activeOrder.id);
-      activeOrder.design_inspiration_photo=pub?.publicUrl;
-      document.getElementById('ov_photo').src=pub?.publicUrl;
-      document.getElementById('uploadPhoto').value='';
-    };
-    
-    document.getElementById('ov_photo').onclick=function(){if(this.src)window.open(this.src,'_blank');};
-    
-    document.getElementById('viewInvoice').onclick=()=>{
-      if(!activeOrder||!activeCustomer){alert('Load order first');return;}
-      const orderId=activeOrder.order_id||formatOrderId(activeOrder.id),total=document.getElementById('t_total').textContent;
-      const items=[{l:`Base (${activeOrder.cookie_amount_dzns||0} dz @ ${document.getElementById('t_price').textContent})`,a:document.getElementById('t_base').textContent}];
-      if(activeOrder.consultation_requested)items.push({l:'Consult',a:document.getElementById('t_consult').textContent});
-      if(activeOrder.gift_note)items.push({l:'Gift fee',a:document.getElementById('t_gift').textContent});
-      adjustments.filter(x=>x.kind==='fee').forEach(x=>items.push({l:x.label,a:money(x.amount)}));
-      if(discountCodeAmount>0)items.push({l:`Discount (${activeOrder.discount_code_used})`,a:'-'+money(discountCodeAmount)});
-      if(referralDiscountAmount>0)items.push({l:`Referral (${activeOrder.referral_code_used})`,a:'-'+money(referralDiscountAmount)});
-      adjustments.filter(x=>x.kind==='discount').forEach(x=>items.push({l:x.label,a:'-'+money(x.amount)}));
-      const html=`<!DOCTYPE html><html><head><title>Invoice #${orderId}</title><style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Nunito:wght@400;600&display=swap');*{box-sizing:border-box}body{margin:0;padding:24px;font-family:'Nunito',sans-serif;background:#FFF8F8}.inv{max-width:800px;margin:auto;background:#fff;border-radius:20px;padding:32px;box-shadow:0 10px 40px rgba(93,78,78,.1)}.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}.brand{font-family:'Playfair Display',serif;font-size:28px;color:#5D4E4E}.pill{background:#FAE0E2;color:#5D4E4E;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600}hr{border:none;border-top:1px solid #FAE0E2;margin:16px 0}.info{display:flex;justify-content:space-between;font-size:13px;margin-bottom:20px}.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#7A6B6B;margin-bottom:4px}.val{font-weight:600;color:#5D4E4E}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}th{text-align:left;padding:10px;background:#FFF8F8;font-weight:600;color:#5D4E4E}th:last-child{text-align:right}td{padding:10px;border-bottom:1px solid #FAE0E2;color:#5D4E4E}td:last-child{text-align:right}.tot td{border-top:2px solid #F4B4B8;background:#FFF8F8;font-weight:700}.tot td:last-child{font-size:18px;color:#5D4E4E}.ftr{text-align:center;margin-top:20px;font-size:11px;color:#7A6B6B}@media print{body{background:#fff;padding:0}.inv{box-shadow:none}}</style></head><body><div class="inv"><div class="hdr"><div><img src="Bowtrans.png" style="height:50px;margin-bottom:8px"><div class="brand">Rebel Ribbon</div></div><div style="text-align:right"><div class="pill">Invoice #${orderId}</div><div style="margin-top:4px;font-size:12px"><strong>Date:</strong> ${new Date().toLocaleDateString()}</div></div></div><hr/><div class="info"><div><div class="lbl">Bill to</div><div class="val">${document.getElementById('cust_name').textContent}</div><div>${document.getElementById('cust_email').textContent}</div><div>${document.getElementById('cust_phone_link').textContent}</div></div><div style="text-align:right"><div class="lbl">From</div><div class="val">Rebel Ribbon</div><div>www.rebelribbon.com</div><div>info@rebelribbon.com</div></div></div><table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>${items.map(i=>`<tr><td>${i.l}</td><td>${i.a}</td></tr>`).join('')}<tr class="tot"><td>Total Due</td><td>${total}</td></tr></tbody></table><div class="ftr">Thank you for supporting handmade custom cookies!</div></div><script>window.onload=function(){window.print()}<\/script></body></html>`;
-      const w=window.open('','_blank','width=900,height=800');w.document.write(html);w.document.close();
-    };
+    // Close menu when clicking nav links
+    document.querySelectorAll('nav a').forEach(link => {
+      link.addEventListener('click', () => {
+        document.getElementById('nav').classList.remove('open');
+      });
+    });
 
-    bootstrap();
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
   </script>
+
 </body>
 </html>
