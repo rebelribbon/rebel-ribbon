@@ -9,6 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   
   <style>
     :root {
@@ -487,12 +488,24 @@
       .steps { grid-template-columns: 1fr; }
     }
 
-    /* Testimonial */
+    /* Testimonial Slider */
     .testimonial-section { background: var(--pink-soft); }
 
-    .testimonial-card {
+    .testimonial-slider {
+      position: relative;
       max-width: 700px;
       margin: 0 auto;
+      overflow: hidden;
+    }
+
+    .testimonial-track {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .testimonial-card {
+      min-width: 100%;
+      flex-shrink: 0;
       text-align: center;
       background: var(--white);
       padding: 3rem 2rem;
@@ -520,9 +533,77 @@
       color: var(--brown);
     }
 
-    .testimonial-event {
-      font-size: 0.9rem;
-      color: var(--brown-light);
+    .slider-controls {
+      position: absolute;
+      top: 50%;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      transform: translateY(-50%);
+      pointer-events: none;
+      padding: 0 1rem;
+    }
+
+    .slider-btn {
+      pointer-events: all;
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      background: var(--white);
+      border: 2px solid var(--pink);
+      color: var(--brown);
+      font-size: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 15px rgba(93, 78, 78, 0.1);
+      line-height: 1;
+      padding-bottom: 4px;
+    }
+
+    .slider-btn:hover {
+      background: var(--pink);
+      transform: scale(1.1);
+    }
+
+    .slider-dots {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1.5rem;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--pink-light);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .dot.active {
+      background: var(--brown);
+      width: 12px;
+      height: 12px;
+    }
+
+    @media (max-width: 768px) {
+      .slider-controls {
+        padding: 0;
+      }
+      
+      .slider-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 1.5rem;
+      }
+      
+      .testimonial-card {
+        padding: 2rem 1.5rem;
+      }
     }
 
     /* CTA */
@@ -778,17 +859,26 @@
     </div>
   </section>
 
-  <!-- Testimonial -->
+  <!-- Testimonials Slider -->
   <section class="testimonial-section">
     <div class="container">
       <div class="section-header">
         <h2>Happy Customers</h2>
       </div>
-      <div class="testimonial-card">
-        <div class="testimonial-stars">★★★★★</div>
-        <p class="testimonial-text">"The cookies were absolutely PERFECT for my daughter's quinceañera! Everyone kept asking where I got them. They tasted amazing and looked even better. Already planning my next order!"</p>
-        <div class="testimonial-author">Maria G.</div>
-        <div class="testimonial-event">Quinceañera in San Antonio</div>
+      <div class="testimonial-slider">
+        <div class="testimonial-track" id="testimonialTrack">
+          <!-- Default testimonial shown while loading -->
+          <div class="testimonial-card">
+            <div class="testimonial-stars">★★★★★</div>
+            <p class="testimonial-text">"Loading reviews..."</p>
+            <div class="testimonial-author"></div>
+          </div>
+        </div>
+        <div class="slider-controls">
+          <button class="slider-btn" id="prevBtn" aria-label="Previous">‹</button>
+          <button class="slider-btn" id="nextBtn" aria-label="Next">›</button>
+        </div>
+        <div class="slider-dots" id="sliderDots"></div>
       </div>
     </div>
   </section>
@@ -818,7 +908,7 @@
                 <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
               </svg>
             </a>
-            </div>
+          </div>
         </div>
         <div class="footer-col">
           <h4>Pages</h4>
@@ -853,20 +943,149 @@
   </footer>
 
   <script>
+    // Supabase Setup
+    const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // Testimonials Slider
+    let reviews = [];
+    let currentSlide = 0;
+    let autoSlideInterval;
+
+    async function loadReviews() {
+      try {
+        // Fetch approved reviews
+        const {data, error} = await sb
+          .from('surveys')
+          .select('*, customers(first_name, last_name)')
+          .eq('review_approval_status', 'approved')
+          .not('website_review', 'is', null)
+          .neq('website_review', '');
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          // Randomize the reviews
+          reviews = data.sort(() => Math.random() - 0.5);
+          renderSlider();
+          startAutoSlide();
+        }
+      } catch (err) {
+        console.error('Error loading reviews:', err);
+      }
+    }
+
+    function renderSlider() {
+      const track = document.getElementById('testimonialTrack');
+      const dotsContainer = document.getElementById('sliderDots');
+
+      if (reviews.length === 0) return;
+
+      // Clear existing content
+      track.innerHTML = '';
+      dotsContainer.innerHTML = '';
+
+      // Create slides
+      reviews.forEach((review, index) => {
+        const card = document.createElement('div');
+        card.className = 'testimonial-card';
+
+        const stars = '★'.repeat(review.cookies_stars || 5) + '☆'.repeat(5 - (review.cookies_stars || 5));
+        
+        let customerName = 'Anonymous';
+        if (review.manual_customer_name) {
+          customerName = review.manual_customer_name;
+        } else if (review.customers) {
+          const firstInitial = review.customers.first_name ? review.customers.first_name.charAt(0) : '';
+          const lastName = review.customers.last_name || '';
+          customerName = `${review.customers.first_name || ''} ${firstInitial && lastName ? lastName.charAt(0) : lastName}${firstInitial && lastName ? '.' : ''}`.trim();
+        }
+
+        card.innerHTML = `
+          <div class="testimonial-stars">${stars}</div>
+          <p class="testimonial-text">"${review.website_review}"</p>
+          <div class="testimonial-author">${customerName}</div>
+        `;
+
+        track.appendChild(card);
+
+        // Create dot
+        const dot = document.createElement('div');
+        dot.className = `dot ${index === 0 ? 'active' : ''}`;
+        dot.onclick = () => goToSlide(index);
+        dotsContainer.appendChild(dot);
+      });
+
+      // Hide controls if only one review
+      if (reviews.length === 1) {
+        document.querySelector('.slider-controls').style.display = 'none';
+        document.querySelector('.slider-dots').style.display = 'none';
+      }
+    }
+
+    function goToSlide(index) {
+      if (reviews.length === 0) return;
+
+      currentSlide = index;
+      const track = document.getElementById('testimonialTrack');
+      track.style.transform = `translateX(-${currentSlide * 100}%)`;
+
+      // Update dots
+      document.querySelectorAll('.dot').forEach((dot, i) => {
+        dot.classList.toggle('active', i === currentSlide);
+      });
+
+      // Reset auto-slide timer
+      resetAutoSlide();
+    }
+
+    function nextSlide() {
+      currentSlide = (currentSlide + 1) % reviews.length;
+      goToSlide(currentSlide);
+    }
+
+    function prevSlide() {
+      currentSlide = (currentSlide - 1 + reviews.length) % reviews.length;
+      goToSlide(currentSlide);
+    }
+
+    function startAutoSlide() {
+      if (reviews.length > 1) {
+        autoSlideInterval = setInterval(nextSlide, 5000); // Change slide every 5 seconds
+      }
+    }
+
+    function resetAutoSlide() {
+      clearInterval(autoSlideInterval);
+      startAutoSlide();
+    }
+
+    // Event listeners
+    document.getElementById('nextBtn').addEventListener('click', nextSlide);
+    document.getElementById('prevBtn').addEventListener('click', prevSlide);
+
+    // Load reviews on page load
+    loadReviews();
+
+    // Header scroll effect
     window.addEventListener('scroll', () => {
       document.getElementById('header').classList.toggle('scrolled', window.scrollY > 50);
     });
 
+    // Mobile menu toggle
     function toggleNav() {
       document.getElementById('nav').classList.toggle('open');
     }
 
+    // Close menu when clicking nav links
     document.querySelectorAll('nav a').forEach(link => {
       link.addEventListener('click', () => {
         document.getElementById('nav').classList.remove('open');
       });
     });
 
+    // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function(e) {
         e.preventDefault();
@@ -880,4 +1099,3 @@
 
 </body>
 </html>
-
