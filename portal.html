@@ -420,6 +420,102 @@
     .status-canceled, .status-rejected { background: #fee2e2; color: #b91c1c; }
     .status-pending { background: #fef3c7; color: #92400e; }
 
+    /* Payment Status Badges */
+    .payment-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      margin-top: 0.5rem;
+    }
+
+    .payment-status.unpaid {
+      background: var(--pink-soft);
+      color: var(--brown);
+      border: 2px solid var(--pink-light);
+    }
+
+    .payment-status.pending {
+      background: #FEF3C7;
+      color: #92400E;
+      border: 2px solid #FDE68A;
+    }
+
+    .payment-status.paid {
+      background: #D1FAE5;
+      color: #065F46;
+      border: 2px solid #6EE7B7;
+    }
+
+    .payment-status.failed {
+      background: #FEE2E2;
+      color: #991B1B;
+      border: 2px solid #FCA5A5;
+    }
+
+    .payment-status.refunded {
+      background: #E0E7FF;
+      color: #3730A3;
+      border: 2px solid #A5B4FC;
+    }
+
+    /* Payment Action Buttons */
+    .payment-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .btn-payment {
+      padding: 0.6rem 1.2rem;
+      font-size: 0.9rem;
+      border-radius: 8px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .btn-payment.generate {
+      background: var(--info);
+      color: white;
+    }
+
+    .btn-payment.generate:hover {
+      background: #4a7db8;
+    }
+
+    .btn-payment.copy {
+      background: var(--pink);
+      color: var(--brown);
+    }
+
+    .btn-payment.copy:hover {
+      background: var(--rose);
+    }
+
+    .btn-payment:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .payment-link-display {
+      background: var(--pink-soft);
+      padding: 0.75rem;
+      border-radius: 8px;
+      margin-top: 0.75rem;
+      font-size: 0.85rem;
+      word-break: break-all;
+      border: 1px solid var(--pink-light);
+    }
+
     /* Pricing List */
     #pricingList { display: none; }
 
@@ -1181,6 +1277,26 @@
             <div><span class="font-medium">Discount:</span> <span id="ov_discount_code"></span></div>
             <div><span class="font-medium">Referral:</span> <span id="ov_referral_code"></span></div>
           </div>
+          
+          <!-- PAYMENT SECTION -->
+          <div style="margin-top:1.5rem;padding-top:1rem;border-top:2px solid var(--pink-light)">
+            <h4 style="font-size:0.9rem;margin-bottom:0.75rem;color:var(--brown)">💳 Payment</h4>
+            
+            <div id="paymentStatusContainer"></div>
+            <div id="paymentAmountDisplay" style="margin-top:0.5rem;font-size:0.9rem"></div>
+            <div id="paymentLinkDisplay"></div>
+            
+            <div class="payment-actions">
+              <button id="btnGeneratePayment" class="btn-payment generate">
+                <span>💳</span> Generate Payment Link
+              </button>
+              <button id="btnCopyPaymentLink" class="btn-payment copy" style="display:none">
+                <span>📋</span> Copy Link
+              </button>
+            </div>
+            
+            <div id="paymentTimestamp" style="margin-top:0.75rem;font-size:0.8rem;color:var(--brown-light)"></div>
+          </div>
         </div>
 
         <!-- Adjustments -->
@@ -1321,6 +1437,7 @@
     const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
     const SURVEY_BASE_URL = 'https://rebelribbon.com/survey.html';
+    const SUPABASE_FUNCTIONS_URL = 'https://zyntkwammltmjjvgelwg.supabase.co/functions/v1';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const onlyCompanyEmail = e => /@rebelribbon\.com$/i.test(e);
@@ -1573,7 +1690,7 @@
       tbody.innerHTML = ''; 
       const st = (document.getElementById('globalSearch').value || '').trim().toLowerCase();
       
-      let q = sb.from('orders').select('id,customer_id,status', {count: 'exact'}).order('created_at', {ascending: false}); 
+      let q = sb.from('orders').select('id,customer_id,status,payment_status,payment_amount', {count: 'exact'}).order('created_at', {ascending: false}); 
       if(activeOrderFilter !== 'All') q = q.eq('status', activeOrderFilter);
       
       let orders, count; 
@@ -1986,6 +2103,168 @@
       }
     }
 
+    // ========== PAYMENT FUNCTIONS ==========
+
+    async function generatePaymentLink(orderId) {
+      const button = document.getElementById('btnGeneratePayment');
+      button.disabled = true;
+      button.textContent = 'Generating...';
+      
+      try {
+        const { data: { session } } = await sb.auth.getSession();
+        
+        if (!session) {
+          alert('Please log in to generate payment links');
+          return;
+        }
+        
+        const totalText = document.getElementById('t_total').textContent;
+        const amount = parseFloat(totalText.replace(/[^0-9.]/g, ''));
+        
+        if (!amount || amount <= 0) {
+          alert('Invalid order amount. Please calculate order total first.');
+          button.disabled = false;
+          button.innerHTML = '<span>💳</span> Generate Payment Link';
+          return;
+        }
+        
+        const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/create-payment-link`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({
+            orderId: orderId,
+            amount: amount,
+            customerEmail: activeCustomer?.email || '',
+            customerName: activeCustomer ? `${activeCustomer.first_name} ${activeCustomer.last_name}` : '',
+            description: `Order #${formatOrderId(orderId)}`
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(result.error || 'Failed to generate payment link');
+        }
+        
+        activeOrder.stripe_payment_link_url = result.paymentUrl;
+        activeOrder.stripe_payment_link_id = result.paymentLinkId;
+        activeOrder.payment_status = 'pending';
+        activeOrder.payment_amount = amount;
+        
+        await navigator.clipboard.writeText(result.paymentUrl);
+        
+        alert(result.existing ? 
+          'Payment link already exists! Link copied to clipboard.' : 
+          'Payment link generated and copied to clipboard!');
+        
+        updatePaymentDisplay();
+        
+      } catch (error) {
+        console.error('Error generating payment link:', error);
+        alert(`Error: ${error.message}`);
+      } finally {
+        button.disabled = false;
+        button.innerHTML = '<span>💳</span> Generate Payment Link';
+      }
+    }
+
+    async function copyPaymentLink(url) {
+      try {
+        await navigator.clipboard.writeText(url);
+        
+        const button = document.getElementById('btnCopyPaymentLink');
+        const originalText = button.innerHTML;
+        button.innerHTML = '<span>✓</span> Copied!';
+        button.style.background = 'var(--success)';
+        button.style.color = 'white';
+        
+        setTimeout(() => {
+          button.innerHTML = originalText;
+          button.style.background = '';
+          button.style.color = '';
+        }, 2000);
+        
+      } catch (error) {
+        console.error('Error copying to clipboard:', error);
+        alert('Failed to copy link');
+      }
+    }
+
+    function getPaymentStatusBadge(status) {
+      const badges = {
+        'unpaid': { text: 'Unpaid', icon: '⏳' },
+        'pending': { text: 'Pending Payment', icon: '⏰' },
+        'paid': { text: 'Paid ✓', icon: '✅' },
+        'failed': { text: 'Payment Failed', icon: '❌' },
+        'refunded': { text: 'Refunded', icon: '↩️' }
+      };
+      
+      const badge = badges[status] || badges['unpaid'];
+      return `<div class="payment-status ${status}">${badge.icon} ${badge.text}</div>`;
+    }
+
+    function updatePaymentDisplay() {
+      if (!activeOrder) return;
+      
+      const status = activeOrder.payment_status || 'unpaid';
+      const amount = activeOrder.payment_amount || 0;
+      const paymentUrl = activeOrder.stripe_payment_link_url;
+      const paidAt = activeOrder.paid_at;
+      
+      document.getElementById('paymentStatusContainer').innerHTML = getPaymentStatusBadge(status);
+      
+      if (amount > 0) {
+        document.getElementById('paymentAmountDisplay').innerHTML = 
+          `<span class="font-medium">Amount:</span> <span class="font-bold">${money(amount)}</span>`;
+      }
+      
+      if (paymentUrl && status === 'pending') {
+        document.getElementById('paymentLinkDisplay').innerHTML = `
+          <div class="payment-link-display">
+            <div style="font-weight:600;margin-bottom:0.25rem;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--brown-light)">Payment Link:</div>
+            <a href="${paymentUrl}" target="_blank" style="color:var(--info);word-break:break-all">${paymentUrl}</a>
+          </div>
+        `;
+      } else {
+        document.getElementById('paymentLinkDisplay').innerHTML = '';
+      }
+      
+      const btnGenerate = document.getElementById('btnGeneratePayment');
+      const btnCopy = document.getElementById('btnCopyPaymentLink');
+      
+      if (status === 'paid') {
+        btnGenerate.style.display = 'none';
+        btnCopy.style.display = 'none';
+      } else if (status === 'pending' && paymentUrl) {
+        btnGenerate.style.display = 'none';
+        btnCopy.style.display = 'inline-flex';
+      } else {
+        btnGenerate.style.display = 'inline-flex';
+        btnCopy.style.display = 'none';
+      }
+      
+      if (paidAt) {
+        const date = new Date(paidAt);
+        document.getElementById('paymentTimestamp').innerHTML = 
+          `<span style="color:var(--success)">✓ Paid on ${date.toLocaleString()}</span>`;
+      } else {
+        document.getElementById('paymentTimestamp').innerHTML = '';
+      }
+    }
+
+    document.getElementById('btnGeneratePayment').onclick = () => {
+      if (activeOrder) generatePaymentLink(activeOrder.id);
+    };
+
+    document.getElementById('btnCopyPaymentLink').onclick = () => {
+      if (activeOrder && activeOrder.stripe_payment_link_url) {
+        copyPaymentLink(activeOrder.stripe_payment_link_url);
+      }
+    };
+
     function fillDrawer(){
       const o=activeOrder,c=activeCustomer;
       document.getElementById('drawerTitle').textContent=`Order #${o?.order_id||formatOrderId(o.id)} (${o?.status||'In Review'})`;
@@ -2018,6 +2297,7 @@
       document.getElementById('statusSelect').value=o?.status||'In Review';
       renderAdjustments();
       computeTotals();
+      updatePaymentDisplay();
     }
 
     async function openOrderManager(orderId){
