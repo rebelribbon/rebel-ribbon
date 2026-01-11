@@ -489,65 +489,40 @@
     }
 
     /* Testimonial Slider */
-    .testimonial-section { background: var(--pink-soft); }
-
-   .testimonial-section { 
-  background: var(--pink-soft); 
-  padding: 5rem 0;
-}
-
-.testimonial-slider {
-  position: relative;
-  max-width: 700px;
-  margin: 0 auto;
-  overflow: hidden;
-  width: 100%;
-}
-
-.testimonial-track {
-  display: flex;
-  transition: transform 0.5s ease-in-out;
-  width: 100%;
-}
-
-.testimonial-card {
-  min-width: 100%;
-  flex-shrink: 0;
-  text-align: center;
-  background: var(--white);
-  padding: 3rem 2rem;
-  border-radius: 24px;
-  box-shadow: 0 10px 40px rgba(93, 78, 78, 0.08);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  min-height: 300px;
-  box-sizing: border-box;
-}
-    .testimonial-stars {
-      color: #FFB800;
-      font-size: 1.5rem;
-      letter-spacing: 0.2em;
-      margin-bottom: 1.5rem;
-      text-align: center;
+    .testimonial-section { 
+      background: var(--pink-soft); 
+      padding: 5rem 0;
     }
 
-    .testimonial-text {
-      font-size: 1.2rem;
-      color: var(--brown);
-      line-height: 1.8;
-      margin-bottom: 0;
-      font-style: italic;
-      max-width: 600px;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      white-space: normal;
-      display: -webkit-box;
-      -webkit-line-clamp: 6;
-      -webkit-box-orient: vertical;
+    .testimonial-slider {
+      position: relative;
+      max-width: 700px;
+      margin: 0 auto;
       overflow: hidden;
-      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    .testimonial-track {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+      width: 100%;
+    }
+
+    .testimonial-card {
+      min-width: 100%;
+      width: 100%;
+      flex-shrink: 0;
+      text-align: center;
+      background: var(--white);
+      padding: 3rem 2rem;
+      border-radius: 24px;
+      box-shadow: 0 10px 40px rgba(93, 78, 78, 0.08);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      min-height: 300px;
+      box-sizing: border-box;
     }
 
     .testimonial-author {
@@ -556,6 +531,37 @@
       text-align: center;
       margin-bottom: 0.75rem;
       font-size: 1.1rem;
+      width: 100%;
+    }
+
+    .testimonial-stars {
+      color: #FFB800;
+      font-size: 1.5rem;
+      letter-spacing: 0.2em;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      width: 100%;
+    }
+
+    .testimonial-text {
+      font-size: 1.2rem;
+      color: var(--brown);
+      line-height: 1.8;
+      margin-bottom: 0;
+      font-style: italic;
+      width: 100%;
+      max-width: 600px;
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      word-break: break-word;
+      white-space: normal;
+      hyphens: auto;
+      display: -webkit-box;
+      -webkit-line-clamp: 6;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: center;
     }
 
     .slider-controls {
@@ -615,87 +621,89 @@
       height: 12px;
     }
 
-   @media (max-width: 768px) {
-  .testimonial-section {
-    padding: 3rem 0;
-  }
-  
-  .section-header {
-    margin-bottom: 2rem;
-  }
-  
-  .slider-controls {
-    padding: 0;
-  }
-  
-  .slider-btn {
-    width: 38px;
-    height: 38px;
-    font-size: 1.5rem;
-  }
-  
-  .testimonial-slider {
-    width: 100%;
-    padding: 0 10px;
-  }
-  
-  .testimonial-card {
-    padding: 2rem 1.25rem;
-    min-height: 320px;
-  }
-  
-  .testimonial-author {
-    font-size: 1rem;
-    margin-bottom: 0.5rem;
-  }
-  
-  .testimonial-stars {
-    font-size: 1.25rem;
-    margin-bottom: 1rem;
-  }
-  
-  .testimonial-text {
-    font-size: 1rem;
-    line-height: 1.6;
-    -webkit-line-clamp: 8;
-    max-width: 100%;
-  }
-}
+    @media (max-width: 768px) {
+      .testimonial-section {
+        padding: 3rem 0;
+      }
+      
+      .section-header {
+        margin-bottom: 2rem;
+      }
+      
+      .slider-controls {
+        padding: 0;
+      }
+      
+      .slider-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 1.5rem;
+      }
+      
+      .testimonial-slider {
+        width: 100%;
+        padding: 0;
+      }
+      
+      .testimonial-card {
+        padding: 2rem 1.5rem;
+        min-height: 320px;
+      }
+      
+      .testimonial-author {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+      }
+      
+      .testimonial-stars {
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+      }
+      
+      .testimonial-text {
+        font-size: 1rem;
+        line-height: 1.6;
+        -webkit-line-clamp: 8;
+        max-width: 100%;
+        padding: 0 0.5rem;
+      }
+    }
 
-@media (max-width: 480px) {
-  .testimonial-section {
-    padding: 2.5rem 0;
-  }
-  
-  .section-header {
-    margin-bottom: 1.5rem;
-  }
-  
-  .testimonial-card {
-    padding: 1.5rem 1rem;
-    min-height: 300px;
-  }
-  
-  .testimonial-author {
-    font-size: 0.95rem;
-  }
-  
-  .testimonial-stars {
-    font-size: 1.1rem;
-    letter-spacing: 0.1em;
-  }
-  
-  .testimonial-text {
-    font-size: 0.95rem;
-    line-height: 1.5;
-  }
-  
-  .slider-btn {
-    width: 34px;
-    height: 34px;
-    font-size: 1.25rem;
-  }
-}
+    @media (max-width: 480px) {
+      .testimonial-section {
+        padding: 2.5rem 0;
+      }
+      
+      .section-header {
+        margin-bottom: 1.5rem;
+      }
+      
+      .testimonial-card {
+        padding: 1.5rem 1rem;
+        min-height: 300px;
+      }
+      
+      .testimonial-author {
+        font-size: 0.95rem;
+      }
+      
+      .testimonial-stars {
+        font-size: 1.1rem;
+        letter-spacing: 0.1em;
+      }
+      
+      .testimonial-text {
+        font-size: 0.95rem;
+        line-height: 1.5;
+        padding: 0 0.25rem;
+      }
+      
+      .slider-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 1.25rem;
+      }
+    }
 
     /* CTA */
     .cta-section {
@@ -960,9 +968,9 @@
         <div class="testimonial-track" id="testimonialTrack">
           <!-- Default testimonial shown while loading -->
           <div class="testimonial-card">
+            <div class="testimonial-author">Loading...</div>
             <div class="testimonial-stars">★★★★★</div>
             <p class="testimonial-text">"Loading reviews..."</p>
-            <div class="testimonial-author"></div>
           </div>
         </div>
         <div class="slider-controls">
@@ -1190,6 +1198,3 @@
 
 </body>
 </html>
-
-
-
