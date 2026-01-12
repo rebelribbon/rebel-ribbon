@@ -1413,7 +1413,6 @@
     </form>
   </dialog>
 
-  
   <script>
     const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
@@ -1779,7 +1778,6 @@
       const tbody = document.getElementById('tbody');
       tbody.innerHTML = '';
       
-      // Get surveys that have website reviews
       let q = sb.from('surveys')
         .select('*', {count: 'exact'})
         .not('website_review', 'is', null)
@@ -1795,7 +1793,6 @@
       
       totalCount = count || 0;
       
-      // Get customer names
       const ids = [...new Set(surveys.map(s => s.customer_id).filter(Boolean))];
       const map = new Map();
       if (ids.length) {
@@ -1814,11 +1811,7 @@
         
         const tr = $('tr', '');
         tr.style.cursor = 'pointer';
-        
-        // Customer name
         tr.appendChild($('td', 'cell font-medium', customerName));
-        
-        // Full review text
         tr.appendChild($('td', 'cell', `"${s.website_review}"`));
         
         tr.onclick = () => {
@@ -1997,10 +1990,15 @@
     function wireRealtime(){
       for(const k of Object.keys(tables)){
         const t=k==='order_list'?'orders':tables[k].table;
-        sb.channel(`${k}-ch`).on('postgres_changes',{event:'*',schema:'public',table:t},()=>{if(k===activeKey)loadTable();}).subscribe();
+        sb.channel(`${k}-ch`).on('postgres_changes',{event:'*',schema:'public',table:t},payload=>{
+          if(k===activeKey)loadTable();
+          // Update Order Drawer in Realtime if open
+          if(activeOrder && payload.new && payload.new.id === activeOrder.id){
+            activeOrder = payload.new;
+            fillDrawer();
+          }
+        }).subscribe();
       }
-      
-      // Listen for survey changes to update reviews section
       sb.channel('reviews-surveys-ch').on('postgres_changes',{event:'*',schema:'public',table:'surveys'},()=>{if(activeKey==='reviews')loadTable();}).subscribe();
     }
 
@@ -2084,7 +2082,7 @@
       }
     }
 
-    // ========== REVISED PAYMENT FUNCTIONS ==========
+    // ========== UPDATED REVISION: AUTOMATION & PERSISTENCE ==========
 
     // Helper: Unified Status Update
     async function updateOrderStatus(newStatus) {
@@ -2092,8 +2090,7 @@
       const { error } = await sb.from('orders').update({ status: newStatus }).eq('id', activeOrder.id);
       if (!error) {
         activeOrder.status = newStatus;
-        fillDrawer(); 
-        loadTable(); 
+        fillDrawer(); loadTable(); 
       } else {
         console.error("Status update error:", error.message);
       }
@@ -2102,22 +2099,18 @@
     async function generatePaymentLink(orderId) {
       const button = document.getElementById('btnGeneratePayment');
       button.disabled = true;
-      button.textContent = 'Generating...';
+      button.textContent = 'Generating & Saving...';
       
       try {
         const { data: { session } } = await sb.auth.getSession();
-        if (!session) { alert('Please log in'); return; }
+        if (!session) throw new Error('Session required');
         
         const totalText = document.getElementById('t_total').textContent;
         const amount = parseFloat(totalText.replace(/[^0-9.]/g, ''));
         
-        if (!amount || amount <= 0) {
-          alert('Invalid amount. Please ensure pricing is calculated.');
-          button.disabled = false;
-          button.innerHTML = '<span>💳</span> Generate Payment Link';
-          return;
-        }
+        if (!amount || amount <= 0) throw new Error('Invalid order amount');
         
+        // 1. Call Edge Function to create link
         const response = await fetch(`${SUPABASE_FUNCTIONS_URL}/create-payment-link`, {
           method: 'POST',
           headers: {
@@ -2134,9 +2127,10 @@
         });
         
         const result = await response.json();
-        if (!response.ok) throw new Error(result.error || 'Failed');
-        
-        // PERSISTENCE FIX: Update the database record with the new link and set status to "Approved" (Payment)
+        if (!response.ok) throw new Error(result.error || 'Edge function failed');
+
+        // 2. PERSISTENCE FIX: Save results back to orders table immediately
+        // Change Status to "Approved" (Requirement 1)
         const { error: updateError } = await sb.from('orders').update({
           stripe_payment_link_url: result.paymentUrl,
           stripe_payment_link_id: result.paymentLinkId,
@@ -2147,21 +2141,20 @@
 
         if (updateError) throw updateError;
 
-        // Update local object
+        // 3. Update local state
         activeOrder.stripe_payment_link_url = result.paymentUrl;
-        activeOrder.stripe_payment_link_id = result.paymentLinkId;
         activeOrder.payment_status = 'pending';
         activeOrder.payment_amount = amount;
         activeOrder.status = 'Approved';
         
+        // Copy to clipboard
         await navigator.clipboard.writeText(result.paymentUrl);
-        alert('Payment link generated, saved to database, and copied to clipboard!');
+        alert('Payment link saved to order and copied to clipboard!');
         
-        fillDrawer();
-        loadTable();
+        fillDrawer(); loadTable();
         
       } catch (error) {
-        console.error("Error generating payment:", error);
+        console.error("Payment error:", error);
         alert(`Error: ${error.message}`);
       } finally {
         button.disabled = false;
@@ -2173,12 +2166,12 @@
       try {
         await navigator.clipboard.writeText(url);
         
-        // Change Status to "Paid" (Production badge)
+        // Automatically move to "Production" (Paid status) (Requirement 2)
         await updateOrderStatus('Paid');
         
         const button = document.getElementById('btnCopyPaymentLink');
         const originalText = button.innerHTML;
-        button.innerHTML = '<span>✓</span> Copied & Production Started';
+        button.innerHTML = '<span>✓</span> Link Copied & Production Started';
         button.style.background = 'var(--success)';
         button.style.color = 'white';
         
@@ -2189,7 +2182,6 @@
         }, 2000);
         
       } catch (error) {
-        console.error('Error copying link:', error);
         alert('Failed to copy link');
       }
     }
@@ -2202,7 +2194,6 @@
         'failed': { text: 'Payment Failed', icon: '❌' },
         'refunded': { text: 'Refunded', icon: '↩️' }
       };
-      
       const badge = badges[status] || badges['unpaid'];
       return `<div class="payment-status ${status}">${badge.icon} ${badge.text}</div>`;
     }
@@ -2222,10 +2213,11 @@
           `<span class="font-medium">Amount:</span> <span class="font-bold">${money(amount)}</span>`;
       }
       
-      if (paymentUrl && status === 'pending') {
+      // PERSISTENCE VISUAL: Display saved link if it exists
+      if (paymentUrl && status !== 'paid') {
         document.getElementById('paymentLinkDisplay').innerHTML = `
           <div class="payment-link-display">
-            <div style="font-weight:600;margin-bottom:0.25rem;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--brown-light)">Current Link:</div>
+            <div style="font-weight:600;margin-bottom:0.25rem;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;color:var(--brown-light)">Saved Link:</div>
             <a href="${paymentUrl}" target="_blank" style="color:var(--info);word-break:break-all">${paymentUrl}</a>
           </div>
         `;
@@ -2239,7 +2231,7 @@
       if (status === 'paid') {
         btnGenerate.style.display = 'none';
         btnCopy.style.display = 'none';
-      } else if (status === 'pending' && paymentUrl) {
+      } else if (paymentUrl) {
         btnGenerate.style.display = 'none';
         btnCopy.style.display = 'inline-flex';
       } else {
@@ -2249,12 +2241,13 @@
       
       if (paidAt) {
         const date = new Date(paidAt);
-        document.getElementById('paymentTimestamp').innerHTML = 
-          `<span style="color:var(--success)">✓ Paid on ${date.toLocaleString()}</span>`;
+        document.getElementById('paymentTimestamp').innerHTML = `<span style="color:var(--success)">✓ Paid on ${date.toLocaleString()}</span>`;
       } else {
         document.getElementById('paymentTimestamp').innerHTML = '';
       }
     }
+
+    // ===================================================================
 
     document.getElementById('btnGeneratePayment').onclick = () => {
       if (activeOrder) generatePaymentLink(activeOrder.id);
@@ -2282,7 +2275,7 @@
       // FIXED MAP URL
       document.getElementById('mapLocation').onclick=()=>{
         const addr=[c?.street_address,c?.city,c?.state,c?.zip].filter(Boolean).join(', ');
-        if(addr)window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`,'_blank');
+        if(addr)window.open(`https://www.google.com/maps/search/?api=1&query=$?q=${encodeURIComponent(addr)}`,'_blank');
       };
 
       document.getElementById('cust_referral_code').textContent=activeCustomerReferralCode||'None';
@@ -2303,9 +2296,7 @@
       document.getElementById('ov_referral_code').textContent=o?.referral_code_used?`${o.referral_code_used} (${referralCodeDetails?.isValid?'applied':'invalid'})`:'None';
       document.getElementById('statusSelect').value=o?.status||'In Review';
       
-      renderAdjustments();
-      computeTotals();
-      updatePaymentDisplay();
+      renderAdjustments(); computeTotals(); updatePaymentDisplay();
     }
 
     async function openOrderManager(orderId){
@@ -2324,15 +2315,12 @@
       discountCodeDetails=activeOrder.discount_code_used?await fetchDiscountCodeDetails(activeOrder.discount_code_used,activeCustomer?.email):null;
       referralCodeDetails=activeOrder.referral_code_used?await fetchReferralCodeDetails(activeOrder.referral_code_used):null;
       document.body.style.cursor='default';
-      fillDrawer();
-      loadSurveySection(orderId);
-      drawer.showModal();
+      fillDrawer(); loadSurveySection(orderId); drawer.showModal();
     }
 
     document.getElementById('saveStatus').onclick=async()=>{
       const s=document.getElementById('statusSelect').value;
       await updateOrderStatus(s);
-      alert("Status updated manually");
     };
 
     document.getElementById('editFields').onclick=()=>{if(activeOrder)openEditor(tables.orders,activeOrder);};
@@ -2348,8 +2336,7 @@
       adjustments.unshift({...data,amount:Number(data.amount||0)});
       document.getElementById('adjLabel').value='';
       document.getElementById('adjAmount').value='';
-      renderAdjustments();
-      computeTotals();
+      renderAdjustments(); computeTotals();
     };
     
     document.getElementById('btnUploadPhoto').onclick=async()=>{
