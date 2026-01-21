@@ -1171,6 +1171,7 @@
       </div>
       <div class="flex gap-2 flex-wrap">
         <button id="editFields" class="btn btn-secondary">Edit Fields</button>
+        <button id="editCustomer" class="btn btn-secondary">Edit Customer</button>
         <button id="viewInvoice" class="btn btn-primary">Invoice</button>
       </div>
     </div>
@@ -1260,6 +1261,7 @@
           <div class="pricing-row"><span>Referral:</span><span id="t_disc_referral" class="text-error"></span></div>
           <div class="pricing-row"><span>Other disc:</span><span id="t_adj_disc" class="text-error"></span></div>
           <div class="pricing-total"><span>Total:</span><span id="t_total"></span></div>
+          <div id="originalQuoteDisplay" style="margin-top:0.5rem;font-size:0.8rem;color:var(--brown-light)"></div>
           <div class="mt-4" style="font-size:0.85rem">
             <div><span class="font-medium">Discount:</span> <span id="ov_discount_code"></span></div>
             <div><span class="font-medium">Referral:</span> <span id="ov_referral_code"></span></div>
@@ -1443,6 +1445,21 @@
             {key:'consultation_requested',label:'Consult',type:'checkbox',w:'20'},{key:'discount_code_used',label:'Discount code',type:'text',w:'16'},
             {key:'referral_code_used',label:'Referral code',type:'text',w:'16'},{key:'status',label:'Status',type:'select',w:'14',options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled']}
         ]},
+      customers: { 
+  title:'Customer', 
+  table:'customers', 
+  cols:[
+    {key:'first_name',label:'First Name',type:'text',w:'20'},
+    {key:'last_name',label:'Last Name',type:'text',w:'20'},
+    {key:'email',label:'Email',type:'email',w:'20'},
+    {key:'phone',label:'Phone',type:'text',w:'20'},
+    {key:'street_address',label:'Street Address',type:'text',w:'30'},
+    {key:'street_address_cont',label:'Address Line 2',type:'text',w:'20'},
+    {key:'city',label:'City',type:'text',w:'15'},
+    {key:'state',label:'State',type:'text',w:'10'},
+    {key:'zip',label:'Zip',type:'text',w:'10'}
+  ]
+},
         discount_codes: { title:'Discount Codes', table:'discount_codes', isSettings:true, list_keys:['code'], cols:[{key:'code',label:'Code',type:'text',required:true,w:'20'},{key:'type',label:'Type',type:'select',options:['percent','fixed'],required:true,w:'20'},{key:'amount',label:'Amount',type:'number',step:'0.01',w:'20'},{key:'uses_allowed',label:'Uses',type:'number',w:'20'},{key:'email_allowed',label:'Email',type:'email',w:'20'},{key:'good_through_date',label:'Expires',type:'date',w:'20'}] },
         referral_codes: { title:'Referral Codes', table:'referral_codes', isSettings:true, list_keys:['code'], cols:[{key:'code',label:'Code',type:'text',required:true,w:'20'},{key:'associated_customer_id',label:'Customer',type:'select-async',w:'20',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},{key:'good_through_date',label:'Expires',type:'date',w:'20'},{key:'referrer_discount',label:'Referrer %',type:'number',step:'0.01',w:'20'},{key:'referee_discount',label:'Referee %',type:'number',step:'0.01',w:'20'}] },
         flavors: { title:'Flavors', table:'flavors', isSettings:true, cols:[{key:'name',label:'Name',type:'text',required:true,w:'40'}] },
@@ -1917,22 +1934,31 @@
       dlg.showModal();
     }
     
-    async function saveRecord(conf,orig){
-      const p={};
-      for(const c of conf.cols){
-        const el=document.getElementById(`fld_${c.key}`);
-        let v=c.type==='checkbox'?el.checked:el.value||null;
-        if(c.type==='number'&&v!==null)v=el.value===''?null:Number(v);
-        p[c.key]=v;
-      }
-      const id=document.getElementById('row_id').value;
-      const r=id?await sb.from(conf.table).update(p).eq('id',id).select('*').single():await sb.from(conf.table).insert(p).select('*').single();
-      if(r.error){alert(r.error.message);return;}
-      dlg.close();
-      loadTable();
-      if(conf.table==='orders'&&orig)openOrderManager(orig.id);
-    }
-
+async function saveRecord(conf,orig){
+  const p={};
+  for(const c of conf.cols){
+    const el=document.getElementById(`fld_${c.key}`);
+    let v=c.type==='checkbox'?el.checked:el.value||null;
+    if(c.type==='number'&&v!==null)v=el.value===''?null:Number(v);
+    p[c.key]=v;
+  }
+  const id=document.getElementById('row_id').value;
+  let r;
+  if(id){
+    r=await sb.from(conf.table).update(p).eq('id',id).select('*').single();
+  }else{
+    r=await sb.from(conf.table).insert(p).select('*').single();
+  }
+  if(r.error){alert(r.error.message);return;}
+  dlg.close();
+  
+  // Refresh order drawer if we just edited an order or customer
+  if(activeOrder && (conf.table==='orders' || conf.table==='customers')){
+    await openOrderManager(activeOrder.id);
+  }
+  
+  loadTable();
+}
     function renderTabs(){
       document.querySelectorAll('.nav-item').forEach(b=>{
         b.classList.remove('nav-active');
@@ -2324,6 +2350,9 @@
     };
 
     document.getElementById('editFields').onclick=()=>{if(activeOrder)openEditor(tables.orders,activeOrder);};
+    document.getElementById('editCustomer').onclick=()=>{
+  if(activeCustomer) openEditor(tables.customers, activeCustomer);
+};
     document.getElementById('backToOrders').onclick=e=>{e.preventDefault();drawer.close();};
     
     document.getElementById('addAdjustment').onclick=async()=>{
