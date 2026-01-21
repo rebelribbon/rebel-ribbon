@@ -1943,13 +1943,19 @@ async function saveRecord(conf,orig){
     p[c.key]=v;
   }
   const id=document.getElementById('row_id').value;
-  let r;
-if(id){
-  r=await sb.from(conf.table).update(p).eq('id',id).select('*').maybeSingle();
-}else{
-  r=await sb.from(conf.table).insert(p).select('*').single();
-}
-  if(r.error){alert(r.error.message);return;}
+  let error;
+  
+  if(id){
+    // UPDATE: Don't request data back (avoids RLS SELECT issues)
+    const result = await sb.from(conf.table).update(p).eq('id',id);
+    error = result.error;
+  }else{
+    // INSERT: We need the new ID back
+    const result = await sb.from(conf.table).insert(p).select('*').single();
+    error = result.error;
+  }
+  
+  if(error){alert(error.message);return;}
   dlg.close();
   
   // Refresh order drawer if we just edited an order or customer
