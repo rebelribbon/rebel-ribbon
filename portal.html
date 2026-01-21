@@ -2301,7 +2301,7 @@ async function saveRecord(conf,orig){
       // FIXED MAP URL
       document.getElementById('mapLocation').onclick=()=>{
         const addr=[c?.street_address,c?.city,c?.state,c?.zip].filter(Boolean).join(', ');
-        if(addr)window.open(`https://www.google.com/maps/search/?api=1&query=$?q=${encodeURIComponent(addr)}`,'_blank');
+        if(addr)window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`,'_blank');
       };
 
       document.getElementById('cust_referral_code').textContent=activeCustomerReferralCode||'None';
