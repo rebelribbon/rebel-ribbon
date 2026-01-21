@@ -1944,11 +1944,11 @@ async function saveRecord(conf,orig){
   }
   const id=document.getElementById('row_id').value;
   let r;
-  if(id){
-    r=await sb.from(conf.table).update(p).eq('id',id).select('*').single();
-  }else{
-    r=await sb.from(conf.table).insert(p).select('*').single();
-  }
+if(id){
+  r=await sb.from(conf.table).update(p).eq('id',id).select('*').maybeSingle();
+}else{
+  r=await sb.from(conf.table).insert(p).select('*').single();
+}
   if(r.error){alert(r.error.message);return;}
   dlg.close();
   
