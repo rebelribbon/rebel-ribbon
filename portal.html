@@ -1158,14 +1158,12 @@
         <h2 id="drawerTitle" class="drawer-title">Order #XXXX</h2>
         <div class="flex items-center gap-2 mt-2">
           <span class="font-medium text-muted" style="font-size:0.85rem">Status:</span>
-          <select id="statusSelect" style="padding:0.4rem 0.75rem;border:2px solid var(--pink-light);border-radius:8px;font-size:0.85rem;">
-            <option value="In Review">In Review</option>
-            <option value="Approved">Approved</option>
-            <option value="Paid">Paid</option>
-            <option value="Production Complete">Production Complete</option>
-            <option value="Fulfilled">Fulfilled</option>
-            <option value="Canceled">Canceled</option>
-          </select>
+<select id="statusSelect">
+  <option value="Active">Active</option>
+  <option value="Completed">Completed</option>
+  <option value="Canceled">Canceled</option>
+</select>
+
           <button id="saveStatus" class="btn btn-success" style="padding:0.4rem 1rem;font-size:0.85rem;">Save</button>
         </div>
       </div>
@@ -2026,7 +2024,7 @@ async function saveRecord(conf,orig){
           if(k===activeKey)loadTable();
           // Update Order Drawer in Realtime if open
           if(activeOrder && payload.new && payload.new.id === activeOrder.id){
-            activeOrder = payload.new;
+            activeOrder = { ...activeOrder, ...payload.new };
             fillDrawer();
           }
         }).subscribe();
