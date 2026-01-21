@@ -413,12 +413,14 @@
       font-weight: 600;
     }
 
-    .status-in-review { background: #fef3c7; color: #92400e; }
-    .status-approved { background: #dcfce7; color: #15803d; }
-    .status-paid { background: #dbeafe; color: #1d4ed8; }
-    .status-production-complete, .status-fulfilled { background: #d1fae5; color: #065f46; }
-    .status-canceled, .status-rejected { background: #fee2e2; color: #b91c1c; }
+    .status-active { background:#dbeafe; color:#1d4ed8; }
+    .status-completed { background:#d1fae5; color:#065f46; }
+.status-canceled { background:#fee2e2; color:#b91c1c; }
+
+
     .status-pending { background: #fef3c7; color: #92400e; }
+    .status-approved { background: #dcfce7; color: #15803d; }
+    .status-rejected { background: #fee2e2; color: #b91c1c; }
 
     /* Payment Status Badges */
     .payment-status {
@@ -1103,11 +1105,9 @@
         </div>
         <div id="orderFilters">
           <button class="filter-tab filter-active" data-filter="All">All Orders</button>
-          <button class="filter-tab" data-filter="In Review">⭐ New</button>
-          <button class="filter-tab" data-filter="Approved">💸 Payment</button>
-          <button class="filter-tab" data-filter="Paid">🏭 Production</button>
-          <button class="filter-tab" data-filter="Production Complete">🚚 Ready</button>
-          <button class="filter-tab" data-filter="Fulfilled">✅ Done</button>
+          <button class="filter-tab" data-filter="Active">Active</button>
+          <button class="filter-tab" data-filter="Completed">Completed</button>
+          <button class="filter-tab" data-filter="Canceled">Canceled</button>
         </div>
       </div>
 
@@ -1158,10 +1158,10 @@
         <h2 id="drawerTitle" class="drawer-title">Order #XXXX</h2>
         <div class="flex items-center gap-2 mt-2">
           <span class="font-medium text-muted" style="font-size:0.85rem">Status:</span>
-<select id="statusSelect">
-  <option value="Active">Active</option>
-  <option value="Completed">Completed</option>
-  <option value="Canceled">Canceled</option>
+<select id="statusSelect" style="padding:0.4rem 0.75rem;border:2px solid var(--pink-light);border-radius:8px;font-size:0.85rem;">
+            <option value="Active">Active</option>
+            <option value="Completed">Completed</option>
+            <option value="Canceled">Canceled</option>
 </select>
 
           <button id="saveStatus" class="btn btn-success" style="padding:0.4rem 1rem;font-size:0.85rem;">Save</button>
@@ -1425,7 +1425,7 @@
     const fmt = v => v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
     const dateOnly = d => { if(!d)return''; const dt=new Date(d); return new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,10); };
     const formatOrderId = id => { if(id==null)return''; const n=Number(id); return Number.isFinite(n)?String(Math.trunc(n)).padStart(7,'0'):String(id); };
-    const getStatusClass = s => s ? `status-${s.toLowerCase().replace(/\s/g,'-')}` : 'status-in-review';
+    const getStatusClass = s => `status-${String(s||'Active').toLowerCase()}`;
     const money = n => '$'+(Number(n||0)).toFixed(2);
     const formatPhone = p => { if(!p)return''; const c=(''+p).replace(/\D/g,''); const m=c.match(/^(\d{3})(\d{3})(\d{4})$/); return m?`(${m[1]}) ${m[2]}-${m[3]}`:p; };
     const escapeHtml = t => { if(!t)return''; const d=document.createElement('div'); d.textContent=t; return d.innerHTML; };
@@ -1441,7 +1441,7 @@
             {key:'design_notes',label:'Notes',type:'textarea',w:'20'},{key:'design_inspiration_photo',label:'Photo URL',type:'url',w:'20'},
             {key:'gift_note',label:'Gift note',type:'checkbox',w:'10'},{key:'gift_note_text',label:'Gift text',type:'textarea',w:'16'},
             {key:'consultation_requested',label:'Consult',type:'checkbox',w:'20'},{key:'discount_code_used',label:'Discount code',type:'text',w:'16'},
-            {key:'referral_code_used',label:'Referral code',type:'text',w:'16'},{key:'status',label:'Status',type:'select',w:'14',options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled']}
+            {key:'referral_code_used',label:'Referral code',type:'text',w:'16'}
         ]},
       customers: { 
   title:'Customer', 
@@ -1471,8 +1471,8 @@
           {key:'recommend',label:'Recommend',type:'checkbox',w:'22'},
           {key:'improvements',label:'Improvements',type:'textarea',w:'30'},
           {key:'website_review',label:'Review',type:'textarea',w:'30'}
-        ]},
-    };
+        ]}
+        };
 
     let activeKey='order_list', activeOrderFilter='All', activeReviewTab='pending', page=0, totalCount=0;
     const pageSize=20;
@@ -1614,7 +1614,7 @@
         openEditor(tables.surveys, activeReviewSurvey);
       };
       
-      if (status === 'approved') {
+      if (status === 'Active') {
         const deleteBtn = $('button', 'btn btn-danger', 'Delete');
         deleteBtn.type = 'button';
         deleteBtn.onclick = async () => {
@@ -1728,7 +1728,7 @@
         tr.style.cursor = 'pointer';
         tr.appendChild($('td', 'cell font-medium', c ? `${c.first_name || ''} ${c.last_name || ''}`.trim() : 'N/A'));
         const sc = $('td', 'cell text-center');
-        sc.appendChild($('span', `status-badge ${getStatusClass(r.status)}`, r.status || 'In Review'));
+        sc.appendChild($('span', `status-badge ${getStatusClass(r.status)}`, r.status || 'Active'));
         tr.appendChild(sc);
         tr.onclick = () => openOrderManager(r.id);
         tbody.appendChild(tr);
@@ -1949,6 +1949,7 @@ async function saveRecord(conf,orig){
     error = result.error;
   }else{
     // INSERT: We need the new ID back
+    if(conf.table==='orders' && !p.status) p.status='Active';
     const result = await sb.from(conf.table).insert(p).select('*').single();
     error = result.error;
   }
@@ -2160,13 +2161,11 @@ async function saveRecord(conf,orig){
         if (!response.ok) throw new Error(result.error || 'Edge function failed');
 
         // 2. PERSISTENCE FIX: Save results back to orders table immediately
-        // Change Status to "Approved" (Requirement 1)
-        const { error: updateError } = await sb.from('orders').update({
+                const { error: updateError } = await sb.from('orders').update({
           stripe_payment_link_url: result.paymentUrl,
           stripe_payment_link_id: result.paymentLinkId,
           payment_amount: amount,
-          payment_status: 'pending',
-          status: 'Approved' 
+          payment_status: 'pending'
         }).eq('id', orderId);
 
         if (updateError) throw updateError;
@@ -2175,8 +2174,6 @@ async function saveRecord(conf,orig){
         activeOrder.stripe_payment_link_url = result.paymentUrl;
         activeOrder.payment_status = 'pending';
         activeOrder.payment_amount = amount;
-        activeOrder.status = 'Approved';
-        
         // Copy to clipboard
         await navigator.clipboard.writeText(result.paymentUrl);
         alert('Payment link saved to order and copied to clipboard!');
@@ -2196,12 +2193,9 @@ async function saveRecord(conf,orig){
       try {
         await navigator.clipboard.writeText(url);
         
-        // Automatically move to "Production" (Paid status) (Requirement 2)
-        await updateOrderStatus('Paid');
-        
         const button = document.getElementById('btnCopyPaymentLink');
         const originalText = button.innerHTML;
-        button.innerHTML = '<span>✓</span> Link Copied & Production Started';
+        button.innerHTML = '<span>✓</span> Link Copied';
         button.style.background = 'var(--success)';
         button.style.color = 'white';
         
@@ -2258,25 +2252,7 @@ async function saveRecord(conf,orig){
       const btnGenerate = document.getElementById('btnGeneratePayment');
       const btnCopy = document.getElementById('btnCopyPaymentLink');
       
-      if (status === 'paid') {
-        btnGenerate.style.display = 'none';
-        btnCopy.style.display = 'none';
-      } else if (paymentUrl) {
-        btnGenerate.style.display = 'none';
-        btnCopy.style.display = 'inline-flex';
-      } else {
-        btnGenerate.style.display = 'inline-flex';
-        btnCopy.style.display = 'none';
-      }
-      
-      if (paidAt) {
-        const date = new Date(paidAt);
-        document.getElementById('paymentTimestamp').innerHTML = `<span style="color:var(--success)">✓ Paid on ${date.toLocaleString()}</span>`;
-      } else {
-        document.getElementById('paymentTimestamp').innerHTML = '';
-      }
-    }
-
+    
     // ===================================================================
 
     document.getElementById('btnGeneratePayment').onclick = () => {
@@ -2291,7 +2267,7 @@ async function saveRecord(conf,orig){
 
     function fillDrawer(){
       const o=activeOrder,c=activeCustomer;
-      document.getElementById('drawerTitle').textContent=`Order #${o?.order_id||formatOrderId(o.id)} (${o?.status||'In Review'})`;
+      document.getElementById('drawerTitle').textContent=`Order #${o?.order_id||formatOrderId(o.id)} (${o?.status||'Active'})`;
       document.getElementById('cust_name').textContent=c?`${c.first_name||''} ${c.last_name||''}`.trim():'N/A';
       document.getElementById('cust_id').textContent=c?.customer_id||o?.order_id||'N/A';
       document.getElementById('cust_email').textContent=c?.email||'N/A';
@@ -2324,7 +2300,7 @@ async function saveRecord(conf,orig){
       document.getElementById('ov_pd_type').textContent=o?.pickup_delivery_type||'N/A';
       document.getElementById('ov_discount_code').textContent=o?.discount_code_used?`${o.discount_code_used} (${discountCodeDetails?.isValid?'applied':'invalid'})`:'None';
       document.getElementById('ov_referral_code').textContent=o?.referral_code_used?`${o.referral_code_used} (${referralCodeDetails?.isValid?'applied':'invalid'})`:'None';
-      document.getElementById('statusSelect').value=o?.status||'In Review';
+      document.getElementById('statusSelect').value=o?.status||'Active';
       
       renderAdjustments(); computeTotals(); updatePaymentDisplay();
     }
