@@ -2370,6 +2370,7 @@ const total=base+delivery+consult+gift+feeSum-discSum-discountCodeAmount-referra
       if(!activeOrder||!activeCustomer){alert('Load order first');return;}
       const orderId=activeOrder.order_id||formatOrderId(activeOrder.id),total=document.getElementById('t_total').textContent;
       const items=[{l:`Base (${activeOrder.cookie_amount_dzns||0} dz @ ${document.getElementById('t_price').textContent})`,a:document.getElementById('t_base').textContent}];
+      if(activeOrder.pickup_delivery_type==='Delivery')items.push({l:'Delivery',a:document.getElementById('t_delivery').textContent});
       if(activeOrder.consultation_requested)items.push({l:'Consult',a:document.getElementById('t_consult').textContent});
       if(activeOrder.gift_note)items.push({l:'Gift Note',a:document.getElementById('t_gift').textContent});
       adjustments.filter(x=>x.kind==='fee').forEach(x=>items.push({l:x.label,a:money(x.amount)}));
