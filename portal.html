@@ -1252,6 +1252,7 @@
           <h3>💰 Pricing</h3>
           <div class="pricing-row"><span>Price/dz:</span><span id="t_price"></span></div>
           <div class="pricing-row"><span>Base:</span><span id="t_base"></span></div>
+          <div class="pricing-row"><span>Delivery:</span><span id="t_delivery"></span></div>
           <div class="pricing-row"><span>Consult:</span><span id="t_consult"></span></div>
           <div class="pricing-row"><span>Gift Note:</span><span id="t_gift"></span></div>
           <div class="pricing-row"><span>Fees:</span><span id="t_adj_fees" class="text-success"></span></div>
@@ -2036,7 +2037,7 @@ async function saveRecord(conf,orig){
     const drawer=document.getElementById('orderDrawer');
     let activeOrder=null,activeCustomer=null,pricing=null,adjustments=[],discountCodeDetails=null,referralCodeDetails=null,discountCodeAmount=0,referralDiscountAmount=0,activeCustomerReferralCode=null;
 
-    async function fetchPricing(){const{data}=await sb.from('pricing').select('*').limit(1);const p=(data&&data[0])||{};return{price_per_dozen:Number(p.price_per_dozen||0),consultation_fee:Number(p.consultation_fee||0),gift_note_fee:Number(p.gift_note_fee||0)};}
+    async function fetchPricing(){const{data}=await sb.from('pricing').select('*').limit(1);const p=(data&&data[0])||{};async function fetchPricing(){const{data}=await sb.from('pricing').select('*').limit(1);const p=(data&&data[0])||{};return{price_per_dozen:Number(p.price_per_dozen||0),consultation_fee:Number(p.consultation_fee||0),gift_note_fee:Number(p.gift_note_fee||0),delivery_fee:Number(p.delivery_fee||0)};}
     function isDatePast(d){return d&&dateOnly(d)<dateOnly(new Date());}
     
     async function fetchDiscountCodeDetails(code,email){
@@ -2068,6 +2069,7 @@ async function saveRecord(conf,orig){
     function computeTotals(){
       const ppd=pricing?.price_per_dozen||0,
             consult=activeOrder?.consultation_requested?pricing?.consultation_fee||0:0,
+        delivery=activeOrder?.pickup_delivery_type==='Delivery'?pricing?.delivery_fee||0:0,
             gift=activeOrder?.gift_note?pricing?.gift_note_fee||0:0,
             base=Number(activeOrder?.cookie_amount_dzns||0)*ppd,
             feeSum=adjustments.filter(a=>a.kind==='fee').reduce((s,a)=>s+a.amount,0),
