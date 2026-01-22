@@ -2037,7 +2037,7 @@ async function saveRecord(conf,orig){
     const drawer=document.getElementById('orderDrawer');
     let activeOrder=null,activeCustomer=null,pricing=null,adjustments=[],discountCodeDetails=null,referralCodeDetails=null,discountCodeAmount=0,referralDiscountAmount=0,activeCustomerReferralCode=null;
 
-    async function fetchPricing(){const{data}=await sb.from('pricing').select('*').limit(1);const p=(data&&data[0])||{};async function fetchPricing(){const{data}=await sb.from('pricing').select('*').limit(1);const p=(data&&data[0])||{};return{price_per_dozen:Number(p.price_per_dozen||0),consultation_fee:Number(p.consultation_fee||0),gift_note_fee:Number(p.gift_note_fee||0),delivery_fee:Number(p.delivery_fee||0)};}
+    async function fetchPricing(){const{data}=await sb.from('pricing').select('*').limit(1);const p=(data&&data[0])||{};return{price_per_dozen:Number(p.price_per_dozen||0),consultation_fee:Number(p.consultation_fee||0),gift_note_fee:Number(p.gift_note_fee||0),delivery_fee:Number(p.delivery_fee||0)};}
     function isDatePast(d){return d&&dateOnly(d)<dateOnly(new Date());}
     
     async function fetchDiscountCodeDetails(code,email){
@@ -2084,9 +2084,10 @@ async function saveRecord(conf,orig){
         referralDiscountAmount=baseForCodes*(referralCodeDetails.value/100);
         if(referralDiscountAmount>baseForCodes)referralDiscountAmount=baseForCodes;
       }
-      const total=base+consult+gift+feeSum-discSum-discountCodeAmount-referralDiscountAmount;
+const total=base+delivery+consult+gift+feeSum-discSum-discountCodeAmount-referralDiscountAmount;
       document.getElementById('t_price').textContent=money(ppd);
       document.getElementById('t_base').textContent=money(base);
+      document.getElementById('t_delivery').textContent=money(delivery);
       document.getElementById('t_consult').textContent=money(consult);
       document.getElementById('t_gift').textContent=money(gift);
       document.getElementById('t_adj_fees').textContent=money(feeSum);
