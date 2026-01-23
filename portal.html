@@ -2019,20 +2019,20 @@ async function saveRecord(conf,orig){
       loadReviews();
     };
     
-    function wireRealtime(){
-      for(const k of Object.keys(tables)){
-        const t=k==='order_list'?'orders':tables[k].table;
-        sb.channel(`${k}-ch`).on('postgres_changes',{event:'*',schema:'public',table:t},payload=>{
-          if(k===activeKey)loadTable();
-          // Update Order Drawer in Realtime if open
-          if(activeOrder && payload.new && payload.new.id === activeOrder.id){
-            activeOrder = { ...activeOrder, ...payload.new };
-            fillDrawer();
-          }
-        }).subscribe();
+function wireRealtime(){
+  for(const k of Object.keys(tables)){
+    const t=k==='order_list'?'orders':tables[k].table;
+    sb.channel(`${k}-ch`).on('postgres_changes',{event:'*',schema:'public',table:t},payload=>{
+      if(k===activeKey)loadTable();
+      // Update Order Drawer in Realtime if open
+      if(activeOrder && payload.new && payload.new.id === activeOrder.id){
+        activeOrder = { ...activeOrder, ...payload.new };
+        fillDrawer();
       }
-      sb.channel('reviews-surveys-ch').on('postgres_changes',{event:'*',schema:'public',table:'surveys'},()=>{if(activeKey==='reviews')loadTable();}).subscribe();
-    }
+    }).subscribe();
+  }
+  sb.channel('reviews-surveys-ch').on('postgres_changes',{event:'*',schema:'public',table:'surveys'},()=>{if(activeKey==='reviews')loadTable();}).subscribe();
+}
 
     const drawer=document.getElementById('orderDrawer');
     let activeOrder=null,activeCustomer=null,pricing=null,adjustments=[],discountCodeDetails=null,referralCodeDetails=null,discountCodeAmount=0,referralDiscountAmount=0,activeCustomerReferralCode=null;
