@@ -10,6 +10,10 @@ This directory contains the production API endpoints for the Rebel Ribbon applic
 
 ### Orders & Payments
 - `POST /api/orders/mark-paid` — Mark an order as paid with evidence tracking
+- `POST /api/webhooks/stripe` — Stripe webhook handler for payment events
+
+### Webhooks
+See `pages/api/webhooks/` for webhook handler documentation.
 
 ## Architecture
 
@@ -19,13 +23,16 @@ These endpoints are the **primary API layer** for the application. All server-si
 
 All endpoints perform server-side authentication using the Supabase service role key. The server client is initialized in `lib/supabase/server.js`.
 
+Webhook endpoints additionally validate request signatures (e.g., Stripe webhook signatures).
+
 ## Best Practices
 
 1. **Always use `supabaseServer()`** for database operations — never the browser client
 2. **Validate all inputs** before database calls
 3. **Return structured errors** with appropriate HTTP status codes
-4. **Log sensitive operations** to the `payment_logs` or similar audit tables
+4. **Log sensitive operations** to the appropriate audit tables (e.g., `payment_logs`)
 5. **Test endpoints locally** before pushing to production
+6. **Validate webhook signatures** to prevent forged requests
 
 ## Future
 
