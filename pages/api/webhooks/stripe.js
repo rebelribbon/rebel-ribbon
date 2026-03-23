@@ -88,6 +88,9 @@ export default async function handler(req, res) {
       // Don't fail the response — Stripe needs 200 OK
     }
 
+    // Update system status to indicate webhook was received
+    await updateSystemStatus(sb);
+
     return res.status(200).json({ received: true });
 
   } catch (error) {
@@ -272,5 +275,29 @@ async function handleChargeRefunded(charge, sb) {
 
   } catch (error) {
     console.error('Error handling charge.refunded:', error);
+  }
+}
+
+/**
+ * Update system status to indicate webhook was received
+ * Used by health monitoring dashboard
+ */
+async function updateSystemStatus(sb) {
+  try {
+    const now = new Date().toISOString();
+    
+    // Upsert a single system status record
+    const { error } = await sb.from('system_status').upsert({
+      id: 'stripe-webhook-status',
+      last_webhook_received_at: now,
+      updated_at: now,
+    }, { onConflict: 'id' });
+
+    if (error) {
+      console.warn('Failed to update system status:', error);
+      // Don't fail — this is auxiliary monitoring, not critical
+    }
+  } catch (error) {
+    console.error('Error updating system status:', error);
   }
 }

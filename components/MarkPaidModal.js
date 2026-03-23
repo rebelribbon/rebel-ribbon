@@ -9,6 +9,7 @@ export default function MarkPaidModal({ orderId, onDone }) {
   const [files, setFiles] = useState([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(null);
+  const [errorDismissed, setErrorDismissed] = useState(false);
   const [success, setSuccess] = useState(false);
   const needsEvidence = !['cash', 'stripe'].includes(method);
 
@@ -70,9 +71,31 @@ export default function MarkPaidModal({ orderId, onDone }) {
 
   return (
     <div className="p-4 space-y-3">
-      {error && (
-        <div className="bg-red-50 border border-red-200 rounded p-3 text-sm text-red-700">
-          <strong>Error:</strong> {error}
+      {error && !errorDismissed && (
+        <div className="bg-red-100 border-l-4 border-red-600 rounded p-4 text-sm text-red-900 sticky top-0 z-50">
+          <div className="flex items-start gap-3">
+            <div className="text-xl">⚠️</div>
+            <div className="flex-1">
+              <strong className="block mb-1">PAYMENT FAILED - ORDER NOT UPDATED</strong>
+              <p className="mb-3">{error}</p>
+              <p className="text-xs mb-3">The payment was NOT marked in the system. Please verify the transaction completed before trying again.</p>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setErrorDismissed(true)}
+                  className="text-xs bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
+                >
+                  Acknowledge
+                </button>
+                <button
+                  onClick={() => submit()}
+                  disabled={busy}
+                  className="text-xs bg-red-700 text-white px-3 py-1 rounded hover:bg-red-800 disabled:opacity-50"
+                >
+                  Retry
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
