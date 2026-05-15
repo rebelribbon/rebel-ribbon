@@ -3,78 +3,103 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
-<meta name="theme-color" content="#831843"/>
+<meta name="theme-color" content="#5c3a3d"/>
 <title>Rebel Ribbon · Staff</title>
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inter:wght@400;500;600;700&family=Allura&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Lato:wght@300;400;500;700&display=swap');
 
 /* ========================================================================
-   DESIGN TOKENS — matches rebelribbon.com brand
+   DESIGN TOKENS — pulled directly from rebelribbon.com
    ======================================================================== */
 :root {
-    /* Brand palette */
-    --pink-50:  #fdf2f8;
-    --pink-100: #fce7f3;
-    --pink-200: #fbcfe8;
-    --pink-300: #f9a8d4;
-    --pink-500: #ec4899;
-    --pink-600: #db2777;
-    --pink-700: #be185d;
-    --pink-800: #9d174d;
-    --pink-900: #831843;
-    --pink-950: #500724;
+    /* Atmospheric background — the pink wash */
+    --bg-base:       #f5e6e3;
+    --bg-light:      #fce4dc;
+    --bg-lighter:    #fdf2ee;
+    --cream:         #fdf8f3;
+    --cream-soft:    #fbf3eb;
 
-    --cream:    #fffbf5;
-    --ink:      #1a0d12;
-    --ink-soft: #6b4c54;
-    --line:     rgba(131, 24, 67, 0.10);
-    --line-strong: rgba(131, 24, 67, 0.18);
+    /* Brown — the structure of the brand */
+    --ink:           #3d2b2e;     /* body text, like coffee */
+    --ink-soft:      #806b6e;     /* secondary text */
+    --ink-faded:     #a89898;     /* tertiary, captions */
+    --brown:         #5c3a3d;     /* CTA buttons, accents */
+    --brown-deep:    #432a2c;     /* hover */
 
-    /* Semantic */
-    --success:  #15803d;
-    --success-bg: #dcfce7;
-    --warning:  #b45309;
-    --warning-bg: #fef3c7;
-    --danger:   #b91c1c;
-    --danger-bg: #fee2e2;
-    --info:     #1d4ed8;
-    --info-bg:  #dbeafe;
+    /* Dusty rose — the italic accent */
+    --rose:          #d4a5a5;     /* the "Sweetest Moments" pink */
+    --rose-deep:     #b8847e;     /* hover, decorative */
+    --rose-soft:     #ecc8c2;     /* backgrounds, badges */
+    --rose-faintest: #fdf0ec;
+
+    /* Functional colors — muted to fit the palette */
+    --green:         #6b8e6f;
+    --green-soft:    #e3ede4;
+    --amber:         #b8895c;
+    --amber-soft:    #f5e8d7;
+    --red:           #a85651;
+    --red-soft:      #f2dad8;
+    --blue:          #6b85a8;
+    --blue-soft:     #e1e8f0;
+
+    /* Lines */
+    --line:          rgba(61, 43, 46, 0.08);
+    --line-strong:   rgba(61, 43, 46, 0.16);
+    --line-rose:     rgba(212, 165, 165, 0.35);
 
     /* Type */
     --font-display: 'Playfair Display', Georgia, serif;
-    --font-body: 'Inter', -apple-system, sans-serif;
-    --font-script: 'Allura', cursive;
+    --font-body:    'Lato', -apple-system, BlinkMacSystemFont, sans-serif;
 
-    /* Elevation */
-    --shadow-sm: 0 1px 2px rgba(131,24,67,0.06);
-    --shadow:    0 4px 12px -2px rgba(131,24,67,0.08), 0 2px 6px -1px rgba(131,24,67,0.04);
-    --shadow-lg: 0 20px 40px -16px rgba(131,24,67,0.18), 0 8px 16px -8px rgba(131,24,67,0.10);
+    /* Shadow — gentle, never harsh */
+    --shadow-xs: 0 1px 2px rgba(61, 43, 46, 0.04);
+    --shadow:    0 4px 16px -4px rgba(61, 43, 46, 0.08);
+    --shadow-lg: 0 20px 50px -20px rgba(61, 43, 46, 0.18);
 
     /* Layout */
     --safe-top: env(safe-area-inset-top, 0);
     --safe-bottom: env(safe-area-inset-bottom, 0);
+    --sidebar-w: 240px;
+    --topbar-h: 64px;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
-html { overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+html { overflow-x: hidden; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
 body {
     font-family: var(--font-body);
     font-size: 15px;
-    line-height: 1.5;
+    line-height: 1.55;
     color: var(--ink);
-    background: var(--cream);
-    background-image:
-        radial-gradient(at 0% 0%, rgba(251, 207, 232, 0.4) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(252, 231, 243, 0.5) 0px, transparent 50%);
+    background:
+        radial-gradient(at 20% 0%, var(--bg-light) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, var(--bg-base) 0px, transparent 50%),
+        var(--bg-lighter);
     background-attachment: fixed;
     min-height: 100vh;
     min-height: 100dvh;
     overscroll-behavior: none;
+    letter-spacing: 0.005em;
 }
 button { font-family: inherit; cursor: pointer; }
 button, input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
+a { color: var(--brown); text-decoration: none; }
+a:hover { color: var(--brown-deep); }
+
+/* Quiet scrollbars */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: rgba(61, 43, 46, 0.15); border-radius: 999px; }
+::-webkit-scrollbar-track { background: transparent; }
+
+/* ========================================================================
+   TYPOGRAPHY
+   ======================================================================== */
+.display { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.005em; line-height: 1.15; }
+.display em { font-style: italic; color: var(--rose-deep); font-weight: 400; }
+h1 { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.01em; line-height: 1.1; }
+h2 { font-family: var(--font-display); font-weight: 500; letter-spacing: -0.005em; }
+h3 { font-family: var(--font-display); font-weight: 500; letter-spacing: 0; }
 
 /* ========================================================================
    SIGN IN
@@ -84,67 +109,69 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; colo
     display: flex; align-items: center; justify-content: center;
     padding: 1.5rem;
     background:
-        radial-gradient(at 30% 20%, rgba(251, 207, 232, 0.6) 0px, transparent 50%),
-        radial-gradient(at 80% 80%, rgba(252, 231, 243, 0.7) 0px, transparent 50%),
+        radial-gradient(at 30% 30%, var(--bg-light) 0px, transparent 50%),
+        radial-gradient(at 70% 70%, var(--rose-soft) 0px, transparent 50%),
         var(--cream);
 }
 .signin-card {
     width: 100%; max-width: 380px;
-    background: white;
+    background: var(--cream);
     border: 1px solid var(--line);
-    border-radius: 24px;
-    padding: 2.5rem 2rem;
+    border-radius: 16px;
+    padding: 3rem 2.25rem 2.25rem;
     box-shadow: var(--shadow-lg);
     position: relative;
 }
 .signin-bow {
-    position: absolute; top: -38px; left: 50%; transform: translateX(-50%);
-    width: 76px; height: 76px;
+    position: absolute; top: -32px; left: 50%; transform: translateX(-50%);
+    width: 64px; height: 64px;
     background: var(--cream);
     border: 1px solid var(--line);
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     box-shadow: var(--shadow);
 }
-.signin-bow img { width: 50px; height: 50px; }
+.signin-bow img { width: 36px; height: 36px; }
 .signin-title {
     font-family: var(--font-display);
     font-size: 1.75rem; font-weight: 500;
-    text-align: center; margin-top: 1rem; margin-bottom: 0.25rem;
-    color: var(--pink-900);
+    text-align: center; margin-bottom: 0.25rem;
+    color: var(--ink);
     letter-spacing: -0.01em;
 }
-.signin-title em { font-style: italic; color: var(--pink-600); }
+.signin-title em { font-style: italic; color: var(--rose-deep); font-weight: 400; }
 .signin-sub {
-    font-size: 0.8125rem; color: var(--ink-soft);
+    font-size: 0.75rem; color: var(--ink-faded);
     text-align: center; margin-bottom: 2rem;
+    text-transform: uppercase; letter-spacing: 0.15em;
 }
-.field { margin-bottom: 1rem; }
+.field { margin-bottom: 1.125rem; }
 .field label {
     display: block;
     font-size: 0.6875rem; font-weight: 600;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--ink-soft); margin-bottom: 0.4rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-soft); margin-bottom: 0.5rem;
 }
 .field input, .field select, .field textarea {
     width: 100%; padding: 0.75rem 1rem;
     border: 1px solid var(--line-strong);
-    border-radius: 10px;
+    border-radius: 8px;
     background: white;
     font-size: 0.9375rem;
+    color: var(--ink);
     transition: border-color 0.15s, box-shadow 0.15s;
 }
+.field input::placeholder { color: var(--ink-faded); }
 .field input:focus, .field select:focus, .field textarea:focus {
     outline: none;
-    border-color: var(--pink-500);
-    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.12);
+    border-color: var(--brown);
+    box-shadow: 0 0 0 3px rgba(92, 58, 61, 0.08);
 }
-.field input::placeholder { color: #c4b5b8; }
 .auth-msg {
     margin-top: 0.75rem;
     padding: 0.625rem 0.875rem;
-    background: var(--danger-bg);
-    color: var(--danger);
+    background: var(--red-soft);
+    color: var(--red);
     border-radius: 8px;
     font-size: 0.8125rem;
     display: none;
@@ -152,381 +179,473 @@ button, input, select, textarea { font-family: inherit; font-size: inherit; colo
 .auth-msg.visible { display: block; }
 
 /* ========================================================================
-   APP SHELL — top bar + sidebar + content
+   APP SHELL
    ======================================================================== */
 #app { display: none; min-height: 100dvh; }
 #app.visible { display: block; }
 
 .topbar {
-    position: sticky; top: 0; z-index: 50;
+    position: fixed; top: 0; left: 0; right: 0;
+    z-index: 50;
     padding-top: var(--safe-top);
-    background: rgba(255, 251, 245, 0.85);
-    backdrop-filter: saturate(180%) blur(20px);
-    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    background: rgba(253, 248, 243, 0.85);
+    backdrop-filter: saturate(180%) blur(16px);
+    -webkit-backdrop-filter: saturate(180%) blur(16px);
     border-bottom: 1px solid var(--line);
 }
 .topbar-inner {
-    display: flex; align-items: center; gap: 0.75rem;
-    height: 60px; padding: 0 1rem;
-    max-width: 1400px; margin: 0 auto;
+    display: flex; align-items: center; gap: 1rem;
+    height: var(--topbar-h); padding: 0 1.25rem;
 }
 .menu-btn {
     width: 40px; height: 40px;
     display: flex; align-items: center; justify-content: center;
-    background: var(--pink-100); color: var(--pink-700);
-    border: none; border-radius: 12px;
+    background: transparent; color: var(--ink);
+    border: none; border-radius: 10px;
     transition: background 0.15s;
+    flex-shrink: 0;
 }
-.menu-btn:hover { background: var(--pink-200); }
+.menu-btn:hover { background: var(--rose-faintest); }
 .menu-btn:active { transform: scale(0.95); }
-.menu-btn svg { width: 20px; height: 20px; }
+.menu-btn svg { width: 22px; height: 22px; stroke-width: 1.5; }
+
 .topbar-brand {
-    display: flex; align-items: center; gap: 0.625rem;
-    text-decoration: none; color: inherit;
+    display: flex; align-items: center; gap: 0.75rem;
+    color: inherit;
 }
-.topbar-brand img { width: 36px; height: 36px; }
+.topbar-brand img { width: 32px; height: 32px; }
 .topbar-brand-text {
     font-family: var(--font-display);
-    font-size: 1.25rem; font-weight: 500;
-    color: var(--pink-900);
-    letter-spacing: 0.01em;
+    font-size: 1.375rem; font-weight: 500;
+    color: var(--ink);
+    letter-spacing: 0;
 }
-.topbar-brand-text em { font-style: italic; color: var(--pink-600); font-weight: 400; }
+.topbar-brand-text em { font-style: italic; color: var(--rose-deep); font-weight: 400; }
+
 .topbar-spacer { flex: 1; }
+
 .topbar-user {
-    display: flex; align-items: center; gap: 0.5rem;
+    display: flex; align-items: center; gap: 0.625rem;
     font-size: 0.8125rem; color: var(--ink-soft);
 }
 .user-avatar {
     width: 32px; height: 32px;
     border-radius: 50%;
-    background: linear-gradient(135deg, var(--pink-300), var(--pink-600));
-    color: white;
+    background: var(--rose-soft);
+    color: var(--brown);
     display: flex; align-items: center; justify-content: center;
     font-weight: 600;
     font-size: 0.8125rem;
+    border: 1px solid var(--line);
 }
-@media (max-width: 640px) {
-    .topbar-user-name { display: none; }
+@media (max-width: 640px) { .topbar-user-name { display: none; } }
+
+/* Hide menu button on desktop where sidebar is persistent */
+@media (min-width: 1024px) {
+    .menu-btn { display: none; }
 }
 
 /* ========================================================================
-   SIDEBAR (slides out on all sizes — keeps content clean on desktop too)
+   SIDEBAR
    ======================================================================== */
 #sidebar {
     position: fixed; top: 0; left: 0; bottom: 0;
     width: 280px; z-index: 60;
-    background: white;
-    padding-top: calc(var(--safe-top) + 1rem);
+    background: var(--cream);
+    padding-top: calc(var(--safe-top) + 1.25rem);
     padding-bottom: calc(var(--safe-bottom) + 1rem);
     transform: translateX(-100%);
     transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-    box-shadow: 4px 0 24px rgba(131,24,67,0.1);
+    box-shadow: 4px 0 24px rgba(61, 43, 46, 0.08);
     display: flex; flex-direction: column;
     overflow-y: auto;
 }
 #sidebar.open { transform: translateX(0); }
+
+/* Persistent on desktop */
+@media (min-width: 1024px) {
+    #sidebar {
+        transform: translateX(0);
+        width: var(--sidebar-w);
+        box-shadow: none;
+        border-right: 1px solid var(--line);
+        z-index: 51;
+        padding-top: calc(var(--safe-top) + 1.25rem);
+    }
+    .sidebar-backdrop { display: none !important; }
+}
+
 .sidebar-backdrop {
     position: fixed; inset: 0; z-index: 55;
-    background: rgba(26, 13, 18, 0.4);
+    background: rgba(61, 43, 46, 0.4);
     backdrop-filter: blur(4px);
     opacity: 0; pointer-events: none;
     transition: opacity 0.3s;
 }
 .sidebar-backdrop.visible { opacity: 1; pointer-events: auto; }
+
 .sidebar-brand {
     display: flex; align-items: center; gap: 0.75rem;
-    padding: 0.5rem 1.5rem 1.5rem;
+    padding: 0 1.5rem 1.5rem;
     border-bottom: 1px solid var(--line);
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
 }
-.sidebar-brand img { width: 44px; height: 44px; }
-.sidebar-brand-text { font-family: var(--font-display); font-size: 1.375rem; color: var(--pink-900); }
-.sidebar-brand-text em { font-style: italic; color: var(--pink-600); }
+.sidebar-brand img { width: 36px; height: 36px; }
+.sidebar-brand-text {
+    font-family: var(--font-display);
+    font-size: 1.25rem; font-weight: 500;
+    color: var(--ink);
+}
+.sidebar-brand-text em { font-style: italic; color: var(--rose-deep); font-weight: 400; }
+
 .sidebar-section {
-    padding: 1rem 1.5rem 0.5rem;
-    font-size: 0.6875rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.1em;
-    color: var(--ink-soft);
+    padding: 0.875rem 1.5rem 0.5rem;
+    font-size: 0.625rem; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.15em;
+    color: var(--ink-faded);
 }
 .nav-item {
-    display: flex; align-items: center; gap: 0.875rem;
-    padding: 0.75rem 1.5rem;
+    display: flex; align-items: center;
+    padding: 0.625rem 1.5rem;
     background: transparent; border: none;
     width: 100%; text-align: left;
-    font-size: 0.9375rem; font-weight: 500;
+    font-size: 0.9375rem; font-weight: 400;
     color: var(--ink);
-    transition: background 0.12s;
-    border-left: 3px solid transparent;
+    transition: background 0.12s, color 0.12s;
+    border-left: 2px solid transparent;
+    font-family: var(--font-body);
 }
-.nav-item:hover { background: var(--pink-50); }
+.nav-item:hover { background: var(--rose-faintest); }
 .nav-item.active {
-    background: var(--pink-50);
-    border-left-color: var(--pink-600);
-    color: var(--pink-900); font-weight: 600;
-}
-.nav-item .nav-icon {
-    width: 20px; height: 20px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.1rem;
+    background: var(--rose-faintest);
+    border-left-color: var(--brown);
+    color: var(--brown);
+    font-weight: 600;
 }
 .nav-item .nav-count {
     margin-left: auto;
-    background: var(--pink-100); color: var(--pink-800);
-    font-size: 0.6875rem; font-weight: 700;
-    padding: 0.125rem 0.5rem;
+    background: var(--line);
+    color: var(--ink-soft);
+    font-size: 0.6875rem; font-weight: 600;
+    padding: 0.0625rem 0.5rem;
     border-radius: 999px;
     min-width: 22px; text-align: center;
 }
-.nav-item.active .nav-count { background: var(--pink-600); color: white; }
+.nav-item.active .nav-count { background: var(--brown); color: var(--cream); }
+.nav-item .nav-count.zero { opacity: 0; }
+
 .sidebar-footer {
     margin-top: auto;
     padding: 1rem 1.5rem 0;
     border-top: 1px solid var(--line);
 }
 .sidebar-user {
-    font-size: 0.8125rem; color: var(--ink-soft);
+    font-size: 0.75rem; color: var(--ink-soft);
     margin-bottom: 0.625rem;
+    overflow: hidden; text-overflow: ellipsis;
 }
 .btn-signout {
-    width: 100%; padding: 0.625rem;
-    background: white; color: var(--pink-700);
-    border: 1px solid var(--pink-200);
-    border-radius: 10px;
-    font-size: 0.8125rem; font-weight: 500;
-    transition: background 0.15s;
+    width: 100%; padding: 0.5rem;
+    background: transparent; color: var(--ink-soft);
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    font-size: 0.75rem; font-weight: 500;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
 }
-.btn-signout:hover { background: var(--pink-50); }
+.btn-signout:hover { background: var(--brown); color: var(--cream); border-color: var(--brown); }
 
 /* ========================================================================
    MAIN
    ======================================================================== */
 main {
-    max-width: 1400px; margin: 0 auto;
-    padding: 1.5rem 1rem calc(var(--safe-bottom) + 2rem);
+    padding-top: calc(var(--topbar-h) + var(--safe-top));
+    padding-bottom: calc(var(--safe-bottom) + 3rem);
+    min-height: 100dvh;
 }
-@media (min-width: 768px) { main { padding: 2rem; } }
-@media (min-width: 1024px) { main { padding: 2.5rem 3rem; } }
+@media (min-width: 1024px) {
+    main { padding-left: var(--sidebar-w); }
+}
+.main-inner {
+    max-width: 1200px;
+    padding: 2rem 1.25rem;
+    margin: 0 auto;
+}
+@media (min-width: 768px) { .main-inner { padding: 3rem 2rem; } }
+@media (min-width: 1024px) { .main-inner { padding: 3rem 3.5rem; } }
 
-.page-header { margin-bottom: 1.5rem; }
-.page-eyebrow {
-    font-family: var(--font-script);
-    font-size: 1.5rem; line-height: 1;
-    color: var(--pink-500);
-    margin-bottom: -0.25rem;
+.page-header { margin-bottom: 2.5rem; }
+.page-overline {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--ink-faded);
+    margin-bottom: 0.625rem;
 }
 .page-title {
     font-family: var(--font-display);
-    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-size: clamp(2.25rem, 5vw, 3rem);
     font-weight: 500;
-    color: var(--pink-900);
-    letter-spacing: -0.02em;
+    color: var(--ink);
+    letter-spacing: -0.015em;
     line-height: 1.1;
 }
-.page-title em { font-style: italic; color: var(--pink-600); }
+.page-title em { font-style: italic; color: var(--rose-deep); font-weight: 400; }
 .page-subtitle {
-    color: var(--ink-soft); font-size: 0.9375rem;
-    margin-top: 0.5rem;
+    color: var(--ink-soft);
+    font-size: 0.9375rem;
+    margin-top: 0.875rem;
+    max-width: 560px;
 }
 
 /* ========================================================================
-   SEARCH + GLOBAL ACTIONS
+   HEALTH BANNER — quiet, only when truly broken
    ======================================================================== */
-.toolbar {
-    display: flex; align-items: center; gap: 0.625rem;
+#health-banner {
+    display: none;
     margin-bottom: 1.5rem;
-    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    background: var(--amber-soft);
+    color: var(--amber);
+    font-size: 0.8125rem;
+    border-left: 3px solid var(--amber);
+    border-radius: 4px;
+    align-items: center; gap: 0.75rem;
 }
+#health-banner.visible { display: flex; }
+#health-banner.red { background: var(--red-soft); color: var(--red); border-left-color: var(--red); }
+
+/* ========================================================================
+   SEARCH
+   ======================================================================== */
 .search-wrap {
-    flex: 1; min-width: 200px;
     position: relative;
+    max-width: 480px;
+    margin-bottom: 2rem;
 }
 .search-wrap svg {
-    position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%);
-    width: 16px; height: 16px; color: var(--ink-soft);
+    position: absolute; left: 1rem; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px; color: var(--ink-faded);
     pointer-events: none;
 }
 .search-input {
-    width: 100%; padding: 0.625rem 1rem 0.625rem 2.5rem;
-    background: white;
+    width: 100%; padding: 0.75rem 1.25rem 0.75rem 2.75rem;
+    background: var(--cream);
     border: 1px solid var(--line-strong);
     border-radius: 999px;
     font-size: 0.875rem;
-    box-shadow: var(--shadow-sm);
+    color: var(--ink);
+    transition: all 0.15s;
 }
+.search-input::placeholder { color: var(--ink-faded); }
 .search-input:focus {
     outline: none;
-    border-color: var(--pink-500);
-    box-shadow: 0 0 0 3px rgba(236,72,153,0.12);
+    border-color: var(--brown);
+    box-shadow: 0 0 0 3px rgba(92, 58, 61, 0.06);
+    background: white;
 }
 
 /* ========================================================================
-   QUEUE SECTIONS (the card feed)
+   QUEUE SECTIONS — the rhythm of the work day
    ======================================================================== */
-.queue-section { margin-bottom: 2rem; }
+.queue-section { margin-bottom: 3rem; }
 .queue-section:last-child { margin-bottom: 0; }
+
 .queue-header {
-    display: flex; align-items: baseline; gap: 0.625rem;
-    margin-bottom: 0.875rem;
-    padding-bottom: 0.625rem;
+    display: flex; align-items: baseline; gap: 0.75rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem;
     border-bottom: 1px solid var(--line);
 }
 .queue-title {
     font-family: var(--font-display);
-    font-size: 1.125rem; font-weight: 600;
-    color: var(--pink-900);
+    font-size: 1.375rem;
+    font-weight: 500;
+    color: var(--ink);
     letter-spacing: -0.005em;
 }
+.queue-title em { font-style: italic; color: var(--rose-deep); font-weight: 400; }
 .queue-count {
-    font-size: 0.75rem; font-weight: 600;
-    color: var(--ink-soft);
-    background: var(--pink-50);
-    padding: 0.125rem 0.625rem;
-    border-radius: 999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--ink-faded);
+    margin-left: -0.25rem;
 }
 .queue-description {
     font-size: 0.8125rem;
-    color: var(--ink-soft);
+    color: var(--ink-faded);
     margin-left: auto;
+    font-style: italic;
 }
 @media (max-width: 640px) { .queue-description { display: none; } }
 
 .queue-empty {
-    background: white;
+    background: var(--cream);
     border: 1px dashed var(--line-strong);
-    border-radius: 16px;
-    padding: 2rem 1rem;
+    border-radius: 12px;
+    padding: 3rem 1.5rem;
     text-align: center;
-    color: var(--ink-soft);
-    font-size: 0.875rem;
+    color: var(--ink-faded);
+    font-size: 0.9375rem;
+    font-style: italic;
 }
-.queue-empty .empty-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
 
 /* ========================================================================
-   ORDER CARD
+   ORDER CARDS — the heart of the dashboard
    ======================================================================== */
-.cards-grid {
+.cards-list {
     display: grid;
     grid-template-columns: 1fr;
     gap: 0.875rem;
 }
-@media (min-width: 640px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 1100px) { .cards-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 768px) { .cards-list { gap: 1rem; grid-template-columns: 1fr 1fr; } }
+@media (min-width: 1300px) { .cards-list { grid-template-columns: 1fr 1fr 1fr; } }
+
+/* Hero card — the most urgent thing */
+.cards-list.hero {
+    grid-template-columns: 1fr !important;
+}
+.cards-list.hero .order-card {
+    padding: 2rem 2.25rem;
+}
+.cards-list.hero .order-name { font-size: 1.75rem; }
+.cards-list.hero .order-next-action { font-size: 1rem; }
 
 .order-card {
-    background: white;
+    background: var(--cream);
     border: 1px solid var(--line);
-    border-radius: 18px;
-    padding: 1.125rem 1.125rem 1rem;
-    box-shadow: var(--shadow-sm);
-    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
-    text-align: left;
-    width: 100%;
+    border-radius: 14px;
+    padding: 1.5rem 1.625rem 1.25rem;
+    box-shadow: var(--shadow-xs);
+    transition: all 0.2s cubic-bezier(0.32, 0.72, 0, 1);
     cursor: pointer;
     display: flex; flex-direction: column;
-    gap: 0.75rem;
+    gap: 1rem;
     position: relative;
-    overflow: hidden;
+    text-align: left;
+    width: 100%;
+    border-left: 3px solid transparent;
+    font-family: inherit;
 }
 .order-card:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow);
-    border-color: var(--pink-200);
+    border-color: var(--line-rose);
 }
 .order-card:active { transform: scale(0.99); }
-.order-card.urgent { border-left: 4px solid var(--pink-600); padding-left: calc(1.125rem - 3px); }
-.order-card-row {
+.order-card.priority { border-left-color: var(--brown); }
+
+.order-card-top {
     display: flex; align-items: flex-start; justify-content: space-between;
-    gap: 0.625rem;
+    gap: 0.75rem;
 }
-.order-customer {
+.order-name {
     font-family: var(--font-display);
-    font-size: 1.0625rem; font-weight: 600;
+    font-size: 1.25rem;
+    font-weight: 500;
     color: var(--ink);
-    letter-spacing: -0.005em;
+    letter-spacing: -0.01em;
     line-height: 1.2;
 }
-.order-meta {
-    font-size: 0.8125rem;
-    color: var(--ink-soft);
-    margin-top: 0.125rem;
-}
 .order-event {
-    display: inline-flex; align-items: center; gap: 0.375rem;
-    font-size: 0.75rem; font-weight: 500;
-    color: var(--pink-700);
-    background: var(--pink-50);
+    font-size: 0.6875rem;
+    color: var(--rose-deep);
+    background: var(--rose-faintest);
     padding: 0.25rem 0.625rem;
     border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 600;
+    flex-shrink: 0;
+    border: 1px solid var(--line-rose);
 }
-.order-detail-line {
-    display: flex; flex-wrap: wrap; gap: 0.5rem 1rem;
+
+.order-details {
+    color: var(--ink-soft);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+.order-details strong { color: var(--ink); font-weight: 600; }
+
+.order-date {
+    display: flex; align-items: center; gap: 0.5rem;
+    color: var(--ink);
+    font-size: 0.875rem;
+}
+.order-date.urgent { color: var(--red); font-weight: 600; }
+.order-date svg { width: 14px; height: 14px; stroke-width: 1.75; opacity: 0.65; }
+
+.order-next-action {
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    margin-top: auto;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.75rem;
+}
+.order-action-label {
     font-size: 0.8125rem;
     color: var(--ink-soft);
+    font-style: italic;
 }
-.order-detail-line strong { color: var(--ink); font-weight: 600; }
-.order-action-strip {
-    display: flex; gap: 0.5rem; flex-wrap: wrap;
-    margin-top: auto;
-    padding-top: 0.625rem;
-    border-top: 1px dashed var(--line);
+.order-action-label.do-now {
+    color: var(--brown);
+    font-weight: 600;
+    font-style: normal;
 }
-.order-status-pill {
-    display: inline-flex; align-items: center; gap: 0.3125rem;
-    font-size: 0.6875rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: 0.06em;
-    padding: 0.3125rem 0.625rem;
-    border-radius: 6px;
+.order-action-arrow {
+    color: var(--ink-faded);
+    font-size: 1.125rem;
+    line-height: 1;
 }
-.pill-needs    { background: var(--warning-bg); color: var(--warning); }
-.pill-sent     { background: var(--info-bg); color: var(--info); }
-.pill-paid     { background: var(--success-bg); color: var(--success); }
-.pill-canceled { background: #f3f4f6; color: #6b7280; }
-.pill-completed{ background: var(--pink-100); color: var(--pink-800); }
-.pill-due-soon { background: var(--danger-bg); color: var(--danger); }
 
 /* ========================================================================
-   BUTTONS — the action vocabulary
+   BUTTONS — brown is primary, not pink
    ======================================================================== */
 .btn {
     display: inline-flex; align-items: center; justify-content: center;
-    gap: 0.4rem;
-    padding: 0.5rem 0.875rem;
+    gap: 0.5rem;
+    padding: 0.625rem 1.125rem;
     border: none; background: none;
-    border-radius: 10px;
+    border-radius: 999px;
     font-size: 0.8125rem; font-weight: 600;
+    letter-spacing: 0.02em;
     transition: all 0.15s;
     white-space: nowrap;
     line-height: 1.2;
     touch-action: manipulation;
+    font-family: var(--font-body);
 }
 .btn:active { transform: scale(0.97); }
+
 .btn-primary {
-    background: var(--pink-700); color: white;
-    box-shadow: 0 2px 8px -2px rgba(190, 24, 93, 0.4);
+    background: var(--brown); color: var(--cream);
 }
-.btn-primary:hover { background: var(--pink-800); box-shadow: 0 4px 12px -2px rgba(190, 24, 93, 0.5); }
+.btn-primary:hover { background: var(--brown-deep); }
+
 .btn-secondary {
-    background: white; color: var(--pink-700);
-    border: 1px solid var(--pink-200);
+    background: transparent; color: var(--brown);
+    border: 1px solid var(--brown);
 }
-.btn-secondary:hover { background: var(--pink-50); border-color: var(--pink-300); }
-.btn-success { background: var(--success); color: white; }
-.btn-success:hover { background: #166534; }
-.btn-ghost { background: transparent; color: var(--ink-soft); }
-.btn-ghost:hover { background: var(--pink-50); color: var(--pink-700); }
+.btn-secondary:hover { background: var(--brown); color: var(--cream); }
+
+.btn-ghost {
+    background: transparent; color: var(--ink-soft);
+}
+.btn-ghost:hover { background: var(--rose-faintest); color: var(--brown); }
+
 .btn-danger {
-    background: white; color: var(--danger);
-    border: 1px solid #fca5a5;
+    background: transparent; color: var(--red);
+    border: 1px solid var(--red);
 }
-.btn-danger:hover { background: var(--danger-bg); }
+.btn-danger:hover { background: var(--red); color: var(--cream); }
+
 .btn-block { width: 100%; }
-.btn-sm { padding: 0.375rem 0.625rem; font-size: 0.75rem; }
-.btn-lg { padding: 0.75rem 1.25rem; font-size: 0.9375rem; }
-.btn .btn-icon { font-size: 1em; line-height: 1; }
+.btn-sm { padding: 0.4rem 0.875rem; font-size: 0.75rem; }
+.btn-lg { padding: 0.875rem 1.5rem; font-size: 0.9375rem; }
 
 /* ========================================================================
-   ORDER DETAIL SHEET — slides up from bottom on mobile, modal on desktop
+   ORDER DETAIL SHEET
    ======================================================================== */
 #orderSheet {
     position: fixed; inset: 0; z-index: 70;
@@ -535,19 +654,19 @@ main {
 #orderSheet.open { display: block; }
 .sheet-backdrop {
     position: absolute; inset: 0;
-    background: rgba(26, 13, 18, 0.5);
+    background: rgba(61, 43, 46, 0.35);
     backdrop-filter: blur(8px);
 }
 .sheet-panel {
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    max-height: 92dvh;
-    background: var(--cream);
-    border-radius: 24px 24px 0 0;
+    max-height: 94dvh;
+    background: var(--bg-lighter);
+    border-radius: 20px 20px 0 0;
     overflow-y: auto;
     overscroll-behavior: contain;
     padding-bottom: var(--safe-bottom);
-    box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+    box-shadow: 0 -10px 40px rgba(61, 43, 46, 0.18);
     animation: sheetUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
 }
 @keyframes sheetUp { from { transform: translateY(20%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
@@ -556,348 +675,394 @@ main {
         position: absolute;
         top: 50%; left: 50%; right: auto; bottom: auto;
         transform: translate(-50%, -50%);
-        width: 95vw; max-width: 720px;
-        max-height: 90vh;
-        border-radius: 24px;
+        width: 96vw; max-width: 760px;
+        max-height: 92vh;
+        border-radius: 20px;
         animation: sheetIn 0.3s ease;
     }
-    @keyframes sheetIn { from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+    @keyframes sheetIn { from { opacity: 0; transform: translate(-50%, -48%) scale(0.97); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
 }
+
 .sheet-grabber {
     width: 36px; height: 4px;
-    background: rgba(131,24,67,0.18);
+    background: rgba(61, 43, 46, 0.18);
     border-radius: 999px;
     margin: 0.625rem auto;
 }
 @media (min-width: 768px) { .sheet-grabber { display: none; } }
+
 .sheet-header {
     position: sticky; top: 0; z-index: 5;
-    background: var(--cream);
-    padding: 0.5rem 1.25rem 1rem;
+    background: var(--bg-lighter);
+    padding: 0.75rem 1.5rem 1.25rem;
     border-bottom: 1px solid var(--line);
-    display: flex; align-items: center; justify-content: space-between;
+    display: flex; align-items: flex-start; justify-content: space-between;
 }
-.sheet-title-block { flex: 1; min-width: 0; }
+.sheet-title-block { flex: 1; min-width: 0; padding-right: 0.75rem; }
 .sheet-title {
     font-family: var(--font-display);
-    font-size: 1.25rem; font-weight: 600;
-    color: var(--pink-900);
+    font-size: 1.5rem; font-weight: 500;
+    color: var(--ink);
     letter-spacing: -0.01em;
-    line-height: 1.2;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+    line-height: 1.15;
+    overflow: hidden; text-overflow: ellipsis;
+    white-space: nowrap;
 }
 .sheet-subtitle {
-    font-size: 0.75rem; color: var(--ink-soft);
-    margin-top: 0.125rem;
+    font-size: 0.8125rem; color: var(--ink-soft);
+    margin-top: 0.3125rem;
 }
 .sheet-close {
     width: 36px; height: 36px;
     display: flex; align-items: center; justify-content: center;
-    background: var(--pink-100); color: var(--pink-700);
+    background: var(--rose-faintest); color: var(--brown);
     border: none; border-radius: 50%;
-    font-size: 1.125rem;
+    font-size: 1rem;
     flex-shrink: 0;
-    margin-left: 0.625rem;
+    transition: background 0.15s;
 }
-.sheet-body { padding: 1.25rem; }
+.sheet-close:hover { background: var(--rose-soft); }
+.sheet-body { padding: 1.5rem; }
 
-.detail-section {
-    background: white;
+/* Detail sections */
+.detail-card {
+    background: var(--cream);
     border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 1rem 1.125rem;
-    margin-bottom: 0.875rem;
+    border-radius: 12px;
+    padding: 1.25rem 1.375rem;
+    margin-bottom: 1rem;
 }
-.detail-section h3 {
+.detail-card h3 {
     font-family: var(--font-display);
-    font-size: 0.875rem; font-weight: 600;
-    color: var(--pink-900);
-    letter-spacing: 0.01em;
-    margin-bottom: 0.75rem;
-    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--ink);
+    letter-spacing: 0.05em;
+    margin-bottom: 1rem;
+    text-transform: uppercase;
+    display: flex; align-items: center; justify-content: space-between;
 }
 .detail-row {
     display: flex; flex-wrap: wrap;
-    gap: 0.25rem 0.75rem;
-    padding: 0.5rem 0;
+    gap: 0.375rem 0.875rem;
+    padding: 0.625rem 0;
     font-size: 0.875rem;
-    border-bottom: 1px solid rgba(131,24,67,0.05);
+    border-bottom: 1px solid var(--line);
 }
-.detail-row:last-child { border-bottom: none; }
+.detail-row:last-child { border-bottom: none; padding-bottom: 0; }
+.detail-row:first-of-type { padding-top: 0; }
 .detail-label {
     color: var(--ink-soft);
-    font-size: 0.75rem; font-weight: 500;
+    font-size: 0.75rem;
     min-width: 100px;
     text-transform: uppercase;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
 }
 .detail-value {
-    color: var(--ink); flex: 1; min-width: 0;
+    color: var(--ink);
+    flex: 1; min-width: 0;
     word-wrap: break-word;
 }
-.detail-value a { color: var(--pink-700); text-decoration: none; }
-.detail-value a:hover { text-decoration: underline; }
+.detail-value-block {
+    flex-direction: column;
+    align-items: flex-start;
+}
+.detail-value-block .detail-value {
+    width: 100%;
+    margin-top: 0.375rem;
+}
+.detail-note {
+    background: var(--cream-soft);
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    border-left: 2px solid var(--rose);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
 
 /* Status switcher */
-.status-switcher {
-    display: flex; gap: 0.4rem;
-    margin-top: 0.5rem;
-    background: var(--pink-50);
+.status-tabs {
+    display: flex; gap: 0.25rem;
+    background: var(--cream-soft);
     padding: 0.25rem;
-    border-radius: 12px;
+    border-radius: 999px;
+    margin-top: 0.5rem;
 }
-.status-switcher button {
-    flex: 1; padding: 0.5rem 0.5rem;
+.status-tab {
+    flex: 1; padding: 0.5rem;
     background: transparent; border: none;
-    border-radius: 9px;
+    border-radius: 999px;
     font-size: 0.75rem; font-weight: 600;
     color: var(--ink-soft);
-    transition: all 0.15s;
+    letter-spacing: 0.02em;
+    transition: all 0.2s;
 }
-.status-switcher button.active {
-    background: white; color: var(--pink-900);
-    box-shadow: var(--shadow-sm);
+.status-tab.active {
+    background: var(--brown); color: var(--cream);
 }
 
-/* Pricing breakdown */
+/* Pricing */
 .pricing-rows { font-size: 0.875rem; }
 .pricing-row {
     display: flex; justify-content: space-between;
-    padding: 0.375rem 0;
-    border-bottom: 1px solid rgba(131,24,67,0.05);
+    padding: 0.5rem 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--ink);
 }
-.pricing-row:last-child { border-bottom: none; }
+.pricing-row:last-of-type { border-bottom: none; }
+.pricing-row.discount { color: var(--green); font-weight: 500; }
+.pricing-row.fee { color: var(--amber); font-weight: 500; }
 .pricing-row.total {
     font-family: var(--font-display);
-    font-size: 1.25rem; font-weight: 700;
-    color: var(--pink-900);
-    border-top: 2px solid var(--pink-200);
-    padding-top: 0.625rem;
-    margin-top: 0.375rem;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--ink);
+    border-top: 2px solid var(--brown);
+    margin-top: 0.5rem;
+    padding-top: 0.875rem;
 }
-.discount-row { color: var(--success); font-weight: 500; }
-.fee-row { color: var(--warning); font-weight: 500; }
 
-/* Stripe action panel — inline, not buried */
-.stripe-action {
-    background: linear-gradient(135deg, var(--pink-50), white);
-    border: 1.5px solid var(--pink-200);
-    border-radius: 14px;
-    padding: 1rem 1.125rem;
+/* Stripe panel */
+.stripe-card {
+    background: linear-gradient(135deg, var(--cream), var(--cream-soft));
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    padding: 1.25rem 1.375rem;
+    margin-bottom: 1rem;
+}
+.stripe-card.paid { border-color: var(--green); background: linear-gradient(135deg, var(--green-soft), var(--cream)); }
+.stripe-card.pending { border-color: var(--blue); background: linear-gradient(135deg, var(--blue-soft), var(--cream)); }
+.stripe-head {
+    display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 0.875rem;
 }
-.stripe-action.paid { background: linear-gradient(135deg, var(--success-bg), white); border-color: #86efac; }
-.stripe-action.pending { background: linear-gradient(135deg, var(--info-bg), white); border-color: #93c5fd; }
-.stripe-action h3 {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 0.75rem;
+.stripe-head h3 {
+    font-family: var(--font-display);
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
-.stripe-link-display {
-    display: flex; gap: 0.5rem; align-items: center;
+.stripe-badge {
+    font-size: 0.6875rem; font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+}
+.stripe-badge.unpaid { background: var(--amber-soft); color: var(--amber); }
+.stripe-badge.pending { background: var(--blue-soft); color: var(--blue); }
+.stripe-badge.paid { background: var(--green-soft); color: var(--green); }
+.stripe-amount {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: var(--ink);
+    margin: 0.5rem 0 1rem;
+}
+.stripe-amount span { color: var(--ink-soft); font-size: 0.8125rem; font-family: var(--font-body); font-weight: 400; margin-left: 0.5rem; }
+.stripe-link-row {
+    display: flex; align-items: center; gap: 0.5rem;
     background: white;
-    border: 1px solid var(--line-strong);
-    border-radius: 10px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
     padding: 0.5rem 0.5rem 0.5rem 0.875rem;
-    margin: 0.625rem 0;
+    margin: 0.5rem 0;
 }
-.stripe-link-display code {
+.stripe-link-row code {
     flex: 1; min-width: 0;
     font-size: 0.75rem;
     color: var(--ink-soft);
     font-family: ui-monospace, Menlo, monospace;
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
 }
-.send-buttons {
+.send-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.5rem;
-    margin-top: 0.5rem;
+    margin-top: 0.75rem;
 }
-@media (min-width: 480px) { .send-buttons { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 480px) { .send-grid { grid-template-columns: repeat(4, 1fr); } }
 
-/* Adjustments inline form */
+/* Adjustments */
 .adj-form {
     display: grid;
-    grid-template-columns: 1fr 80px 80px auto;
-    gap: 0.4rem;
-    margin: 0.5rem 0;
+    grid-template-columns: 1fr 90px 90px auto;
+    gap: 0.5rem;
+    margin-bottom: 0.875rem;
 }
-@media (max-width: 480px) {
+@media (max-width: 540px) {
     .adj-form { grid-template-columns: 1fr 1fr; }
-    .adj-form .adj-add-btn { grid-column: 1 / -1; }
+    .adj-form .adj-add { grid-column: 1 / -1; }
 }
 .adj-form input, .adj-form select {
-    padding: 0.5rem 0.625rem;
+    padding: 0.5rem 0.75rem;
     border: 1px solid var(--line-strong);
-    border-radius: 8px;
+    border-radius: 6px;
     font-size: 0.8125rem;
     background: white;
 }
-.adj-list {
-    margin-top: 0.5rem;
-    font-size: 0.8125rem;
-}
+.adj-list { font-size: 0.875rem; }
 .adj-item {
-    display: flex; align-items: center; gap: 0.625rem;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid rgba(131,24,67,0.05);
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.625rem 0;
+    border-bottom: 1px solid var(--line);
 }
-.adj-item:last-child { border-bottom: none; }
-.adj-item-label { flex: 1; }
-.adj-item-amount.discount { color: var(--success); font-weight: 600; }
-.adj-item-amount.fee { color: var(--warning); font-weight: 600; }
+.adj-item:last-child { border-bottom: none; padding-bottom: 0; }
+.adj-item-label { flex: 1; color: var(--ink); }
+.adj-item-amount.discount { color: var(--green); font-weight: 600; }
+.adj-item-amount.fee { color: var(--amber); font-weight: 600; }
 .adj-item-remove {
     background: none; border: none;
-    color: var(--ink-soft);
+    color: var(--ink-faded);
     width: 24px; height: 24px;
     border-radius: 50%;
     font-size: 1rem; line-height: 1;
 }
-.adj-item-remove:hover { background: var(--danger-bg); color: var(--danger); }
+.adj-item-remove:hover { background: var(--red-soft); color: var(--red); }
 
-/* Survey box (compact in detail) */
-.survey-status {
-    padding: 0.75rem;
-    border-radius: 10px;
+/* Survey */
+.survey-status-row {
+    padding: 0.875rem 1rem;
+    border-radius: 8px;
     font-size: 0.8125rem;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.625rem;
+    border: 1px solid;
 }
-.survey-status.none { background: var(--pink-50); color: var(--pink-900); }
-.survey-status.active { background: var(--success-bg); color: var(--success); }
-.survey-status.expired { background: var(--warning-bg); color: var(--warning); }
-.survey-status.completed { background: var(--info-bg); color: var(--info); }
+.survey-status-row.none { background: var(--cream-soft); color: var(--ink-soft); border-color: var(--line); }
+.survey-status-row.active { background: var(--green-soft); color: var(--green); border-color: var(--green); }
+.survey-status-row.expired { background: var(--amber-soft); color: var(--amber); border-color: var(--amber); }
+.survey-status-row.completed { background: var(--blue-soft); color: var(--blue); border-color: var(--blue); }
 
 /* ========================================================================
-   SETTINGS / TABLES (other pages — keep simple)
+   SETTINGS PAGES
    ======================================================================== */
 .settings-list {
-    background: white;
+    background: var(--cream);
     border: 1px solid var(--line);
-    border-radius: 16px;
+    border-radius: 12px;
     overflow: hidden;
 }
 .settings-row {
     display: flex; align-items: center;
-    padding: 0.875rem 1.125rem;
+    padding: 1rem 1.5rem;
     border-bottom: 1px solid var(--line);
-    gap: 0.875rem;
+    gap: 1rem;
 }
 .settings-row:last-child { border-bottom: none; }
 .settings-row-main { flex: 1; min-width: 0; }
 .settings-row-label {
-    font-weight: 600;
+    font-weight: 500;
     color: var(--ink);
     font-size: 0.9375rem;
 }
 .settings-row-meta {
-    font-size: 0.75rem;
+    font-size: 0.8125rem;
     color: var(--ink-soft);
-    margin-top: 0.125rem;
+    margin-top: 0.1875rem;
 }
-.settings-row-actions { display: flex; gap: 0.4rem; }
 
-/* Reviews list */
-.review-tabs-bar {
-    display: flex; gap: 0.4rem;
-    margin-bottom: 1rem;
-    background: var(--pink-50);
+/* Reviews */
+.tabs-bar {
+    display: flex; gap: 0.25rem;
+    background: var(--cream-soft);
     padding: 0.25rem;
-    border-radius: 12px;
+    border-radius: 999px;
+    margin-bottom: 1.5rem;
+    max-width: max-content;
 }
-.review-tab-btn {
-    flex: 1; padding: 0.5rem 0.875rem;
+.tab-btn {
+    padding: 0.5rem 1rem;
     background: transparent; border: none;
-    border-radius: 9px;
-    font-size: 0.8125rem; font-weight: 600;
+    border-radius: 999px;
+    font-size: 0.8125rem; font-weight: 500;
     color: var(--ink-soft);
+    transition: all 0.15s;
 }
-.review-tab-btn.active { background: white; color: var(--pink-900); box-shadow: var(--shadow-sm); }
-.review-tab-btn .count { font-size: 0.6875rem; opacity: 0.7; margin-left: 0.25rem; }
+.tab-btn.active { background: var(--brown); color: var(--cream); }
+.tab-btn .count { font-size: 0.6875rem; opacity: 0.7; margin-left: 0.375rem; }
+
 .review-card {
-    background: white;
+    background: var(--cream);
     border: 1px solid var(--line);
-    border-radius: 14px;
-    padding: 1rem 1.125rem;
-    margin-bottom: 0.625rem;
+    border-radius: 12px;
+    padding: 1.25rem 1.375rem;
+    margin-bottom: 0.875rem;
 }
-.review-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem; }
-.review-customer { font-family: var(--font-display); font-weight: 600; }
-.review-stars { color: #f59e0b; font-size: 1.125rem; }
-.review-text { color: var(--ink-soft); font-size: 0.875rem; line-height: 1.5; margin: 0.4rem 0; font-style: italic; }
-.review-date { font-size: 0.6875rem; color: var(--ink-soft); }
-.review-actions-row { display: flex; gap: 0.5rem; margin-top: 0.75rem; padding-top: 0.625rem; border-top: 1px dashed var(--line); }
+.review-card-top {
+    display: flex; justify-content: space-between; align-items: flex-start;
+    margin-bottom: 0.625rem;
+    gap: 0.75rem;
+}
+.review-customer { font-family: var(--font-display); font-weight: 600; font-size: 1rem; }
+.review-stars { color: var(--amber); font-size: 1rem; letter-spacing: 0.05em; }
+.review-text {
+    color: var(--ink);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    margin: 0.5rem 0 0.75rem;
+    font-family: var(--font-display);
+    font-style: italic;
+    font-weight: 400;
+}
+.review-date { font-size: 0.6875rem; color: var(--ink-faded); text-transform: uppercase; letter-spacing: 0.08em; }
+.review-actions { display: flex; gap: 0.5rem; margin-top: 0.875rem; padding-top: 0.875rem; border-top: 1px solid var(--line); }
 
 /* ========================================================================
-   GENERIC EDITOR DIALOG
+   EDITOR DIALOG
    ======================================================================== */
 #editor {
     position: fixed; inset: 0; z-index: 75;
     display: none;
-    background: rgba(26, 13, 18, 0.5);
+    background: rgba(61, 43, 46, 0.4);
     backdrop-filter: blur(8px);
-    padding: 1rem;
+    padding: 1.25rem;
     align-items: flex-end; justify-content: center;
     padding-bottom: var(--safe-bottom);
 }
 @media (min-width: 640px) { #editor { align-items: center; } }
 #editor.open { display: flex; }
 .editor-card {
-    background: white;
-    border-radius: 20px 20px 0 0;
-    width: 100%; max-width: 540px;
-    max-height: 90vh;
+    background: var(--bg-lighter);
+    border-radius: 16px 16px 0 0;
+    width: 100%; max-width: 520px;
+    max-height: 92vh;
     display: flex; flex-direction: column;
     box-shadow: var(--shadow-lg);
 }
-@media (min-width: 640px) { .editor-card { border-radius: 20px; } }
+@media (min-width: 640px) { .editor-card { border-radius: 16px; } }
 .editor-head {
-    padding: 1.25rem 1.25rem 0.875rem;
+    padding: 1.5rem 1.5rem 1rem;
     border-bottom: 1px solid var(--line);
     display: flex; justify-content: space-between; align-items: center;
 }
-.editor-head h2 { font-family: var(--font-display); font-size: 1.125rem; color: var(--pink-900); }
-.editor-body { padding: 1.25rem; overflow-y: auto; flex: 1; }
+.editor-head h2 { font-family: var(--font-display); font-size: 1.25rem; color: var(--ink); font-weight: 500; }
+.editor-body { padding: 1.5rem; overflow-y: auto; flex: 1; }
 .editor-foot {
-    padding: 0.875rem 1.25rem;
+    padding: 1rem 1.5rem;
     border-top: 1px solid var(--line);
     display: flex; gap: 0.5rem; flex-wrap: wrap;
     justify-content: flex-end;
 }
 
 /* ========================================================================
-   HEALTH BANNER (only on yellow/red)
-   ======================================================================== */
-#health-banner {
-    display: none;
-    position: sticky; top: 60px; z-index: 49;
-    padding: 0.5rem 1rem;
-    background: var(--warning-bg);
-    color: var(--warning);
-    font-size: 0.8125rem;
-    border-bottom: 1px solid #fde68a;
-    align-items: center; gap: 0.625rem;
-}
-#health-banner.visible { display: flex; }
-#health-banner.red { background: var(--danger-bg); color: var(--danger); border-bottom-color: #fca5a5; }
-.health-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
-
-/* ========================================================================
    UTILITY
    ======================================================================== */
 .hidden { display: none !important; }
-.text-pink-700 { color: var(--pink-700); }
-.text-ink-soft { color: var(--ink-soft); }
-.scroll-touch { -webkit-overflow-scrolling: touch; }
 .spinner {
     width: 24px; height: 24px;
-    border: 2px solid var(--pink-200);
-    border-top-color: var(--pink-700);
+    border: 2px solid var(--line-strong);
+    border-top-color: var(--brown);
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
     display: inline-block;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-.center-spinner { text-align: center; padding: 2.5rem 1rem; }
+.center-spinner { text-align: center; padding: 3rem 1rem; color: var(--ink-faded); }
+.text-soft { color: var(--ink-soft); }
+.text-faded { color: var(--ink-faded); }
+
+/* Icons — using line SVGs not emoji */
+.icon { width: 16px; height: 16px; display: inline-block; vertical-align: middle; stroke-width: 1.75; }
 
 </style>
 </head>
@@ -910,7 +1075,7 @@ main {
             <img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" alt="Rebel Ribbon"/>
         </div>
         <h1 class="signin-title">Rebel <em>Ribbon</em></h1>
-        <p class="signin-sub">Staff sign in</p>
+        <div class="signin-sub">Staff sign in</div>
         <div class="field">
             <label for="email">Email</label>
             <input id="email" type="email" autocomplete="email" placeholder="you@rebelribbon.com"/>
@@ -929,7 +1094,7 @@ main {
     <header class="topbar">
         <div class="topbar-inner">
             <button id="menuBtn" class="menu-btn" aria-label="Menu">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round">
                     <path d="M4 6h16M4 12h16M4 18h16"/>
                 </svg>
             </button>
@@ -939,18 +1104,15 @@ main {
             </a>
             <div class="topbar-spacer"></div>
             <div class="topbar-user">
+                <span id="userName" class="topbar-user-name text-soft"></span>
                 <div id="userAvatar" class="user-avatar">RR</div>
-                <span id="userName" class="topbar-user-name"></span>
             </div>
         </div>
     </header>
-    <div id="health-banner">
-        <div class="health-dot"></div>
-        <span id="healthText">—</span>
-    </div>
-    <main id="content">
-        <!-- Page content rendered here -->
-        <div class="center-spinner"><div class="spinner"></div></div>
+    <main>
+        <div class="main-inner" id="content">
+            <div class="center-spinner"><div class="spinner"></div></div>
+        </div>
     </main>
 </div>
 
@@ -961,22 +1123,22 @@ main {
         <span class="sidebar-brand-text">Rebel <em>Ribbon</em></span>
     </div>
     <div class="sidebar-section">Workspace</div>
-    <button class="nav-item active" data-page="dashboard"><span class="nav-icon">🏠</span>Dashboard<span class="nav-count" id="nc-dashboard">0</span></button>
-    <button class="nav-item" data-page="surveys"><span class="nav-icon">📋</span>Surveys<span class="nav-count" id="nc-surveys">0</span></button>
-    <button class="nav-item" data-page="reviews"><span class="nav-icon">⭐</span>Reviews<span class="nav-count" id="nc-reviews">0</span></button>
-    <div class="sidebar-section">Settings</div>
-    <button class="nav-item" data-page="discount_codes"><span class="nav-icon">🎟️</span>Discount Codes</button>
-    <button class="nav-item" data-page="referral_codes"><span class="nav-icon">🔗</span>Referral Codes</button>
-    <button class="nav-item" data-page="flavors"><span class="nav-icon">🍪</span>Flavors & Dietary</button>
-    <button class="nav-item" data-page="pricing"><span class="nav-icon">💲</span>Pricing</button>
-    <button class="nav-item" data-page="costs"><span class="nav-icon">📒</span>Costs</button>
+    <button class="nav-item active" data-page="dashboard">Dashboard<span class="nav-count" id="nc-dashboard">0</span></button>
+    <button class="nav-item" data-page="feedback">Customer Feedback<span class="nav-count" id="nc-feedback">0</span></button>
+    <div class="sidebar-section">Manage</div>
+    <button class="nav-item" data-page="discount_codes">Discount Codes</button>
+    <button class="nav-item" data-page="referral_codes">Referral Codes</button>
+    <button class="nav-item" data-page="flavors">Flavors</button>
+    <button class="nav-item" data-page="dietary_options">Dietary Options</button>
+    <button class="nav-item" data-page="pricing">Pricing</button>
+    <button class="nav-item" data-page="costs">Costs</button>
     <div class="sidebar-footer">
         <div id="sidebarUser" class="sidebar-user"></div>
         <button id="signOutBtn" class="btn-signout">Sign out</button>
     </div>
 </nav>
 
-<!-- ========== ORDER DETAIL SHEET ========== -->
+<!-- Order detail -->
 <div id="orderSheet">
     <div class="sheet-backdrop" id="sheetBackdrop"></div>
     <div class="sheet-panel">
@@ -994,7 +1156,7 @@ main {
     </div>
 </div>
 
-<!-- ========== EDITOR DIALOG ========== -->
+<!-- Editor -->
 <div id="editor">
     <div class="editor-card">
         <div class="editor-head">
@@ -1012,18 +1174,18 @@ main {
 
 <script>
 // ============================================================================
-// REBEL RIBBON · Staff Workflow App · v4
-// Card-feed UX, mobile-first, matching rebelribbon.com brand
+// REBEL RIBBON · Staff App · v5
+// Brand-faithful rebuild: warm brown, dusty rose, no script font, no emoji
 // ============================================================================
-const SUPABASE_URL='https://zyntkwammltmjjvgelwg.supabase.co';
-const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
-const SURVEY_BASE='https://rebelribbon.com/survey.html';
-const sb=window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
+const SURVEY_BASE = 'https://rebelribbon.com/survey.html';
+const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // helpers
 const $ = s => document.querySelector(s);
 const $$ = s => Array.from(document.querySelectorAll(s));
-const h = (tag, props={}, ...kids) => {
+const h = (tag, props = {}, ...kids) => {
     const el = document.createElement(tag);
     for (const k in props) {
         if (k === 'class') el.className = props[k];
@@ -1037,27 +1199,39 @@ const h = (tag, props={}, ...kids) => {
 };
 const money = n => '$' + (Number(n||0)).toFixed(2);
 const dateOnly = d => { if (!d) return ''; const dt = new Date(d); return new Date(dt.getTime() - dt.getTimezoneOffset()*60000).toISOString().slice(0,10); };
-const formatDate = d => { if (!d) return ''; const dt = new Date(d.includes('T')?d:d+'T00:00:00'); return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
+const formatDate = d => { if (!d) return ''; const dt = new Date(d.includes && d.includes('T') ? d : d+'T00:00:00'); return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
+const formatDateRelative = d => {
+    if (!d) return '';
+    const dt = new Date(d+'T00:00:00');
+    const days = Math.round((dt - new Date()) / 86400000);
+    if (days < -1) return `${formatDate(d)} · ${-days}d ago`;
+    if (days === -1) return `Yesterday · ${formatDate(d)}`;
+    if (days === 0) return `Today · ${formatDate(d)}`;
+    if (days === 1) return `Tomorrow · ${formatDate(d)}`;
+    if (days <= 7) return `In ${days} days · ${formatDate(d)}`;
+    return formatDate(d);
+};
 const formatPhone = p => { if (!p) return ''; const c = (''+p).replace(/\D/g,''); const m = c.match(/^(\d{3})(\d{3})(\d{4})$/); return m ? `(${m[1]}) ${m[2]}-${m[3]}` : p; };
-const initials = (e) => (e||'').split('@')[0].split(/[._-]/).map(x=>x[0]).join('').slice(0,2).toUpperCase() || 'RR';
-const daysFromNow = d => { if (!d) return null; const dt = new Date(d); const diff = (dt - new Date()) / 86400000; return Math.round(diff); };
+const initials = e => (e||'').split('@')[0].split(/[._-]/).map(x=>x[0]).join('').slice(0,2).toUpperCase() || 'RR';
 const onlyCompanyEmail = e => /@rebelribbon\.com$/i.test(e);
 const escapeHtml = t => { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
+const daysFromNow = d => { if (!d) return null; return Math.round((new Date(d+'T00:00:00') - new Date()) / 86400000); };
 
-// ============================================================================
-// STATE
-// ============================================================================
+// Calendar icon
+const CALENDAR_ICON = '<svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>';
+
+// State
 let session = null;
 let currentPage = 'dashboard';
-let allOrders = [];        // cache of orders loaded
-let customers = new Map(); // id -> customer
+let allOrders = [];
+let customers = new Map();
 let pricing = null;
 let activeOrder = null;
 let activeCustomer = null;
 let adjustments = [];
 let discountDetails = null;
 let referralDetails = null;
-let activeReviewTab = 'pending';
+let activeFeedbackTab = 'reviews-pending';
 
 // ============================================================================
 // AUTH
@@ -1069,15 +1243,10 @@ $('#signInBtn').onclick = async () => {
     msg.classList.remove('visible');
     if (!onlyCompanyEmail(email)) {
         msg.textContent = 'Please use your @rebelribbon.com email.';
-        msg.classList.add('visible');
-        return;
+        msg.classList.add('visible'); return;
     }
     const { error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) {
-        msg.textContent = error.message;
-        msg.classList.add('visible');
-        return;
-    }
+    if (error) { msg.textContent = error.message; msg.classList.add('visible'); return; }
     bootstrap();
 };
 $('#signOutBtn').onclick = async () => { await sb.auth.signOut(); location.reload(); };
@@ -1095,13 +1264,9 @@ async function bootstrap() {
     wireSidebar();
     await loadPricing();
     await goToPage('dashboard');
-    loadHealth(); setInterval(loadHealth, 30000);
     wireRealtime();
 }
 
-// ============================================================================
-// NAV
-// ============================================================================
 function wireSidebar() {
     $('#menuBtn').onclick = () => openSidebar();
     $('#sidebarBackdrop').onclick = () => closeSidebar();
@@ -1117,8 +1282,7 @@ async function goToPage(page) {
     c.innerHTML = '<div class="center-spinner"><div class="spinner"></div></div>';
     try {
         if (page === 'dashboard') await renderDashboard();
-        else if (page === 'surveys') await renderSurveys();
-        else if (page === 'reviews') await renderReviews();
+        else if (page === 'feedback') await renderFeedback();
         else if (page === 'pricing') await renderPricing();
         else await renderSettingsList(page);
     } catch (e) {
@@ -1127,17 +1291,16 @@ async function goToPage(page) {
     }
 }
 
-// ============================================================================
-// DASHBOARD — the card feed
-// ============================================================================
 async function loadPricing() {
     const { data } = await sb.from('pricing').select('*').limit(1).maybeSingle();
     pricing = data || {};
 }
 
+// ============================================================================
+// DASHBOARD
+// ============================================================================
 async function renderDashboard() {
-    // Load all orders + customers in two queries
-    const { data: orders, error } = await sb.from('orders').select('*').order('created_at', { ascending: false });
+    const { data: orders, error } = await sb.from('orders').select('*').order('pickup_delivery_date', { ascending: true });
     if (error) throw error;
     allOrders = orders || [];
 
@@ -1148,116 +1311,181 @@ async function renderDashboard() {
         (cust || []).forEach(c => customers.set(c.id, c));
     }
 
-    // Bucketize
+    // Bucketize for queue display
     const buckets = {
-        needsAttention: [],  // active + unpaid (no link generated)
-        awaitingPayment: [], // active + pending (link sent)
-        inProgress: [],      // active + paid
+        needsAttention: [],  // Active, no link generated yet
+        awaitingPayment: [], // Active, link sent, awaiting customer
+        inProgress: [],      // Paid, being made
+        upcoming: [],        // Within 7 days
         completed: [],
         canceled: []
     };
+    const now = new Date();
     for (const o of allOrders) {
+        const days = daysFromNow(o.pickup_delivery_date);
         if (o.status === 'Canceled') buckets.canceled.push(o);
         else if (o.status === 'Completed') buckets.completed.push(o);
-        else if (o.payment_status === 'paid') buckets.inProgress.push(o);
+        else if (o.payment_status === 'paid') {
+            if (days !== null && days <= 7 && days >= 0) buckets.upcoming.push(o);
+            else buckets.inProgress.push(o);
+        }
         else if (o.payment_status === 'pending') buckets.awaitingPayment.push(o);
         else buckets.needsAttention.push(o);
     }
 
-    // Filter by search
-    const search = ''; // we'll attach this below
-    const searchFilter = q => o => {
-        if (!q) return true;
-        const c = customers.get(o.customer_id);
-        const hay = [c?.first_name, c?.last_name, c?.email, c?.phone, o.event_type_name, String(o.cookie_amount_dzns)].join(' ').toLowerCase();
-        return hay.includes(q);
-    };
-
     const c = $('#content');
     c.innerHTML = '';
 
-    const header = h('div', { class: 'page-header' },
-        h('div', { class: 'page-eyebrow' }, 'Welcome back'),
-        h('h1', { class: 'page-title', html: 'Today\'s <em>orders</em>' }),
-        h('p', { class: 'page-subtitle' }, allOrders.length === 0 ? 'No orders yet — they\'ll appear here.' : `${allOrders.length} order${allOrders.length===1?'':'s'} total · ${buckets.needsAttention.length + buckets.awaitingPayment.length} need attention`)
-    );
+    // Header
+    const totalActive = buckets.needsAttention.length + buckets.awaitingPayment.length + buckets.inProgress.length + buckets.upcoming.length;
+    const header = h('div', { class: 'page-header' });
+    header.appendChild(h('div', { class: 'page-overline' }, 'Workspace'));
+    header.appendChild(h('h1', { class: 'page-title', html: 'Orders' }));
+    header.appendChild(h('p', { class: 'page-subtitle' },
+        allOrders.length === 0 ? 'No orders yet. New requests will appear here.' :
+        `${totalActive} active, ${buckets.completed.length} completed.`
+    ));
     c.appendChild(header);
 
-    // Search bar
-    const searchBar = h('div', { class: 'toolbar' },
-        h('div', { class: 'search-wrap' },
-            h('span', { html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>' }),
-            h('input', { type: 'search', class: 'search-input', placeholder: 'Search by name, email, event…', id: 'dashSearch' })
-        )
-    );
-    c.appendChild(searchBar);
+    // Smart health banner
+    const healthBanner = await checkHealth();
+    if (healthBanner) c.appendChild(healthBanner);
 
-    const sectionsHost = h('div', { id: 'sectionsHost' });
+    // Search
+    const searchWrap = h('div', { class: 'search-wrap' });
+    searchWrap.appendChild(h('span', { html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>' }));
+    const searchInput = h('input', { type: 'search', class: 'search-input', placeholder: 'Search orders, customers...' });
+    searchWrap.appendChild(searchInput);
+    c.appendChild(searchWrap);
+
+    const sectionsHost = h('div');
     c.appendChild(sectionsHost);
 
-    function renderSections(q) {
+    const renderSections = (q) => {
         sectionsHost.innerHTML = '';
-        const filt = searchFilter(q);
+        const filt = (o) => {
+            if (!q) return true;
+            const cu = customers.get(o.customer_id);
+            const hay = [cu?.first_name, cu?.last_name, cu?.email, cu?.phone, o.event_type_name, o.flavor].join(' ').toLowerCase();
+            return hay.includes(q);
+        };
 
-        renderQueueSection(sectionsHost, '🔥 Needs Attention', 'No payment link sent yet', buckets.needsAttention.filter(filt), true);
-        renderQueueSection(sectionsHost, '💸 Awaiting Payment', 'Link sent, waiting for customer', buckets.awaitingPayment.filter(filt), false);
-        renderQueueSection(sectionsHost, '🏭 In Progress', 'Paid · being made', buckets.inProgress.filter(filt), false);
-        renderQueueSection(sectionsHost, '✅ Completed', 'Delivered or fulfilled', buckets.completed.filter(filt), false);
-        if (buckets.canceled.length) renderQueueSection(sectionsHost, '❌ Canceled', '', buckets.canceled.filter(filt), false);
-    }
+        // Hero card for the single most urgent thing
+        const urgent = buckets.needsAttention.filter(filt);
+        if (urgent.length === 1) {
+            renderQueue(sectionsHost, 'Needs your attention', 'No payment link sent yet', urgent, true, true);
+        } else if (urgent.length > 1) {
+            renderQueue(sectionsHost, 'Needs your attention', 'No payment link sent yet', urgent, true, false);
+        }
+        renderQueue(sectionsHost, 'Awaiting payment', 'Link sent — waiting for customer', buckets.awaitingPayment.filter(filt));
+        renderQueue(sectionsHost, 'Pickup or delivery soon', 'Paid and due within the week', buckets.upcoming.filter(filt));
+        renderQueue(sectionsHost, 'In progress', 'Paid — being made', buckets.inProgress.filter(filt));
+        renderQueue(sectionsHost, 'Completed', '', buckets.completed.filter(filt));
+        if (buckets.canceled.length) renderQueue(sectionsHost, 'Canceled', '', buckets.canceled.filter(filt));
+    };
     renderSections('');
-    $('#dashSearch').oninput = (e) => renderSections(e.target.value.trim().toLowerCase());
+    searchInput.oninput = e => renderSections(e.target.value.trim().toLowerCase());
 
-    // Update sidebar counts
+    // Sidebar count
     $('#nc-dashboard').textContent = buckets.needsAttention.length + buckets.awaitingPayment.length;
+    $('#nc-dashboard').classList.toggle('zero', buckets.needsAttention.length + buckets.awaitingPayment.length === 0);
     updateOtherCounts();
 }
 
-function renderQueueSection(host, title, description, orders, urgent) {
+function renderQueue(host, title, description, orders, priority = false, hero = false) {
     if (!orders.length) return;
     const sec = h('section', { class: 'queue-section' });
-    sec.appendChild(h('div', { class: 'queue-header' },
-        h('h2', { class: 'queue-title' }, title),
-        h('span', { class: 'queue-count' }, String(orders.length)),
-        description ? h('span', { class: 'queue-description' }, description) : null
-    ));
-    const grid = h('div', { class: 'cards-grid' });
-    for (const o of orders.slice(0, 30)) grid.appendChild(renderOrderCard(o, urgent));
+    const head = h('div', { class: 'queue-header' });
+    head.appendChild(h('h2', { class: 'queue-title' }, title));
+    head.appendChild(h('span', { class: 'queue-count' }, `(${orders.length})`));
+    if (description) head.appendChild(h('span', { class: 'queue-description' }, description));
+    sec.appendChild(head);
+    const grid = h('div', { class: 'cards-list ' + (hero ? 'hero' : '') });
+    for (const o of orders.slice(0, 30)) grid.appendChild(renderOrderCard(o, priority));
     sec.appendChild(grid);
     host.appendChild(sec);
 }
 
-function renderOrderCard(o, urgent) {
+function renderOrderCard(o, priority) {
     const cust = customers.get(o.customer_id);
-    const name = cust ? `${cust.first_name || ''} ${cust.last_name || ''}`.trim() : 'Unknown';
-    const eventDate = o.pickup_delivery_date;
-    const days = daysFromNow(eventDate);
-    const dueSoon = days !== null && days <= 7 && days >= 0;
+    const name = cust ? `${cust.first_name || ''} ${cust.last_name || ''}`.trim() : 'Unknown customer';
+    const days = daysFromNow(o.pickup_delivery_date);
+    const urgent = days !== null && days <= 7 && days >= 0;
+
+    // Determine next action label
+    let actionText = '';
+    let actionClass = '';
+    if (o.status === 'Canceled') { actionText = 'Canceled'; actionClass = ''; }
+    else if (o.status === 'Completed') { actionText = 'Completed'; actionClass = ''; }
+    else if (o.payment_status === 'paid') {
+        actionText = urgent && days === 0 ? 'Pickup or delivery today' :
+                     urgent && days === 1 ? 'Pickup or delivery tomorrow' :
+                     urgent ? `Pickup or delivery in ${days} days` :
+                     'Start baking';
+        actionClass = urgent ? 'do-now' : '';
+    }
+    else if (o.payment_status === 'pending') { actionText = 'Resend or follow up'; actionClass = ''; }
+    else { actionText = 'Send payment link'; actionClass = 'do-now'; }
 
     const card = h('button', {
-        class: `order-card ${urgent || dueSoon ? 'urgent' : ''}`,
+        class: `order-card ${priority ? 'priority' : ''}`,
         on: { click: () => openOrderSheet(o.id) }
     });
-    card.appendChild(h('div', { class: 'order-card-row' },
-        h('div', null,
-            h('div', { class: 'order-customer' }, name),
-            h('div', { class: 'order-meta' }, `${o.cookie_amount_dzns||0} dozen · ${o.flavor || 'Flavor TBD'}`)
-        ),
-        o.event_type_name ? h('span', { class: 'order-event' }, o.event_type_name) : null
+
+    // Top row: name + event tag
+    const top = h('div', { class: 'order-card-top' });
+    const nameBlock = h('div', null,
+        h('div', { class: 'order-name' }, name),
+    );
+    top.appendChild(nameBlock);
+    if (o.event_type_name) top.appendChild(h('span', { class: 'order-event' }, o.event_type_name));
+    card.appendChild(top);
+
+    // Details
+    card.appendChild(h('div', { class: 'order-details' },
+        h('strong', null, `${o.cookie_amount_dzns || 0} dozen`),
+        o.flavor ? ` · ${o.flavor}` : ''
     ));
-    card.appendChild(h('div', { class: 'order-detail-line' },
-        h('span', null, `📅 `, h('strong', null, formatDate(eventDate) || 'No date')),
-        days !== null && days >= 0 ? h('span', { class: dueSoon ? 'pill-due-soon order-status-pill' : '' }, dueSoon ? `${days}d away` : '') : null
+
+    // Date
+    if (o.pickup_delivery_date) {
+        card.appendChild(h('div', { class: `order-date ${urgent ? 'urgent' : ''}`, html: `${CALENDAR_ICON}<span>${formatDateRelative(o.pickup_delivery_date)}</span>` }));
+    }
+
+    // Next action
+    card.appendChild(h('div', { class: 'order-next-action' },
+        h('span', { class: `order-action-label ${actionClass}` }, actionText),
+        h('span', { class: 'order-action-arrow' }, '→')
     ));
-    // Status row
-    const statusRow = h('div', { class: 'order-action-strip' });
-    if (o.status === 'Canceled') statusRow.appendChild(h('span', { class: 'order-status-pill pill-canceled' }, 'Canceled'));
-    else if (o.status === 'Completed') statusRow.appendChild(h('span', { class: 'order-status-pill pill-completed' }, 'Completed'));
-    else if (o.payment_status === 'paid') statusRow.appendChild(h('span', { class: 'order-status-pill pill-paid' }, 'Paid · In progress'));
-    else if (o.payment_status === 'pending') statusRow.appendChild(h('span', { class: 'order-status-pill pill-sent' }, 'Payment sent'));
-    else statusRow.appendChild(h('span', { class: 'order-status-pill pill-needs' }, 'Needs payment link'));
-    card.appendChild(statusRow);
     return card;
+}
+
+// ============================================================================
+// SMART HEALTH BANNER
+// ============================================================================
+async function checkHealth() {
+    try {
+        // Only show banner if a pending payment exists with no webhook follow-up in 24h
+        const cutoff = new Date(Date.now() - 24 * 3600000).toISOString();
+        const { data: stalePending } = await sb.from('orders')
+            .select('id, payment_status, updated_at, stripe_checkout_session_id')
+            .eq('payment_status', 'pending')
+            .lt('updated_at', cutoff)
+            .limit(1);
+        if (stalePending && stalePending.length > 0) {
+            const banner = h('div', {
+                class: 'visible',
+                style: 'display:flex; margin-bottom:1.5rem; padding:0.875rem 1.125rem; background:var(--amber-soft); color:var(--amber); font-size:0.8125rem; border-left:3px solid var(--amber); border-radius:6px; align-items:center; gap:0.75rem;'
+            },
+                h('span', { html: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>' }),
+                h('span', null, 'A payment link was sent over 24 hours ago and we haven\'t heard back from Stripe. Check the order status manually if needed.')
+            );
+            return banner;
+        }
+        return null;
+    } catch {
+        return null;
+    }
 }
 
 // ============================================================================
@@ -1265,7 +1493,7 @@ function renderOrderCard(o, urgent) {
 // ============================================================================
 async function openOrderSheet(orderId) {
     $('#orderSheet').classList.add('open');
-    $('#sheetTitle').textContent = '...';
+    $('#sheetTitle').textContent = 'Loading...';
     $('#sheetSubtitle').textContent = '';
     $('#sheetBody').innerHTML = '<div class="center-spinner"><div class="spinner"></div></div>';
 
@@ -1282,15 +1510,15 @@ async function openOrderSheet(orderId) {
         activeCustomer = data;
     } else activeCustomer = null;
 
+    discountDetails = null; referralDetails = null;
     if (activeOrder.discount_code_used) {
         const { data } = await sb.from('discount_codes').select('*').eq('code', activeOrder.discount_code_used).maybeSingle();
         discountDetails = data;
-    } else discountDetails = null;
+    }
     if (activeOrder.referral_code_used) {
         const { data } = await sb.from('referral_codes').select('*').eq('code', activeOrder.referral_code_used).maybeSingle();
         referralDetails = data;
-    } else referralDetails = null;
-
+    }
     renderOrderSheet();
 }
 
@@ -1333,110 +1561,97 @@ function renderOrderSheet() {
 
     const body = $('#sheetBody');
     body.innerHTML = '';
-
-    // ---- Status switcher
-    body.appendChild(renderStatusSwitcher(o));
-
-    // ---- Stripe action
-    body.appendChild(renderStripePanel(o, c, t));
-
-    // ---- Pricing
-    body.appendChild(renderPricingSection(o, t));
-
-    // ---- Customer
-    body.appendChild(renderCustomerSection(c));
-
-    // ---- Order details
-    body.appendChild(renderOrderDetailsSection(o));
-
-    // ---- Fees & Discounts
-    body.appendChild(renderAdjustmentsSection());
-
-    // ---- Survey
-    body.appendChild(renderSurveySection(o));
+    body.appendChild(renderStatus(o));
+    body.appendChild(renderStripe(o, c, t));
+    body.appendChild(renderPricing(o, t));
+    body.appendChild(renderCustomer(c));
+    body.appendChild(renderOrderDetails(o));
+    body.appendChild(renderAdjustments());
+    body.appendChild(renderSurvey(o));
 }
 
-function renderStatusSwitcher(o) {
-    const sec = h('div', { class: 'detail-section' });
-    sec.appendChild(h('h3', null, '📌 Order Status'));
-    const sw = h('div', { class: 'status-switcher' });
-    const statuses = ['Active','Completed','Canceled'];
-    for (const s of statuses) {
-        const btn = h('button', {
-            class: o.status === s ? 'active' : '',
+function renderStatus(o) {
+    const sec = h('div', { class: 'detail-card' });
+    sec.appendChild(h('h3', null, 'Status'));
+    const tabs = h('div', { class: 'status-tabs' });
+    ['Active','Completed','Canceled'].forEach(s => {
+        tabs.appendChild(h('button', {
+            class: `status-tab ${o.status === s ? 'active' : ''}`,
             on: { click: async () => {
                 await sb.from('orders').update({ status: s }).eq('id', o.id);
                 o.status = s;
-                renderOrderSheet();
-                // Refresh dashboard cache silently
-                const idx = allOrders.findIndex(x=>x.id===o.id);
+                const idx = allOrders.findIndex(x => x.id === o.id);
                 if (idx >= 0) allOrders[idx] = {...allOrders[idx], status: s};
+                renderOrderSheet();
             }}
-        }, s);
-        sw.appendChild(btn);
-    }
-    sec.appendChild(sw);
+        }, s));
+    });
+    sec.appendChild(tabs);
     return sec;
 }
 
-function renderStripePanel(o, c, t) {
+function renderStripe(o, c, t) {
     const status = o.payment_status || 'unpaid';
-    const wrap = h('div', { class: `stripe-action ${status}` });
-    wrap.appendChild(h('h3', null,
-        h('span', null, '💳 Payment'),
-        h('span', { class: `order-status-pill pill-${status === 'paid' ? 'paid' : status === 'pending' ? 'sent' : 'needs'}` }, status === 'paid' ? 'Paid' : status === 'pending' ? 'Link Sent' : 'Unpaid')
+    const wrap = h('div', { class: `stripe-card ${status}` });
+    wrap.appendChild(h('div', { class: 'stripe-head' },
+        h('h3', null, 'Payment'),
+        h('span', { class: `stripe-badge ${status}` }, status)
     ));
 
     if (status === 'paid') {
-        wrap.appendChild(h('p', { html: `Paid <strong>${money(o.payment_amount||t.total)}</strong> on ${formatDate(o.paid_at) || '—'}` }));
-    } else if (o.stripe_payment_link_url) {
-        wrap.appendChild(h('p', { html: `Amount: <strong>${money(o.payment_amount||t.total)}</strong>` }));
-        const linkDisp = h('div', { class: 'stripe-link-display' },
+        wrap.appendChild(h('div', { class: 'stripe-amount', html: `${money(o.payment_amount||t.total)}<span>received ${o.paid_at?formatDate(o.paid_at):'manually'}</span>` }));
+        return wrap;
+    }
+
+    wrap.appendChild(h('div', { class: 'stripe-amount', html: `${money(o.payment_amount||t.total)}<span>${status === 'pending' ? 'link sent' : 'due'}</span>` }));
+
+    if (o.stripe_payment_link_url) {
+        const linkRow = h('div', { class: 'stripe-link-row' },
             h('code', null, o.stripe_payment_link_url),
             h('button', {
                 class: 'btn btn-secondary btn-sm',
-                on: { click: () => { navigator.clipboard.writeText(o.stripe_payment_link_url); }}
-            }, '📋 Copy')
+                on: { click: (e) => { navigator.clipboard.writeText(o.stripe_payment_link_url); e.target.textContent = 'Copied'; setTimeout(() => e.target.textContent = 'Copy', 1200); }}
+            }, 'Copy')
         );
-        wrap.appendChild(linkDisp);
-        const sendBtns = h('div', { class: 'send-buttons' });
+        wrap.appendChild(linkRow);
+
+        const send = h('div', { class: 'send-grid' });
         if (c?.email) {
             const subj = encodeURIComponent('Your Rebel Ribbon order — payment link');
-            const bod = encodeURIComponent(`Hi ${c.first_name||''}!\n\nHere is the secure payment link for your custom cookie order:\n\n${o.stripe_payment_link_url}\n\nThanks so much!\n— Rebel Ribbon`);
-            sendBtns.appendChild(h('a', { href: `mailto:${c.email}?subject=${subj}&body=${bod}`, class: 'btn btn-secondary btn-sm' }, '📧 Email'));
+            const bod = encodeURIComponent(`Hi ${c.first_name||''},\n\nHere is the secure payment link for your custom cookie order:\n\n${o.stripe_payment_link_url}\n\nThank you,\nRebel Ribbon`);
+            send.appendChild(h('a', { href: `mailto:${c.email}?subject=${subj}&body=${bod}`, class: 'btn btn-secondary btn-sm' }, 'Email'));
         }
         if (c?.phone) {
             const sms = encodeURIComponent(`Hi ${c.first_name||''}! Payment link for your Rebel Ribbon order: ${o.stripe_payment_link_url}`);
-            sendBtns.appendChild(h('a', { href: `sms:${c.phone.replace(/\D/g,'')}?body=${sms}`, class: 'btn btn-secondary btn-sm' }, '💬 Text'));
+            send.appendChild(h('a', { href: `sms:${c.phone.replace(/\D/g,'')}?body=${sms}`, class: 'btn btn-secondary btn-sm' }, 'Text'));
         }
-        sendBtns.appendChild(h('button', { class: 'btn btn-secondary btn-sm', on: { click: () => generateCheckout() } }, '🔄 Regen'));
-        sendBtns.appendChild(h('button', { class: 'btn btn-success btn-sm', on: { click: async () => {
-            if (!confirm('Mark as paid manually? This bypasses Stripe.')) return;
-            await sb.from('orders').update({ payment_status: 'paid', paid_at: new Date().toISOString(), payment_amount: t.total }).eq('id', o.id);
-            activeOrder = {...o, payment_status: 'paid', paid_at: new Date().toISOString(), payment_amount: t.total };
-            renderOrderSheet();
-        }}}, '✓ Mark Paid'));
-        wrap.appendChild(sendBtns);
+        send.appendChild(h('button', { class: 'btn btn-secondary btn-sm', on: { click: () => generateCheckout() } }, 'Regenerate'));
+        send.appendChild(h('button', { class: 'btn btn-secondary btn-sm', on: { click: () => markPaidManually(t.total) }}, 'Mark paid'));
+        wrap.appendChild(send);
     } else {
-        wrap.appendChild(h('p', { html: `Total: <strong>${money(t.total)}</strong>` }));
         wrap.appendChild(h('button', {
             class: 'btn btn-primary btn-block btn-lg',
             style: 'margin-top: 0.625rem;',
             on: { click: () => generateCheckout() }
-        }, '⚡ Generate Stripe Checkout Link'));
-        wrap.appendChild(h('div', { style: 'margin-top: 0.5rem; display: flex; gap: 0.5rem;' },
-            h('button', {
-                class: 'btn btn-secondary btn-sm', style: 'flex: 1;',
-                on: { click: async () => {
-                    if (!confirm('Mark as paid manually? This bypasses Stripe.')) return;
-                    await sb.from('orders').update({ payment_status: 'paid', paid_at: new Date().toISOString(), payment_amount: t.total }).eq('id', o.id);
-                    activeOrder = {...o, payment_status: 'paid', paid_at: new Date().toISOString(), payment_amount: t.total };
-                    renderOrderSheet();
-                }}
-            }, '✓ Already paid (manual)')
-        ));
+        }, 'Generate payment link'));
+        wrap.appendChild(h('button', {
+            class: 'btn btn-ghost btn-sm btn-block',
+            style: 'margin-top: 0.5rem;',
+            on: { click: () => markPaidManually(t.total) }
+        }, 'Or mark as paid manually'));
     }
     return wrap;
+}
+
+async function markPaidManually(amount) {
+    if (!confirm(`Mark this order as paid for ${money(amount)}? This bypasses Stripe and is permanent.`)) return;
+    await sb.from('orders').update({
+        payment_status: 'paid',
+        paid_at: new Date().toISOString(),
+        payment_amount: amount
+    }).eq('id', activeOrder.id);
+    activeOrder = {...activeOrder, payment_status: 'paid', paid_at: new Date().toISOString(), payment_amount: amount};
+    renderOrderSheet();
 }
 
 async function generateCheckout() {
@@ -1452,8 +1667,8 @@ async function generateCheckout() {
     if (t.codeDisc > 0) lineItems.push({ label: `Discount: ${activeOrder.discount_code_used}`, amount: -t.codeDisc, quantity: 1 });
     if (t.refDisc > 0) lineItems.push({ label: `Referral: ${activeOrder.referral_code_used}`, amount: -t.refDisc, quantity: 1 });
 
-    const stripeBody = document.querySelector('.stripe-action');
-    if (stripeBody) stripeBody.innerHTML = '<div class="center-spinner"><div class="spinner"></div></div>';
+    const card = document.querySelector('.stripe-card');
+    if (card) card.innerHTML = '<div class="center-spinner"><div class="spinner"></div></div>';
 
     try {
         const res = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout-session`, {
@@ -1472,40 +1687,43 @@ async function generateCheckout() {
         activeOrder = fresh;
         renderOrderSheet();
     } catch (e) {
-        alert(`Stripe error: ${e.message}\n\nIf this says "STRIPE_SECRET_KEY is not configured" — go to Supabase Dashboard → Edge Functions → Secrets and add it.`);
+        const msg = e.message.includes('STRIPE_SECRET') || e.message.includes('configured')
+            ? 'Stripe secret key isn\'t configured yet. Add STRIPE_SECRET_KEY in Supabase → Edge Functions → Secrets.'
+            : e.message;
+        alert(`Stripe: ${msg}`);
         renderOrderSheet();
     }
 }
 
-function renderPricingSection(o, t) {
-    const sec = h('div', { class: 'detail-section' });
-    sec.appendChild(h('h3', null, '💰 Pricing'));
+function renderPricing(o, t) {
+    const sec = h('div', { class: 'detail-card' });
+    sec.appendChild(h('h3', null, h('span', null, 'Pricing'),
+        h('button', { class: 'btn btn-ghost btn-sm', on: { click: () => printInvoice() }}, 'Print invoice')
+    ));
     const rows = h('div', { class: 'pricing-rows' });
-    const addRow = (label, val, cls='') => rows.appendChild(h('div', { class: `pricing-row ${cls}` }, h('span', null, label), h('span', null, val)));
-    addRow(`${t.dz} dz × ${money(t.ppd)}`, money(t.base));
-    if (t.consult > 0) addRow('Consultation', money(t.consult));
-    if (t.gift > 0) addRow('Gift note', money(t.gift));
-    if (t.feeSum > 0) addRow('Fees', money(t.feeSum), 'fee-row');
-    if (t.codeDisc > 0) addRow(`Discount (${o.discount_code_used})`, '−'+money(t.codeDisc), 'discount-row');
-    if (t.refDisc > 0) addRow(`Referral (${o.referral_code_used})`, '−'+money(t.refDisc), 'discount-row');
-    if (t.discSum > 0) addRow('Other discounts', '−'+money(t.discSum), 'discount-row');
-    addRow('Total', money(t.total), 'total');
+    const add = (label, val, cls = '') => rows.appendChild(h('div', { class: `pricing-row ${cls}` }, h('span', null, label), h('span', null, val)));
+    add(`${t.dz} dozen × ${money(t.ppd)}`, money(t.base));
+    if (t.consult > 0) add('Consultation', money(t.consult));
+    if (t.gift > 0) add('Gift note', money(t.gift));
+    if (t.feeSum > 0) add('Other fees', money(t.feeSum), 'fee');
+    if (t.codeDisc > 0) add(`Discount (${o.discount_code_used})`, '−'+money(t.codeDisc), 'discount');
+    if (t.refDisc > 0) add(`Referral (${o.referral_code_used})`, '−'+money(t.refDisc), 'discount');
+    if (t.discSum > 0) add('Other discounts', '−'+money(t.discSum), 'discount');
+    add('Total', money(t.total), 'total');
     sec.appendChild(rows);
-    sec.appendChild(h('button', { class: 'btn btn-secondary btn-sm', style: 'margin-top: 0.625rem;', on: { click: () => printInvoice() }}, '📄 Print invoice'));
     return sec;
 }
 
-function renderCustomerSection(c) {
-    const sec = h('div', { class: 'detail-section' });
-    sec.appendChild(h('h3', null, '👤 Customer'));
+function renderCustomer(c) {
+    const sec = h('div', { class: 'detail-card' });
+    sec.appendChild(h('h3', null, 'Customer'));
     if (!c) {
-        sec.appendChild(h('p', { class: 'text-ink-soft' }, 'No customer linked'));
+        sec.appendChild(h('p', { class: 'text-faded' }, 'No customer linked'));
         return sec;
     }
-    const addRow = (label, val) => sec.appendChild(h('div', { class: 'detail-row' }, h('span', { class: 'detail-label' }, label), h('span', { class: 'detail-value' }, val || '—')));
     sec.appendChild(h('div', { class: 'detail-row' },
         h('span', { class: 'detail-label' }, 'Name'),
-        h('span', { class: 'detail-value' }, `${c.first_name||''} ${c.last_name||''}`.trim() || '—')
+        h('span', { class: 'detail-value' }, `${c.first_name||''} ${c.last_name||''}`.trim())
     ));
     if (c.email) sec.appendChild(h('div', { class: 'detail-row' },
         h('span', { class: 'detail-label' }, 'Email'),
@@ -1517,66 +1735,72 @@ function renderCustomerSection(c) {
     ));
     const addr = [c.street_address, c.street_address_cont, [c.city, c.state, c.zip].filter(Boolean).join(', ')].filter(Boolean);
     if (addr.length) {
-        const addrEl = h('div', { class: 'detail-value' });
-        addr.forEach(line => addrEl.appendChild(h('div', null, line)));
-        addrEl.appendChild(h('a', { href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr.join(' '))}`, target: '_blank', style: 'font-size: 0.75rem;' }, '📍 View on map'));
-        sec.appendChild(h('div', { class: 'detail-row' },
+        const addrBlock = h('div', { class: 'detail-value' });
+        addr.forEach(line => addrBlock.appendChild(h('div', null, line)));
+        addrBlock.appendChild(h('a', {
+            href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr.join(' '))}`,
+            target: '_blank',
+            style: 'font-size: 0.75rem; margin-top: 0.375rem; display: inline-block;'
+        }, 'View on map →'));
+        sec.appendChild(h('div', { class: 'detail-row detail-value-block' },
             h('span', { class: 'detail-label' }, 'Address'),
-            addrEl
+            addrBlock
         ));
     }
     return sec;
 }
 
-function renderOrderDetailsSection(o) {
-    const sec = h('div', { class: 'detail-section' });
-    sec.appendChild(h('h3', null, '📝 Order Details'));
+function renderOrderDetails(o) {
+    const sec = h('div', { class: 'detail-card' });
+    sec.appendChild(h('h3', null, 'Order Details'));
     const add = (label, val) => sec.appendChild(h('div', { class: 'detail-row' },
         h('span', { class: 'detail-label' }, label),
         h('span', { class: 'detail-value' }, val || '—')
     ));
     add('Submitted', formatDate(o.created_at));
     add('Event date', formatDate(o.event_date));
-    add('Pickup / Delivery', `${formatDate(o.pickup_delivery_date)} · ${o.pickup_delivery_type||'—'}`);
+    add('Pickup / Delivery', `${formatDate(o.pickup_delivery_date)}${o.pickup_delivery_type ? ` · ${o.pickup_delivery_type}` : ''}`);
     add('Flavor', o.flavor);
     add('Dietary', o.dietary_option);
     if (o.consultation_requested) add('Consultation', 'Yes');
     if (o.gift_note) {
         add('Gift note', 'Yes');
-        if (o.gift_note_text) add('Gift message', o.gift_note_text);
+        if (o.gift_note_text) {
+            sec.appendChild(h('div', { class: 'detail-row detail-value-block' },
+                h('span', { class: 'detail-label' }, 'Gift message'),
+                h('div', { class: 'detail-value' }, h('div', { class: 'detail-note' }, o.gift_note_text))
+            ));
+        }
     }
     if (o.design_notes) {
-        sec.appendChild(h('div', { class: 'detail-row', style: 'flex-direction: column; align-items: flex-start;' },
+        sec.appendChild(h('div', { class: 'detail-row detail-value-block' },
             h('span', { class: 'detail-label' }, 'Design notes'),
-            h('div', { class: 'detail-value', style: 'background: var(--pink-50); padding: 0.5rem 0.75rem; border-radius: 8px; margin-top: 0.25rem; width: 100%;' }, o.design_notes)
+            h('div', { class: 'detail-value' }, h('div', { class: 'detail-note' }, o.design_notes))
         ));
     }
     if (o.design_inspiration_photo) {
-        sec.appendChild(h('div', { class: 'detail-row', style: 'flex-direction: column; align-items: flex-start;' },
+        sec.appendChild(h('div', { class: 'detail-row detail-value-block' },
             h('span', { class: 'detail-label' }, 'Inspiration'),
             h('a', { href: o.design_inspiration_photo, target: '_blank' },
-                h('img', { src: o.design_inspiration_photo, style: 'max-width: 200px; max-height: 200px; border-radius: 8px; margin-top: 0.375rem; border: 1px solid var(--line);' })
+                h('img', { src: o.design_inspiration_photo, style: 'max-width: 240px; max-height: 240px; border-radius: 8px; margin-top: 0.5rem; border: 1px solid var(--line);' })
             )
         ));
     }
     return sec;
 }
 
-function renderAdjustmentsSection() {
-    const sec = h('div', { class: 'detail-section' });
-    sec.appendChild(h('h3', null, '➕ Fees & Discounts'));
+function renderAdjustments() {
+    const sec = h('div', { class: 'detail-card' });
+    sec.appendChild(h('h3', null, 'Fees & Discounts'));
     const form = h('div', { class: 'adj-form' });
-    const labelI = h('input', { type: 'text', placeholder: 'Label (e.g. Rush)' });
+    const labelI = h('input', { type: 'text', placeholder: 'Label (e.g. Rush fee)' });
     const amtI = h('input', { type: 'number', step: '0.01', placeholder: '$' });
-    const kindI = h('select', null,
-        h('option', { value: 'fee' }, 'Fee'),
-        h('option', { value: 'discount' }, 'Disc')
-    );
+    const kindI = h('select', null, h('option', { value: 'fee' }, 'Fee'), h('option', { value: 'discount' }, 'Discount'));
     const addBtn = h('button', {
-        class: 'btn btn-primary btn-sm adj-add-btn',
+        class: 'btn btn-primary btn-sm adj-add',
         on: { click: async () => {
             const label = labelI.value.trim(); const amount = Number(amtI.value);
-            if (!label || !amount || amount <= 0) return alert('Need label + positive amount');
+            if (!label || !amount || amount <= 0) return alert('Need a label and positive amount');
             const { data, error } = await sb.from('order_adjustments').insert({
                 order_id: activeOrder.id, label, amount, kind: kindI.value
             }).select('*').single();
@@ -1587,8 +1811,9 @@ function renderAdjustmentsSection() {
     }, 'Add');
     form.append(labelI, amtI, kindI, addBtn);
     sec.appendChild(form);
+
     const list = h('div', { class: 'adj-list' });
-    if (!adjustments.length) list.appendChild(h('p', { class: 'text-ink-soft', style: 'text-align: center; padding: 0.625rem; font-size: 0.8125rem;' }, 'No adjustments'));
+    if (!adjustments.length) list.appendChild(h('p', { class: 'text-faded', style: 'text-align: center; padding: 0.75rem; font-size: 0.875rem;' }, 'None yet'));
     for (const a of adjustments) {
         list.appendChild(h('div', { class: 'adj-item' },
             h('span', { class: 'adj-item-label' }, a.label),
@@ -1596,7 +1821,7 @@ function renderAdjustmentsSection() {
             h('button', { class: 'adj-item-remove', on: { click: async () => {
                 if (!confirm('Remove?')) return;
                 await sb.from('order_adjustments').delete().eq('id', a.id);
-                adjustments = adjustments.filter(x=>x.id!==a.id);
+                adjustments = adjustments.filter(x => x.id !== a.id);
                 renderOrderSheet();
             }}}, '×')
         ));
@@ -1605,43 +1830,40 @@ function renderAdjustmentsSection() {
     return sec;
 }
 
-function renderSurveySection(o) {
-    const sec = h('div', { class: 'detail-section' });
-    sec.appendChild(h('h3', null, '⭐ Customer Survey'));
+function renderSurvey(o) {
+    const sec = h('div', { class: 'detail-card' });
+    sec.appendChild(h('h3', null, 'Customer Survey'));
     const slot = h('div', null, h('div', { class: 'center-spinner' }, h('div', { class: 'spinner' })));
     sec.appendChild(slot);
     sb.from('survey_tokens').select('*').eq('order_id', o.id).order('created_at', { ascending: false }).limit(1).maybeSingle()
         .then(({ data: tok }) => {
             slot.innerHTML = '';
             if (!tok) {
-                slot.appendChild(h('div', { class: 'survey-status none' }, 'No survey sent yet.'));
+                slot.appendChild(h('div', { class: 'survey-status-row none' }, 'No survey sent yet.'));
                 slot.appendChild(h('button', {
                     class: 'btn btn-primary btn-block btn-sm',
                     on: { click: () => generateSurveyToken(o.id, slot) }
-                }, '📝 Generate Survey Link'));
+                }, 'Generate survey link'));
                 return;
             }
             const url = `${SURVEY_BASE}?token=${tok.token}`;
             const expired = tok.expires_at && new Date(tok.expires_at) < new Date();
             const used = tok.used;
             const status = used ? 'completed' : expired ? 'expired' : 'active';
-            slot.appendChild(h('div', { class: `survey-status ${status}` },
-                used ? `✅ Completed ${tok.used_at?formatDate(tok.used_at):''}` :
-                expired ? `⚠ Expired ${formatDate(tok.expires_at)}` :
-                `📨 Active · expires ${formatDate(tok.expires_at)}`
-            ));
+            const labels = { active: `Active · expires ${formatDate(tok.expires_at)}`, expired: `Expired ${formatDate(tok.expires_at)}`, completed: `Completed ${tok.used_at?formatDate(tok.used_at):''}` };
+            slot.appendChild(h('div', { class: `survey-status-row ${status}` }, labels[status]));
             if (!used) {
-                slot.appendChild(h('div', { class: 'stripe-link-display' },
+                slot.appendChild(h('div', { class: 'stripe-link-row' },
                     h('code', null, url),
                     h('button', {
                         class: 'btn btn-secondary btn-sm',
-                        on: { click: () => navigator.clipboard.writeText(url) }
-                    }, '📋')
+                        on: { click: (e) => { navigator.clipboard.writeText(url); e.target.textContent = 'Copied'; setTimeout(() => e.target.textContent = 'Copy', 1200); }}
+                    }, 'Copy')
                 ));
                 if (expired) slot.appendChild(h('button', {
                     class: 'btn btn-secondary btn-sm btn-block',
                     on: { click: () => generateSurveyToken(o.id, slot) }
-                }, '🔄 Regenerate'));
+                }, 'Regenerate'));
             }
         });
     return sec;
@@ -1653,12 +1875,12 @@ async function generateSurveyToken(orderId, slot) {
     const token = btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
     const exp = new Date(); exp.setDate(exp.getDate()+30);
     const { error } = await sb.from('survey_tokens').insert({ token, order_id: orderId, expires_at: exp.toISOString() });
-    if (error) { slot.innerHTML = `<div class="survey-status expired">${error.message}</div>`; return; }
+    if (error) { slot.innerHTML = `<div class="survey-status-row expired">${error.message}</div>`; return; }
     renderOrderSheet();
 }
 
 function printInvoice() {
-    if (!activeOrder || !activeCustomer) return alert('Customer info needed');
+    if (!activeOrder || !activeCustomer) return alert('Need customer info first');
     const t = calculateTotals();
     const items = [];
     if (t.base > 0) items.push([`${t.dz} dozen × ${money(t.ppd)}`, money(t.base)]);
@@ -1671,22 +1893,22 @@ function printInvoice() {
     const c = activeCustomer;
     const orderId = String(activeOrder.id).slice(0,8).toUpperCase();
     const html = `<!doctype html><html><head><title>Invoice ${orderId}</title>
-<style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500;600&display=swap');
-*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;padding:40px;background:#fffbf5;color:#1a0d12}
-.inv{max-width:680px;margin:auto;background:white;border-radius:24px;padding:48px;box-shadow:0 20px 60px -20px rgba(131,24,67,.15)}
-.hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid rgba(131,24,67,.1)}
-.brand{font-family:'Playfair Display',serif;font-size:28px;color:#831843;font-weight:500}.brand em{font-style:italic;color:#db2777}
-.pill{background:#fdf2f8;color:#be185d;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+<style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Lato:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Lato,sans-serif;padding:48px;background:#fdf2ee;color:#3d2b2e}
+.inv{max-width:680px;margin:auto;background:#fdf8f3;border-radius:16px;padding:48px;box-shadow:0 20px 60px -20px rgba(61,43,46,.12)}
+.hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid rgba(61,43,46,.1)}
+.brand{font-family:'Playfair Display',serif;font-size:28px;color:#3d2b2e;font-weight:500;letter-spacing:-0.01em}.brand em{font-style:italic;color:#b8847e;font-weight:400}
+.pill{background:#fdf0ec;color:#5c3a3d;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
 .parties{display:flex;justify-content:space-between;margin-bottom:32px;font-size:14px}
-.lbl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#6b4c54;margin-bottom:6px;font-weight:600}
-table{width:100%;border-collapse:collapse;margin-bottom:24px}td{padding:12px 0;font-size:14px;border-bottom:1px solid rgba(131,24,67,.06)}td:last-child{text-align:right}
-.tot td{font-family:'Playfair Display',serif;font-size:20px;color:#831843;font-weight:700;border-bottom:none;border-top:2px solid #be185d;padding-top:16px}
-.ftr{text-align:center;font-size:11px;color:#6b4c54;margin-top:32px;font-style:italic}
+.lbl{font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:#806b6e;margin-bottom:6px;font-weight:600}
+table{width:100%;border-collapse:collapse;margin-bottom:24px}td{padding:12px 0;font-size:14px;border-bottom:1px solid rgba(61,43,46,.06)}td:last-child{text-align:right}
+.tot td{font-family:'Playfair Display',serif;font-size:20px;color:#3d2b2e;font-weight:600;border-bottom:none;border-top:2px solid #5c3a3d;padding-top:16px}
+.ftr{text-align:center;font-size:11px;color:#806b6e;margin-top:32px;font-style:italic}
 @media print{body{background:white;padding:0}.inv{box-shadow:none;border-radius:0}}</style></head><body>
-<div class="inv"><div class="hd"><div><div class="brand">Rebel <em>Ribbon</em></div><div style="font-size:11px;color:#6b4c54;margin-top:4px">Custom Cookies · San Antonio</div></div>
-<div style="text-align:right"><div class="pill">Invoice ${orderId}</div><div style="margin-top:8px;font-size:12px;color:#6b4c54">${new Date().toLocaleDateString()}</div></div></div>
-<div class="parties"><div><div class="lbl">Bill to</div><div style="font-weight:600;font-size:15px">${c.first_name||''} ${c.last_name||''}</div><div style="color:#6b4c54">${c.email||''}</div><div style="color:#6b4c54">${formatPhone(c.phone)||''}</div></div>
-<div style="text-align:right"><div class="lbl">From</div><div style="font-weight:600;font-size:15px">Rebel Ribbon</div><div style="color:#6b4c54">rebelribbon.com</div><div style="color:#6b4c54">info@rebelribbon.com</div></div></div>
+<div class="inv"><div class="hd"><div><div class="brand">Rebel <em>Ribbon</em></div><div style="font-size:11px;color:#806b6e;margin-top:4px;text-transform:uppercase;letter-spacing:.08em">Custom Cookies · San Antonio</div></div>
+<div style="text-align:right"><div class="pill">Invoice ${orderId}</div><div style="margin-top:8px;font-size:12px;color:#806b6e">${new Date().toLocaleDateString()}</div></div></div>
+<div class="parties"><div><div class="lbl">Bill to</div><div style="font-weight:600;font-size:15px">${c.first_name||''} ${c.last_name||''}</div><div style="color:#806b6e">${c.email||''}</div><div style="color:#806b6e">${formatPhone(c.phone)||''}</div></div>
+<div style="text-align:right"><div class="lbl">From</div><div style="font-weight:600;font-size:15px">Rebel Ribbon</div><div style="color:#806b6e">rebelribbon.com</div><div style="color:#806b6e">info@rebelribbon.com</div></div></div>
 <table><tbody>${items.map(([l,a])=>`<tr><td>${l}</td><td>${a}</td></tr>`).join('')}<tr class="tot"><td>Total Due</td><td>${money(t.total)}</td></tr></tbody></table>
 <div class="ftr">Thank you for ordering from two sisters in San Antonio.</div></div>
 <script>window.onload=()=>window.print()<\/script></body></html>`;
@@ -1695,108 +1917,114 @@ table{width:100%;border-collapse:collapse;margin-bottom:24px}td{padding:12px 0;f
 }
 
 // ============================================================================
-// SURVEYS PAGE
+// FEEDBACK PAGE — surveys + reviews unified
 // ============================================================================
-async function renderSurveys() {
+async function renderFeedback() {
     const c = $('#content');
     c.innerHTML = '';
     c.appendChild(h('div', { class: 'page-header' },
-        h('div', { class: 'page-eyebrow' }, 'Customer voices'),
-        h('h1', { class: 'page-title', html: 'Surveys' })
+        h('div', { class: 'page-overline' }, 'Customer voices'),
+        h('h1', { class: 'page-title' }, 'Feedback')
     ));
+
+    // Tab bar
+    const [revPending, revApproved, revRejected, surveyCount] = await Promise.all([
+        sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+        sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+        sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'rejected'),
+        sb.from('surveys').select('id', { count: 'exact', head: true })
+    ]);
+    const tabsBar = h('div', { class: 'tabs-bar' });
+    const tabs = [
+        ['reviews-pending', 'Pending reviews', revPending.count||0],
+        ['reviews-approved', 'Approved', revApproved.count||0],
+        ['reviews-rejected', 'Rejected', revRejected.count||0],
+        ['surveys', 'Surveys', surveyCount.count||0]
+    ];
+    tabs.forEach(([key, label, n]) => {
+        tabsBar.appendChild(h('button', {
+            class: 'tab-btn' + (activeFeedbackTab === key ? ' active' : ''),
+            on: { click: () => { activeFeedbackTab = key; renderFeedback(); } }
+        }, label, h('span', { class: 'count' }, `(${n})`)));
+    });
+    c.appendChild(tabsBar);
+
+    if (activeFeedbackTab === 'surveys') {
+        await renderSurveys(c);
+    } else {
+        const statusKey = activeFeedbackTab.split('-')[1];
+        await renderReviewsList(c, statusKey);
+    }
+}
+
+async function renderSurveys(c) {
     const { data: surveys } = await sb.from('surveys').select('*').order('created_at', { ascending: false });
     if (!surveys?.length) {
-        c.appendChild(h('div', { class: 'queue-empty' }, h('span', { class: 'empty-emoji' }, '📋'), 'No survey responses yet.'));
+        c.appendChild(h('div', { class: 'queue-empty' }, 'No survey responses yet.'));
         return;
     }
-    const list = h('div', { class: 'cards-grid' });
     const custIds = [...new Set(surveys.map(s=>s.customer_id).filter(Boolean))];
     let custMap = new Map();
     if (custIds.length) {
         const { data } = await sb.from('customers').select('id,first_name,last_name').in('id', custIds);
-        (data||[]).forEach(x=>custMap.set(x.id,x));
+        (data||[]).forEach(x=>custMap.set(x.id, x));
     }
+    const list = h('div');
     for (const s of surveys) {
         const cu = custMap.get(s.customer_id);
-        const card = h('div', { class: 'order-card', style: 'cursor: default;' },
-            h('div', { class: 'order-card-row' },
-                h('div', null,
-                    h('div', { class: 'order-customer' }, cu ? `${cu.first_name||''} ${cu.last_name||''}`.trim() : 'Anonymous'),
-                    h('div', { class: 'order-meta' }, formatDate(s.created_at))
-                )
-            ),
-            h('div', { class: 'detail-row' },
-                h('span', { class: 'detail-label' }, 'Cookies'),
-                h('span', { class: 'review-stars' }, '★'.repeat(s.cookies_stars||0)+'☆'.repeat(5-(s.cookies_stars||0)))
-            ),
-            h('div', { class: 'detail-row' },
-                h('span', { class: 'detail-label' }, 'Service'),
-                h('span', { class: 'review-stars' }, '★'.repeat(s.service_stars||0)+'☆'.repeat(5-(s.service_stars||0)))
-            ),
-            s.website_review ? h('p', { class: 'review-text' }, `"${s.website_review}"`) : null
-        );
+        const card = h('div', { class: 'review-card' });
+        card.appendChild(h('div', { class: 'review-card-top' },
+            h('div', null,
+                h('div', { class: 'review-customer' }, cu ? `${cu.first_name||''} ${cu.last_name||''}`.trim() : 'Anonymous'),
+                h('div', { class: 'review-date' }, formatDate(s.created_at))
+            )
+        ));
+        const stars = h('div', { style: 'display:flex; gap:1.5rem; font-size:0.8125rem; color:var(--ink-soft); margin-bottom:0.5rem;' });
+        if (s.cookies_stars) stars.appendChild(h('span', null, 'Cookies: ', h('span', { class: 'review-stars' }, '★'.repeat(s.cookies_stars)+'☆'.repeat(5-s.cookies_stars))));
+        if (s.service_stars) stars.appendChild(h('span', null, 'Service: ', h('span', { class: 'review-stars' }, '★'.repeat(s.service_stars)+'☆'.repeat(5-s.service_stars))));
+        card.appendChild(stars);
+        if (s.website_review) card.appendChild(h('p', { class: 'review-text' }, `"${s.website_review}"`));
+        if (s.improvements) card.appendChild(h('div', { style: 'font-size:0.8125rem; color:var(--ink-soft); margin-top:0.5rem;' }, h('strong', null, 'Improvements: '), s.improvements));
         list.appendChild(card);
     }
     c.appendChild(list);
 }
 
-// ============================================================================
-// REVIEWS PAGE (with moderation)
-// ============================================================================
-async function renderReviews() {
-    const c = $('#content');
-    c.innerHTML = '';
-    c.appendChild(h('div', { class: 'page-header' },
-        h('div', { class: 'page-eyebrow' }, 'Public testimonials'),
-        h('h1', { class: 'page-title', html: 'Reviews <em>moderation</em>' }),
-        h('p', { class: 'page-subtitle' }, 'Approve customer reviews before they appear on rebelribbon.com')
-    ));
-    const counts = await Promise.all([
-        sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
-        sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
-        sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'rejected')
-    ]);
-    const tabsBar = h('div', { class: 'review-tabs-bar' });
-    const tabs = [['pending', '🔔 Pending', counts[0].count||0], ['approved', '✅ Approved', counts[1].count||0], ['rejected', '❌ Rejected', counts[2].count||0]];
-    tabs.forEach(([key,label,n]) => {
-        tabsBar.appendChild(h('button', {
-            class: 'review-tab-btn' + (activeReviewTab === key ? ' active' : ''),
-            on: { click: () => { activeReviewTab = key; renderReviews(); } }
-        }, label, h('span', { class: 'count' }, `(${n})`)));
-    });
-    c.appendChild(tabsBar);
-    const { data: reviews } = await sb.from('website_reviews').select('*').eq('status', activeReviewTab).order('created_at', { ascending: false });
+async function renderReviewsList(c, statusKey) {
+    const { data: reviews } = await sb.from('website_reviews').select('*').eq('status', statusKey).order('created_at', { ascending: false });
     if (!reviews?.length) {
-        c.appendChild(h('div', { class: 'queue-empty' }, h('span', { class: 'empty-emoji' }, '⭐'), `No ${activeReviewTab} reviews`));
+        c.appendChild(h('div', { class: 'queue-empty' }, `No ${statusKey} reviews`));
         return;
     }
-    const list = h('div', null);
+    const list = h('div');
     for (const r of reviews) {
         const card = h('div', { class: 'review-card' });
-        card.appendChild(h('div', { class: 'review-card-head' },
+        card.appendChild(h('div', { class: 'review-card-top' },
             h('div', null,
                 h('div', { class: 'review-customer' }, escapeHtml(r.customer_name || 'Anonymous')),
                 h('div', { class: 'review-stars' }, '★'.repeat(r.stars||5)+'☆'.repeat(5-(r.stars||5)))
-            ),
-            h('span', { class: `order-status-pill pill-${r.status==='approved'?'paid':r.status==='rejected'?'canceled':'needs'}` }, r.status)
+            )
         ));
         card.appendChild(h('p', { class: 'review-text' }, `"${escapeHtml(r.review_text)}"`));
         card.appendChild(h('div', { class: 'review-date' }, formatDate(r.created_at)));
-        const actions = h('div', { class: 'review-actions-row' });
-        if (activeReviewTab === 'pending') {
-            actions.appendChild(h('button', { class: 'btn btn-success btn-sm', on: { click: () => updateReview(r.id, 'approved') }}, '✓ Approve'));
-            actions.appendChild(h('button', { class: 'btn btn-danger btn-sm', on: { click: () => updateReview(r.id, 'rejected') }}, '✕ Reject'));
-        } else if (activeReviewTab === 'approved') {
-            actions.appendChild(h('button', { class: 'btn btn-secondary btn-sm', on: { click: () => { navigator.clipboard.writeText(`"${r.review_text}"\n— ${r.customer_name}`); }}}, '📋 Copy'));
-            actions.appendChild(h('button', { class: 'btn btn-ghost btn-sm', on: { click: () => updateReview(r.id, 'pending') }}, 'Unpublish'));
+        const acts = h('div', { class: 'review-actions' });
+        if (statusKey === 'pending') {
+            acts.appendChild(h('button', { class: 'btn btn-primary btn-sm', on: { click: () => updateReview(r.id, 'approved') }}, 'Approve'));
+            acts.appendChild(h('button', { class: 'btn btn-ghost btn-sm', on: { click: () => updateReview(r.id, 'rejected') }}, 'Reject'));
+        } else if (statusKey === 'approved') {
+            acts.appendChild(h('button', {
+                class: 'btn btn-secondary btn-sm',
+                on: { click: (e) => { navigator.clipboard.writeText(`"${r.review_text}"\n— ${r.customer_name}`); e.target.textContent = 'Copied'; }}
+            }, 'Copy quote'));
+            acts.appendChild(h('button', { class: 'btn btn-ghost btn-sm', on: { click: () => updateReview(r.id, 'pending') }}, 'Unpublish'));
         } else {
-            actions.appendChild(h('button', { class: 'btn btn-secondary btn-sm', on: { click: () => updateReview(r.id, 'pending') }}, 'Restore'));
-            actions.appendChild(h('button', { class: 'btn btn-danger btn-sm', on: { click: async () => {
+            acts.appendChild(h('button', { class: 'btn btn-secondary btn-sm', on: { click: () => updateReview(r.id, 'pending') }}, 'Restore'));
+            acts.appendChild(h('button', { class: 'btn btn-danger btn-sm', on: { click: async () => {
                 if (!confirm('Permanently delete?')) return;
-                await sb.from('website_reviews').delete().eq('id', r.id); renderReviews();
-            }}}, '🗑'));
+                await sb.from('website_reviews').delete().eq('id', r.id); renderFeedback();
+            }}}, 'Delete'));
         }
-        card.appendChild(actions);
+        card.appendChild(acts);
         list.appendChild(card);
     }
     c.appendChild(list);
@@ -1806,18 +2034,16 @@ async function updateReview(id, status) {
     const u = { status };
     if (status === 'approved') { u.approved_at = new Date().toISOString(); u.approved_by = session.user.email; }
     await sb.from('website_reviews').update(u).eq('id', id);
-    renderReviews();
+    renderFeedback();
 }
 
 // ============================================================================
-// SETTINGS (generic list pages)
+// SETTINGS PAGES
 // ============================================================================
 const SETTINGS_CONFIG = {
     discount_codes: {
         title: 'Discount Codes', table: 'discount_codes',
-        emoji: '🎟️',
-        eyebrow: 'Save the day',
-        primaryKey: 'code',
+        overline: 'Promotions',
         fields: [
             { key: 'code', label: 'Code', type: 'text', required: true, transform: v => v?.toUpperCase() },
             { key: 'type', label: 'Type', type: 'select', options: ['percent','fixed'], required: true },
@@ -1826,13 +2052,12 @@ const SETTINGS_CONFIG = {
             { key: 'email_allowed', label: 'Customer email (blank = public)', type: 'email' },
             { key: 'good_through_date', label: 'Expires', type: 'date' }
         ],
-        renderRow: (row) => `<strong>${row.code}</strong>${row.amount?` · ${row.type==='percent'?row.amount+'%':'$'+row.amount} off`:''}${row.email_allowed?' · '+row.email_allowed:''}${row.good_through_date?' · exp '+formatDate(row.good_through_date):''}`
+        renderLabel: r => r.code,
+        renderMeta: r => `${r.type === 'percent' ? r.amount + '%' : '$' + r.amount} off${r.email_allowed ? ' · ' + r.email_allowed : ''}${r.good_through_date ? ' · expires ' + formatDate(r.good_through_date) : ''}`
     },
     referral_codes: {
         title: 'Referral Codes', table: 'referral_codes',
-        emoji: '🔗',
-        eyebrow: 'Word of mouth',
-        primaryKey: 'code',
+        overline: 'Word of mouth',
         fields: [
             { key: 'code', label: 'Code', type: 'text', required: true, transform: v => v?.toUpperCase() },
             { key: 'associated_customer_id', label: 'Customer', type: 'customer' },
@@ -1840,35 +2065,31 @@ const SETTINGS_CONFIG = {
             { key: 'referee_discount', label: 'Referee discount %', type: 'number', step: '0.01' },
             { key: 'good_through_date', label: 'Expires', type: 'date' }
         ],
-        renderRow: (row) => `<strong>${row.code}</strong>`
+        renderLabel: r => r.code,
+        renderMeta: r => `${r.referrer_discount||0}% / ${r.referee_discount||0}%`
     },
     flavors: {
-        title: 'Flavors & Dietary', table: 'flavors',
-        emoji: '🍪',
-        eyebrow: 'Menu options',
-        primaryKey: 'name',
+        title: 'Flavors', table: 'flavors',
+        overline: 'Menu',
         fields: [{ key: 'name', label: 'Name', type: 'text', required: true }],
-        renderRow: (row) => row.name
+        renderLabel: r => r.name, renderMeta: () => null
     },
     dietary_options: {
         title: 'Dietary Options', table: 'dietary_options',
-        emoji: '🌱',
-        eyebrow: 'Accommodations',
-        primaryKey: 'name',
+        overline: 'Menu',
         fields: [{ key: 'name', label: 'Name', type: 'text', required: true }],
-        renderRow: (row) => row.name
+        renderLabel: r => r.name, renderMeta: () => null
     },
     costs: {
         title: 'Costs', table: 'costs',
-        emoji: '📒',
-        eyebrow: 'Expenses log',
-        primaryKey: 'item_name',
+        overline: 'Bookkeeping',
         fields: [
             { key: 'cost_date', label: 'Date', type: 'date' },
             { key: 'item_name', label: 'Item', type: 'text', required: true },
             { key: 'amount', label: 'Amount', type: 'number', step: '0.01', required: true }
         ],
-        renderRow: (row) => `<strong>${row.item_name}</strong> · ${money(row.amount)} · ${formatDate(row.cost_date)}`
+        renderLabel: r => r.item_name,
+        renderMeta: r => `${money(r.amount)} · ${formatDate(r.cost_date)}`
     }
 };
 
@@ -1877,28 +2098,27 @@ async function renderSettingsList(key) {
     if (!cfg) return;
     const c = $('#content');
     c.innerHTML = '';
-    const header = h('div', { class: 'page-header' });
-    header.appendChild(h('div', { class: 'page-eyebrow' }, cfg.eyebrow));
-    header.appendChild(h('h1', { class: 'page-title' }, cfg.title));
-    c.appendChild(header);
-
-    const toolbar = h('div', { class: 'toolbar' },
+    c.appendChild(h('div', { class: 'page-header' },
+        h('div', { class: 'page-overline' }, cfg.overline),
+        h('h1', { class: 'page-title' }, cfg.title)
+    ));
+    c.appendChild(h('div', { style: 'margin-bottom: 2rem;' },
         h('button', { class: 'btn btn-primary', on: { click: () => openEditor(cfg, null) }}, '+ Add new')
-    );
-    c.appendChild(toolbar);
-
+    ));
     const { data: rows } = await sb.from(cfg.table).select('*').order('created_at', { ascending: false });
     if (!rows?.length) {
-        c.appendChild(h('div', { class: 'queue-empty' }, h('span', { class: 'empty-emoji' }, cfg.emoji), 'Nothing yet.'));
+        c.appendChild(h('div', { class: 'queue-empty' }, 'Nothing here yet.'));
         return;
     }
     const list = h('div', { class: 'settings-list' });
     for (const r of rows) {
+        const meta = cfg.renderMeta(r);
         const row = h('div', { class: 'settings-row' });
-        row.appendChild(h('div', { class: 'settings-row-main' }, h('div', { class: 'settings-row-label', html: cfg.renderRow(r) })));
-        row.appendChild(h('div', { class: 'settings-row-actions' },
-            h('button', { class: 'btn btn-secondary btn-sm', on: { click: () => openEditor(cfg, r) }}, 'Edit')
+        row.appendChild(h('div', { class: 'settings-row-main' },
+            h('div', { class: 'settings-row-label' }, cfg.renderLabel(r)),
+            meta ? h('div', { class: 'settings-row-meta' }, meta) : null
         ));
+        row.appendChild(h('button', { class: 'btn btn-secondary btn-sm', on: { click: () => openEditor(cfg, r) }}, 'Edit'));
         list.appendChild(row);
     }
     c.appendChild(list);
@@ -1908,42 +2128,41 @@ async function renderPricing() {
     const c = $('#content');
     c.innerHTML = '';
     c.appendChild(h('div', { class: 'page-header' },
-        h('div', { class: 'page-eyebrow' }, 'Set the rates'),
+        h('div', { class: 'page-overline' }, 'Rates' ),
         h('h1', { class: 'page-title' }, 'Pricing')
     ));
     const { data } = await sb.from('pricing').select('*').limit(1);
     if (!data?.length) return;
     const p = data[0];
     const list = h('div', { class: 'settings-list' });
-    const items = [
-        ['price_per_dozen', 'Price per dozen', 0.01],
-        ['delivery_fee', 'Delivery fee', 0.01],
-        ['consultation_fee', 'Consultation fee', 0.01],
-        ['gift_note_fee', 'Gift note fee', 0.01],
-        ['rush_fee', 'Rush fee', 0.01]
-    ];
-    for (const [key, label, step] of items) {
+    [
+        ['price_per_dozen', 'Price per dozen'],
+        ['delivery_fee', 'Delivery fee'],
+        ['consultation_fee', 'Consultation fee'],
+        ['gift_note_fee', 'Gift note fee'],
+        ['rush_fee', 'Rush fee']
+    ].forEach(([key, label]) => {
         const row = h('div', { class: 'settings-row' });
         row.appendChild(h('div', { class: 'settings-row-main' },
             h('div', { class: 'settings-row-label' }, label),
             h('div', { class: 'settings-row-meta' }, money(p[key]))
         ));
         row.appendChild(h('button', { class: 'btn btn-secondary btn-sm', on: { click: () => openEditor({
-            title: label, table: 'pricing', primaryKey: key,
-            fields: [{ key, label, type: 'number', step: String(step), required: true }]
+            title: label, table: 'pricing',
+            fields: [{ key, label, type: 'number', step: '0.01', required: true }]
         }, { id: p.id, [key]: p[key] }) }}, 'Edit'));
         list.appendChild(row);
-    }
+    });
     c.appendChild(list);
 }
 
 // ============================================================================
-// EDITOR DIALOG
+// EDITOR
 // ============================================================================
 $('#editorClose').onclick = () => $('#editor').classList.remove('open');
 $('#editorCancel').onclick = () => $('#editor').classList.remove('open');
 async function openEditor(cfg, row) {
-    $('#editorTitle').textContent = row ? `Edit ${cfg.title}` : `New ${cfg.title}`;
+    $('#editorTitle').textContent = row ? `Edit ${cfg.title}` : `Add ${cfg.title}`;
     const body = $('#editorBody');
     body.innerHTML = '';
     for (const f of cfg.fields) {
@@ -1958,13 +2177,12 @@ async function openEditor(cfg, row) {
             input = h('select', { id: `fld_${f.key}` });
             input.appendChild(h('option', { value: '' }, '— Select customer —'));
             const { data } = await sb.from('customers').select('id,first_name,last_name').limit(1000);
-            (data||[]).forEach(c => input.appendChild(h('option', { value: c.id }, `${c.first_name} ${c.last_name}`)));
+            (data||[]).forEach(cc => input.appendChild(h('option', { value: cc.id }, `${cc.first_name} ${cc.last_name}`)));
         } else {
             input = h('input', { id: `fld_${f.key}`, type: f.type, step: f.step });
         }
         if (row && row[f.key] != null) {
-            if (f.type === 'date') input.value = dateOnly(row[f.key]);
-            else input.value = row[f.key];
+            input.value = f.type === 'date' ? dateOnly(row[f.key]) : row[f.key];
         }
         wrap.appendChild(input);
         body.appendChild(wrap);
@@ -1997,31 +2215,14 @@ async function openEditor(cfg, row) {
 }
 
 // ============================================================================
-// HEALTH BANNER + REALTIME + COUNTS
+// REALTIME + COUNTS
 // ============================================================================
-async function loadHealth() {
-    try {
-        const { data } = await sb.from('system_status').select('*').limit(1).maybeSingle();
-        const banner = $('#health-banner');
-        if (!data || !data.last_webhook_received_at) {
-            banner.classList.remove('visible'); return;
-        }
-        const hours = (Date.now() - new Date(data.last_webhook_received_at).getTime()) / 3600000;
-        if (hours < 24) { banner.classList.remove('visible', 'red'); return; }
-        banner.classList.add('visible');
-        if (hours >= 72) { banner.classList.add('red'); $('#healthText').textContent = `Stripe webhook down — ${Math.round(hours)}h since last event`; }
-        else { banner.classList.remove('red'); $('#healthText').textContent = `Stripe webhook delayed — ${Math.round(hours)}h since last event`; }
-    } catch {}
-}
-
 async function updateOtherCounts() {
     try {
-        const [su, rev] = await Promise.all([
-            sb.from('surveys').select('id', { count: 'exact', head: true }),
-            sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'pending')
-        ]);
-        $('#nc-surveys').textContent = su.count || 0;
-        $('#nc-reviews').textContent = rev.count || 0;
+        const { count: pending } = await sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'pending');
+        const c = pending || 0;
+        $('#nc-feedback').textContent = c;
+        $('#nc-feedback').classList.toggle('zero', c === 0);
     } catch {}
 }
 
@@ -2030,12 +2231,11 @@ function wireRealtime() {
         if (currentPage === 'dashboard') renderDashboard();
     }).subscribe();
     sb.channel('reviews-ch').on('postgres_changes', { event: '*', schema: 'public', table: 'website_reviews' }, () => {
-        if (currentPage === 'reviews') renderReviews();
+        if (currentPage === 'feedback') renderFeedback();
         updateOtherCounts();
     }).subscribe();
 }
 
-// Boot
 bootstrap();
 </script>
 </body>
