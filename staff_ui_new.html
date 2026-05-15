@@ -6,19 +6,20 @@
     <title>Rebel Ribbon Staff UI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Allura&family=DM+Sans:wght@400;500;600&display=swap');
         body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
         html { overflow-x: hidden; }
         button { font-family: inherit; }
 
         /* HEADER */
         #header-banner { position: fixed; top: 0; left: 0; right: 0; height: 60px; background-color: #fbcfe8; color: #4c0519; z-index: 100; display: flex; align-items: center; padding: 0 1rem; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
-        #menuToggle { margin-right: 1rem; background: #fdf2f8; color: #be185d; width: 40px; height: 40px; border-radius: 6px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        #menuToggle { margin-right: 1rem; background: #fdf2f8; color: #be185d; width: 40px; height: 40px; border-radius: 6px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
         #logo-wrapper { display: flex; align-items: center; gap: 0.5rem; position: absolute; left: 50%; transform: translateX(-50%); }
         #logo-text { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; letter-spacing: 0.08em; color: #831843; }
 
-        /* HEALTH BANNER — hidden by default, shown only on yellow/red */
+        /* HEALTH BANNER */
         #health-banner { display: none; position: fixed; top: 60px; left: 0; right: 0; z-index: 99; align-items: center; gap: 1rem; padding: 0.5rem 1rem; border-bottom: 2px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); font-size: 0.875rem; background: white; }
         #health-banner.visible { display: flex; }
         #health-banner.yellow { border-bottom-color: #facc15; background-color: #fefce8; color: #854d0e; }
@@ -61,6 +62,8 @@
         dialog { max-height: 90vh; overflow-y: auto; }
         #orderDrawer { width: 100%; max-width: 100%; margin: 0; border-radius: 0; height: 100%; overflow-x: hidden; }
         @media (min-width: 1024px) { #orderDrawer { max-width: 1080px; height: auto; border-radius: 1rem; } }
+        #discountStudio { width: 100%; max-width: 100%; margin: 0; border-radius: 0; height: 100%; overflow-x: hidden; }
+        @media (min-width: 1024px) { #discountStudio { max-width: 1200px; height: auto; border-radius: 1rem; } }
 
         /* AUTH */
         #signinCard { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; background-color: #f9fafb; }
@@ -80,14 +83,14 @@
         .btn-warning { background-color: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
         .btn-lg { padding: 0.75rem 1.5rem; font-size: 1rem; }
 
-        /* STATUS BADGES */
+        /* STATUS BADGES — 3-status model */
         .status-badge { padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
-        .status-in-review { background: #fef3c7; color: #92400e; }
-        .status-approved { background: #dcfce7; color: #15803d; }
-        .status-paid { background: #dbeafe; color: #1d4ed8; }
-        .status-production-complete, .status-fulfilled { background: #d1fae5; color: #065f46; }
-        .status-canceled, .status-rejected { background: #fee2e2; color: #b91c1c; }
-        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-active   { background: #dbeafe; color: #1d4ed8; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-canceled { background: #fee2e2; color: #b91c1c; }
+        .status-pending  { background: #fef3c7; color: #92400e; }
+        .status-paid     { background: #d1fae5; color: #065f46; }
+        .status-unpaid   { background: #fee2e2; color: #b91c1c; }
 
         /* REVIEWS */
         .review-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
@@ -106,6 +109,90 @@
         .survey-link-box.no-link { background: #f9fafb; border-color: #d1d5db; }
         .survey-link-box.expired { background: #fef3c7; border-color: #f59e0b; }
         .survey-link-input { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.85rem; margin: 0.5rem 0; background: white; }
+
+        /* STRIPE PANEL */
+        .stripe-panel { background: white; border: 2px solid #6772e5; border-radius: 12px; padding: 1rem; }
+        .stripe-panel.paid { border-color: #22c55e; background: #f0fdf4; }
+        .stripe-panel.pending { border-color: #f59e0b; background: #fffbeb; }
+        .stripe-link-input { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.8rem; background: white; font-family: monospace; }
+
+        /* DISCOUNT STUDIO */
+        .ds-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
+        @media (min-width: 1024px) { .ds-grid { grid-template-columns: 340px 1fr; } }
+        .ds-panel { padding: 1.25rem; overflow-y: auto; max-height: 70vh; }
+        .ds-stage { padding: 1.25rem; background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); display: flex; align-items: center; justify-content: center; min-height: 500px; }
+        .ds-template-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
+        .ds-tpl-btn { padding: 0.6rem 0.5rem; border-radius: 6px; border: 1px solid #d1d5db; background: white; font-size: 0.75rem; cursor: pointer; text-align: center; }
+        .ds-tpl-btn.active { background: #be185d; color: white; border-color: #be185d; }
+        .ds-tpl-btn small { display: block; font-size: 0.65rem; opacity: 0.7; margin-top: 2px; }
+        .ds-field { margin-bottom: 0.75rem; }
+        .ds-field label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; margin-bottom: 4px; font-weight: 500; }
+        .ds-field input, .ds-field select, .ds-field textarea { width: 100%; padding: 0.4rem 0.6rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; }
+        .ds-field .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+        .ds-section-title { font-family: 'Fraunces', serif; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: #831843; margin: 1.25rem 0 0.5rem; padding-bottom: 0.4rem; border-bottom: 1px solid #e5e7eb; }
+        .ds-section-title:first-child { margin-top: 0; }
+
+        /* TEMPLATES (mini versions in studio) */
+        .ds-template { background: #FBF6EE; color: #1F1715; font-family: 'DM Sans', sans-serif; position: relative; overflow: hidden; box-shadow: 0 20px 40px -15px rgba(122,31,43,0.25); }
+        .ds-template::after { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: radial-gradient(rgba(31,23,21,0.04) 1px, transparent 1px); background-size: 3px 3px; mix-blend-mode: multiply; z-index: 1; }
+        .ds-template > * { position: relative; z-index: 2; }
+        .ds-template.hidden { display: none; }
+
+        /* IG SQUARE */
+        .ds-tpl-ig { width: 1080px; height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 90px; }
+        .ds-tpl-ig .frame { width: 100%; height: 100%; border: 1px solid #7A1F2B; padding: 80px 60px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
+        .ds-tpl-ig .eyebrow { font-size: 18px; text-transform: uppercase; letter-spacing: 0.4em; color: #7A1F2B; font-weight: 500; }
+        .ds-tpl-ig .script { font-family: 'Allura', cursive; font-size: 80px; color: #D4847C; line-height: 1; }
+        .ds-tpl-ig .headline { font-family: 'Fraunces', serif; font-size: 110px; font-weight: 400; line-height: 0.95; text-align: center; letter-spacing: -0.02em; }
+        .ds-tpl-ig .headline em { font-style: italic; color: #7A1F2B; font-weight: 300; }
+        .ds-tpl-ig .amount { font-family: 'Fraunces', serif; font-size: 200px; font-weight: 300; line-height: 1; color: #7A1F2B; letter-spacing: -0.04em; }
+        .ds-tpl-ig .amount sup { font-size: 80px; vertical-align: top; font-weight: 400; }
+        .ds-tpl-ig .code-box { border-top: 1px solid #7A1F2B; border-bottom: 1px solid #7A1F2B; padding: 24px 60px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .ds-tpl-ig .code-label { font-size: 13px; text-transform: uppercase; letter-spacing: 0.35em; color: #4A3D38; }
+        .ds-tpl-ig .code-value { font-family: 'Fraunces', serif; font-size: 56px; font-weight: 500; letter-spacing: 0.08em; }
+        .ds-tpl-ig .footer-row { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 14px; color: #4A3D38; letter-spacing: 0.15em; text-transform: uppercase; }
+        .ds-tpl-ig .footer-row .brand-name { font-family: 'Fraunces', serif; font-size: 22px; font-style: italic; text-transform: none; letter-spacing: 0; color: #7A1F2B; }
+
+        /* PERSONAL CARD */
+        .ds-tpl-card { width: 1500px; height: 900px; display: grid; grid-template-columns: 1fr 1fr; }
+        .ds-tpl-card .left { background: #7A1F2B; color: #FBF6EE; padding: 80px 70px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
+        .ds-tpl-card .left::before { content: ""; position: absolute; top: -100px; right: -100px; width: 300px; height: 300px; border: 1px solid rgba(251, 246, 238, 0.15); border-radius: 50%; }
+        .ds-tpl-card .left .brand { font-family: 'Fraunces', serif; font-size: 36px; font-weight: 500; }
+        .ds-tpl-card .left .brand em { font-style: italic; color: #F2D5D0; font-weight: 300; }
+        .ds-tpl-card .left .sub { font-size: 13px; text-transform: uppercase; letter-spacing: 0.4em; color: #F2D5D0; margin-top: 8px; }
+        .ds-tpl-card .left .for-you { font-family: 'Allura', cursive; font-size: 70px; color: #F2D5D0; line-height: 1; transform: rotate(-2deg); margin-bottom: 8px; }
+        .ds-tpl-card .left .name { font-family: 'Fraunces', serif; font-size: 84px; font-weight: 400; line-height: 1; font-style: italic; letter-spacing: -0.02em; }
+        .ds-tpl-card .left .bottom-mark { font-size: 12px; text-transform: uppercase; letter-spacing: 0.3em; opacity: 0.7; }
+        .ds-tpl-card .right { background: #FBF6EE; padding: 80px 70px; display: flex; flex-direction: column; justify-content: space-between; }
+        .ds-tpl-card .right .eyebrow { font-size: 13px; text-transform: uppercase; letter-spacing: 0.35em; color: #7A1F2B; margin-bottom: 24px; }
+        .ds-tpl-card .right .message { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 400; line-height: 1.3; color: #1F1715; letter-spacing: -0.01em; }
+        .ds-tpl-card .right .message em { font-style: italic; color: #7A1F2B; }
+        .ds-tpl-card .right .discount-line { margin-top: 40px; display: flex; align-items: baseline; gap: 16px; }
+        .ds-tpl-card .right .discount-line .num { font-family: 'Fraunces', serif; font-size: 120px; font-weight: 300; line-height: 1; color: #7A1F2B; }
+        .ds-tpl-card .right .discount-line .num sup { font-size: 50px; vertical-align: top; }
+        .ds-tpl-card .right .discount-line .text { font-family: 'Fraunces', serif; font-size: 32px; font-style: italic; color: #4A3D38; line-height: 1.2; }
+        .ds-tpl-card .right .code-strip { margin-top: 50px; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid rgba(31,23,21,0.12); border-bottom: 1px solid rgba(31,23,21,0.12); padding: 22px 0; }
+        .ds-tpl-card .right .code-strip > div { padding: 0 16px; }
+        .ds-tpl-card .right .code-strip > div:first-child { border-right: 1px solid rgba(31,23,21,0.12); padding-left: 0; }
+        .ds-tpl-card .right .code-strip .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.3em; color: #4A3D38; margin-bottom: 6px; }
+        .ds-tpl-card .right .code-strip .value { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500; letter-spacing: 0.04em; }
+        .ds-tpl-card .right .signoff { margin-top: 30px; font-family: 'Allura', cursive; font-size: 38px; color: #D4847C; }
+        .ds-tpl-card .right .domain { font-size: 12px; text-transform: uppercase; letter-spacing: 0.3em; color: #4A3D38; margin-top: 8px; }
+
+        /* IG STORY */
+        .ds-tpl-story { width: 1080px; height: 1920px; background: linear-gradient(180deg, #FBF6EE 0%, #F2E9D8 100%); display: flex; flex-direction: column; align-items: center; padding: 200px 80px 150px; }
+        .ds-tpl-story .brand-line { font-family: 'Fraunces', serif; font-size: 28px; font-style: italic; color: #7A1F2B; margin-bottom: 12px; }
+        .ds-tpl-story .location { font-size: 16px; text-transform: uppercase; letter-spacing: 0.4em; color: #4A3D38; margin-bottom: 100px; }
+        .ds-tpl-story .big-script { font-family: 'Allura', cursive; font-size: 140px; color: #D4847C; line-height: 1; margin-bottom: 20px; transform: rotate(-2deg); }
+        .ds-tpl-story .headline { font-family: 'Fraunces', serif; font-size: 130px; font-weight: 400; line-height: 0.95; text-align: center; margin-bottom: 70px; letter-spacing: -0.03em; }
+        .ds-tpl-story .headline em { font-style: italic; color: #7A1F2B; }
+        .ds-tpl-story .amount { font-family: 'Fraunces', serif; font-size: 280px; font-weight: 300; line-height: 1; color: #7A1F2B; }
+        .ds-tpl-story .amount sup { font-size: 100px; vertical-align: top; }
+        .ds-tpl-story .off { font-size: 24px; text-transform: uppercase; letter-spacing: 0.5em; color: #4A3D38; margin-top: 12px; }
+        .ds-tpl-story .code-card { background: white; border: 1px solid #7A1F2B; padding: 40px 80px; margin-top: 50px; text-align: center; }
+        .ds-tpl-story .code-card .label { font-size: 14px; text-transform: uppercase; letter-spacing: 0.4em; color: #4A3D38; margin-bottom: 12px; }
+        .ds-tpl-story .code-card .value { font-family: 'Fraunces', serif; font-size: 72px; font-weight: 500; letter-spacing: 0.1em; color: #7A1F2B; }
+        .ds-tpl-story .domain { font-family: 'Fraunces', serif; font-style: italic; font-size: 26px; color: #7A1F2B; margin-top: auto; }
     </style>
 </head>
 <body class="bg-gray-50 text-gray-900">
@@ -131,7 +218,6 @@
         </div>
     </div>
 
-    <!-- Health banner: only visible when webhook is delayed/down -->
     <div id="health-banner">
         <div class="health-indicator">
             <div class="health-dot" id="health-webhook-indicator"></div>
@@ -173,11 +259,10 @@
                 </div>
                 <div id="orderFilters">
                     <button class="filter-tab filter-active" data-filter="All">All Orders</button>
-                    <button class="filter-tab" data-filter="In Review">⭐ New</button>
-                    <button class="filter-tab" data-filter="Approved">💸 Payment</button>
-                    <button class="filter-tab" data-filter="Paid">🏭 Production</button>
-                    <button class="filter-tab" data-filter="Production Complete">🚚 Ready</button>
-                    <button class="filter-tab" data-filter="Fulfilled">✅ Done</button>
+                    <button class="filter-tab" data-filter="Active">🔥 Active</button>
+                    <button class="filter-tab" data-filter="unpaid">💸 Unpaid</button>
+                    <button class="filter-tab" data-filter="Completed">✅ Completed</button>
+                    <button class="filter-tab" data-filter="Canceled">❌ Canceled</button>
                 </div>
             </div>
             <div id="dataActions" class="flex items-center justify-between mb-2 flex-wrap gap-2">
@@ -203,44 +288,156 @@
         </main>
     </div>
 
+    <!-- Generic editor — note: NO method="dialog" on the form (fixes close button bug) -->
     <dialog id="editor" class="rounded-2xl p-0 w-full max-w-3xl shadow-2xl">
-        <form method="dialog" class="p-0">
+        <div class="p-0">
             <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
                 <h2 id="editorTitle" class="text-lg font-semibold">Edit</h2>
-                <button value="close" class="btn btn-ghost text-xl">✕</button>
+                <button id="closeEditor" type="button" class="btn btn-ghost text-xl">✕</button>
             </div>
             <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
+                <button id="openStudioBtn" type="button" class="btn btn-secondary hidden">🎨 Open Template Studio</button>
                 <button id="deleteBtn" type="button" class="btn btn-danger hidden">Delete</button>
-                <button id="saveBtn" class="btn btn-primary">Save</button>
+                <button id="saveBtn" type="button" class="btn btn-primary">Save</button>
             </div>
-        </form>
+        </div>
     </dialog>
 
+    <!-- DISCOUNT CODE TEMPLATE STUDIO -->
+    <dialog id="discountStudio" class="rounded-2xl p-0 shadow-2xl">
+        <div class="p-0">
+            <div class="sticky top-0 p-4 border-b bg-white flex items-center justify-between z-10">
+                <h2 class="text-xl font-semibold">🎨 Discount Code Template Studio</h2>
+                <button id="closeStudio" type="button" class="btn btn-ghost text-xl">✕</button>
+            </div>
+            <div class="ds-grid">
+                <aside class="ds-panel">
+                    <div class="ds-section-title">Template</div>
+                    <div class="ds-template-picker">
+                        <button class="ds-tpl-btn active" data-tpl="ig">Instagram <small>1080×1080</small></button>
+                        <button class="ds-tpl-btn" data-tpl="card">Personal Card <small>1500×900</small></button>
+                        <button class="ds-tpl-btn" data-tpl="story">Story <small>1080×1920</small></button>
+                    </div>
+
+                    <div class="ds-section-title">Code Details</div>
+                    <div class="ds-field"><label>Code</label><input id="ds-code" type="text" style="text-transform:uppercase;font-weight:600;letter-spacing:0.05em"/></div>
+                    <div class="ds-field">
+                        <label>Discount</label>
+                        <div class="row">
+                            <input id="ds-amount" type="number" min="1" max="100"/>
+                            <select id="ds-type"><option value="percent">% Off</option><option value="fixed">$ Off</option></select>
+                        </div>
+                    </div>
+                    <div class="ds-field"><label>Expires</label><input id="ds-expires" type="text" placeholder="DEC 31, 2025"/></div>
+
+                    <div class="ds-section-title">Personal Card</div>
+                    <div class="ds-field"><label>Recipient Name</label><input id="ds-name" type="text" placeholder="Sarah"/></div>
+                    <div class="ds-field"><label>Message (use &lt;em&gt; for italics)</label><textarea id="ds-message" rows="2">A little something <em>sweet</em> just for you.</textarea></div>
+
+                    <div class="ds-section-title">Export</div>
+                    <button id="ds-export" class="btn btn-primary w-full" type="button">📥 Export PNG</button>
+                    <button id="ds-copy-code" class="btn btn-secondary w-full mt-2" type="button">📋 Copy Code</button>
+                    <p class="text-xs text-gray-500 mt-3">Personal Card prints great on cream cardstock (5×3"). Instagram is post-ready at full resolution.</p>
+                </aside>
+
+                <div class="ds-stage">
+                    <div id="ds-stage-inner" style="transform-origin: center center;">
+                        <div class="ds-template ds-tpl-ig" id="ds-tpl-ig">
+                            <div class="frame">
+                                <div class="eyebrow">San Antonio · est. 2025</div>
+                                <div class="script">a sweet</div>
+                                <div class="headline">little <em>treat</em></div>
+                                <div class="amount" id="ds-ig-amount"><sup>%</sup>15</div>
+                                <div class="code-box">
+                                    <div class="code-label">use code</div>
+                                    <div class="code-value" id="ds-ig-code">SWEET15</div>
+                                </div>
+                                <div class="footer-row">
+                                    <span id="ds-ig-expires">expires Dec 31</span>
+                                    <span class="brand-name">Rebel Ribbon</span>
+                                    <span>@rebel_ribbon</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ds-template ds-tpl-card hidden" id="ds-tpl-card">
+                            <div class="left">
+                                <div>
+                                    <div class="brand">Rebel <em>Ribbon</em></div>
+                                    <div class="sub">Custom Cookies · SATX</div>
+                                </div>
+                                <div>
+                                    <div class="for-you">just for</div>
+                                    <div class="name" id="ds-card-name">Sarah</div>
+                                </div>
+                                <div class="bottom-mark">A token of our thanks</div>
+                            </div>
+                            <div class="right">
+                                <div class="eyebrow">— A personal note</div>
+                                <div class="message" id="ds-card-message">A little something <em>sweet</em> just for you.</div>
+                                <div class="discount-line">
+                                    <span class="num" id="ds-card-amount"><sup>%</sup>15</span>
+                                    <span class="text">off your<br/>next order</span>
+                                </div>
+                                <div class="code-strip">
+                                    <div>
+                                        <div class="label">Your Code</div>
+                                        <div class="value" id="ds-card-code">SWEET15</div>
+                                    </div>
+                                    <div>
+                                        <div class="label">Valid Through</div>
+                                        <div class="value" id="ds-card-expires">Dec 31, 2025</div>
+                                    </div>
+                                </div>
+                                <div>
+                                    <div class="signoff">— A & T</div>
+                                    <div class="domain">rebelribbon.com</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="ds-template ds-tpl-story hidden" id="ds-tpl-story">
+                            <div class="brand-line"><em>Rebel Ribbon</em></div>
+                            <div class="location">Custom Cookies · SATX</div>
+                            <div class="big-script">for you,</div>
+                            <div class="headline">a sweet <em>surprise</em></div>
+                            <div class="amount" id="ds-story-amount"><sup>%</sup>15</div>
+                            <div class="off">off your order</div>
+                            <div class="code-card">
+                                <div class="label">use code at checkout</div>
+                                <div class="value" id="ds-story-code">SWEET15</div>
+                            </div>
+                            <div class="domain">rebelribbon.com</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- Order drawer -->
     <dialog id="orderDrawer" class="rounded-2xl p-0 shadow-2xl">
         <div class="p-0">
-            <div class="sticky top-0 p-4 border-b bg-white flex flex-wrap items-center justify-between shadow-sm">
+            <div class="sticky top-0 p-4 border-b bg-white flex flex-wrap items-center justify-between shadow-sm z-10">
                 <div class="flex items-center gap-4">
-                    <button id="backToOrders" class="btn btn-ghost text-sm">← Back</button>
+                    <button id="backToOrders" type="button" class="btn btn-ghost text-sm">← Back</button>
                     <div>
                         <h2 id="drawerTitle" class="text-xl font-semibold">Order #XXXX</h2>
                         <div class="mt-1 flex items-center gap-2 text-sm">
                             <span class="font-medium">Status:</span>
                             <select id="statusSelect" class="px-3 py-1 rounded-lg border text-sm">
-                                <option value="In Review">In Review</option>
-                                <option value="Approved">Approved</option>
-                                <option value="Paid">Paid</option>
-                                <option value="Production Complete">Production Complete</option>
-                                <option value="Fulfilled">Fulfilled</option>
+                                <option value="Active">Active</option>
+                                <option value="Completed">Completed</option>
                                 <option value="Canceled">Canceled</option>
                             </select>
-                            <button id="saveStatus" class="btn btn-success text-sm">Save</button>
+                            <button id="saveStatus" type="button" class="btn btn-success text-sm">Save</button>
                         </div>
                     </div>
                 </div>
                 <div class="flex gap-2 mt-2 lg:mt-0">
-                    <button id="editFields" class="btn btn-secondary">Edit Fields</button>
-                    <button id="viewInvoice" class="btn btn-primary">Invoice</button>
+                    <button id="editFields" type="button" class="btn btn-secondary">Edit Fields</button>
+                    <button id="viewInvoice" type="button" class="btn btn-primary">Invoice</button>
                 </div>
             </div>
             <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -256,7 +453,7 @@
                         <div class="mt-4 text-sm">
                             <span class="font-medium">Address:</span>
                             <div id="cust_addr1"></div><div id="cust_addr2"></div><div id="cust_citystzip"></div>
-                            <button id="mapLocation" class="btn btn-ghost text-xs text-blue-600 mt-1">View on Map</button>
+                            <button id="mapLocation" type="button" class="btn btn-ghost text-xs text-blue-600 mt-1">View on Map</button>
                         </div>
                         <div class="mt-4 text-sm">
                             <span class="font-medium">Referral Code:</span>
@@ -284,7 +481,7 @@
                                 <span class="font-medium">Photo:</span>
                                 <img id="ov_photo" class="w-32 h-32 mt-2 object-cover rounded border cursor-pointer"/>
                                 <input id="uploadPhoto" type="file" accept="image/*" class="block mt-2 text-xs"/>
-                                <button id="btnUploadPhoto" class="btn btn-secondary text-xs mt-1">Upload</button>
+                                <button id="btnUploadPhoto" type="button" class="btn btn-secondary text-xs mt-1">Upload</button>
                             </div>
                             <div class="col-span-2">
                                 <span class="font-medium">Design Notes:</span>
@@ -326,13 +523,25 @@
                             <div><span class="font-medium">Referral:</span> <span id="ov_referral_code"></span></div>
                         </div>
                     </div>
+
+                    <!-- STRIPE PANEL -->
+                    <div class="stripe-panel" id="stripePanel">
+                        <div class="flex items-center justify-between mb-3">
+                            <h3 class="font-bold">💳 Stripe Payment</h3>
+                            <span id="paymentBadge" class="status-badge status-unpaid">unpaid</span>
+                        </div>
+                        <div id="stripeBody">
+                            <p class="text-gray-500 text-sm">Loading...</p>
+                        </div>
+                    </div>
+
                     <div class="bg-white rounded-lg border p-4">
                         <h3 class="font-semibold mb-3">➕ Fees & Discounts</h3>
                         <div class="flex flex-wrap gap-2 mb-3">
                             <input id="adjLabel" class="px-2 py-1 rounded border grow" placeholder="Label"/>
                             <input id="adjAmount" type="number" step="0.01" class="px-2 py-1 rounded border w-20" placeholder="Amt"/>
                             <select id="adjKind" class="px-2 py-1 rounded border"><option value="fee">Fee</option><option value="discount">Disc</option></select>
-                            <button id="addAdjustment" class="btn btn-primary text-sm">Add</button>
+                            <button id="addAdjustment" type="button" class="btn btn-primary text-sm">Add</button>
                         </div>
                         <div class="overflow-auto max-h-40">
                             <table class="min-w-full text-sm">
@@ -348,39 +557,59 @@
 
     <script>
     // =====================================================
-    // REBEL RIBBON STAFF UI — single source of truth
+    // REBEL RIBBON STAFF UI — v3 (3-status + Stripe + Studio)
     // =====================================================
     const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
     const SURVEY_BASE_URL = 'https://rebelribbon.com/survey.html';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // -------- helpers --------
+    // helpers
     const onlyCompanyEmail = e => /@rebelribbon\.com$/i.test(e);
     const $ = (t,c,h)=>{ const e=document.createElement(t); if(c)e.className=c; if(h!==undefined)e.innerHTML=h; return e; };
     const fmt = v => v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
     const dateOnly = d => { if(!d)return''; const dt=new Date(d); return new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,10); };
     const formatOrderId = id => { if(id==null)return''; const n=Number(id); return Number.isFinite(n)?String(Math.trunc(n)).padStart(7,'0'):String(id); };
-    const getStatusClass = s => s ? `status-${s.toLowerCase().replace(/\s/g,'-')}` : 'status-in-review';
+    const getStatusClass = s => s ? `status-${s.toLowerCase().replace(/\s/g,'-')}` : 'status-active';
     const money = n => '$'+(Number(n||0)).toFixed(2);
     const formatPhone = p => { if(!p)return''; const c=(''+p).replace(/\D/g,''); const m=c.match(/^(\d{3})(\d{3})(\d{4})$/); return m?`(${m[1]}) ${m[2]}-${m[3]}`:p; };
     const escapeHtml = t => { if(!t)return''; const d=document.createElement('div'); d.textContent=t; return d.innerHTML; };
+    const ORDER_STATUSES = ['Active','Completed','Canceled'];
 
-    // -------- table configs --------
+    // table configs
     const tables = {
-        order_list: { title:'Orders', table:'orders', readOnly:true, customLoader:'loadOrderList', center:true, cols:[{key:'customer_name',label:'Customer',type:'text',w:'50'},{key:'status',label:'Status',type:'text',w:'50'}] },
+        order_list: { title:'Orders', table:'orders', readOnly:true, customLoader:'loadOrderList', center:true, cols:[
+            {key:'customer_name',label:'Customer',type:'text',w:'40'},
+            {key:'status',label:'Status',type:'text',w:'30'},
+            {key:'payment_status',label:'Payment',type:'text',w:'30'}
+        ] },
         orders: { title:'Orders', table:'orders', cols:[
-            {key:'order_id',label:'Order ID',type:'text',w:'12'},{key:'customer_id',label:'Customer',type:'select-async',w:'20',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},
-            {key:'event_type_name',label:'Event',type:'text',w:'20'},{key:'pickup_delivery_date',label:'Pickup date',type:'date',w:'18'},{key:'event_date',label:'Event date',type:'date',w:'14'},
-            {key:'pickup_delivery_type',label:'Type',type:'select',w:'18',options:['Pickup','Delivery']},{key:'cookie_amount_dzns',label:'Dozens',type:'number',step:'0.01',w:'18'},
+            {key:'order_id',label:'Order ID',type:'text',w:'12'},
+            {key:'customer_id',label:'Customer',type:'select-async',w:'20',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},
+            {key:'event_type_name',label:'Event',type:'text',w:'20'},
+            {key:'pickup_delivery_date',label:'Pickup date',type:'date',w:'18'},
+            {key:'event_date',label:'Event date',type:'date',w:'14'},
+            {key:'pickup_delivery_type',label:'Type',type:'select',w:'18',options:['Pickup','Delivery']},
+            {key:'cookie_amount_dzns',label:'Dozens',type:'number',step:'0.01',w:'18'},
             {key:'flavor',label:'Flavor',type:'select-async',w:'14',asyncOptions:async()=>(await sb.from('flavors').select('name')).data?.map(r=>r.name)||[]},
             {key:'dietary_option',label:'Dietary',type:'select-async',w:'16',asyncOptions:async()=>(await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[]},
-            {key:'design_notes',label:'Notes',type:'textarea',w:'20'},{key:'design_inspiration_photo',label:'Photo URL',type:'url',w:'20'},
-            {key:'gift_note',label:'Gift note',type:'checkbox',w:'10'},{key:'gift_note_text',label:'Gift text',type:'textarea',w:'16'},
-            {key:'consultation_requested',label:'Consult',type:'checkbox',w:'20'},{key:'discount_code_used',label:'Discount code',type:'text',w:'16'},
-            {key:'referral_code_used',label:'Referral code',type:'text',w:'16'},{key:'status',label:'Status',type:'select',w:'14',options:['In Review','Approved','Paid','Production Complete','Fulfilled','Canceled']}
+            {key:'design_notes',label:'Notes',type:'textarea',w:'20'},
+            {key:'design_inspiration_photo',label:'Photo URL',type:'url',w:'20'},
+            {key:'gift_note',label:'Gift note',type:'checkbox',w:'10'},
+            {key:'gift_note_text',label:'Gift text',type:'textarea',w:'16'},
+            {key:'consultation_requested',label:'Consult',type:'checkbox',w:'20'},
+            {key:'discount_code_used',label:'Discount code',type:'text',w:'16'},
+            {key:'referral_code_used',label:'Referral code',type:'text',w:'16'},
+            {key:'status',label:'Status',type:'select',w:'14',options:ORDER_STATUSES}
         ]},
-        discount_codes: { title:'Discount Codes', table:'discount_codes', isSettings:true, list_keys:['code'], cols:[{key:'code',label:'Code',type:'text',required:true,w:'20'},{key:'type',label:'Type',type:'select',options:['percent','fixed'],required:true,w:'20'},{key:'amount',label:'Amount',type:'number',step:'0.01',w:'20'},{key:'uses_allowed',label:'Uses',type:'number',w:'20'},{key:'email_allowed',label:'Email',type:'email',w:'20'},{key:'good_through_date',label:'Expires',type:'date',w:'20'}] },
+        discount_codes: { title:'Discount Codes', table:'discount_codes', isSettings:true, list_keys:['code','amount','type'], hasTemplateStudio:true, cols:[
+            {key:'code',label:'Code',type:'text',required:true,w:'20'},
+            {key:'type',label:'Type',type:'select',options:['percent','fixed'],required:true,w:'20'},
+            {key:'amount',label:'Amount',type:'number',step:'0.01',w:'20'},
+            {key:'uses_allowed',label:'Uses',type:'number',w:'20'},
+            {key:'email_allowed',label:'Customer Email (for personal)',type:'email',w:'20'},
+            {key:'good_through_date',label:'Expires',type:'date',w:'20'}
+        ] },
         referral_codes: { title:'Referral Codes', table:'referral_codes', isSettings:true, list_keys:['code'], cols:[{key:'code',label:'Code',type:'text',required:true,w:'20'},{key:'associated_customer_id',label:'Customer',type:'select-async',w:'20',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},{key:'good_through_date',label:'Expires',type:'date',w:'20'},{key:'referrer_discount',label:'Referrer %',type:'number',step:'0.01',w:'20'},{key:'referee_discount',label:'Referee %',type:'number',step:'0.01',w:'20'}] },
         flavors: { title:'Flavors', table:'flavors', isSettings:true, cols:[{key:'name',label:'Name',type:'text',required:true,w:'40'}] },
         dietary_options: { title:'Dietary Options', table:'dietary_options', isSettings:true, cols:[{key:'name',label:'Name',type:'text',required:true,w:'40'}] },
@@ -390,11 +619,10 @@
         reviews: { title:'Website Reviews', table:'website_reviews', customLoader:'loadReviews', readOnly:true, cols:[] }
     };
 
-    const tabOrder=['order_list','surveys','reviews'], settingsOrder=['discount_codes','referral_codes','flavors','dietary_options','pricing','costs'];
     let activeKey='order_list', activeOrderFilter='All', activeReviewTab='pending', page=0, totalCount=0;
     const pageSize=20;
 
-    // -------- AUTH --------
+    // AUTH
     document.getElementById('signInButton').onclick = async()=>{ const e=document.getElementById('email').value.trim(), p=document.getElementById('password').value.trim(); if(!onlyCompanyEmail(e)){document.getElementById('authMsg').textContent='Use @rebelribbon.com';return;} const{error}=await sb.auth.signInWithPassword({email:e,password:p}); if(error){document.getElementById('authMsg').textContent=error.message;return;} bootstrap(); };
     document.getElementById('logout').onclick = async()=>{ await sb.auth.signOut(); location.reload(); };
 
@@ -405,21 +633,18 @@
         document.getElementById('who').textContent=session.user.email.split('@')[0];
         document.getElementById('signinCard').classList.add('hidden');
         document.getElementById('app-wrapper').classList.remove('hidden');
-        renderTabs();
-        loadTable();
-        wireRealtime();
-        loadSystemHealth();
+        renderTabs(); loadTable(); wireRealtime(); loadSystemHealth();
         setInterval(loadSystemHealth, 30000);
     }
 
     document.getElementById('menuToggle').onclick=()=>{document.getElementById('sidebar').classList.toggle('open');};
     document.getElementById('sidebar').onclick=e=>{if(e.target.closest('.nav-item'))document.getElementById('sidebar').classList.remove('open');};
 
-    // -------- TABLE LOADING --------
+    // TABLE LOADING
     async function loadTable(){
         const conf=tables[activeKey];
         document.getElementById('pageTitle').textContent=conf.title;
-        const isP=activeKey==='pricing',isO=activeKey==='order_list',isR=activeKey==='reviews';
+        const isP=activeKey==='pricing', isO=activeKey==='order_list', isR=activeKey==='reviews';
         document.getElementById('orderPageControls').classList.toggle('hidden',!isO);
         document.getElementById('addBtn').classList.toggle('hidden',!!conf.readOnly||isP||isR);
         document.getElementById('dataActions').classList.toggle('hidden',isP||isR);
@@ -428,7 +653,6 @@
         document.getElementById('grid').closest('.table-wrap').classList.toggle('hidden',isP||isR);
         document.getElementById('exportBtn').classList.toggle('hidden',activeKey!=='costs');
 
-        // Build headers BEFORE custom loaders so order_list inherits clean structure
         const dc=conf.list_keys?conf.cols.filter(c=>conf.list_keys.includes(c.key)):conf.cols;
         if(conf.cols && conf.cols.length){ buildColGroup(conf,dc); buildThead(conf,dc); }
 
@@ -456,8 +680,11 @@
     async function loadOrderList(){
         const tbody=document.getElementById('tbody'); tbody.innerHTML='';
         const st=(document.getElementById('globalSearch').value||'').trim().toLowerCase();
-        let q=sb.from('orders').select('id,customer_id,status',{count:'exact'}).order('created_at',{ascending:false});
-        if(activeOrderFilter!=='All')q=q.eq('status',activeOrderFilter);
+        let q=sb.from('orders').select('id,customer_id,status,payment_status',{count:'exact'}).order('created_at',{ascending:false});
+        // Filter logic: status filters vs payment filters
+        if(activeOrderFilter==='unpaid'){ q=q.in('payment_status',['unpaid','pending']); }
+        else if(activeOrderFilter!=='All'){ q=q.eq('status', activeOrderFilter); }
+
         let orders,count;
         if(st){const{data,count:c}=await q;orders=data||[];count=c;}
         else{const{data,count:c}=await q.range(page*pageSize,page*pageSize+pageSize-1);orders=data||[];count=c;}
@@ -471,8 +698,12 @@
             const tr=$('tr','border-b hover:bg-gray-100 cursor-pointer');
             tr.appendChild($('td','cell font-medium',c?`${c.first_name||''} ${c.last_name||''}`.trim():'N/A'));
             const sc=$('td','cell text-center');
-            sc.appendChild($('span',`status-badge ${getStatusClass(r.status)}`,r.status||'In Review'));
+            sc.appendChild($('span',`status-badge ${getStatusClass(r.status)}`,r.status||'Active'));
             tr.appendChild(sc);
+            const pc=$('td','cell text-center');
+            const ps=r.payment_status||'unpaid';
+            pc.appendChild($('span',`status-badge status-${ps.toLowerCase()}`,ps));
+            tr.appendChild(pc);
             tr.onclick=()=>openOrderManager(r.id);
             tbody.appendChild(tr);
         }
@@ -524,22 +755,21 @@
         loadReviews();
     }
 
-    // -------- SURVEY --------
+    // SURVEY
     async function loadSurveySection(orderId){
         const s=document.getElementById('surveyLinkSection');
         s.innerHTML='<p class="text-gray-500 text-sm">Loading...</p>';
         const{data:tok}=await sb.from('survey_tokens').select('*').eq('order_id',orderId).order('created_at',{ascending:false}).limit(1).maybeSingle();
         if(tok){
             const url=`${SURVEY_BASE_URL}?token=${tok.token}`, used=tok.used, exp=tok.expires_at&&new Date(tok.expires_at)<new Date();
-            s.innerHTML=`<div class="survey-link-box ${used?'':'no-link'} ${exp?'expired':''}"><div class="flex justify-between items-center mb-2"><span class="font-semibold">${used?'✅ Completed':exp?'⚠️ Expired':'📨 Active'}</span>${!used?`<button id="copyLink" class="btn btn-secondary text-xs">📋 Copy</button>`:''}</div>${!used?`<input class="survey-link-input" value="${url}" readonly/><div class="text-xs text-gray-500">Expires: ${tok.expires_at?new Date(tok.expires_at).toLocaleDateString():'Never'}</div>`:`<div class="text-sm text-gray-600">Done: ${tok.used_at?new Date(tok.used_at).toLocaleDateString():''}</div>`}${exp&&!used?`<button id="regenLink" class="btn btn-warning mt-2 w-full">🔄 Regenerate</button>`:''}</div>`;
+            s.innerHTML=`<div class="survey-link-box ${used?'':'no-link'} ${exp?'expired':''}"><div class="flex justify-between items-center mb-2"><span class="font-semibold">${used?'✅ Completed':exp?'⚠️ Expired':'📨 Active'}</span>${!used?`<button id="copyLink" class="btn btn-secondary text-xs" type="button">📋 Copy</button>`:''}</div>${!used?`<input class="survey-link-input" value="${url}" readonly/><div class="text-xs text-gray-500">Expires: ${tok.expires_at?new Date(tok.expires_at).toLocaleDateString():'Never'}</div>`:`<div class="text-sm text-gray-600">Done: ${tok.used_at?new Date(tok.used_at).toLocaleDateString():''}</div>`}${exp&&!used?`<button id="regenLink" class="btn btn-warning mt-2 w-full" type="button">🔄 Regenerate</button>`:''}</div>`;
             document.getElementById('copyLink')?.addEventListener('click',function(){navigator.clipboard.writeText(url);this.textContent='✓ Copied!';});
             document.getElementById('regenLink')?.addEventListener('click',()=>genSurveyLink(orderId));
         }else{
-            s.innerHTML=`<div class="survey-link-box no-link"><p class="text-gray-600 mb-3">No survey link yet.</p><button id="genLink" class="btn btn-primary w-full">📝 Generate Link</button></div>`;
+            s.innerHTML=`<div class="survey-link-box no-link"><p class="text-gray-600 mb-3">No survey link yet.</p><button id="genLink" class="btn btn-primary w-full" type="button">📝 Generate Link</button></div>`;
             document.getElementById('genLink').onclick=()=>genSurveyLink(orderId);
         }
     }
-
     async function genSurveyLink(orderId){
         const s=document.getElementById('surveyLinkSection');
         s.innerHTML='<p class="text-gray-500 text-sm">Generating...</p>';
@@ -551,13 +781,17 @@
         loadSurveySection(orderId);
     }
 
-    // -------- TABLE BUILDERS --------
+    // TABLE BUILDERS
     function buildColGroup(conf,cols){const cg=document.getElementById('colgroup');cg.innerHTML='';let c=cols.slice();if(!conf.readOnly)c.push({w:'20'});const t=c.reduce((s,x)=>s+(Number(x.w)||0),0)||100;for(const x of c){const col=document.createElement('col');col.style.width=((Number(x.w)||0)/t*100)+'%';cg.appendChild(col);}}
     function buildThead(conf,cols){const tr=document.getElementById('thead');tr.innerHTML='';for(const c of cols)tr.appendChild($('th','thcell '+(conf.center?'text-center':'text-left'),c.label));if(!conf.readOnly)tr.appendChild($('th','thcell text-right',''));}
     function updatePager(){document.getElementById('prev').disabled=page===0;document.getElementById('next').disabled=(page+1)*pageSize>=totalCount;document.getElementById('pageInfo').textContent=`${Math.min(totalCount,(page+1)*pageSize)} of ${totalCount}`;}
 
-    // -------- EDITOR --------
+    // EDITOR
     const dlg=document.getElementById('editor'), formBody=document.getElementById('formBody');
+    let currentEditorConf=null, currentEditorRow=null;
+
+    document.getElementById('closeEditor').onclick=()=>{dlg.close();};
+
     async function optionEl(col,val){
         const w=$('label','block'); w.appendChild($('span','text-sm block mb-1',col.label));
         let inp;
@@ -578,13 +812,16 @@
         return w;
     }
     async function openEditor(conf,row){
+        currentEditorConf=conf; currentEditorRow=row;
         document.getElementById('editorTitle').textContent=row?`Edit ${conf.title}`:`New ${conf.title}`;
         formBody.innerHTML='';
         for(const c of conf.cols)formBody.appendChild(await optionEl(c,row?.[c.key]));
         const h=document.createElement('input'); h.type='hidden'; h.id='row_id'; h.value=row?.id||''; formBody.appendChild(h);
         document.getElementById('deleteBtn').classList.toggle('hidden',!row||conf.table==='orders'||conf.table==='pricing');
         document.getElementById('deleteBtn').onclick=async()=>{if(row?.id&&confirm('Delete?')){await sb.from(conf.table).delete().eq('id',row.id);dlg.close();loadTable();}};
-        document.getElementById('saveBtn').onclick=async e=>{e.preventDefault();await saveRecord(conf,row);};
+        // Template studio button (only for discount_codes)
+        document.getElementById('openStudioBtn').classList.toggle('hidden',!conf.hasTemplateStudio);
+        document.getElementById('saveBtn').onclick=async()=>{ await saveRecord(conf,row); };
         dlg.showModal();
     }
     async function saveRecord(conf,orig){
@@ -593,14 +830,134 @@
         const id=document.getElementById('row_id').value;
         const r=id?await sb.from(conf.table).update(p).eq('id',id).select('*').single():await sb.from(conf.table).insert(p).select('*').single();
         if(r.error){alert(r.error.message);return;}
+        // Update current row reference so studio can use latest values
+        currentEditorRow = r.data || currentEditorRow;
         dlg.close(); loadTable();
         if(conf.table==='orders'&&orig)openOrderManager(orig.id);
     }
 
-    // -------- NAV --------
+    // ====== DISCOUNT CODE TEMPLATE STUDIO ======
+    const studioDlg=document.getElementById('discountStudio');
+    let dsCurrentTpl='ig';
+    const dsSizes={ig:{w:1080,h:1080},card:{w:1500,h:900},story:{w:1080,h:1920}};
+
+    document.getElementById('openStudioBtn').onclick=()=>{
+        // Pull current values from editor (live data, may not be saved yet)
+        const code=(document.getElementById('fld_code')?.value||'CODE').toUpperCase();
+        const amount=document.getElementById('fld_amount')?.value||'15';
+        const type=document.getElementById('fld_type')?.value||'percent';
+        const expiresRaw=document.getElementById('fld_good_through_date')?.value||'';
+        const email=document.getElementById('fld_email_allowed')?.value||'';
+        document.getElementById('ds-code').value=code;
+        document.getElementById('ds-amount').value=amount;
+        document.getElementById('ds-type').value=type;
+        document.getElementById('ds-expires').value=expiresRaw?formatDateForCard(expiresRaw):'';
+        // If we have an email, try to fetch customer name for the personal card
+        document.getElementById('ds-name').value='';
+        if(email){
+            sb.from('customers').select('first_name').eq('email',email).maybeSingle().then(({data})=>{
+                if(data?.first_name) document.getElementById('ds-name').value=data.first_name;
+                renderStudio();
+            });
+        }
+        renderStudio();
+        fitStudioStage();
+        studioDlg.showModal();
+    };
+    document.getElementById('closeStudio').onclick=()=>{ studioDlg.close(); };
+
+    function formatDateForCard(iso){
+        // ISO date -> "DEC 31, 2025"
+        try {
+            const d=new Date(iso+'T00:00:00');
+            return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).toUpperCase();
+        } catch { return iso; }
+    }
+
+    function renderStudio(){
+        const code=(document.getElementById('ds-code').value||'CODE').toUpperCase();
+        const amount=document.getElementById('ds-amount').value||'15';
+        const type=document.getElementById('ds-type').value;
+        const expires=document.getElementById('ds-expires').value||'';
+        const name=document.getElementById('ds-name').value||'Friend';
+        const message=document.getElementById('ds-message').value||'A little something <em>sweet</em> just for you.';
+        const isPercent=type==='percent';
+        const amtMarkup=isPercent?`<sup>%</sup>${amount}`:`<sup>$</sup>${amount}`;
+        // IG
+        document.getElementById('ds-ig-amount').innerHTML=amtMarkup+`<sup style="font-size:60px">${isPercent?' off':' off'}</sup>`;
+        document.getElementById('ds-ig-code').textContent=code;
+        document.getElementById('ds-ig-expires').textContent=expires?`expires ${expires}`:'';
+        // Card
+        document.getElementById('ds-card-name').textContent=name;
+        document.getElementById('ds-card-message').innerHTML=message;
+        document.getElementById('ds-card-amount').innerHTML=amtMarkup;
+        document.getElementById('ds-card-code').textContent=code;
+        document.getElementById('ds-card-expires').textContent=expires||'—';
+        // Story
+        document.getElementById('ds-story-amount').innerHTML=amtMarkup;
+        document.getElementById('ds-story-code').textContent=code;
+    }
+
+    document.querySelectorAll('.ds-tpl-btn').forEach(b=>{
+        b.onclick=()=>{
+            document.querySelectorAll('.ds-tpl-btn').forEach(x=>x.classList.remove('active'));
+            b.classList.add('active');
+            dsCurrentTpl=b.dataset.tpl;
+            document.querySelectorAll('.ds-template').forEach(t=>t.classList.add('hidden'));
+            document.getElementById(`ds-tpl-${dsCurrentTpl}`).classList.remove('hidden');
+            fitStudioStage();
+        };
+    });
+
+    ['ds-code','ds-amount','ds-type','ds-expires','ds-name','ds-message'].forEach(id=>{
+        const el=document.getElementById(id);
+        el.addEventListener('input',renderStudio);
+        el.addEventListener('change',renderStudio);
+    });
+
+    function fitStudioStage(){
+        const size=dsSizes[dsCurrentTpl];
+        // Get stage element by selector since it doesn't have an ID
+        const stage=document.querySelector('.ds-stage');
+        if(!stage) return;
+        const padding=40;
+        const availW=stage.clientWidth-padding;
+        const availH=stage.clientHeight-padding;
+        const scale=Math.min(availW/size.w, availH/size.h, 0.4);
+        document.getElementById('ds-stage-inner').style.transform=`scale(${scale})`;
+    }
+    window.addEventListener('resize',fitStudioStage);
+
+    document.getElementById('ds-export').onclick=async()=>{
+        const el=document.getElementById(`ds-tpl-${dsCurrentTpl}`);
+        const prev=document.getElementById('ds-stage-inner').style.transform;
+        document.getElementById('ds-stage-inner').style.transform='scale(1)';
+        try {
+            const canvas=await html2canvas(el,{
+                backgroundColor:null, scale:1, useCORS:true,
+                width:dsSizes[dsCurrentTpl].w, height:dsSizes[dsCurrentTpl].h
+            });
+            const link=document.createElement('a');
+            const code=(document.getElementById('ds-code').value||'code').toLowerCase();
+            link.download=`rebelribbon-${dsCurrentTpl}-${code}.png`;
+            link.href=canvas.toDataURL('image/png');
+            link.click();
+        } catch(e) { alert('Export failed: '+e.message); }
+        document.getElementById('ds-stage-inner').style.transform=prev;
+    };
+    document.getElementById('ds-copy-code').onclick=()=>{
+        const code=document.getElementById('ds-code').value.toUpperCase();
+        navigator.clipboard.writeText(code);
+        const btn=document.getElementById('ds-copy-code');
+        const old=btn.textContent;
+        btn.textContent='✓ Copied!';
+        setTimeout(()=>btn.textContent=old,1500);
+    };
+
+    // NAV
     function renderTabs(){
         document.querySelectorAll('.nav-item').forEach(b=>{b.classList.remove('nav-active');if(b.dataset.key===activeKey)b.classList.add('nav-active');b.onclick=()=>{activeKey=b.dataset.key;page=0;renderTabs();loadTable();};});
-        document.querySelectorAll('#orderFilters .filter-tab').forEach(b=>{b.classList.toggle('filter-active',b.dataset.filter===activeOrderFilter);b.onclick=()=>{activeOrderFilter=b.dataset.filter;page=0;loadTable();};});
+        document.querySelectorAll('#orderFilters .filter-tab').forEach(b=>{b.classList.toggle('filter-active',b.dataset.filter===activeOrderFilter);b.onclick=()=>{activeOrderFilter=b.dataset.filter;page=0;loadTable();renderTabs();};});
         document.getElementById('addBtn').classList.toggle('hidden',!!tables[activeKey]?.readOnly);
         document.getElementById('addBtn').onclick=()=>openEditor(tables[activeKey],null);
         document.getElementById('prev').onclick=()=>{if(page>0){page--;loadTable();}};
@@ -610,7 +967,7 @@
     }
     function wireRealtime(){for(const k of Object.keys(tables)){const t=k==='order_list'?'orders':tables[k].table;sb.channel(`${k}-ch`).on('postgres_changes',{event:'*',schema:'public',table:t},()=>{if(k===activeKey)loadTable();}).subscribe();}}
 
-    // -------- ORDER DRAWER --------
+    // ORDER DRAWER
     const drawer=document.getElementById('orderDrawer');
     let activeOrder=null,activeCustomer=null,pricing=null,adjustments=[],discountCodeDetails=null,referralCodeDetails=null,discountCodeAmount=0,referralDiscountAmount=0,activeCustomerReferralCode=null;
 
@@ -621,7 +978,13 @@
     async function fetchAdjustments(id){const{data}=await sb.from('order_adjustments').select('*').eq('order_id',id).order('created_at',{ascending:false});return(data||[]).map(r=>({...r,amount:Number(r.amount||0)}));}
 
     function computeTotals(){
-        const ppd=pricing?.price_per_dozen||0,consult=activeOrder?.consultation_requested?pricing?.consultation_fee||0:0,gift=activeOrder?.gift_note?pricing?.gift_note_fee||0:0,base=Number(activeOrder?.cookie_amount_dzns||0)*ppd,feeSum=adjustments.filter(a=>a.kind==='fee').reduce((s,a)=>s+a.amount,0),discSum=adjustments.filter(a=>a.kind==='discount').reduce((s,a)=>s+a.amount,0),baseForCodes=base+consult+gift+feeSum;
+        const ppd=pricing?.price_per_dozen||0,
+              consult=activeOrder?.consultation_requested?pricing?.consultation_fee||0:0,
+              gift=activeOrder?.gift_note?pricing?.gift_note_fee||0:0,
+              base=Number(activeOrder?.cookie_amount_dzns||0)*ppd,
+              feeSum=adjustments.filter(a=>a.kind==='fee').reduce((s,a)=>s+a.amount,0),
+              discSum=adjustments.filter(a=>a.kind==='discount').reduce((s,a)=>s+a.amount,0),
+              baseForCodes=base+consult+gift+feeSum;
         discountCodeAmount=0;referralDiscountAmount=0;
         if(discountCodeDetails?.isValid&&baseForCodes>0){discountCodeAmount=discountCodeDetails.type==='percent'?baseForCodes*(discountCodeDetails.value/100):discountCodeDetails.value;if(discountCodeAmount>baseForCodes)discountCodeAmount=baseForCodes;}
         if(referralCodeDetails?.isValid&&baseForCodes>0){referralDiscountAmount=baseForCodes*(referralCodeDetails.value/100);if(referralDiscountAmount>baseForCodes)referralDiscountAmount=baseForCodes;}
@@ -635,6 +998,7 @@
         document.getElementById('t_disc_referral').textContent=referralDiscountAmount?'-'+money(referralDiscountAmount):'-$0.00';
         document.getElementById('t_adj_disc').textContent=discSum?'-'+money(discSum):'-$0.00';
         document.getElementById('t_total').textContent=money(total);
+        return total;
     }
 
     function renderAdjustments(){
@@ -648,14 +1012,14 @@
             tr.appendChild($('td',`p-1 text-right ${a.kind==='discount'?'text-red-600':'text-green-600'}`,(a.kind==='discount'?'-':'')+money(a.amount)));
             const rc=$('td','p-1 text-right');
             const rb=$('button','btn btn-ghost text-red-500 text-xs','×');
-            rb.onclick=async()=>{if(confirm('Remove?')){await sb.from('order_adjustments').delete().eq('id',a.id);adjustments=adjustments.filter(x=>x.id!==a.id);renderAdjustments();computeTotals();}};
+            rb.onclick=async()=>{if(confirm('Remove?')){await sb.from('order_adjustments').delete().eq('id',a.id);adjustments=adjustments.filter(x=>x.id!==a.id);renderAdjustments();computeTotals();renderStripePanel();}};
             rc.appendChild(rb); tr.appendChild(rc); tb.appendChild(tr);
         }
     }
 
     function fillDrawer(){
         const o=activeOrder,c=activeCustomer;
-        document.getElementById('drawerTitle').textContent=`Order #${o?.order_id||formatOrderId(o.id)} (${o?.status||'In Review'})`;
+        document.getElementById('drawerTitle').textContent=`Order #${o?.order_id||formatOrderId(o.id)} (${o?.status||'Active'})`;
         document.getElementById('cust_name').textContent=c?`${c.first_name||''} ${c.last_name||''}`.trim():'N/A';
         document.getElementById('cust_id').textContent=c?.customer_id||o?.order_id||'N/A';
         document.getElementById('cust_email').textContent=c?.email||'N/A';
@@ -682,9 +1046,95 @@
         document.getElementById('ov_pd_type').textContent=o?.pickup_delivery_type||'N/A';
         document.getElementById('ov_discount_code').textContent=o?.discount_code_used?`${o.discount_code_used} (${discountCodeDetails?.isValid?'applied':'invalid'})`:'None';
         document.getElementById('ov_referral_code').textContent=o?.referral_code_used?`${o.referral_code_used} (${referralCodeDetails?.isValid?'applied':'invalid'})`:'None';
-        document.getElementById('statusSelect').value=o?.status||'In Review';
+        document.getElementById('statusSelect').value=o?.status||'Active';
         renderAdjustments();
         computeTotals();
+        renderStripePanel();
+    }
+
+    // ====== STRIPE PANEL ======
+    function renderStripePanel(){
+        const o=activeOrder;
+        const panel=document.getElementById('stripePanel');
+        const badge=document.getElementById('paymentBadge');
+        const body=document.getElementById('stripeBody');
+        const status=o?.payment_status||'unpaid';
+        badge.className=`status-badge status-${status.toLowerCase()}`;
+        badge.textContent=status;
+        panel.className=`stripe-panel ${status}`;
+        const total=Number(document.getElementById('t_total').textContent.replace(/[$,]/g,''))||0;
+        const sessionUrl=o?.stripe_payment_link_url||'';
+
+        if(status==='paid'){
+            body.innerHTML=`<p class="text-sm text-green-800">✅ Paid <strong>${money(o?.payment_amount||0)}</strong> on ${o?.paid_at?new Date(o.paid_at).toLocaleDateString():'?'}.</p>`;
+            return;
+        }
+        if(sessionUrl){
+            body.innerHTML=`
+                <p class="text-sm text-gray-700 mb-2">Active checkout for <strong>${money(o?.payment_amount||total)}</strong></p>
+                <input class="stripe-link-input mb-2" value="${sessionUrl}" readonly id="stripeUrlInput"/>
+                <div class="flex gap-2 flex-wrap">
+                    <button id="copyStripeUrl" type="button" class="btn btn-secondary text-xs">📋 Copy Link</button>
+                    <button id="emailStripeUrl" type="button" class="btn btn-secondary text-xs">📧 Email</button>
+                    <button id="smsStripeUrl" type="button" class="btn btn-secondary text-xs">💬 Text</button>
+                    <button id="regenStripe" type="button" class="btn btn-warning text-xs">🔄 Regenerate</button>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">Generated. Send the link to your customer.</p>`;
+            document.getElementById('copyStripeUrl').onclick=()=>{navigator.clipboard.writeText(sessionUrl);document.getElementById('copyStripeUrl').textContent='✓ Copied!';};
+            document.getElementById('emailStripeUrl').onclick=()=>{const subj=encodeURIComponent(`Your Rebel Ribbon order — payment link`);const bdy=encodeURIComponent(`Hi ${activeCustomer?.first_name||''}!\n\nHere is the secure payment link for your custom cookie order:\n${sessionUrl}\n\nThank you!\n— Rebel Ribbon`);window.location.href=`mailto:${activeCustomer?.email||''}?subject=${subj}&body=${bdy}`;};
+            document.getElementById('smsStripeUrl').onclick=()=>{const bdy=encodeURIComponent(`Hi ${activeCustomer?.first_name||''}! Payment link for your Rebel Ribbon order: ${sessionUrl}`);window.location.href=`sms:${(activeCustomer?.phone||'').replace(/\D/g,'')}?body=${bdy}`;};
+            document.getElementById('regenStripe').onclick=()=>createCheckoutSession(true);
+        } else {
+            body.innerHTML=`
+                <p class="text-sm text-gray-700 mb-3">No payment link yet. Total: <strong>${money(total)}</strong></p>
+                <button id="genStripe" type="button" class="btn btn-primary w-full">⚡ Generate Stripe Checkout</button>`;
+            document.getElementById('genStripe').onclick=()=>createCheckoutSession(false);
+        }
+    }
+
+    async function createCheckoutSession(regenerate){
+        const body=document.getElementById('stripeBody');
+        body.innerHTML='<p class="text-gray-500 text-sm">Creating Stripe Checkout session...</p>';
+        // Build line items from the current pricing breakdown
+        const lineItems=[];
+        const ppd=pricing?.price_per_dozen||0;
+        const dz=Number(activeOrder?.cookie_amount_dzns||0);
+        const base=dz*ppd;
+        if(base>0)lineItems.push({label:`Custom Cookies (${dz} dozen)`,amount:base,quantity:1});
+        if(activeOrder?.consultation_requested && pricing?.consultation_fee)lineItems.push({label:'Consultation',amount:pricing.consultation_fee,quantity:1});
+        if(activeOrder?.gift_note && pricing?.gift_note_fee)lineItems.push({label:'Gift Note',amount:pricing.gift_note_fee,quantity:1});
+        for(const a of adjustments){
+            if(a.kind==='fee') lineItems.push({label:a.label,amount:a.amount,quantity:1});
+            else lineItems.push({label:a.label,amount:-Math.abs(a.amount),quantity:1});
+        }
+        if(discountCodeAmount>0) lineItems.push({label:`Discount: ${activeOrder.discount_code_used}`,amount:-discountCodeAmount,quantity:1});
+        if(referralDiscountAmount>0) lineItems.push({label:`Referral: ${activeOrder.referral_code_used}`,amount:-referralDiscountAmount,quantity:1});
+
+        try {
+            const{data:{session}}=await sb.auth.getSession();
+            const res=await fetch(`${SUPABASE_URL}/functions/v1/create-checkout-session`,{
+                method:'POST',
+                headers:{
+                    'Content-Type':'application/json',
+                    'Authorization':`Bearer ${session.access_token}`
+                },
+                body:JSON.stringify({
+                    orderId: activeOrder.id,
+                    lineItems,
+                    customerEmail: activeCustomer?.email||'',
+                    customerName: `${activeCustomer?.first_name||''} ${activeCustomer?.last_name||''}`.trim()
+                })
+            });
+            const result=await res.json();
+            if(!res.ok) throw new Error(result.error||'Failed to create session');
+            // Refresh order to pick up the new URL
+            const{data:fresh}=await sb.from('orders').select('*').eq('id',activeOrder.id).single();
+            activeOrder=fresh;
+            renderStripePanel();
+        } catch(e) {
+            body.innerHTML=`<div class="text-red-600 text-sm p-2 bg-red-50 rounded">❌ ${e.message}</div><button id="genStripe" type="button" class="btn btn-primary w-full mt-2">Try Again</button>`;
+            document.getElementById('genStripe').onclick=()=>createCheckoutSession(false);
+        }
     }
 
     async function openOrderManager(orderId){
@@ -708,8 +1158,8 @@
 
     document.getElementById('saveStatus').onclick=async()=>{const s=document.getElementById('statusSelect').value;await sb.from('orders').update({status:s}).eq('id',activeOrder.id);activeOrder.status=s;fillDrawer();loadTable();};
     document.getElementById('editFields').onclick=()=>{if(activeOrder)openEditor(tables.orders,activeOrder);};
-    document.getElementById('backToOrders').onclick=e=>{e.preventDefault();drawer.close();};
-    document.getElementById('addAdjustment').onclick=async()=>{const l=document.getElementById('adjLabel').value.trim(),a=Number(document.getElementById('adjAmount').value),k=document.getElementById('adjKind').value;if(!l||!a||a<=0){alert('Enter label and amount');return;}const{data,error}=await sb.from('order_adjustments').insert({order_id:activeOrder.id,label:l,amount:a,kind:k}).select('*').single();if(error){alert(error.message);return;}adjustments.unshift({...data,amount:Number(data.amount||0)});document.getElementById('adjLabel').value='';document.getElementById('adjAmount').value='';renderAdjustments();computeTotals();};
+    document.getElementById('backToOrders').onclick=()=>{drawer.close();};
+    document.getElementById('addAdjustment').onclick=async()=>{const l=document.getElementById('adjLabel').value.trim(),a=Number(document.getElementById('adjAmount').value),k=document.getElementById('adjKind').value;if(!l||!a||a<=0){alert('Enter label and amount');return;}const{data,error}=await sb.from('order_adjustments').insert({order_id:activeOrder.id,label:l,amount:a,kind:k}).select('*').single();if(error){alert(error.message);return;}adjustments.unshift({...data,amount:Number(data.amount||0)});document.getElementById('adjLabel').value='';document.getElementById('adjAmount').value='';renderAdjustments();computeTotals();renderStripePanel();};
     document.getElementById('btnUploadPhoto').onclick=async()=>{const f=document.getElementById('uploadPhoto').files?.[0];if(!f){alert('Choose file');return;}const path=`${activeOrder.id}/photo_${Date.now()}.${f.name.split('.').pop()}`;const{data,error}=await sb.storage.from('order_uploads').upload(path,f,{upsert:true});if(error){alert(error.message);return;}const{data:pub}=sb.storage.from('order_uploads').getPublicUrl(data.path);await sb.from('orders').update({design_inspiration_photo:pub?.publicUrl}).eq('id',activeOrder.id);activeOrder.design_inspiration_photo=pub?.publicUrl;document.getElementById('ov_photo').src=pub?.publicUrl;document.getElementById('uploadPhoto').value='';};
     document.getElementById('ov_photo').onclick=function(){if(this.src)window.open(this.src,'_blank');};
 
@@ -729,7 +1179,7 @@
         w.document.close();
     };
 
-    // -------- HEALTH BANNER (Supabase-driven, no more /api/system-status) --------
+    // HEALTH BANNER
     async function loadSystemHealth(){
         try{
             const{data,error}=await sb.from('system_status').select('*').limit(1).maybeSingle();
@@ -744,7 +1194,6 @@
         if(!row||!row.last_webhook_received_at)return{level:'red',hours:null,last:null};
         const last=new Date(row.last_webhook_received_at);
         const hours=(Date.now()-last.getTime())/3600000;
-        // Green: webhook within 24h. Yellow: 24-72h. Red: >72h or never.
         const level=hours<24?'green':hours<72?'yellow':'red';
         return{level,hours:Math.round(hours),last};
     }
@@ -754,7 +1203,6 @@
         const txt=document.getElementById('health-webhook-status');
         const upd=document.getElementById('health-last-update');
         if(!banner||!dot||!txt)return;
-        // Quiet by default: only show when there's something to know
         if(s.level==='green'){
             banner.classList.remove('visible','yellow','red');
             document.body.classList.remove('has-health-warning');
@@ -772,7 +1220,6 @@
         }else{upd.textContent='Updated: never';}
     }
 
-    // GO
     bootstrap();
     </script>
 </body>
