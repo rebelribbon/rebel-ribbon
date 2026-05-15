@@ -1,1226 +1,2042 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <meta charset="utf-8"/>
-    <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title>Rebel Ribbon Staff UI</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Fraunces:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Allura&family=DM+Sans:wght@400;500;600&display=swap');
-        body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
-        html { overflow-x: hidden; }
-        button { font-family: inherit; }
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<meta name="theme-color" content="#831843"/>
+<title>Rebel Ribbon · Staff</title>
+<script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,700;1,400;1,500&family=Inter:wght@400;500;600;700&family=Allura&display=swap');
 
-        /* HEADER */
-        #header-banner { position: fixed; top: 0; left: 0; right: 0; height: 60px; background-color: #fbcfe8; color: #4c0519; z-index: 100; display: flex; align-items: center; padding: 0 1rem; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
-        #menuToggle { margin-right: 1rem; background: #fdf2f8; color: #be185d; width: 40px; height: 40px; border-radius: 6px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
-        #logo-wrapper { display: flex; align-items: center; gap: 0.5rem; position: absolute; left: 50%; transform: translateX(-50%); }
-        #logo-text { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; letter-spacing: 0.08em; color: #831843; }
+/* ========================================================================
+   DESIGN TOKENS — matches rebelribbon.com brand
+   ======================================================================== */
+:root {
+    /* Brand palette */
+    --pink-50:  #fdf2f8;
+    --pink-100: #fce7f3;
+    --pink-200: #fbcfe8;
+    --pink-300: #f9a8d4;
+    --pink-500: #ec4899;
+    --pink-600: #db2777;
+    --pink-700: #be185d;
+    --pink-800: #9d174d;
+    --pink-900: #831843;
+    --pink-950: #500724;
 
-        /* HEALTH BANNER */
-        #health-banner { display: none; position: fixed; top: 60px; left: 0; right: 0; z-index: 99; align-items: center; gap: 1rem; padding: 0.5rem 1rem; border-bottom: 2px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); font-size: 0.875rem; background: white; }
-        #health-banner.visible { display: flex; }
-        #health-banner.yellow { border-bottom-color: #facc15; background-color: #fefce8; color: #854d0e; }
-        #health-banner.red { border-bottom-color: #ef4444; background-color: #fef2f2; color: #991b1b; }
-        .health-indicator { display: flex; align-items: center; gap: 0.5rem; }
-        .health-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
-        body.has-health-warning #app-wrapper { padding-top: 96px; }
+    --cream:    #fffbf5;
+    --ink:      #1a0d12;
+    --ink-soft: #6b4c54;
+    --line:     rgba(131, 24, 67, 0.10);
+    --line-strong: rgba(131, 24, 67, 0.18);
 
-        /* SIDEBAR */
-        #sidebar { width: 250px; background-color: #1f2937; color: white; position: fixed; top: 0; left: 0; height: 100vh; z-index: 110; padding-top: 60px; transform: translateX(-100%); transition: transform 0.3s ease; box-shadow: 4px 0 10px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; overflow-y: auto; }
-        #sidebar.open { transform: translateX(0); }
-        .nav-item { display: block; padding: 0.75rem 1rem; cursor: pointer; transition: background-color 0.15s; text-align: left; width: 100%; background: transparent; color: white; border: none; }
-        .nav-item:hover { background-color: #374151; }
-        .nav-active { background-color: #374151; font-weight: 600; border-left: 4px solid #3b82f6; padding-left: calc(1rem - 4px); }
-        .submenu-item { padding: 0.5rem 1rem 0.5rem 2rem; font-size: 0.875rem; }
-        #logout-sidebar { padding: 1rem; border-top: 1px solid #374151; margin-top: auto; }
+    /* Semantic */
+    --success:  #15803d;
+    --success-bg: #dcfce7;
+    --warning:  #b45309;
+    --warning-bg: #fef3c7;
+    --danger:   #b91c1c;
+    --danger-bg: #fee2e2;
+    --info:     #1d4ed8;
+    --info-bg:  #dbeafe;
 
-        /* LAYOUT */
-        #app-wrapper { display: flex; width: 100%; padding-top: 60px; }
-        #app-wrapper.hidden { display: none; }
-        #content { flex-grow: 1; padding: 1rem; max-width: 100%; }
-        @media (min-width: 768px) { #content { padding: 2rem; } }
+    /* Type */
+    --font-display: 'Playfair Display', Georgia, serif;
+    --font-body: 'Inter', -apple-system, sans-serif;
+    --font-script: 'Allura', cursive;
 
-        /* CONTROLS */
-        #searchContainer { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; }
-        #globalSearch { padding: 0.4rem 0.75rem; border-radius: 9999px; border: 1px solid #d1d5db; flex-grow: 1; width: 100%; max-width: 300px; }
-        #orderFilters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; justify-content: center; }
-        .filter-tab { font-size: 0.75rem; padding: 0.3rem 0.75rem; border-radius: 0.5rem; border: 1px solid #d1d5db; background-color: #ffffff; color: #374151; transition: all 0.2s; cursor: pointer; }
-        .filter-active { border: 2px solid #be185d; background-color: #be185d; color: white; font-weight: 600; }
+    /* Elevation */
+    --shadow-sm: 0 1px 2px rgba(131,24,67,0.06);
+    --shadow:    0 4px 12px -2px rgba(131,24,67,0.08), 0 2px 6px -1px rgba(131,24,67,0.04);
+    --shadow-lg: 0 20px 40px -16px rgba(131,24,67,0.18), 0 8px 16px -8px rgba(131,24,67,0.10);
 
-        /* TABLES */
-        .table-wrap { overflow-x: auto; border-radius: 0.75rem; border: 1px solid #e5e7eb; background: #fff; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
-        .thcell { padding: 0.75rem; font-weight: 600; }
-        .cell { padding: 1rem 0.75rem; overflow-wrap: break-word; vertical-align: middle; }
-        .pricing-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb; }
+    /* Layout */
+    --safe-top: env(safe-area-inset-top, 0);
+    --safe-bottom: env(safe-area-inset-bottom, 0);
+}
 
-        /* DIALOGS */
-        dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
-        dialog { max-height: 90vh; overflow-y: auto; }
-        #orderDrawer { width: 100%; max-width: 100%; margin: 0; border-radius: 0; height: 100%; overflow-x: hidden; }
-        @media (min-width: 1024px) { #orderDrawer { max-width: 1080px; height: auto; border-radius: 1rem; } }
-        #discountStudio { width: 100%; max-width: 100%; margin: 0; border-radius: 0; height: 100%; overflow-x: hidden; }
-        @media (min-width: 1024px) { #discountStudio { max-width: 1200px; height: auto; border-radius: 1rem; } }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+html { overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+body {
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.5;
+    color: var(--ink);
+    background: var(--cream);
+    background-image:
+        radial-gradient(at 0% 0%, rgba(251, 207, 232, 0.4) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(252, 231, 243, 0.5) 0px, transparent 50%);
+    background-attachment: fixed;
+    min-height: 100vh;
+    min-height: 100dvh;
+    overscroll-behavior: none;
+}
+button { font-family: inherit; cursor: pointer; }
+button, input, select, textarea { font-family: inherit; font-size: inherit; color: inherit; }
 
-        /* AUTH */
-        #signinCard { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; background-color: #f9fafb; }
+/* ========================================================================
+   SIGN IN
+   ======================================================================== */
+#signin {
+    position: fixed; inset: 0; z-index: 100;
+    display: flex; align-items: center; justify-content: center;
+    padding: 1.5rem;
+    background:
+        radial-gradient(at 30% 20%, rgba(251, 207, 232, 0.6) 0px, transparent 50%),
+        radial-gradient(at 80% 80%, rgba(252, 231, 243, 0.7) 0px, transparent 50%),
+        var(--cream);
+}
+.signin-card {
+    width: 100%; max-width: 380px;
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 24px;
+    padding: 2.5rem 2rem;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+}
+.signin-bow {
+    position: absolute; top: -38px; left: 50%; transform: translateX(-50%);
+    width: 76px; height: 76px;
+    background: var(--cream);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: var(--shadow);
+}
+.signin-bow img { width: 50px; height: 50px; }
+.signin-title {
+    font-family: var(--font-display);
+    font-size: 1.75rem; font-weight: 500;
+    text-align: center; margin-top: 1rem; margin-bottom: 0.25rem;
+    color: var(--pink-900);
+    letter-spacing: -0.01em;
+}
+.signin-title em { font-style: italic; color: var(--pink-600); }
+.signin-sub {
+    font-size: 0.8125rem; color: var(--ink-soft);
+    text-align: center; margin-bottom: 2rem;
+}
+.field { margin-bottom: 1rem; }
+.field label {
+    display: block;
+    font-size: 0.6875rem; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--ink-soft); margin-bottom: 0.4rem;
+}
+.field input, .field select, .field textarea {
+    width: 100%; padding: 0.75rem 1rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    background: white;
+    font-size: 0.9375rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+.field input:focus, .field select:focus, .field textarea:focus {
+    outline: none;
+    border-color: var(--pink-500);
+    box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.12);
+}
+.field input::placeholder { color: #c4b5b8; }
+.auth-msg {
+    margin-top: 0.75rem;
+    padding: 0.625rem 0.875rem;
+    background: var(--danger-bg);
+    color: var(--danger);
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    display: none;
+}
+.auth-msg.visible { display: block; }
 
-        /* BUTTONS */
-        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-        .btn-primary { background-color: #be185d; color: white; border: none; }
-        .btn-primary:hover { background-color: #9d174d; }
-        .btn-secondary { background-color: white; color: #be185d; border: 1px solid #be185d; }
-        .btn-secondary:hover { background-color: #fdf2f8; }
-        .btn-success { background-color: #22c55e; color: white; border: none; }
-        .btn-success:hover { background-color: #16a34a; }
-        .btn-danger { background-color: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
-        .btn-danger:hover { background-color: #fecaca; }
-        .btn-ghost { background-color: transparent; border: none; color: inherit; }
-        .btn-ghost:hover { background-color: rgba(0,0,0,0.05); }
-        .btn-warning { background-color: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
-        .btn-lg { padding: 0.75rem 1.5rem; font-size: 1rem; }
+/* ========================================================================
+   APP SHELL — top bar + sidebar + content
+   ======================================================================== */
+#app { display: none; min-height: 100dvh; }
+#app.visible { display: block; }
 
-        /* STATUS BADGES — 3-status model */
-        .status-badge { padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
-        .status-active   { background: #dbeafe; color: #1d4ed8; }
-        .status-completed { background: #d1fae5; color: #065f46; }
-        .status-canceled { background: #fee2e2; color: #b91c1c; }
-        .status-pending  { background: #fef3c7; color: #92400e; }
-        .status-paid     { background: #d1fae5; color: #065f46; }
-        .status-unpaid   { background: #fee2e2; color: #b91c1c; }
+.topbar {
+    position: sticky; top: 0; z-index: 50;
+    padding-top: var(--safe-top);
+    background: rgba(255, 251, 245, 0.85);
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
+    border-bottom: 1px solid var(--line);
+}
+.topbar-inner {
+    display: flex; align-items: center; gap: 0.75rem;
+    height: 60px; padding: 0 1rem;
+    max-width: 1400px; margin: 0 auto;
+}
+.menu-btn {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--pink-100); color: var(--pink-700);
+    border: none; border-radius: 12px;
+    transition: background 0.15s;
+}
+.menu-btn:hover { background: var(--pink-200); }
+.menu-btn:active { transform: scale(0.95); }
+.menu-btn svg { width: 20px; height: 20px; }
+.topbar-brand {
+    display: flex; align-items: center; gap: 0.625rem;
+    text-decoration: none; color: inherit;
+}
+.topbar-brand img { width: 36px; height: 36px; }
+.topbar-brand-text {
+    font-family: var(--font-display);
+    font-size: 1.25rem; font-weight: 500;
+    color: var(--pink-900);
+    letter-spacing: 0.01em;
+}
+.topbar-brand-text em { font-style: italic; color: var(--pink-600); font-weight: 400; }
+.topbar-spacer { flex: 1; }
+.topbar-user {
+    display: flex; align-items: center; gap: 0.5rem;
+    font-size: 0.8125rem; color: var(--ink-soft);
+}
+.user-avatar {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--pink-300), var(--pink-600));
+    color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600;
+    font-size: 0.8125rem;
+}
+@media (max-width: 640px) {
+    .topbar-user-name { display: none; }
+}
 
-        /* REVIEWS */
-        .review-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
-        .review-tab { padding: 0.5rem 1rem; border-radius: 6px 6px 0 0; font-weight: 500; cursor: pointer; border: none; background: transparent; color: #6b7280; }
-        .review-tab:hover { background: #f3f4f6; }
-        .review-tab.active { background: #be185d; color: white; }
-        .review-count { background: #e5e7eb; padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.75rem; margin-left: 0.5rem; }
-        .review-tab.active .review-count { background: rgba(255,255,255,0.3); }
-        .review-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
-        .review-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .review-stars { color: #fbbf24; font-size: 1.1rem; }
-        .review-actions { display: flex; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; }
+/* ========================================================================
+   SIDEBAR (slides out on all sizes — keeps content clean on desktop too)
+   ======================================================================== */
+#sidebar {
+    position: fixed; top: 0; left: 0; bottom: 0;
+    width: 280px; z-index: 60;
+    background: white;
+    padding-top: calc(var(--safe-top) + 1rem);
+    padding-bottom: calc(var(--safe-bottom) + 1rem);
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+    box-shadow: 4px 0 24px rgba(131,24,67,0.1);
+    display: flex; flex-direction: column;
+    overflow-y: auto;
+}
+#sidebar.open { transform: translateX(0); }
+.sidebar-backdrop {
+    position: fixed; inset: 0; z-index: 55;
+    background: rgba(26, 13, 18, 0.4);
+    backdrop-filter: blur(4px);
+    opacity: 0; pointer-events: none;
+    transition: opacity 0.3s;
+}
+.sidebar-backdrop.visible { opacity: 1; pointer-events: auto; }
+.sidebar-brand {
+    display: flex; align-items: center; gap: 0.75rem;
+    padding: 0.5rem 1.5rem 1.5rem;
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 0.75rem;
+}
+.sidebar-brand img { width: 44px; height: 44px; }
+.sidebar-brand-text { font-family: var(--font-display); font-size: 1.375rem; color: var(--pink-900); }
+.sidebar-brand-text em { font-style: italic; color: var(--pink-600); }
+.sidebar-section {
+    padding: 1rem 1.5rem 0.5rem;
+    font-size: 0.6875rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--ink-soft);
+}
+.nav-item {
+    display: flex; align-items: center; gap: 0.875rem;
+    padding: 0.75rem 1.5rem;
+    background: transparent; border: none;
+    width: 100%; text-align: left;
+    font-size: 0.9375rem; font-weight: 500;
+    color: var(--ink);
+    transition: background 0.12s;
+    border-left: 3px solid transparent;
+}
+.nav-item:hover { background: var(--pink-50); }
+.nav-item.active {
+    background: var(--pink-50);
+    border-left-color: var(--pink-600);
+    color: var(--pink-900); font-weight: 600;
+}
+.nav-item .nav-icon {
+    width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
+}
+.nav-item .nav-count {
+    margin-left: auto;
+    background: var(--pink-100); color: var(--pink-800);
+    font-size: 0.6875rem; font-weight: 700;
+    padding: 0.125rem 0.5rem;
+    border-radius: 999px;
+    min-width: 22px; text-align: center;
+}
+.nav-item.active .nav-count { background: var(--pink-600); color: white; }
+.sidebar-footer {
+    margin-top: auto;
+    padding: 1rem 1.5rem 0;
+    border-top: 1px solid var(--line);
+}
+.sidebar-user {
+    font-size: 0.8125rem; color: var(--ink-soft);
+    margin-bottom: 0.625rem;
+}
+.btn-signout {
+    width: 100%; padding: 0.625rem;
+    background: white; color: var(--pink-700);
+    border: 1px solid var(--pink-200);
+    border-radius: 10px;
+    font-size: 0.8125rem; font-weight: 500;
+    transition: background 0.15s;
+}
+.btn-signout:hover { background: var(--pink-50); }
 
-        /* SURVEY */
-        .survey-link-box { background: #f0fdf4; border: 2px solid #22c55e; border-radius: 12px; padding: 1rem; margin-top: 0.5rem; }
-        .survey-link-box.no-link { background: #f9fafb; border-color: #d1d5db; }
-        .survey-link-box.expired { background: #fef3c7; border-color: #f59e0b; }
-        .survey-link-input { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.85rem; margin: 0.5rem 0; background: white; }
+/* ========================================================================
+   MAIN
+   ======================================================================== */
+main {
+    max-width: 1400px; margin: 0 auto;
+    padding: 1.5rem 1rem calc(var(--safe-bottom) + 2rem);
+}
+@media (min-width: 768px) { main { padding: 2rem; } }
+@media (min-width: 1024px) { main { padding: 2.5rem 3rem; } }
 
-        /* STRIPE PANEL */
-        .stripe-panel { background: white; border: 2px solid #6772e5; border-radius: 12px; padding: 1rem; }
-        .stripe-panel.paid { border-color: #22c55e; background: #f0fdf4; }
-        .stripe-panel.pending { border-color: #f59e0b; background: #fffbeb; }
-        .stripe-link-input { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.8rem; background: white; font-family: monospace; }
+.page-header { margin-bottom: 1.5rem; }
+.page-eyebrow {
+    font-family: var(--font-script);
+    font-size: 1.5rem; line-height: 1;
+    color: var(--pink-500);
+    margin-bottom: -0.25rem;
+}
+.page-title {
+    font-family: var(--font-display);
+    font-size: clamp(1.75rem, 5vw, 2.5rem);
+    font-weight: 500;
+    color: var(--pink-900);
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+.page-title em { font-style: italic; color: var(--pink-600); }
+.page-subtitle {
+    color: var(--ink-soft); font-size: 0.9375rem;
+    margin-top: 0.5rem;
+}
 
-        /* DISCOUNT STUDIO */
-        .ds-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; }
-        @media (min-width: 1024px) { .ds-grid { grid-template-columns: 340px 1fr; } }
-        .ds-panel { padding: 1.25rem; overflow-y: auto; max-height: 70vh; }
-        .ds-stage { padding: 1.25rem; background: linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%); display: flex; align-items: center; justify-content: center; min-height: 500px; }
-        .ds-template-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 1rem; }
-        .ds-tpl-btn { padding: 0.6rem 0.5rem; border-radius: 6px; border: 1px solid #d1d5db; background: white; font-size: 0.75rem; cursor: pointer; text-align: center; }
-        .ds-tpl-btn.active { background: #be185d; color: white; border-color: #be185d; }
-        .ds-tpl-btn small { display: block; font-size: 0.65rem; opacity: 0.7; margin-top: 2px; }
-        .ds-field { margin-bottom: 0.75rem; }
-        .ds-field label { display: block; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #6b7280; margin-bottom: 4px; font-weight: 500; }
-        .ds-field input, .ds-field select, .ds-field textarea { width: 100%; padding: 0.4rem 0.6rem; border: 1px solid #d1d5db; border-radius: 4px; font-size: 0.875rem; }
-        .ds-field .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
-        .ds-section-title { font-family: 'Fraunces', serif; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.15em; color: #831843; margin: 1.25rem 0 0.5rem; padding-bottom: 0.4rem; border-bottom: 1px solid #e5e7eb; }
-        .ds-section-title:first-child { margin-top: 0; }
+/* ========================================================================
+   SEARCH + GLOBAL ACTIONS
+   ======================================================================== */
+.toolbar {
+    display: flex; align-items: center; gap: 0.625rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+.search-wrap {
+    flex: 1; min-width: 200px;
+    position: relative;
+}
+.search-wrap svg {
+    position: absolute; left: 0.875rem; top: 50%; transform: translateY(-50%);
+    width: 16px; height: 16px; color: var(--ink-soft);
+    pointer-events: none;
+}
+.search-input {
+    width: 100%; padding: 0.625rem 1rem 0.625rem 2.5rem;
+    background: white;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    font-size: 0.875rem;
+    box-shadow: var(--shadow-sm);
+}
+.search-input:focus {
+    outline: none;
+    border-color: var(--pink-500);
+    box-shadow: 0 0 0 3px rgba(236,72,153,0.12);
+}
 
-        /* TEMPLATES (mini versions in studio) */
-        .ds-template { background: #FBF6EE; color: #1F1715; font-family: 'DM Sans', sans-serif; position: relative; overflow: hidden; box-shadow: 0 20px 40px -15px rgba(122,31,43,0.25); }
-        .ds-template::after { content: ""; position: absolute; inset: 0; pointer-events: none; background-image: radial-gradient(rgba(31,23,21,0.04) 1px, transparent 1px); background-size: 3px 3px; mix-blend-mode: multiply; z-index: 1; }
-        .ds-template > * { position: relative; z-index: 2; }
-        .ds-template.hidden { display: none; }
+/* ========================================================================
+   QUEUE SECTIONS (the card feed)
+   ======================================================================== */
+.queue-section { margin-bottom: 2rem; }
+.queue-section:last-child { margin-bottom: 0; }
+.queue-header {
+    display: flex; align-items: baseline; gap: 0.625rem;
+    margin-bottom: 0.875rem;
+    padding-bottom: 0.625rem;
+    border-bottom: 1px solid var(--line);
+}
+.queue-title {
+    font-family: var(--font-display);
+    font-size: 1.125rem; font-weight: 600;
+    color: var(--pink-900);
+    letter-spacing: -0.005em;
+}
+.queue-count {
+    font-size: 0.75rem; font-weight: 600;
+    color: var(--ink-soft);
+    background: var(--pink-50);
+    padding: 0.125rem 0.625rem;
+    border-radius: 999px;
+}
+.queue-description {
+    font-size: 0.8125rem;
+    color: var(--ink-soft);
+    margin-left: auto;
+}
+@media (max-width: 640px) { .queue-description { display: none; } }
 
-        /* IG SQUARE */
-        .ds-tpl-ig { width: 1080px; height: 1080px; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 90px; }
-        .ds-tpl-ig .frame { width: 100%; height: 100%; border: 1px solid #7A1F2B; padding: 80px 60px; display: flex; flex-direction: column; align-items: center; justify-content: space-between; }
-        .ds-tpl-ig .eyebrow { font-size: 18px; text-transform: uppercase; letter-spacing: 0.4em; color: #7A1F2B; font-weight: 500; }
-        .ds-tpl-ig .script { font-family: 'Allura', cursive; font-size: 80px; color: #D4847C; line-height: 1; }
-        .ds-tpl-ig .headline { font-family: 'Fraunces', serif; font-size: 110px; font-weight: 400; line-height: 0.95; text-align: center; letter-spacing: -0.02em; }
-        .ds-tpl-ig .headline em { font-style: italic; color: #7A1F2B; font-weight: 300; }
-        .ds-tpl-ig .amount { font-family: 'Fraunces', serif; font-size: 200px; font-weight: 300; line-height: 1; color: #7A1F2B; letter-spacing: -0.04em; }
-        .ds-tpl-ig .amount sup { font-size: 80px; vertical-align: top; font-weight: 400; }
-        .ds-tpl-ig .code-box { border-top: 1px solid #7A1F2B; border-bottom: 1px solid #7A1F2B; padding: 24px 60px; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .ds-tpl-ig .code-label { font-size: 13px; text-transform: uppercase; letter-spacing: 0.35em; color: #4A3D38; }
-        .ds-tpl-ig .code-value { font-family: 'Fraunces', serif; font-size: 56px; font-weight: 500; letter-spacing: 0.08em; }
-        .ds-tpl-ig .footer-row { display: flex; justify-content: space-between; align-items: center; width: 100%; font-size: 14px; color: #4A3D38; letter-spacing: 0.15em; text-transform: uppercase; }
-        .ds-tpl-ig .footer-row .brand-name { font-family: 'Fraunces', serif; font-size: 22px; font-style: italic; text-transform: none; letter-spacing: 0; color: #7A1F2B; }
+.queue-empty {
+    background: white;
+    border: 1px dashed var(--line-strong);
+    border-radius: 16px;
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 0.875rem;
+}
+.queue-empty .empty-emoji { font-size: 2rem; display: block; margin-bottom: 0.5rem; }
 
-        /* PERSONAL CARD */
-        .ds-tpl-card { width: 1500px; height: 900px; display: grid; grid-template-columns: 1fr 1fr; }
-        .ds-tpl-card .left { background: #7A1F2B; color: #FBF6EE; padding: 80px 70px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; }
-        .ds-tpl-card .left::before { content: ""; position: absolute; top: -100px; right: -100px; width: 300px; height: 300px; border: 1px solid rgba(251, 246, 238, 0.15); border-radius: 50%; }
-        .ds-tpl-card .left .brand { font-family: 'Fraunces', serif; font-size: 36px; font-weight: 500; }
-        .ds-tpl-card .left .brand em { font-style: italic; color: #F2D5D0; font-weight: 300; }
-        .ds-tpl-card .left .sub { font-size: 13px; text-transform: uppercase; letter-spacing: 0.4em; color: #F2D5D0; margin-top: 8px; }
-        .ds-tpl-card .left .for-you { font-family: 'Allura', cursive; font-size: 70px; color: #F2D5D0; line-height: 1; transform: rotate(-2deg); margin-bottom: 8px; }
-        .ds-tpl-card .left .name { font-family: 'Fraunces', serif; font-size: 84px; font-weight: 400; line-height: 1; font-style: italic; letter-spacing: -0.02em; }
-        .ds-tpl-card .left .bottom-mark { font-size: 12px; text-transform: uppercase; letter-spacing: 0.3em; opacity: 0.7; }
-        .ds-tpl-card .right { background: #FBF6EE; padding: 80px 70px; display: flex; flex-direction: column; justify-content: space-between; }
-        .ds-tpl-card .right .eyebrow { font-size: 13px; text-transform: uppercase; letter-spacing: 0.35em; color: #7A1F2B; margin-bottom: 24px; }
-        .ds-tpl-card .right .message { font-family: 'Fraunces', serif; font-size: 32px; font-weight: 400; line-height: 1.3; color: #1F1715; letter-spacing: -0.01em; }
-        .ds-tpl-card .right .message em { font-style: italic; color: #7A1F2B; }
-        .ds-tpl-card .right .discount-line { margin-top: 40px; display: flex; align-items: baseline; gap: 16px; }
-        .ds-tpl-card .right .discount-line .num { font-family: 'Fraunces', serif; font-size: 120px; font-weight: 300; line-height: 1; color: #7A1F2B; }
-        .ds-tpl-card .right .discount-line .num sup { font-size: 50px; vertical-align: top; }
-        .ds-tpl-card .right .discount-line .text { font-family: 'Fraunces', serif; font-size: 32px; font-style: italic; color: #4A3D38; line-height: 1.2; }
-        .ds-tpl-card .right .code-strip { margin-top: 50px; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid rgba(31,23,21,0.12); border-bottom: 1px solid rgba(31,23,21,0.12); padding: 22px 0; }
-        .ds-tpl-card .right .code-strip > div { padding: 0 16px; }
-        .ds-tpl-card .right .code-strip > div:first-child { border-right: 1px solid rgba(31,23,21,0.12); padding-left: 0; }
-        .ds-tpl-card .right .code-strip .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.3em; color: #4A3D38; margin-bottom: 6px; }
-        .ds-tpl-card .right .code-strip .value { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500; letter-spacing: 0.04em; }
-        .ds-tpl-card .right .signoff { margin-top: 30px; font-family: 'Allura', cursive; font-size: 38px; color: #D4847C; }
-        .ds-tpl-card .right .domain { font-size: 12px; text-transform: uppercase; letter-spacing: 0.3em; color: #4A3D38; margin-top: 8px; }
+/* ========================================================================
+   ORDER CARD
+   ======================================================================== */
+.cards-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.875rem;
+}
+@media (min-width: 640px) { .cards-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 1100px) { .cards-grid { grid-template-columns: repeat(3, 1fr); } }
 
-        /* IG STORY */
-        .ds-tpl-story { width: 1080px; height: 1920px; background: linear-gradient(180deg, #FBF6EE 0%, #F2E9D8 100%); display: flex; flex-direction: column; align-items: center; padding: 200px 80px 150px; }
-        .ds-tpl-story .brand-line { font-family: 'Fraunces', serif; font-size: 28px; font-style: italic; color: #7A1F2B; margin-bottom: 12px; }
-        .ds-tpl-story .location { font-size: 16px; text-transform: uppercase; letter-spacing: 0.4em; color: #4A3D38; margin-bottom: 100px; }
-        .ds-tpl-story .big-script { font-family: 'Allura', cursive; font-size: 140px; color: #D4847C; line-height: 1; margin-bottom: 20px; transform: rotate(-2deg); }
-        .ds-tpl-story .headline { font-family: 'Fraunces', serif; font-size: 130px; font-weight: 400; line-height: 0.95; text-align: center; margin-bottom: 70px; letter-spacing: -0.03em; }
-        .ds-tpl-story .headline em { font-style: italic; color: #7A1F2B; }
-        .ds-tpl-story .amount { font-family: 'Fraunces', serif; font-size: 280px; font-weight: 300; line-height: 1; color: #7A1F2B; }
-        .ds-tpl-story .amount sup { font-size: 100px; vertical-align: top; }
-        .ds-tpl-story .off { font-size: 24px; text-transform: uppercase; letter-spacing: 0.5em; color: #4A3D38; margin-top: 12px; }
-        .ds-tpl-story .code-card { background: white; border: 1px solid #7A1F2B; padding: 40px 80px; margin-top: 50px; text-align: center; }
-        .ds-tpl-story .code-card .label { font-size: 14px; text-transform: uppercase; letter-spacing: 0.4em; color: #4A3D38; margin-bottom: 12px; }
-        .ds-tpl-story .code-card .value { font-family: 'Fraunces', serif; font-size: 72px; font-weight: 500; letter-spacing: 0.1em; color: #7A1F2B; }
-        .ds-tpl-story .domain { font-family: 'Fraunces', serif; font-style: italic; font-size: 26px; color: #7A1F2B; margin-top: auto; }
-    </style>
+.order-card {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 1.125rem 1.125rem 1rem;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    text-align: left;
+    width: 100%;
+    cursor: pointer;
+    display: flex; flex-direction: column;
+    gap: 0.75rem;
+    position: relative;
+    overflow: hidden;
+}
+.order-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+    border-color: var(--pink-200);
+}
+.order-card:active { transform: scale(0.99); }
+.order-card.urgent { border-left: 4px solid var(--pink-600); padding-left: calc(1.125rem - 3px); }
+.order-card-row {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 0.625rem;
+}
+.order-customer {
+    font-family: var(--font-display);
+    font-size: 1.0625rem; font-weight: 600;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    line-height: 1.2;
+}
+.order-meta {
+    font-size: 0.8125rem;
+    color: var(--ink-soft);
+    margin-top: 0.125rem;
+}
+.order-event {
+    display: inline-flex; align-items: center; gap: 0.375rem;
+    font-size: 0.75rem; font-weight: 500;
+    color: var(--pink-700);
+    background: var(--pink-50);
+    padding: 0.25rem 0.625rem;
+    border-radius: 999px;
+}
+.order-detail-line {
+    display: flex; flex-wrap: wrap; gap: 0.5rem 1rem;
+    font-size: 0.8125rem;
+    color: var(--ink-soft);
+}
+.order-detail-line strong { color: var(--ink); font-weight: 600; }
+.order-action-strip {
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+    margin-top: auto;
+    padding-top: 0.625rem;
+    border-top: 1px dashed var(--line);
+}
+.order-status-pill {
+    display: inline-flex; align-items: center; gap: 0.3125rem;
+    font-size: 0.6875rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.06em;
+    padding: 0.3125rem 0.625rem;
+    border-radius: 6px;
+}
+.pill-needs    { background: var(--warning-bg); color: var(--warning); }
+.pill-sent     { background: var(--info-bg); color: var(--info); }
+.pill-paid     { background: var(--success-bg); color: var(--success); }
+.pill-canceled { background: #f3f4f6; color: #6b7280; }
+.pill-completed{ background: var(--pink-100); color: var(--pink-800); }
+.pill-due-soon { background: var(--danger-bg); color: var(--danger); }
+
+/* ========================================================================
+   BUTTONS — the action vocabulary
+   ======================================================================== */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.875rem;
+    border: none; background: none;
+    border-radius: 10px;
+    font-size: 0.8125rem; font-weight: 600;
+    transition: all 0.15s;
+    white-space: nowrap;
+    line-height: 1.2;
+    touch-action: manipulation;
+}
+.btn:active { transform: scale(0.97); }
+.btn-primary {
+    background: var(--pink-700); color: white;
+    box-shadow: 0 2px 8px -2px rgba(190, 24, 93, 0.4);
+}
+.btn-primary:hover { background: var(--pink-800); box-shadow: 0 4px 12px -2px rgba(190, 24, 93, 0.5); }
+.btn-secondary {
+    background: white; color: var(--pink-700);
+    border: 1px solid var(--pink-200);
+}
+.btn-secondary:hover { background: var(--pink-50); border-color: var(--pink-300); }
+.btn-success { background: var(--success); color: white; }
+.btn-success:hover { background: #166534; }
+.btn-ghost { background: transparent; color: var(--ink-soft); }
+.btn-ghost:hover { background: var(--pink-50); color: var(--pink-700); }
+.btn-danger {
+    background: white; color: var(--danger);
+    border: 1px solid #fca5a5;
+}
+.btn-danger:hover { background: var(--danger-bg); }
+.btn-block { width: 100%; }
+.btn-sm { padding: 0.375rem 0.625rem; font-size: 0.75rem; }
+.btn-lg { padding: 0.75rem 1.25rem; font-size: 0.9375rem; }
+.btn .btn-icon { font-size: 1em; line-height: 1; }
+
+/* ========================================================================
+   ORDER DETAIL SHEET — slides up from bottom on mobile, modal on desktop
+   ======================================================================== */
+#orderSheet {
+    position: fixed; inset: 0; z-index: 70;
+    display: none;
+}
+#orderSheet.open { display: block; }
+.sheet-backdrop {
+    position: absolute; inset: 0;
+    background: rgba(26, 13, 18, 0.5);
+    backdrop-filter: blur(8px);
+}
+.sheet-panel {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    max-height: 92dvh;
+    background: var(--cream);
+    border-radius: 24px 24px 0 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding-bottom: var(--safe-bottom);
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+    animation: sheetUp 0.3s cubic-bezier(0.32, 0.72, 0, 1);
+}
+@keyframes sheetUp { from { transform: translateY(20%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+@media (min-width: 768px) {
+    .sheet-panel {
+        position: absolute;
+        top: 50%; left: 50%; right: auto; bottom: auto;
+        transform: translate(-50%, -50%);
+        width: 95vw; max-width: 720px;
+        max-height: 90vh;
+        border-radius: 24px;
+        animation: sheetIn 0.3s ease;
+    }
+    @keyframes sheetIn { from { opacity: 0; transform: translate(-50%, -48%) scale(0.96); } to { opacity: 1; transform: translate(-50%, -50%) scale(1); } }
+}
+.sheet-grabber {
+    width: 36px; height: 4px;
+    background: rgba(131,24,67,0.18);
+    border-radius: 999px;
+    margin: 0.625rem auto;
+}
+@media (min-width: 768px) { .sheet-grabber { display: none; } }
+.sheet-header {
+    position: sticky; top: 0; z-index: 5;
+    background: var(--cream);
+    padding: 0.5rem 1.25rem 1rem;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+}
+.sheet-title-block { flex: 1; min-width: 0; }
+.sheet-title {
+    font-family: var(--font-display);
+    font-size: 1.25rem; font-weight: 600;
+    color: var(--pink-900);
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.sheet-subtitle {
+    font-size: 0.75rem; color: var(--ink-soft);
+    margin-top: 0.125rem;
+}
+.sheet-close {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    background: var(--pink-100); color: var(--pink-700);
+    border: none; border-radius: 50%;
+    font-size: 1.125rem;
+    flex-shrink: 0;
+    margin-left: 0.625rem;
+}
+.sheet-body { padding: 1.25rem; }
+
+.detail-section {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1rem 1.125rem;
+    margin-bottom: 0.875rem;
+}
+.detail-section h3 {
+    font-family: var(--font-display);
+    font-size: 0.875rem; font-weight: 600;
+    color: var(--pink-900);
+    letter-spacing: 0.01em;
+    margin-bottom: 0.75rem;
+    display: flex; align-items: center; gap: 0.5rem;
+}
+.detail-row {
+    display: flex; flex-wrap: wrap;
+    gap: 0.25rem 0.75rem;
+    padding: 0.5rem 0;
+    font-size: 0.875rem;
+    border-bottom: 1px solid rgba(131,24,67,0.05);
+}
+.detail-row:last-child { border-bottom: none; }
+.detail-label {
+    color: var(--ink-soft);
+    font-size: 0.75rem; font-weight: 500;
+    min-width: 100px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.detail-value {
+    color: var(--ink); flex: 1; min-width: 0;
+    word-wrap: break-word;
+}
+.detail-value a { color: var(--pink-700); text-decoration: none; }
+.detail-value a:hover { text-decoration: underline; }
+
+/* Status switcher */
+.status-switcher {
+    display: flex; gap: 0.4rem;
+    margin-top: 0.5rem;
+    background: var(--pink-50);
+    padding: 0.25rem;
+    border-radius: 12px;
+}
+.status-switcher button {
+    flex: 1; padding: 0.5rem 0.5rem;
+    background: transparent; border: none;
+    border-radius: 9px;
+    font-size: 0.75rem; font-weight: 600;
+    color: var(--ink-soft);
+    transition: all 0.15s;
+}
+.status-switcher button.active {
+    background: white; color: var(--pink-900);
+    box-shadow: var(--shadow-sm);
+}
+
+/* Pricing breakdown */
+.pricing-rows { font-size: 0.875rem; }
+.pricing-row {
+    display: flex; justify-content: space-between;
+    padding: 0.375rem 0;
+    border-bottom: 1px solid rgba(131,24,67,0.05);
+}
+.pricing-row:last-child { border-bottom: none; }
+.pricing-row.total {
+    font-family: var(--font-display);
+    font-size: 1.25rem; font-weight: 700;
+    color: var(--pink-900);
+    border-top: 2px solid var(--pink-200);
+    padding-top: 0.625rem;
+    margin-top: 0.375rem;
+}
+.discount-row { color: var(--success); font-weight: 500; }
+.fee-row { color: var(--warning); font-weight: 500; }
+
+/* Stripe action panel — inline, not buried */
+.stripe-action {
+    background: linear-gradient(135deg, var(--pink-50), white);
+    border: 1.5px solid var(--pink-200);
+    border-radius: 14px;
+    padding: 1rem 1.125rem;
+    margin-bottom: 0.875rem;
+}
+.stripe-action.paid { background: linear-gradient(135deg, var(--success-bg), white); border-color: #86efac; }
+.stripe-action.pending { background: linear-gradient(135deg, var(--info-bg), white); border-color: #93c5fd; }
+.stripe-action h3 {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+.stripe-link-display {
+    display: flex; gap: 0.5rem; align-items: center;
+    background: white;
+    border: 1px solid var(--line-strong);
+    border-radius: 10px;
+    padding: 0.5rem 0.5rem 0.5rem 0.875rem;
+    margin: 0.625rem 0;
+}
+.stripe-link-display code {
+    flex: 1; min-width: 0;
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    font-family: ui-monospace, Menlo, monospace;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.send-buttons {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+}
+@media (min-width: 480px) { .send-buttons { grid-template-columns: repeat(4, 1fr); } }
+
+/* Adjustments inline form */
+.adj-form {
+    display: grid;
+    grid-template-columns: 1fr 80px 80px auto;
+    gap: 0.4rem;
+    margin: 0.5rem 0;
+}
+@media (max-width: 480px) {
+    .adj-form { grid-template-columns: 1fr 1fr; }
+    .adj-form .adj-add-btn { grid-column: 1 / -1; }
+}
+.adj-form input, .adj-form select {
+    padding: 0.5rem 0.625rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 8px;
+    font-size: 0.8125rem;
+    background: white;
+}
+.adj-list {
+    margin-top: 0.5rem;
+    font-size: 0.8125rem;
+}
+.adj-item {
+    display: flex; align-items: center; gap: 0.625rem;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(131,24,67,0.05);
+}
+.adj-item:last-child { border-bottom: none; }
+.adj-item-label { flex: 1; }
+.adj-item-amount.discount { color: var(--success); font-weight: 600; }
+.adj-item-amount.fee { color: var(--warning); font-weight: 600; }
+.adj-item-remove {
+    background: none; border: none;
+    color: var(--ink-soft);
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    font-size: 1rem; line-height: 1;
+}
+.adj-item-remove:hover { background: var(--danger-bg); color: var(--danger); }
+
+/* Survey box (compact in detail) */
+.survey-status {
+    padding: 0.75rem;
+    border-radius: 10px;
+    font-size: 0.8125rem;
+    margin-bottom: 0.5rem;
+}
+.survey-status.none { background: var(--pink-50); color: var(--pink-900); }
+.survey-status.active { background: var(--success-bg); color: var(--success); }
+.survey-status.expired { background: var(--warning-bg); color: var(--warning); }
+.survey-status.completed { background: var(--info-bg); color: var(--info); }
+
+/* ========================================================================
+   SETTINGS / TABLES (other pages — keep simple)
+   ======================================================================== */
+.settings-list {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+}
+.settings-row {
+    display: flex; align-items: center;
+    padding: 0.875rem 1.125rem;
+    border-bottom: 1px solid var(--line);
+    gap: 0.875rem;
+}
+.settings-row:last-child { border-bottom: none; }
+.settings-row-main { flex: 1; min-width: 0; }
+.settings-row-label {
+    font-weight: 600;
+    color: var(--ink);
+    font-size: 0.9375rem;
+}
+.settings-row-meta {
+    font-size: 0.75rem;
+    color: var(--ink-soft);
+    margin-top: 0.125rem;
+}
+.settings-row-actions { display: flex; gap: 0.4rem; }
+
+/* Reviews list */
+.review-tabs-bar {
+    display: flex; gap: 0.4rem;
+    margin-bottom: 1rem;
+    background: var(--pink-50);
+    padding: 0.25rem;
+    border-radius: 12px;
+}
+.review-tab-btn {
+    flex: 1; padding: 0.5rem 0.875rem;
+    background: transparent; border: none;
+    border-radius: 9px;
+    font-size: 0.8125rem; font-weight: 600;
+    color: var(--ink-soft);
+}
+.review-tab-btn.active { background: white; color: var(--pink-900); box-shadow: var(--shadow-sm); }
+.review-tab-btn .count { font-size: 0.6875rem; opacity: 0.7; margin-left: 0.25rem; }
+.review-card {
+    background: white;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1rem 1.125rem;
+    margin-bottom: 0.625rem;
+}
+.review-card-head { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.4rem; }
+.review-customer { font-family: var(--font-display); font-weight: 600; }
+.review-stars { color: #f59e0b; font-size: 1.125rem; }
+.review-text { color: var(--ink-soft); font-size: 0.875rem; line-height: 1.5; margin: 0.4rem 0; font-style: italic; }
+.review-date { font-size: 0.6875rem; color: var(--ink-soft); }
+.review-actions-row { display: flex; gap: 0.5rem; margin-top: 0.75rem; padding-top: 0.625rem; border-top: 1px dashed var(--line); }
+
+/* ========================================================================
+   GENERIC EDITOR DIALOG
+   ======================================================================== */
+#editor {
+    position: fixed; inset: 0; z-index: 75;
+    display: none;
+    background: rgba(26, 13, 18, 0.5);
+    backdrop-filter: blur(8px);
+    padding: 1rem;
+    align-items: flex-end; justify-content: center;
+    padding-bottom: var(--safe-bottom);
+}
+@media (min-width: 640px) { #editor { align-items: center; } }
+#editor.open { display: flex; }
+.editor-card {
+    background: white;
+    border-radius: 20px 20px 0 0;
+    width: 100%; max-width: 540px;
+    max-height: 90vh;
+    display: flex; flex-direction: column;
+    box-shadow: var(--shadow-lg);
+}
+@media (min-width: 640px) { .editor-card { border-radius: 20px; } }
+.editor-head {
+    padding: 1.25rem 1.25rem 0.875rem;
+    border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+}
+.editor-head h2 { font-family: var(--font-display); font-size: 1.125rem; color: var(--pink-900); }
+.editor-body { padding: 1.25rem; overflow-y: auto; flex: 1; }
+.editor-foot {
+    padding: 0.875rem 1.25rem;
+    border-top: 1px solid var(--line);
+    display: flex; gap: 0.5rem; flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+/* ========================================================================
+   HEALTH BANNER (only on yellow/red)
+   ======================================================================== */
+#health-banner {
+    display: none;
+    position: sticky; top: 60px; z-index: 49;
+    padding: 0.5rem 1rem;
+    background: var(--warning-bg);
+    color: var(--warning);
+    font-size: 0.8125rem;
+    border-bottom: 1px solid #fde68a;
+    align-items: center; gap: 0.625rem;
+}
+#health-banner.visible { display: flex; }
+#health-banner.red { background: var(--danger-bg); color: var(--danger); border-bottom-color: #fca5a5; }
+.health-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+
+/* ========================================================================
+   UTILITY
+   ======================================================================== */
+.hidden { display: none !important; }
+.text-pink-700 { color: var(--pink-700); }
+.text-ink-soft { color: var(--ink-soft); }
+.scroll-touch { -webkit-overflow-scrolling: touch; }
+.spinner {
+    width: 24px; height: 24px;
+    border: 2px solid var(--pink-200);
+    border-top-color: var(--pink-700);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.center-spinner { text-align: center; padding: 2.5rem 1rem; }
+
+</style>
 </head>
-<body class="bg-gray-50 text-gray-900">
+<body>
 
-    <div id="signinCard" class="flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-white rounded-2xl shadow p-6">
-            <h1 class="text-2xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
-            <p class="text-sm text-gray-600 mb-4">Use your @rebelribbon.com email and password.</p>
-            <label class="block text-sm mb-2">Email</label>
-            <input id="email" type="email" placeholder="you@rebelribbon.com" class="w-full px-3 py-2 rounded-lg border mb-4"/>
-            <label class="block text-sm mb-2">Password</label>
-            <input id="password" type="password" placeholder="Password" class="w-full px-3 py-2 rounded-lg border mb-4"/>
-            <button id="signInButton" class="w-full btn btn-primary">Sign In</button>
-            <p id="authMsg" class="text-sm text-red-600 mt-3"></p>
+<!-- ========== SIGN IN ========== -->
+<div id="signin">
+    <div class="signin-card">
+        <div class="signin-bow">
+            <img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" alt="Rebel Ribbon"/>
         </div>
-    </div>
-
-    <div id="header-banner">
-        <button id="menuToggle">☰</button>
-        <div id="logo-wrapper">
-            <img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" alt="Rebel Ribbon Logo" style="height: 40px;">
-            <span id="logo-text">Rebel Ribbon</span>
+        <h1 class="signin-title">Rebel <em>Ribbon</em></h1>
+        <p class="signin-sub">Staff sign in</p>
+        <div class="field">
+            <label for="email">Email</label>
+            <input id="email" type="email" autocomplete="email" placeholder="you@rebelribbon.com"/>
         </div>
+        <div class="field">
+            <label for="password">Password</label>
+            <input id="password" type="password" autocomplete="current-password" placeholder="••••••••"/>
+        </div>
+        <button id="signInBtn" class="btn btn-primary btn-block btn-lg">Sign in</button>
+        <div id="authMsg" class="auth-msg"></div>
     </div>
+</div>
 
+<!-- ========== APP ========== -->
+<div id="app">
+    <header class="topbar">
+        <div class="topbar-inner">
+            <button id="menuBtn" class="menu-btn" aria-label="Menu">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                    <path d="M4 6h16M4 12h16M4 18h16"/>
+                </svg>
+            </button>
+            <a href="#" class="topbar-brand">
+                <img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" alt=""/>
+                <span class="topbar-brand-text">Rebel <em>Ribbon</em></span>
+            </a>
+            <div class="topbar-spacer"></div>
+            <div class="topbar-user">
+                <div id="userAvatar" class="user-avatar">RR</div>
+                <span id="userName" class="topbar-user-name"></span>
+            </div>
+        </div>
+    </header>
     <div id="health-banner">
-        <div class="health-indicator">
-            <div class="health-dot" id="health-webhook-indicator"></div>
-            <span id="health-webhook-status">Stripe: Checking...</span>
-        </div>
-        <span id="health-last-update" class="text-xs opacity-75 ml-auto">Updated: never</span>
+        <div class="health-dot"></div>
+        <span id="healthText">—</span>
     </div>
+    <main id="content">
+        <!-- Page content rendered here -->
+        <div class="center-spinner"><div class="spinner"></div></div>
+    </main>
+</div>
 
-    <nav id="sidebar">
-        <h1 class="text-xl font-semibold px-4 pt-4 mb-6 text-white/90 border-b border-gray-700">Navigation</h1>
-        <div id="main-nav">
-            <button class="nav-item nav-active" data-key="order_list">Orders</button>
-            <button class="nav-item" data-key="surveys">Surveys</button>
-            <button class="nav-item" data-key="reviews">Website Reviews</button>
-        </div>
-        <div class="mt-8">
-            <h3 class="text-xs uppercase font-medium text-gray-400 px-4 mb-2">Admin / Settings</h3>
-            <button class="nav-item submenu-item" data-key="discount_codes">Discount Codes</button>
-            <button class="nav-item submenu-item" data-key="referral_codes">Referral Codes</button>
-            <button class="nav-item submenu-item" data-key="flavors">Flavors & Options</button>
-            <button class="nav-item submenu-item" data-key="pricing">Pricing & Fees</button>
-            <button class="nav-item submenu-item" data-key="costs">Costs</button>
-        </div>
-        <div id="logout-sidebar">
-            <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
-            <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-        </div>
-    </nav>
-
-    <div id="app-wrapper" class="hidden">
-        <main id="content" class="max-w-full">
-            <header class="flex flex-wrap items-center justify-between mb-4 lg:mb-6 gap-2">
-                <h2 id="pageTitle" class="text-2xl lg:text-3xl font-bold">Orders</h2>
-            </header>
-            <div id="orderPageControls">
-                <div id="searchContainer">
-                    <input id="globalSearch" type="search" placeholder="Search customer, ID, date" class="px-3 py-1.5 rounded-lg border shadow-sm text-sm"/>
-                    <button id="refreshAll" class="btn btn-secondary shadow-sm">Refresh</button>
-                </div>
-                <div id="orderFilters">
-                    <button class="filter-tab filter-active" data-filter="All">All Orders</button>
-                    <button class="filter-tab" data-filter="Active">🔥 Active</button>
-                    <button class="filter-tab" data-filter="unpaid">💸 Unpaid</button>
-                    <button class="filter-tab" data-filter="Completed">✅ Completed</button>
-                    <button class="filter-tab" data-filter="Canceled">❌ Canceled</button>
-                </div>
-            </div>
-            <div id="dataActions" class="flex items-center justify-between mb-2 flex-wrap gap-2">
-                <div class="flex items-center gap-2">
-                    <button id="addBtn" class="btn btn-primary shadow-md">Add New</button>
-                    <button id="exportBtn" class="btn btn-secondary shadow-sm hidden">Export CSV</button>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button id="prev" class="btn btn-secondary text-sm px-3 py-1.5">Prev</button>
-                    <span id="pageInfo" class="text-sm text-gray-600"></span>
-                    <button id="next" class="btn btn-secondary text-sm px-3 py-1.5">Next</button>
-                </div>
-            </div>
-            <div id="pricingList" class="space-y-3 hidden"></div>
-            <div id="reviewsContainer" class="hidden"></div>
-            <div class="table-wrap">
-                <table id="grid" class="min-w-full text-sm table-fixed">
-                    <colgroup id="colgroup"></colgroup>
-                    <thead class="bg-gray-100 text-gray-700"><tr id="thead"></tr></thead>
-                    <tbody id="tbody"></tbody>
-                </table>
-            </div>
-        </main>
+<div id="sidebarBackdrop" class="sidebar-backdrop"></div>
+<nav id="sidebar">
+    <div class="sidebar-brand">
+        <img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" alt=""/>
+        <span class="sidebar-brand-text">Rebel <em>Ribbon</em></span>
     </div>
+    <div class="sidebar-section">Workspace</div>
+    <button class="nav-item active" data-page="dashboard"><span class="nav-icon">🏠</span>Dashboard<span class="nav-count" id="nc-dashboard">0</span></button>
+    <button class="nav-item" data-page="surveys"><span class="nav-icon">📋</span>Surveys<span class="nav-count" id="nc-surveys">0</span></button>
+    <button class="nav-item" data-page="reviews"><span class="nav-icon">⭐</span>Reviews<span class="nav-count" id="nc-reviews">0</span></button>
+    <div class="sidebar-section">Settings</div>
+    <button class="nav-item" data-page="discount_codes"><span class="nav-icon">🎟️</span>Discount Codes</button>
+    <button class="nav-item" data-page="referral_codes"><span class="nav-icon">🔗</span>Referral Codes</button>
+    <button class="nav-item" data-page="flavors"><span class="nav-icon">🍪</span>Flavors & Dietary</button>
+    <button class="nav-item" data-page="pricing"><span class="nav-icon">💲</span>Pricing</button>
+    <button class="nav-item" data-page="costs"><span class="nav-icon">📒</span>Costs</button>
+    <div class="sidebar-footer">
+        <div id="sidebarUser" class="sidebar-user"></div>
+        <button id="signOutBtn" class="btn-signout">Sign out</button>
+    </div>
+</nav>
 
-    <!-- Generic editor — note: NO method="dialog" on the form (fixes close button bug) -->
-    <dialog id="editor" class="rounded-2xl p-0 w-full max-w-3xl shadow-2xl">
-        <div class="p-0">
-            <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
-                <h2 id="editorTitle" class="text-lg font-semibold">Edit</h2>
-                <button id="closeEditor" type="button" class="btn btn-ghost text-xl">✕</button>
+<!-- ========== ORDER DETAIL SHEET ========== -->
+<div id="orderSheet">
+    <div class="sheet-backdrop" id="sheetBackdrop"></div>
+    <div class="sheet-panel">
+        <div class="sheet-grabber"></div>
+        <div class="sheet-header">
+            <div class="sheet-title-block">
+                <div class="sheet-title" id="sheetTitle">—</div>
+                <div class="sheet-subtitle" id="sheetSubtitle">—</div>
             </div>
-            <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
-            <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
-                <button id="openStudioBtn" type="button" class="btn btn-secondary hidden">🎨 Open Template Studio</button>
-                <button id="deleteBtn" type="button" class="btn btn-danger hidden">Delete</button>
-                <button id="saveBtn" type="button" class="btn btn-primary">Save</button>
-            </div>
+            <button class="sheet-close" id="sheetClose" aria-label="Close">✕</button>
         </div>
-    </dialog>
-
-    <!-- DISCOUNT CODE TEMPLATE STUDIO -->
-    <dialog id="discountStudio" class="rounded-2xl p-0 shadow-2xl">
-        <div class="p-0">
-            <div class="sticky top-0 p-4 border-b bg-white flex items-center justify-between z-10">
-                <h2 class="text-xl font-semibold">🎨 Discount Code Template Studio</h2>
-                <button id="closeStudio" type="button" class="btn btn-ghost text-xl">✕</button>
-            </div>
-            <div class="ds-grid">
-                <aside class="ds-panel">
-                    <div class="ds-section-title">Template</div>
-                    <div class="ds-template-picker">
-                        <button class="ds-tpl-btn active" data-tpl="ig">Instagram <small>1080×1080</small></button>
-                        <button class="ds-tpl-btn" data-tpl="card">Personal Card <small>1500×900</small></button>
-                        <button class="ds-tpl-btn" data-tpl="story">Story <small>1080×1920</small></button>
-                    </div>
-
-                    <div class="ds-section-title">Code Details</div>
-                    <div class="ds-field"><label>Code</label><input id="ds-code" type="text" style="text-transform:uppercase;font-weight:600;letter-spacing:0.05em"/></div>
-                    <div class="ds-field">
-                        <label>Discount</label>
-                        <div class="row">
-                            <input id="ds-amount" type="number" min="1" max="100"/>
-                            <select id="ds-type"><option value="percent">% Off</option><option value="fixed">$ Off</option></select>
-                        </div>
-                    </div>
-                    <div class="ds-field"><label>Expires</label><input id="ds-expires" type="text" placeholder="DEC 31, 2025"/></div>
-
-                    <div class="ds-section-title">Personal Card</div>
-                    <div class="ds-field"><label>Recipient Name</label><input id="ds-name" type="text" placeholder="Sarah"/></div>
-                    <div class="ds-field"><label>Message (use &lt;em&gt; for italics)</label><textarea id="ds-message" rows="2">A little something <em>sweet</em> just for you.</textarea></div>
-
-                    <div class="ds-section-title">Export</div>
-                    <button id="ds-export" class="btn btn-primary w-full" type="button">📥 Export PNG</button>
-                    <button id="ds-copy-code" class="btn btn-secondary w-full mt-2" type="button">📋 Copy Code</button>
-                    <p class="text-xs text-gray-500 mt-3">Personal Card prints great on cream cardstock (5×3"). Instagram is post-ready at full resolution.</p>
-                </aside>
-
-                <div class="ds-stage">
-                    <div id="ds-stage-inner" style="transform-origin: center center;">
-                        <div class="ds-template ds-tpl-ig" id="ds-tpl-ig">
-                            <div class="frame">
-                                <div class="eyebrow">San Antonio · est. 2025</div>
-                                <div class="script">a sweet</div>
-                                <div class="headline">little <em>treat</em></div>
-                                <div class="amount" id="ds-ig-amount"><sup>%</sup>15</div>
-                                <div class="code-box">
-                                    <div class="code-label">use code</div>
-                                    <div class="code-value" id="ds-ig-code">SWEET15</div>
-                                </div>
-                                <div class="footer-row">
-                                    <span id="ds-ig-expires">expires Dec 31</span>
-                                    <span class="brand-name">Rebel Ribbon</span>
-                                    <span>@rebel_ribbon</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="ds-template ds-tpl-card hidden" id="ds-tpl-card">
-                            <div class="left">
-                                <div>
-                                    <div class="brand">Rebel <em>Ribbon</em></div>
-                                    <div class="sub">Custom Cookies · SATX</div>
-                                </div>
-                                <div>
-                                    <div class="for-you">just for</div>
-                                    <div class="name" id="ds-card-name">Sarah</div>
-                                </div>
-                                <div class="bottom-mark">A token of our thanks</div>
-                            </div>
-                            <div class="right">
-                                <div class="eyebrow">— A personal note</div>
-                                <div class="message" id="ds-card-message">A little something <em>sweet</em> just for you.</div>
-                                <div class="discount-line">
-                                    <span class="num" id="ds-card-amount"><sup>%</sup>15</span>
-                                    <span class="text">off your<br/>next order</span>
-                                </div>
-                                <div class="code-strip">
-                                    <div>
-                                        <div class="label">Your Code</div>
-                                        <div class="value" id="ds-card-code">SWEET15</div>
-                                    </div>
-                                    <div>
-                                        <div class="label">Valid Through</div>
-                                        <div class="value" id="ds-card-expires">Dec 31, 2025</div>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div class="signoff">— A & T</div>
-                                    <div class="domain">rebelribbon.com</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="ds-template ds-tpl-story hidden" id="ds-tpl-story">
-                            <div class="brand-line"><em>Rebel Ribbon</em></div>
-                            <div class="location">Custom Cookies · SATX</div>
-                            <div class="big-script">for you,</div>
-                            <div class="headline">a sweet <em>surprise</em></div>
-                            <div class="amount" id="ds-story-amount"><sup>%</sup>15</div>
-                            <div class="off">off your order</div>
-                            <div class="code-card">
-                                <div class="label">use code at checkout</div>
-                                <div class="value" id="ds-story-code">SWEET15</div>
-                            </div>
-                            <div class="domain">rebelribbon.com</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div class="sheet-body" id="sheetBody">
+            <div class="center-spinner"><div class="spinner"></div></div>
         </div>
-    </dialog>
+    </div>
+</div>
 
-    <!-- Order drawer -->
-    <dialog id="orderDrawer" class="rounded-2xl p-0 shadow-2xl">
-        <div class="p-0">
-            <div class="sticky top-0 p-4 border-b bg-white flex flex-wrap items-center justify-between shadow-sm z-10">
-                <div class="flex items-center gap-4">
-                    <button id="backToOrders" type="button" class="btn btn-ghost text-sm">← Back</button>
-                    <div>
-                        <h2 id="drawerTitle" class="text-xl font-semibold">Order #XXXX</h2>
-                        <div class="mt-1 flex items-center gap-2 text-sm">
-                            <span class="font-medium">Status:</span>
-                            <select id="statusSelect" class="px-3 py-1 rounded-lg border text-sm">
-                                <option value="Active">Active</option>
-                                <option value="Completed">Completed</option>
-                                <option value="Canceled">Canceled</option>
-                            </select>
-                            <button id="saveStatus" type="button" class="btn btn-success text-sm">Save</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="flex gap-2 mt-2 lg:mt-0">
-                    <button id="editFields" type="button" class="btn btn-secondary">Edit Fields</button>
-                    <button id="viewInvoice" type="button" class="btn btn-primary">Invoice</button>
-                </div>
-            </div>
-            <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="bg-white rounded-lg border p-4">
-                        <h3 class="text-lg font-semibold mb-3">👤 Customer Info</h3>
-                        <div class="grid grid-cols-2 gap-3 text-sm">
-                            <div><span class="font-medium">Name:</span><div id="cust_name"></div></div>
-                            <div><span class="font-medium">ID:</span><div id="cust_id" class="text-gray-700"></div></div>
-                            <div><span class="font-medium">Phone:</span><br/><a id="cust_phone_link" class="text-blue-600"></a></div>
-                            <div><span class="font-medium">Email:</span><br/><a id="cust_email" class="text-blue-600 break-all"></a></div>
-                        </div>
-                        <div class="mt-4 text-sm">
-                            <span class="font-medium">Address:</span>
-                            <div id="cust_addr1"></div><div id="cust_addr2"></div><div id="cust_citystzip"></div>
-                            <button id="mapLocation" type="button" class="btn btn-ghost text-xs text-blue-600 mt-1">View on Map</button>
-                        </div>
-                        <div class="mt-4 text-sm">
-                            <span class="font-medium">Referral Code:</span>
-                            <div id="cust_referral_code" class="mt-1 text-pink-700 font-semibold"></div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg border p-4">
-                        <h3 class="text-lg font-semibold mb-3">📅 Event Info</h3>
-                        <div class="grid grid-cols-2 gap-3 text-sm">
-                            <div><span class="font-medium">Event:</span><div id="ov_event_name"></div></div>
-                            <div><span class="font-medium">Date:</span><div id="ov_event"></div></div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg border p-4">
-                        <h3 class="text-lg font-semibold mb-3">📝 Order Details</h3>
-                        <div class="grid grid-cols-3 gap-3 text-sm mb-4">
-                            <div><span class="font-medium">Submitted:</span><div id="ov_submitted"></div></div>
-                            <div class="col-span-2"><span class="font-medium">Pickup/Delivery:</span><div id="ov_pickup"></div></div>
-                            <div><span class="font-medium">Dozens:</span><div id="ov_dzns"></div></div>
-                            <div><span class="font-medium">Flavor:</span><div id="ov_flavor"></div></div>
-                            <div><span class="font-medium">Dietary:</span><div id="ov_dietary"></div></div>
-                        </div>
-                        <div class="grid grid-cols-3 gap-4 text-sm">
-                            <div>
-                                <span class="font-medium">Photo:</span>
-                                <img id="ov_photo" class="w-32 h-32 mt-2 object-cover rounded border cursor-pointer"/>
-                                <input id="uploadPhoto" type="file" accept="image/*" class="block mt-2 text-xs"/>
-                                <button id="btnUploadPhoto" type="button" class="btn btn-secondary text-xs mt-1">Upload</button>
-                            </div>
-                            <div class="col-span-2">
-                                <span class="font-medium">Design Notes:</span>
-                                <p id="ov_notes" class="p-3 border rounded-lg bg-gray-50 mt-1"></p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="bg-white rounded-lg border p-4">
-                        <h3 class="text-lg font-semibold mb-3">✨ Extras</h3>
-                        <div class="grid grid-cols-3 gap-3 text-sm">
-                            <div><span class="font-medium">Type:</span><div id="ov_pd_type"></div></div>
-                            <div><span class="font-medium">Consult:</span><div id="ov_consultation"></div></div>
-                            <div><span class="font-medium">Gift Note:</span><div id="ov_gift_note"></div></div>
-                        </div>
-                        <div class="mt-2 text-sm"><span class="font-medium">Gift Text:</span><p id="ov_gift_text" class="p-2 border rounded bg-gray-50 mt-1"></p></div>
-                    </div>
-                    <div class="bg-white rounded-lg border p-4">
-                        <h3 class="text-lg font-semibold mb-3">📋 Customer Survey</h3>
-                        <div id="surveyLinkSection"><p class="text-gray-500 text-sm">Loading...</p></div>
-                    </div>
-                </div>
-                <div class="space-y-6">
-                    <div class="bg-white rounded-lg border-2 border-blue-200 shadow-xl p-4">
-                        <h3 class="text-lg font-bold mb-3">💰 Pricing</h3>
-                        <div class="text-sm space-y-2">
-                            <div class="flex justify-between"><span>Price/dz:</span><span id="t_price"></span></div>
-                            <div class="flex justify-between"><span>Base:</span><span id="t_base"></span></div>
-                            <div class="flex justify-between"><span>Consult:</span><span id="t_consult"></span></div>
-                            <div class="flex justify-between"><span>Gift fee:</span><span id="t_gift"></span></div>
-                            <div class="flex justify-between"><span>Fees:</span><span id="t_adj_fees" class="text-green-700"></span></div>
-                            <div class="flex justify-between"><span>Code disc:</span><span id="t_disc_code" class="text-red-700"></span></div>
-                            <div class="flex justify-between"><span>Referral:</span><span id="t_disc_referral" class="text-red-700"></span></div>
-                            <div class="flex justify-between"><span>Other disc:</span><span id="t_adj_disc" class="text-red-700"></span></div>
-                            <hr class="my-2"/>
-                            <div class="font-extrabold text-xl flex justify-between">Total:<span id="t_total"></span></div>
-                        </div>
-                        <div class="mt-4 text-sm space-y-1">
-                            <div><span class="font-medium">Discount:</span> <span id="ov_discount_code"></span></div>
-                            <div><span class="font-medium">Referral:</span> <span id="ov_referral_code"></span></div>
-                        </div>
-                    </div>
-
-                    <!-- STRIPE PANEL -->
-                    <div class="stripe-panel" id="stripePanel">
-                        <div class="flex items-center justify-between mb-3">
-                            <h3 class="font-bold">💳 Stripe Payment</h3>
-                            <span id="paymentBadge" class="status-badge status-unpaid">unpaid</span>
-                        </div>
-                        <div id="stripeBody">
-                            <p class="text-gray-500 text-sm">Loading...</p>
-                        </div>
-                    </div>
-
-                    <div class="bg-white rounded-lg border p-4">
-                        <h3 class="font-semibold mb-3">➕ Fees & Discounts</h3>
-                        <div class="flex flex-wrap gap-2 mb-3">
-                            <input id="adjLabel" class="px-2 py-1 rounded border grow" placeholder="Label"/>
-                            <input id="adjAmount" type="number" step="0.01" class="px-2 py-1 rounded border w-20" placeholder="Amt"/>
-                            <select id="adjKind" class="px-2 py-1 rounded border"><option value="fee">Fee</option><option value="discount">Disc</option></select>
-                            <button id="addAdjustment" type="button" class="btn btn-primary text-sm">Add</button>
-                        </div>
-                        <div class="overflow-auto max-h-40">
-                            <table class="min-w-full text-sm">
-                                <thead class="bg-gray-100"><tr><th class="text-left p-1">When</th><th class="text-left p-1">Type</th><th class="text-left p-1">Label</th><th class="text-right p-1">Amt</th><th class="p-1"></th></tr></thead>
-                                <tbody id="adjTbody"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<!-- ========== EDITOR DIALOG ========== -->
+<div id="editor">
+    <div class="editor-card">
+        <div class="editor-head">
+            <h2 id="editorTitle">Edit</h2>
+            <button id="editorClose" class="sheet-close" aria-label="Close">✕</button>
         </div>
-    </dialog>
+        <div class="editor-body" id="editorBody"></div>
+        <div class="editor-foot">
+            <button id="editorDelete" class="btn btn-danger hidden">Delete</button>
+            <button id="editorCancel" class="btn btn-ghost">Cancel</button>
+            <button id="editorSave" class="btn btn-primary">Save</button>
+        </div>
+    </div>
+</div>
 
-    <script>
-    // =====================================================
-    // REBEL RIBBON STAFF UI — v3 (3-status + Stripe + Studio)
-    // =====================================================
-    const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
-    const SURVEY_BASE_URL = 'https://rebelribbon.com/survey.html';
-    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+<script>
+// ============================================================================
+// REBEL RIBBON · Staff Workflow App · v4
+// Card-feed UX, mobile-first, matching rebelribbon.com brand
+// ============================================================================
+const SUPABASE_URL='https://zyntkwammltmjjvgelwg.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
+const SURVEY_BASE='https://rebelribbon.com/survey.html';
+const sb=window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // helpers
-    const onlyCompanyEmail = e => /@rebelribbon\.com$/i.test(e);
-    const $ = (t,c,h)=>{ const e=document.createElement(t); if(c)e.className=c; if(h!==undefined)e.innerHTML=h; return e; };
-    const fmt = v => v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
-    const dateOnly = d => { if(!d)return''; const dt=new Date(d); return new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,10); };
-    const formatOrderId = id => { if(id==null)return''; const n=Number(id); return Number.isFinite(n)?String(Math.trunc(n)).padStart(7,'0'):String(id); };
-    const getStatusClass = s => s ? `status-${s.toLowerCase().replace(/\s/g,'-')}` : 'status-active';
-    const money = n => '$'+(Number(n||0)).toFixed(2);
-    const formatPhone = p => { if(!p)return''; const c=(''+p).replace(/\D/g,''); const m=c.match(/^(\d{3})(\d{3})(\d{4})$/); return m?`(${m[1]}) ${m[2]}-${m[3]}`:p; };
-    const escapeHtml = t => { if(!t)return''; const d=document.createElement('div'); d.textContent=t; return d.innerHTML; };
-    const ORDER_STATUSES = ['Active','Completed','Canceled'];
-
-    // table configs
-    const tables = {
-        order_list: { title:'Orders', table:'orders', readOnly:true, customLoader:'loadOrderList', center:true, cols:[
-            {key:'customer_name',label:'Customer',type:'text',w:'40'},
-            {key:'status',label:'Status',type:'text',w:'30'},
-            {key:'payment_status',label:'Payment',type:'text',w:'30'}
-        ] },
-        orders: { title:'Orders', table:'orders', cols:[
-            {key:'order_id',label:'Order ID',type:'text',w:'12'},
-            {key:'customer_id',label:'Customer',type:'select-async',w:'20',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},
-            {key:'event_type_name',label:'Event',type:'text',w:'20'},
-            {key:'pickup_delivery_date',label:'Pickup date',type:'date',w:'18'},
-            {key:'event_date',label:'Event date',type:'date',w:'14'},
-            {key:'pickup_delivery_type',label:'Type',type:'select',w:'18',options:['Pickup','Delivery']},
-            {key:'cookie_amount_dzns',label:'Dozens',type:'number',step:'0.01',w:'18'},
-            {key:'flavor',label:'Flavor',type:'select-async',w:'14',asyncOptions:async()=>(await sb.from('flavors').select('name')).data?.map(r=>r.name)||[]},
-            {key:'dietary_option',label:'Dietary',type:'select-async',w:'16',asyncOptions:async()=>(await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[]},
-            {key:'design_notes',label:'Notes',type:'textarea',w:'20'},
-            {key:'design_inspiration_photo',label:'Photo URL',type:'url',w:'20'},
-            {key:'gift_note',label:'Gift note',type:'checkbox',w:'10'},
-            {key:'gift_note_text',label:'Gift text',type:'textarea',w:'16'},
-            {key:'consultation_requested',label:'Consult',type:'checkbox',w:'20'},
-            {key:'discount_code_used',label:'Discount code',type:'text',w:'16'},
-            {key:'referral_code_used',label:'Referral code',type:'text',w:'16'},
-            {key:'status',label:'Status',type:'select',w:'14',options:ORDER_STATUSES}
-        ]},
-        discount_codes: { title:'Discount Codes', table:'discount_codes', isSettings:true, list_keys:['code','amount','type'], hasTemplateStudio:true, cols:[
-            {key:'code',label:'Code',type:'text',required:true,w:'20'},
-            {key:'type',label:'Type',type:'select',options:['percent','fixed'],required:true,w:'20'},
-            {key:'amount',label:'Amount',type:'number',step:'0.01',w:'20'},
-            {key:'uses_allowed',label:'Uses',type:'number',w:'20'},
-            {key:'email_allowed',label:'Customer Email (for personal)',type:'email',w:'20'},
-            {key:'good_through_date',label:'Expires',type:'date',w:'20'}
-        ] },
-        referral_codes: { title:'Referral Codes', table:'referral_codes', isSettings:true, list_keys:['code'], cols:[{key:'code',label:'Code',type:'text',required:true,w:'20'},{key:'associated_customer_id',label:'Customer',type:'select-async',w:'20',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},{key:'good_through_date',label:'Expires',type:'date',w:'20'},{key:'referrer_discount',label:'Referrer %',type:'number',step:'0.01',w:'20'},{key:'referee_discount',label:'Referee %',type:'number',step:'0.01',w:'20'}] },
-        flavors: { title:'Flavors', table:'flavors', isSettings:true, cols:[{key:'name',label:'Name',type:'text',required:true,w:'40'}] },
-        dietary_options: { title:'Dietary Options', table:'dietary_options', isSettings:true, cols:[{key:'name',label:'Name',type:'text',required:true,w:'40'}] },
-        pricing: { title:'Pricing', table:'pricing', isSettings:true, customLoader:'loadPricingList', cols:[{key:'price_per_dozen',label:'Price/dozen',type:'number',step:'0.01',w:'20'},{key:'delivery_fee',label:'Delivery fee',type:'number',step:'0.01',w:'20'},{key:'consultation_fee',label:'Consult fee',type:'number',step:'0.01',w:'20'},{key:'gift_note_fee',label:'Gift fee',type:'number',step:'0.01',w:'20'},{key:'rush_fee',label:'Rush fee',type:'number',step:'0.01',w:'20'}] },
-        costs: { title:'Costs', table:'costs', isSettings:true, cols:[{key:'cost_date',label:'Date',type:'date',w:'25'},{key:'item_name',label:'Item',type:'text',required:true,w:'55'},{key:'amount',label:'Amount',type:'number',step:'0.01',required:true,w:'20'}] },
-        surveys: { title:'Surveys', table:'surveys', cols:[{key:'customer_id',label:'Customer',type:'select-async',w:'22',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},{key:'cookies_stars',label:'Cookies',type:'number',min:1,max:5,w:'18'},{key:'service_stars',label:'Service',type:'number',min:1,max:5,w:'18'},{key:'recommend',label:'Recommend',type:'checkbox',w:'22'},{key:'improvements',label:'Improvements',type:'textarea',w:'30'},{key:'website_review',label:'Review',type:'textarea',w:'30'}] },
-        reviews: { title:'Website Reviews', table:'website_reviews', customLoader:'loadReviews', readOnly:true, cols:[] }
-    };
-
-    let activeKey='order_list', activeOrderFilter='All', activeReviewTab='pending', page=0, totalCount=0;
-    const pageSize=20;
-
-    // AUTH
-    document.getElementById('signInButton').onclick = async()=>{ const e=document.getElementById('email').value.trim(), p=document.getElementById('password').value.trim(); if(!onlyCompanyEmail(e)){document.getElementById('authMsg').textContent='Use @rebelribbon.com';return;} const{error}=await sb.auth.signInWithPassword({email:e,password:p}); if(error){document.getElementById('authMsg').textContent=error.message;return;} bootstrap(); };
-    document.getElementById('logout').onclick = async()=>{ await sb.auth.signOut(); location.reload(); };
-
-    async function bootstrap(){
-        const{data:{session}}=await sb.auth.getSession();
-        if(!session){document.getElementById('signinCard').classList.remove('hidden');document.getElementById('app-wrapper').classList.add('hidden');return;}
-        if(!onlyCompanyEmail(session.user?.email)){await sb.auth.signOut();return;}
-        document.getElementById('who').textContent=session.user.email.split('@')[0];
-        document.getElementById('signinCard').classList.add('hidden');
-        document.getElementById('app-wrapper').classList.remove('hidden');
-        renderTabs(); loadTable(); wireRealtime(); loadSystemHealth();
-        setInterval(loadSystemHealth, 30000);
+// helpers
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const h = (tag, props={}, ...kids) => {
+    const el = document.createElement(tag);
+    for (const k in props) {
+        if (k === 'class') el.className = props[k];
+        else if (k === 'on') for (const ev in props.on) el.addEventListener(ev, props.on[ev]);
+        else if (k === 'html') el.innerHTML = props[k];
+        else if (k in el) el[k] = props[k];
+        else el.setAttribute(k, props[k]);
     }
+    for (const k of kids.flat()) if (k != null) el.appendChild(typeof k === 'string' ? document.createTextNode(k) : k);
+    return el;
+};
+const money = n => '$' + (Number(n||0)).toFixed(2);
+const dateOnly = d => { if (!d) return ''; const dt = new Date(d); return new Date(dt.getTime() - dt.getTimezoneOffset()*60000).toISOString().slice(0,10); };
+const formatDate = d => { if (!d) return ''; const dt = new Date(d.includes('T')?d:d+'T00:00:00'); return dt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}); };
+const formatPhone = p => { if (!p) return ''; const c = (''+p).replace(/\D/g,''); const m = c.match(/^(\d{3})(\d{3})(\d{4})$/); return m ? `(${m[1]}) ${m[2]}-${m[3]}` : p; };
+const initials = (e) => (e||'').split('@')[0].split(/[._-]/).map(x=>x[0]).join('').slice(0,2).toUpperCase() || 'RR';
+const daysFromNow = d => { if (!d) return null; const dt = new Date(d); const diff = (dt - new Date()) / 86400000; return Math.round(diff); };
+const onlyCompanyEmail = e => /@rebelribbon\.com$/i.test(e);
+const escapeHtml = t => { if (!t) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
 
-    document.getElementById('menuToggle').onclick=()=>{document.getElementById('sidebar').classList.toggle('open');};
-    document.getElementById('sidebar').onclick=e=>{if(e.target.closest('.nav-item'))document.getElementById('sidebar').classList.remove('open');};
+// ============================================================================
+// STATE
+// ============================================================================
+let session = null;
+let currentPage = 'dashboard';
+let allOrders = [];        // cache of orders loaded
+let customers = new Map(); // id -> customer
+let pricing = null;
+let activeOrder = null;
+let activeCustomer = null;
+let adjustments = [];
+let discountDetails = null;
+let referralDetails = null;
+let activeReviewTab = 'pending';
 
-    // TABLE LOADING
-    async function loadTable(){
-        const conf=tables[activeKey];
-        document.getElementById('pageTitle').textContent=conf.title;
-        const isP=activeKey==='pricing', isO=activeKey==='order_list', isR=activeKey==='reviews';
-        document.getElementById('orderPageControls').classList.toggle('hidden',!isO);
-        document.getElementById('addBtn').classList.toggle('hidden',!!conf.readOnly||isP||isR);
-        document.getElementById('dataActions').classList.toggle('hidden',isP||isR);
-        document.getElementById('pricingList').classList.toggle('hidden',!isP);
-        document.getElementById('reviewsContainer').classList.toggle('hidden',!isR);
-        document.getElementById('grid').closest('.table-wrap').classList.toggle('hidden',isP||isR);
-        document.getElementById('exportBtn').classList.toggle('hidden',activeKey!=='costs');
-
-        const dc=conf.list_keys?conf.cols.filter(c=>conf.list_keys.includes(c.key)):conf.cols;
-        if(conf.cols && conf.cols.length){ buildColGroup(conf,dc); buildThead(conf,dc); }
-
-        if(conf.customLoader==='loadPricingList'){await loadPricingList();return;}
-        if(conf.customLoader==='loadReviews'){await loadReviews();return;}
-        if(conf.customLoader==='loadOrderList'){await loadOrderList();return;}
-
-        const tbody=document.getElementById('tbody'); tbody.innerHTML='';
-        let q=sb.from(conf.table).select('*',{count:'exact'});
-        const s=document.getElementById('globalSearch').value?.trim();
-        if(s)q=q.or(conf.cols.map(c=>`${c.key}.ilike.%${s}%`).join(','));
-        q=q.order('updated_at',{ascending:false}).range(page*pageSize,page*pageSize+pageSize-1);
-        const{data,error,count}=await q;
-        if(error){tbody.innerHTML=`<tr><td class="cell text-red-700" colspan="99">${error.message}</td></tr>`;return;}
-        totalCount=count||0;
-        for(const row of(data||[])){
-            const tr=$('tr','border-b');
-            for(const c of dc){let v=row[c.key];if(c.type==='checkbox')v=!!v;if(c.type==='date')v=dateOnly(v);tr.appendChild($('td','cell',fmt(v)));}
-            if(!conf.readOnly){const td=$('td','cell text-right');const btn=$('button','btn btn-secondary','Edit');btn.onclick=()=>openEditor(conf,row);td.appendChild(btn);tr.appendChild(td);}
-            tbody.appendChild(tr);
-        }
-        updatePager();
+// ============================================================================
+// AUTH
+// ============================================================================
+$('#signInBtn').onclick = async () => {
+    const email = $('#email').value.trim();
+    const password = $('#password').value;
+    const msg = $('#authMsg');
+    msg.classList.remove('visible');
+    if (!onlyCompanyEmail(email)) {
+        msg.textContent = 'Please use your @rebelribbon.com email.';
+        msg.classList.add('visible');
+        return;
     }
-
-    async function loadOrderList(){
-        const tbody=document.getElementById('tbody'); tbody.innerHTML='';
-        const st=(document.getElementById('globalSearch').value||'').trim().toLowerCase();
-        let q=sb.from('orders').select('id,customer_id,status,payment_status',{count:'exact'}).order('created_at',{ascending:false});
-        // Filter logic: status filters vs payment filters
-        if(activeOrderFilter==='unpaid'){ q=q.in('payment_status',['unpaid','pending']); }
-        else if(activeOrderFilter!=='All'){ q=q.eq('status', activeOrderFilter); }
-
-        let orders,count;
-        if(st){const{data,count:c}=await q;orders=data||[];count=c;}
-        else{const{data,count:c}=await q.range(page*pageSize,page*pageSize+pageSize-1);orders=data||[];count=c;}
-        totalCount=count||0;
-        const ids=[...new Set(orders.map(o=>o.customer_id).filter(Boolean))];
-        const map=new Map();
-        if(ids.length){const{data}=await sb.from('customers').select('id,first_name,last_name').in('id',ids);(data||[]).forEach(c=>map.set(c.id,c));}
-        if(st){const f=orders.filter(o=>{const c=map.get(o.customer_id);return[String(o.id),formatOrderId(o.id),o.status||'',c?`${c.first_name} ${c.last_name}`:''].some(x=>x.toLowerCase().includes(st));});totalCount=f.length;orders=f.slice(page*pageSize,page*pageSize+pageSize);}
-        for(const r of orders){
-            const c=map.get(r.customer_id);
-            const tr=$('tr','border-b hover:bg-gray-100 cursor-pointer');
-            tr.appendChild($('td','cell font-medium',c?`${c.first_name||''} ${c.last_name||''}`.trim():'N/A'));
-            const sc=$('td','cell text-center');
-            sc.appendChild($('span',`status-badge ${getStatusClass(r.status)}`,r.status||'Active'));
-            tr.appendChild(sc);
-            const pc=$('td','cell text-center');
-            const ps=r.payment_status||'unpaid';
-            pc.appendChild($('span',`status-badge status-${ps.toLowerCase()}`,ps));
-            tr.appendChild(pc);
-            tr.onclick=()=>openOrderManager(r.id);
-            tbody.appendChild(tr);
-        }
-        updatePager();
+    const { error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) {
+        msg.textContent = error.message;
+        msg.classList.add('visible');
+        return;
     }
-
-    async function loadPricingList(){
-        const el=document.getElementById('pricingList'); el.innerHTML='';
-        const{data}=await sb.from('pricing').select('*').limit(1);
-        if(!data?.length)return;
-        for(const col of tables.pricing.cols){
-            const item=$('div','pricing-item');
-            item.appendChild($('span','',col.label));
-            item.appendChild($('span','',money(data[0][col.key])));
-            const btn=$('button','btn btn-secondary text-xs','Edit');
-            btn.onclick=()=>openEditor({title:`Edit ${col.label}`,table:'pricing',cols:[col]},{id:data[0].id,[col.key]:data[0][col.key]});
-            item.appendChild(btn);
-            el.appendChild(item);
-        }
-    }
-
-    async function loadReviews(){
-        const c=document.getElementById('reviewsContainer'); c.innerHTML='';
-        const[pC,aC,rC]=await Promise.all([
-            sb.from('website_reviews').select('id',{count:'exact',head:true}).eq('status','pending'),
-            sb.from('website_reviews').select('id',{count:'exact',head:true}).eq('status','approved'),
-            sb.from('website_reviews').select('id',{count:'exact',head:true}).eq('status','rejected')
-        ]);
-        c.innerHTML=`<div class="review-tabs"><button class="review-tab ${activeReviewTab==='pending'?'active':''}" data-t="pending">🔔 Pending<span class="review-count">${pC.count||0}</span></button><button class="review-tab ${activeReviewTab==='approved'?'active':''}" data-t="approved">✅ Approved<span class="review-count">${aC.count||0}</span></button><button class="review-tab ${activeReviewTab==='rejected'?'active':''}" data-t="rejected">❌ Rejected<span class="review-count">${rC.count||0}</span></button></div><div id="reviewsList"></div>`;
-        c.querySelectorAll('.review-tab').forEach(t=>t.onclick=()=>{activeReviewTab=t.dataset.t;loadReviews();});
-        const{data:reviews}=await sb.from('website_reviews').select('*').eq('status',activeReviewTab).order('created_at',{ascending:false});
-        const list=document.getElementById('reviewsList');
-        if(!reviews?.length){list.innerHTML=`<div class="text-center py-12 text-gray-500">No ${activeReviewTab} reviews</div>`;return;}
-        for(const r of reviews){
-            const card=$('div','review-card');
-            card.innerHTML=`<div class="flex justify-between mb-2"><div><div class="font-semibold">${escapeHtml(r.customer_name||'Anonymous')}</div><div class="review-stars">${'★'.repeat(r.stars||5)}${'☆'.repeat(5-(r.stars||5))}</div></div><span class="status-badge status-${r.status}">${r.status}</span></div><p class="text-gray-700 mb-2">"${escapeHtml(r.review_text)}"</p><div class="text-xs text-gray-500">${new Date(r.created_at).toLocaleDateString()}</div><div class="review-actions" id="ra-${r.id}"></div>`;
-            const act=card.querySelector(`#ra-${r.id}`);
-            if(activeReviewTab==='pending'){const ab=$('button','btn btn-success','✓ Approve');ab.onclick=()=>updateReview(r.id,'approved');const rb=$('button','btn btn-danger','✕ Reject');rb.onclick=()=>updateReview(r.id,'rejected');act.appendChild(ab);act.appendChild(rb);}
-            else if(activeReviewTab==='approved'){const cb=$('button','btn btn-secondary','📋 Copy');cb.onclick=()=>{navigator.clipboard.writeText(`"${r.review_text}"\n— ${r.customer_name}`);cb.textContent='✓ Copied!';};const ub=$('button','btn btn-warning','Unpublish');ub.onclick=()=>updateReview(r.id,'pending');act.appendChild(cb);act.appendChild(ub);}
-            else{const rb=$('button','btn btn-secondary','Restore');rb.onclick=()=>updateReview(r.id,'pending');const db=$('button','btn btn-danger','Delete');db.onclick=async()=>{if(confirm('Delete?')){await sb.from('website_reviews').delete().eq('id',r.id);loadReviews();}};act.appendChild(rb);act.appendChild(db);}
-            list.appendChild(card);
-        }
-    }
-
-    async function updateReview(id,status){
-        const u={status};
-        if(status==='approved'){u.approved_at=new Date().toISOString();const{data:{session}}=await sb.auth.getSession();u.approved_by=session?.user?.email;}
-        await sb.from('website_reviews').update(u).eq('id',id);
-        loadReviews();
-    }
-
-    // SURVEY
-    async function loadSurveySection(orderId){
-        const s=document.getElementById('surveyLinkSection');
-        s.innerHTML='<p class="text-gray-500 text-sm">Loading...</p>';
-        const{data:tok}=await sb.from('survey_tokens').select('*').eq('order_id',orderId).order('created_at',{ascending:false}).limit(1).maybeSingle();
-        if(tok){
-            const url=`${SURVEY_BASE_URL}?token=${tok.token}`, used=tok.used, exp=tok.expires_at&&new Date(tok.expires_at)<new Date();
-            s.innerHTML=`<div class="survey-link-box ${used?'':'no-link'} ${exp?'expired':''}"><div class="flex justify-between items-center mb-2"><span class="font-semibold">${used?'✅ Completed':exp?'⚠️ Expired':'📨 Active'}</span>${!used?`<button id="copyLink" class="btn btn-secondary text-xs" type="button">📋 Copy</button>`:''}</div>${!used?`<input class="survey-link-input" value="${url}" readonly/><div class="text-xs text-gray-500">Expires: ${tok.expires_at?new Date(tok.expires_at).toLocaleDateString():'Never'}</div>`:`<div class="text-sm text-gray-600">Done: ${tok.used_at?new Date(tok.used_at).toLocaleDateString():''}</div>`}${exp&&!used?`<button id="regenLink" class="btn btn-warning mt-2 w-full" type="button">🔄 Regenerate</button>`:''}</div>`;
-            document.getElementById('copyLink')?.addEventListener('click',function(){navigator.clipboard.writeText(url);this.textContent='✓ Copied!';});
-            document.getElementById('regenLink')?.addEventListener('click',()=>genSurveyLink(orderId));
-        }else{
-            s.innerHTML=`<div class="survey-link-box no-link"><p class="text-gray-600 mb-3">No survey link yet.</p><button id="genLink" class="btn btn-primary w-full" type="button">📝 Generate Link</button></div>`;
-            document.getElementById('genLink').onclick=()=>genSurveyLink(orderId);
-        }
-    }
-    async function genSurveyLink(orderId){
-        const s=document.getElementById('surveyLinkSection');
-        s.innerHTML='<p class="text-gray-500 text-sm">Generating...</p>';
-        const bytes=new Uint8Array(24); crypto.getRandomValues(bytes);
-        const token=btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-        const exp=new Date(); exp.setDate(exp.getDate()+30);
-        const{error}=await sb.from('survey_tokens').insert({token,order_id:orderId,expires_at:exp.toISOString()});
-        if(error){s.innerHTML=`<div class="text-red-600 p-3 bg-red-50 rounded">Error: ${error.message}</div>`;return;}
-        loadSurveySection(orderId);
-    }
-
-    // TABLE BUILDERS
-    function buildColGroup(conf,cols){const cg=document.getElementById('colgroup');cg.innerHTML='';let c=cols.slice();if(!conf.readOnly)c.push({w:'20'});const t=c.reduce((s,x)=>s+(Number(x.w)||0),0)||100;for(const x of c){const col=document.createElement('col');col.style.width=((Number(x.w)||0)/t*100)+'%';cg.appendChild(col);}}
-    function buildThead(conf,cols){const tr=document.getElementById('thead');tr.innerHTML='';for(const c of cols)tr.appendChild($('th','thcell '+(conf.center?'text-center':'text-left'),c.label));if(!conf.readOnly)tr.appendChild($('th','thcell text-right',''));}
-    function updatePager(){document.getElementById('prev').disabled=page===0;document.getElementById('next').disabled=(page+1)*pageSize>=totalCount;document.getElementById('pageInfo').textContent=`${Math.min(totalCount,(page+1)*pageSize)} of ${totalCount}`;}
-
-    // EDITOR
-    const dlg=document.getElementById('editor'), formBody=document.getElementById('formBody');
-    let currentEditorConf=null, currentEditorRow=null;
-
-    document.getElementById('closeEditor').onclick=()=>{dlg.close();};
-
-    async function optionEl(col,val){
-        const w=$('label','block'); w.appendChild($('span','text-sm block mb-1',col.label));
-        let inp;
-        if(col.type==='textarea'){inp=$('textarea','px-3 py-2 rounded-lg border w-full');inp.rows=3;}
-        else if(col.type==='checkbox'){inp=$('input','h-4 w-4');inp.type='checkbox';}
-        else if(col.type==='select'||col.type==='select-async'){
-            inp=$('select','px-3 py-2 rounded-lg border w-full');
-            const opts=col.type==='select'?col.options:await col.asyncOptions();
-            for(const o of(opts||[])){const opt=document.createElement('option');if(typeof o==='string'){opt.value=o;opt.textContent=o;}else{opt.value=o.value;opt.textContent=o.label;}inp.appendChild(opt);}
-        }
-        else{inp=$('input','px-3 py-2 rounded-lg border w-full');inp.type=col.type||'text';if(col.step)inp.step=col.step;}
-        inp.id=`fld_${col.key}`;
-        if(col.required)inp.required=true;
-        if(col.type==='checkbox')inp.checked=!!val;
-        else if(col.type==='date')inp.value=dateOnly(val);
-        else inp.value=val??'';
-        w.appendChild(inp);
-        return w;
-    }
-    async function openEditor(conf,row){
-        currentEditorConf=conf; currentEditorRow=row;
-        document.getElementById('editorTitle').textContent=row?`Edit ${conf.title}`:`New ${conf.title}`;
-        formBody.innerHTML='';
-        for(const c of conf.cols)formBody.appendChild(await optionEl(c,row?.[c.key]));
-        const h=document.createElement('input'); h.type='hidden'; h.id='row_id'; h.value=row?.id||''; formBody.appendChild(h);
-        document.getElementById('deleteBtn').classList.toggle('hidden',!row||conf.table==='orders'||conf.table==='pricing');
-        document.getElementById('deleteBtn').onclick=async()=>{if(row?.id&&confirm('Delete?')){await sb.from(conf.table).delete().eq('id',row.id);dlg.close();loadTable();}};
-        // Template studio button (only for discount_codes)
-        document.getElementById('openStudioBtn').classList.toggle('hidden',!conf.hasTemplateStudio);
-        document.getElementById('saveBtn').onclick=async()=>{ await saveRecord(conf,row); };
-        dlg.showModal();
-    }
-    async function saveRecord(conf,orig){
-        const p={};
-        for(const c of conf.cols){const el=document.getElementById(`fld_${c.key}`);let v=c.type==='checkbox'?el.checked:el.value||null;if(c.type==='number'&&v!==null)v=el.value===''?null:Number(v);p[c.key]=v;}
-        const id=document.getElementById('row_id').value;
-        const r=id?await sb.from(conf.table).update(p).eq('id',id).select('*').single():await sb.from(conf.table).insert(p).select('*').single();
-        if(r.error){alert(r.error.message);return;}
-        // Update current row reference so studio can use latest values
-        currentEditorRow = r.data || currentEditorRow;
-        dlg.close(); loadTable();
-        if(conf.table==='orders'&&orig)openOrderManager(orig.id);
-    }
-
-    // ====== DISCOUNT CODE TEMPLATE STUDIO ======
-    const studioDlg=document.getElementById('discountStudio');
-    let dsCurrentTpl='ig';
-    const dsSizes={ig:{w:1080,h:1080},card:{w:1500,h:900},story:{w:1080,h:1920}};
-
-    document.getElementById('openStudioBtn').onclick=()=>{
-        // Pull current values from editor (live data, may not be saved yet)
-        const code=(document.getElementById('fld_code')?.value||'CODE').toUpperCase();
-        const amount=document.getElementById('fld_amount')?.value||'15';
-        const type=document.getElementById('fld_type')?.value||'percent';
-        const expiresRaw=document.getElementById('fld_good_through_date')?.value||'';
-        const email=document.getElementById('fld_email_allowed')?.value||'';
-        document.getElementById('ds-code').value=code;
-        document.getElementById('ds-amount').value=amount;
-        document.getElementById('ds-type').value=type;
-        document.getElementById('ds-expires').value=expiresRaw?formatDateForCard(expiresRaw):'';
-        // If we have an email, try to fetch customer name for the personal card
-        document.getElementById('ds-name').value='';
-        if(email){
-            sb.from('customers').select('first_name').eq('email',email).maybeSingle().then(({data})=>{
-                if(data?.first_name) document.getElementById('ds-name').value=data.first_name;
-                renderStudio();
-            });
-        }
-        renderStudio();
-        fitStudioStage();
-        studioDlg.showModal();
-    };
-    document.getElementById('closeStudio').onclick=()=>{ studioDlg.close(); };
-
-    function formatDateForCard(iso){
-        // ISO date -> "DEC 31, 2025"
-        try {
-            const d=new Date(iso+'T00:00:00');
-            return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}).toUpperCase();
-        } catch { return iso; }
-    }
-
-    function renderStudio(){
-        const code=(document.getElementById('ds-code').value||'CODE').toUpperCase();
-        const amount=document.getElementById('ds-amount').value||'15';
-        const type=document.getElementById('ds-type').value;
-        const expires=document.getElementById('ds-expires').value||'';
-        const name=document.getElementById('ds-name').value||'Friend';
-        const message=document.getElementById('ds-message').value||'A little something <em>sweet</em> just for you.';
-        const isPercent=type==='percent';
-        const amtMarkup=isPercent?`<sup>%</sup>${amount}`:`<sup>$</sup>${amount}`;
-        // IG
-        document.getElementById('ds-ig-amount').innerHTML=amtMarkup+`<sup style="font-size:60px">${isPercent?' off':' off'}</sup>`;
-        document.getElementById('ds-ig-code').textContent=code;
-        document.getElementById('ds-ig-expires').textContent=expires?`expires ${expires}`:'';
-        // Card
-        document.getElementById('ds-card-name').textContent=name;
-        document.getElementById('ds-card-message').innerHTML=message;
-        document.getElementById('ds-card-amount').innerHTML=amtMarkup;
-        document.getElementById('ds-card-code').textContent=code;
-        document.getElementById('ds-card-expires').textContent=expires||'—';
-        // Story
-        document.getElementById('ds-story-amount').innerHTML=amtMarkup;
-        document.getElementById('ds-story-code').textContent=code;
-    }
-
-    document.querySelectorAll('.ds-tpl-btn').forEach(b=>{
-        b.onclick=()=>{
-            document.querySelectorAll('.ds-tpl-btn').forEach(x=>x.classList.remove('active'));
-            b.classList.add('active');
-            dsCurrentTpl=b.dataset.tpl;
-            document.querySelectorAll('.ds-template').forEach(t=>t.classList.add('hidden'));
-            document.getElementById(`ds-tpl-${dsCurrentTpl}`).classList.remove('hidden');
-            fitStudioStage();
-        };
-    });
-
-    ['ds-code','ds-amount','ds-type','ds-expires','ds-name','ds-message'].forEach(id=>{
-        const el=document.getElementById(id);
-        el.addEventListener('input',renderStudio);
-        el.addEventListener('change',renderStudio);
-    });
-
-    function fitStudioStage(){
-        const size=dsSizes[dsCurrentTpl];
-        // Get stage element by selector since it doesn't have an ID
-        const stage=document.querySelector('.ds-stage');
-        if(!stage) return;
-        const padding=40;
-        const availW=stage.clientWidth-padding;
-        const availH=stage.clientHeight-padding;
-        const scale=Math.min(availW/size.w, availH/size.h, 0.4);
-        document.getElementById('ds-stage-inner').style.transform=`scale(${scale})`;
-    }
-    window.addEventListener('resize',fitStudioStage);
-
-    document.getElementById('ds-export').onclick=async()=>{
-        const el=document.getElementById(`ds-tpl-${dsCurrentTpl}`);
-        const prev=document.getElementById('ds-stage-inner').style.transform;
-        document.getElementById('ds-stage-inner').style.transform='scale(1)';
-        try {
-            const canvas=await html2canvas(el,{
-                backgroundColor:null, scale:1, useCORS:true,
-                width:dsSizes[dsCurrentTpl].w, height:dsSizes[dsCurrentTpl].h
-            });
-            const link=document.createElement('a');
-            const code=(document.getElementById('ds-code').value||'code').toLowerCase();
-            link.download=`rebelribbon-${dsCurrentTpl}-${code}.png`;
-            link.href=canvas.toDataURL('image/png');
-            link.click();
-        } catch(e) { alert('Export failed: '+e.message); }
-        document.getElementById('ds-stage-inner').style.transform=prev;
-    };
-    document.getElementById('ds-copy-code').onclick=()=>{
-        const code=document.getElementById('ds-code').value.toUpperCase();
-        navigator.clipboard.writeText(code);
-        const btn=document.getElementById('ds-copy-code');
-        const old=btn.textContent;
-        btn.textContent='✓ Copied!';
-        setTimeout(()=>btn.textContent=old,1500);
-    };
-
-    // NAV
-    function renderTabs(){
-        document.querySelectorAll('.nav-item').forEach(b=>{b.classList.remove('nav-active');if(b.dataset.key===activeKey)b.classList.add('nav-active');b.onclick=()=>{activeKey=b.dataset.key;page=0;renderTabs();loadTable();};});
-        document.querySelectorAll('#orderFilters .filter-tab').forEach(b=>{b.classList.toggle('filter-active',b.dataset.filter===activeOrderFilter);b.onclick=()=>{activeOrderFilter=b.dataset.filter;page=0;loadTable();renderTabs();};});
-        document.getElementById('addBtn').classList.toggle('hidden',!!tables[activeKey]?.readOnly);
-        document.getElementById('addBtn').onclick=()=>openEditor(tables[activeKey],null);
-        document.getElementById('prev').onclick=()=>{if(page>0){page--;loadTable();}};
-        document.getElementById('next').onclick=()=>{if((page+1)*pageSize<totalCount){page++;loadTable();}};
-        document.getElementById('globalSearch').onkeydown=e=>{if(e.key==='Enter'){page=0;loadTable();}};
-        document.getElementById('refreshAll').onclick=()=>{page=0;loadTable();};
-    }
-    function wireRealtime(){for(const k of Object.keys(tables)){const t=k==='order_list'?'orders':tables[k].table;sb.channel(`${k}-ch`).on('postgres_changes',{event:'*',schema:'public',table:t},()=>{if(k===activeKey)loadTable();}).subscribe();}}
-
-    // ORDER DRAWER
-    const drawer=document.getElementById('orderDrawer');
-    let activeOrder=null,activeCustomer=null,pricing=null,adjustments=[],discountCodeDetails=null,referralCodeDetails=null,discountCodeAmount=0,referralDiscountAmount=0,activeCustomerReferralCode=null;
-
-    async function fetchPricing(){const{data}=await sb.from('pricing').select('*').limit(1);const p=(data&&data[0])||{};return{price_per_dozen:Number(p.price_per_dozen||0),consultation_fee:Number(p.consultation_fee||0),gift_note_fee:Number(p.gift_note_fee||0)};}
-    function isDatePast(d){return d&&dateOnly(d)<dateOnly(new Date());}
-    async function fetchDiscountCodeDetails(code,email){if(!code)return null;const r={code,isValid:false,type:null,value:0};const{data}=await sb.from('discount_codes').select('*').eq('code',code).maybeSingle();if(!data)return r;if(data.good_through_date&&isDatePast(data.good_through_date))return r;if(data.email_allowed&&email&&data.email_allowed.toLowerCase()!==email.toLowerCase())return r;const v=Number(data.amount||0);if(v<=0)return r;r.isValid=true;r.type=data.type==='percent'?'percent':'fixed';r.value=v;return r;}
-    async function fetchReferralCodeDetails(code){if(!code)return null;const r={code,isValid:false,value:0};const{data}=await sb.from('referral_codes').select('*').eq('code',code).maybeSingle();if(!data||data.good_through_date&&isDatePast(data.good_through_date))return r;const v=Number(data.referee_discount||0);if(v<=0)return r;r.isValid=true;r.value=v;return r;}
-    async function fetchAdjustments(id){const{data}=await sb.from('order_adjustments').select('*').eq('order_id',id).order('created_at',{ascending:false});return(data||[]).map(r=>({...r,amount:Number(r.amount||0)}));}
-
-    function computeTotals(){
-        const ppd=pricing?.price_per_dozen||0,
-              consult=activeOrder?.consultation_requested?pricing?.consultation_fee||0:0,
-              gift=activeOrder?.gift_note?pricing?.gift_note_fee||0:0,
-              base=Number(activeOrder?.cookie_amount_dzns||0)*ppd,
-              feeSum=adjustments.filter(a=>a.kind==='fee').reduce((s,a)=>s+a.amount,0),
-              discSum=adjustments.filter(a=>a.kind==='discount').reduce((s,a)=>s+a.amount,0),
-              baseForCodes=base+consult+gift+feeSum;
-        discountCodeAmount=0;referralDiscountAmount=0;
-        if(discountCodeDetails?.isValid&&baseForCodes>0){discountCodeAmount=discountCodeDetails.type==='percent'?baseForCodes*(discountCodeDetails.value/100):discountCodeDetails.value;if(discountCodeAmount>baseForCodes)discountCodeAmount=baseForCodes;}
-        if(referralCodeDetails?.isValid&&baseForCodes>0){referralDiscountAmount=baseForCodes*(referralCodeDetails.value/100);if(referralDiscountAmount>baseForCodes)referralDiscountAmount=baseForCodes;}
-        const total=base+consult+gift+feeSum-discSum-discountCodeAmount-referralDiscountAmount;
-        document.getElementById('t_price').textContent=money(ppd);
-        document.getElementById('t_base').textContent=money(base);
-        document.getElementById('t_consult').textContent=money(consult);
-        document.getElementById('t_gift').textContent=money(gift);
-        document.getElementById('t_adj_fees').textContent=money(feeSum);
-        document.getElementById('t_disc_code').textContent=discountCodeAmount?'-'+money(discountCodeAmount):'-$0.00';
-        document.getElementById('t_disc_referral').textContent=referralDiscountAmount?'-'+money(referralDiscountAmount):'-$0.00';
-        document.getElementById('t_adj_disc').textContent=discSum?'-'+money(discSum):'-$0.00';
-        document.getElementById('t_total').textContent=money(total);
-        return total;
-    }
-
-    function renderAdjustments(){
-        const tb=document.getElementById('adjTbody'); tb.innerHTML='';
-        if(!adjustments.length){tb.innerHTML='<tr><td colspan="5" class="p-2 text-center text-gray-500">None</td></tr>';return;}
-        for(const a of adjustments){
-            const tr=$('tr','border-b');
-            tr.appendChild($('td','p-1 text-xs',new Date(a.created_at).toLocaleDateString()));
-            tr.appendChild($('td','p-1 text-xs',a.kind));
-            tr.appendChild($('td','p-1',a.label||''));
-            tr.appendChild($('td',`p-1 text-right ${a.kind==='discount'?'text-red-600':'text-green-600'}`,(a.kind==='discount'?'-':'')+money(a.amount)));
-            const rc=$('td','p-1 text-right');
-            const rb=$('button','btn btn-ghost text-red-500 text-xs','×');
-            rb.onclick=async()=>{if(confirm('Remove?')){await sb.from('order_adjustments').delete().eq('id',a.id);adjustments=adjustments.filter(x=>x.id!==a.id);renderAdjustments();computeTotals();renderStripePanel();}};
-            rc.appendChild(rb); tr.appendChild(rc); tb.appendChild(tr);
-        }
-    }
-
-    function fillDrawer(){
-        const o=activeOrder,c=activeCustomer;
-        document.getElementById('drawerTitle').textContent=`Order #${o?.order_id||formatOrderId(o.id)} (${o?.status||'Active'})`;
-        document.getElementById('cust_name').textContent=c?`${c.first_name||''} ${c.last_name||''}`.trim():'N/A';
-        document.getElementById('cust_id').textContent=c?.customer_id||o?.order_id||'N/A';
-        document.getElementById('cust_email').textContent=c?.email||'N/A';
-        document.getElementById('cust_email').href=c?.email?`mailto:${c.email}`:'#';
-        document.getElementById('cust_phone_link').textContent=formatPhone(c?.phone)||'N/A';
-        document.getElementById('cust_phone_link').href=c?.phone?`tel:${c.phone.replace(/\D/g,'')}`:'#';
-        document.getElementById('cust_addr1').textContent=c?.street_address||'';
-        document.getElementById('cust_addr2').textContent=c?.street_address_cont||'';
-        document.getElementById('cust_citystzip').textContent=[c?.city,c?.state,c?.zip].filter(Boolean).join(', ');
-        document.getElementById('mapLocation').onclick=()=>{const addr=[c?.street_address,c?.city,c?.state,c?.zip].filter(Boolean).join(', ');if(addr)window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`,'_blank');};
-        document.getElementById('cust_referral_code').textContent=activeCustomerReferralCode||'None';
-        document.getElementById('ov_event_name').textContent=o?.event_type_name||'N/A';
-        document.getElementById('ov_event').textContent=dateOnly(o?.event_date);
-        document.getElementById('ov_submitted').textContent=dateOnly(o?.created_at);
-        document.getElementById('ov_pickup').textContent=dateOnly(o?.pickup_delivery_date);
-        document.getElementById('ov_dzns').textContent=o?.cookie_amount_dzns??'0';
-        document.getElementById('ov_flavor').textContent=o?.flavor||'N/A';
-        document.getElementById('ov_dietary').textContent=o?.dietary_option||'None';
-        document.getElementById('ov_notes').textContent=o?.design_notes||'None';
-        document.getElementById('ov_photo').src=o?.design_inspiration_photo||'https://dummyimage.com/320x320/e5e7eb/6b7280.jpg&text=No+photo';
-        document.getElementById('ov_consultation').textContent=o?.consultation_requested?'Yes':'No';
-        document.getElementById('ov_gift_note').textContent=o?.gift_note?'Yes':'No';
-        document.getElementById('ov_gift_text').textContent=o?.gift_note_text||'None';
-        document.getElementById('ov_pd_type').textContent=o?.pickup_delivery_type||'N/A';
-        document.getElementById('ov_discount_code').textContent=o?.discount_code_used?`${o.discount_code_used} (${discountCodeDetails?.isValid?'applied':'invalid'})`:'None';
-        document.getElementById('ov_referral_code').textContent=o?.referral_code_used?`${o.referral_code_used} (${referralCodeDetails?.isValid?'applied':'invalid'})`:'None';
-        document.getElementById('statusSelect').value=o?.status||'Active';
-        renderAdjustments();
-        computeTotals();
-        renderStripePanel();
-    }
-
-    // ====== STRIPE PANEL ======
-    function renderStripePanel(){
-        const o=activeOrder;
-        const panel=document.getElementById('stripePanel');
-        const badge=document.getElementById('paymentBadge');
-        const body=document.getElementById('stripeBody');
-        const status=o?.payment_status||'unpaid';
-        badge.className=`status-badge status-${status.toLowerCase()}`;
-        badge.textContent=status;
-        panel.className=`stripe-panel ${status}`;
-        const total=Number(document.getElementById('t_total').textContent.replace(/[$,]/g,''))||0;
-        const sessionUrl=o?.stripe_payment_link_url||'';
-
-        if(status==='paid'){
-            body.innerHTML=`<p class="text-sm text-green-800">✅ Paid <strong>${money(o?.payment_amount||0)}</strong> on ${o?.paid_at?new Date(o.paid_at).toLocaleDateString():'?'}.</p>`;
-            return;
-        }
-        if(sessionUrl){
-            body.innerHTML=`
-                <p class="text-sm text-gray-700 mb-2">Active checkout for <strong>${money(o?.payment_amount||total)}</strong></p>
-                <input class="stripe-link-input mb-2" value="${sessionUrl}" readonly id="stripeUrlInput"/>
-                <div class="flex gap-2 flex-wrap">
-                    <button id="copyStripeUrl" type="button" class="btn btn-secondary text-xs">📋 Copy Link</button>
-                    <button id="emailStripeUrl" type="button" class="btn btn-secondary text-xs">📧 Email</button>
-                    <button id="smsStripeUrl" type="button" class="btn btn-secondary text-xs">💬 Text</button>
-                    <button id="regenStripe" type="button" class="btn btn-warning text-xs">🔄 Regenerate</button>
-                </div>
-                <p class="text-xs text-gray-500 mt-2">Generated. Send the link to your customer.</p>`;
-            document.getElementById('copyStripeUrl').onclick=()=>{navigator.clipboard.writeText(sessionUrl);document.getElementById('copyStripeUrl').textContent='✓ Copied!';};
-            document.getElementById('emailStripeUrl').onclick=()=>{const subj=encodeURIComponent(`Your Rebel Ribbon order — payment link`);const bdy=encodeURIComponent(`Hi ${activeCustomer?.first_name||''}!\n\nHere is the secure payment link for your custom cookie order:\n${sessionUrl}\n\nThank you!\n— Rebel Ribbon`);window.location.href=`mailto:${activeCustomer?.email||''}?subject=${subj}&body=${bdy}`;};
-            document.getElementById('smsStripeUrl').onclick=()=>{const bdy=encodeURIComponent(`Hi ${activeCustomer?.first_name||''}! Payment link for your Rebel Ribbon order: ${sessionUrl}`);window.location.href=`sms:${(activeCustomer?.phone||'').replace(/\D/g,'')}?body=${bdy}`;};
-            document.getElementById('regenStripe').onclick=()=>createCheckoutSession(true);
-        } else {
-            body.innerHTML=`
-                <p class="text-sm text-gray-700 mb-3">No payment link yet. Total: <strong>${money(total)}</strong></p>
-                <button id="genStripe" type="button" class="btn btn-primary w-full">⚡ Generate Stripe Checkout</button>`;
-            document.getElementById('genStripe').onclick=()=>createCheckoutSession(false);
-        }
-    }
-
-    async function createCheckoutSession(regenerate){
-        const body=document.getElementById('stripeBody');
-        body.innerHTML='<p class="text-gray-500 text-sm">Creating Stripe Checkout session...</p>';
-        // Build line items from the current pricing breakdown
-        const lineItems=[];
-        const ppd=pricing?.price_per_dozen||0;
-        const dz=Number(activeOrder?.cookie_amount_dzns||0);
-        const base=dz*ppd;
-        if(base>0)lineItems.push({label:`Custom Cookies (${dz} dozen)`,amount:base,quantity:1});
-        if(activeOrder?.consultation_requested && pricing?.consultation_fee)lineItems.push({label:'Consultation',amount:pricing.consultation_fee,quantity:1});
-        if(activeOrder?.gift_note && pricing?.gift_note_fee)lineItems.push({label:'Gift Note',amount:pricing.gift_note_fee,quantity:1});
-        for(const a of adjustments){
-            if(a.kind==='fee') lineItems.push({label:a.label,amount:a.amount,quantity:1});
-            else lineItems.push({label:a.label,amount:-Math.abs(a.amount),quantity:1});
-        }
-        if(discountCodeAmount>0) lineItems.push({label:`Discount: ${activeOrder.discount_code_used}`,amount:-discountCodeAmount,quantity:1});
-        if(referralDiscountAmount>0) lineItems.push({label:`Referral: ${activeOrder.referral_code_used}`,amount:-referralDiscountAmount,quantity:1});
-
-        try {
-            const{data:{session}}=await sb.auth.getSession();
-            const res=await fetch(`${SUPABASE_URL}/functions/v1/create-checkout-session`,{
-                method:'POST',
-                headers:{
-                    'Content-Type':'application/json',
-                    'Authorization':`Bearer ${session.access_token}`
-                },
-                body:JSON.stringify({
-                    orderId: activeOrder.id,
-                    lineItems,
-                    customerEmail: activeCustomer?.email||'',
-                    customerName: `${activeCustomer?.first_name||''} ${activeCustomer?.last_name||''}`.trim()
-                })
-            });
-            const result=await res.json();
-            if(!res.ok) throw new Error(result.error||'Failed to create session');
-            // Refresh order to pick up the new URL
-            const{data:fresh}=await sb.from('orders').select('*').eq('id',activeOrder.id).single();
-            activeOrder=fresh;
-            renderStripePanel();
-        } catch(e) {
-            body.innerHTML=`<div class="text-red-600 text-sm p-2 bg-red-50 rounded">❌ ${e.message}</div><button id="genStripe" type="button" class="btn btn-primary w-full mt-2">Try Again</button>`;
-            document.getElementById('genStripe').onclick=()=>createCheckoutSession(false);
-        }
-    }
-
-    async function openOrderManager(orderId){
-        document.body.style.cursor='progress';
-        const[orderResp,pricingData,adjustmentsData]=await Promise.all([
-            sb.from('orders').select('*').eq('id',orderId).single(),
-            fetchPricing(),
-            fetchAdjustments(orderId)
-        ]);
-        if(orderResp.error){alert(orderResp.error.message);document.body.style.cursor='default';return;}
-        activeOrder=orderResp.data; pricing=pricingData; adjustments=adjustmentsData;
-        if(activeOrder.customer_id){const{data}=await sb.from('customers').select('*').eq('id',activeOrder.customer_id).single();activeCustomer=data;}else activeCustomer=null;
-        if(activeOrder.customer_id){const{data}=await sb.from('referral_codes').select('code').eq('associated_customer_id',activeOrder.customer_id).order('created_at',{ascending:false}).limit(1).maybeSingle();activeCustomerReferralCode=data?.code||null;}else activeCustomerReferralCode=null;
-        discountCodeDetails=activeOrder.discount_code_used?await fetchDiscountCodeDetails(activeOrder.discount_code_used,activeCustomer?.email):null;
-        referralCodeDetails=activeOrder.referral_code_used?await fetchReferralCodeDetails(activeOrder.referral_code_used):null;
-        document.body.style.cursor='default';
-        fillDrawer();
-        loadSurveySection(orderId);
-        drawer.showModal();
-    }
-
-    document.getElementById('saveStatus').onclick=async()=>{const s=document.getElementById('statusSelect').value;await sb.from('orders').update({status:s}).eq('id',activeOrder.id);activeOrder.status=s;fillDrawer();loadTable();};
-    document.getElementById('editFields').onclick=()=>{if(activeOrder)openEditor(tables.orders,activeOrder);};
-    document.getElementById('backToOrders').onclick=()=>{drawer.close();};
-    document.getElementById('addAdjustment').onclick=async()=>{const l=document.getElementById('adjLabel').value.trim(),a=Number(document.getElementById('adjAmount').value),k=document.getElementById('adjKind').value;if(!l||!a||a<=0){alert('Enter label and amount');return;}const{data,error}=await sb.from('order_adjustments').insert({order_id:activeOrder.id,label:l,amount:a,kind:k}).select('*').single();if(error){alert(error.message);return;}adjustments.unshift({...data,amount:Number(data.amount||0)});document.getElementById('adjLabel').value='';document.getElementById('adjAmount').value='';renderAdjustments();computeTotals();renderStripePanel();};
-    document.getElementById('btnUploadPhoto').onclick=async()=>{const f=document.getElementById('uploadPhoto').files?.[0];if(!f){alert('Choose file');return;}const path=`${activeOrder.id}/photo_${Date.now()}.${f.name.split('.').pop()}`;const{data,error}=await sb.storage.from('order_uploads').upload(path,f,{upsert:true});if(error){alert(error.message);return;}const{data:pub}=sb.storage.from('order_uploads').getPublicUrl(data.path);await sb.from('orders').update({design_inspiration_photo:pub?.publicUrl}).eq('id',activeOrder.id);activeOrder.design_inspiration_photo=pub?.publicUrl;document.getElementById('ov_photo').src=pub?.publicUrl;document.getElementById('uploadPhoto').value='';};
-    document.getElementById('ov_photo').onclick=function(){if(this.src)window.open(this.src,'_blank');};
-
-    document.getElementById('viewInvoice').onclick=()=>{
-        if(!activeOrder||!activeCustomer){alert('Load order first');return;}
-        const orderId=activeOrder.order_id||formatOrderId(activeOrder.id),total=document.getElementById('t_total').textContent;
-        const items=[{l:`Base (${activeOrder.cookie_amount_dzns||0} dz @ ${document.getElementById('t_price').textContent})`,a:document.getElementById('t_base').textContent}];
-        if(activeOrder.consultation_requested)items.push({l:'Consult',a:document.getElementById('t_consult').textContent});
-        if(activeOrder.gift_note)items.push({l:'Gift fee',a:document.getElementById('t_gift').textContent});
-        adjustments.filter(x=>x.kind==='fee').forEach(x=>items.push({l:x.label,a:money(x.amount)}));
-        if(discountCodeAmount>0)items.push({l:`Discount (${activeOrder.discount_code_used})`,a:'-'+money(discountCodeAmount)});
-        if(referralDiscountAmount>0)items.push({l:`Referral (${activeOrder.referral_code_used})`,a:'-'+money(referralDiscountAmount)});
-        adjustments.filter(x=>x.kind==='discount').forEach(x=>items.push({l:x.label,a:'-'+money(x.amount)}));
-        const html=`<!DOCTYPE html><html><head><title>Invoice #${orderId}</title><style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600&display=swap');*{box-sizing:border-box}body{margin:0;padding:24px;font-family:'Nunito',sans-serif;background:#fdf2f8}.inv{max-width:800px;margin:auto;background:#fff;border-radius:20px;padding:32px;box-shadow:0 10px 40px rgba(190,24,93,.15)}.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}.brand{font-family:'Playfair Display',serif;font-size:28px;text-transform:uppercase}.pill{background:#eff6ff;color:#1d4ed8;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600}hr{border:none;border-top:1px solid #e5e7eb;margin:16px 0}.info{display:flex;justify-content:space-between;font-size:13px;margin-bottom:20px}.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9ca3af;margin-bottom:4px}.val{font-weight:600}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}th{text-align:left;padding:10px;background:#f9fafb;font-weight:600}th:last-child{text-align:right}td{padding:10px;border-bottom:1px solid #f3f4f6}td:last-child{text-align:right}.tot td{border-top:2px solid #d1d5db;background:#fef3c7;font-weight:700}.tot td:last-child{font-size:18px;color:#b91c1c}.ftr{text-align:center;margin-top:20px;font-size:11px;color:#9ca3af}@media print{body{background:#fff;padding:0}.inv{box-shadow:none}}</style></head><body><div class="inv"><div class="hdr"><div><img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" style="height:60px;margin-bottom:8px"><div class="brand">Rebel Ribbon</div></div><div style="text-align:right"><div class="pill">Invoice #${orderId}</div><div style="margin-top:4px;font-size:12px"><strong>Date:</strong> ${new Date().toLocaleDateString()}</div></div></div><hr/><div class="info"><div><div class="lbl">Bill to</div><div class="val">${document.getElementById('cust_name').textContent}</div><div>${document.getElementById('cust_email').textContent}</div><div>${document.getElementById('cust_phone_link').textContent}</div></div><div style="text-align:right"><div class="lbl">From</div><div class="val">Rebel Ribbon</div><div>www.rebelribbon.com</div><div>info@rebelribbon.com</div></div></div><table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>${items.map(i=>`<tr><td>${i.l}</td><td>${i.a}</td></tr>`).join('')}<tr class="tot"><td>Total Due</td><td>${total}</td></tr></tbody></table><div class="ftr">Thank you for supporting handmade custom cookies!</div></div><script>window.onload=function(){window.print()}<\/script></body></html>`;
-        const w=window.open('','_blank','width=900,height=800');
-        w.document.write(html);
-        w.document.close();
-    };
-
-    // HEALTH BANNER
-    async function loadSystemHealth(){
-        try{
-            const{data,error}=await sb.from('system_status').select('*').limit(1).maybeSingle();
-            if(error)throw error;
-            updateHealthBanner(computeHealthStatus(data));
-        }catch(e){
-            console.error('Health check failed:',e);
-            updateHealthBanner({level:'unknown',hours:null,last:null});
-        }
-    }
-    function computeHealthStatus(row){
-        if(!row||!row.last_webhook_received_at)return{level:'red',hours:null,last:null};
-        const last=new Date(row.last_webhook_received_at);
-        const hours=(Date.now()-last.getTime())/3600000;
-        const level=hours<24?'green':hours<72?'yellow':'red';
-        return{level,hours:Math.round(hours),last};
-    }
-    function updateHealthBanner(s){
-        const banner=document.getElementById('health-banner');
-        const dot=document.getElementById('health-webhook-indicator');
-        const txt=document.getElementById('health-webhook-status');
-        const upd=document.getElementById('health-last-update');
-        if(!banner||!dot||!txt)return;
-        if(s.level==='green'){
-            banner.classList.remove('visible','yellow','red');
-            document.body.classList.remove('has-health-warning');
-            return;
-        }
-        banner.classList.add('visible');
-        banner.classList.remove('yellow','red');
-        document.body.classList.add('has-health-warning');
-        if(s.level==='yellow'){banner.classList.add('yellow');dot.style.backgroundColor='#facc15';txt.textContent=`⚠ Stripe webhook delayed (${s.hours}h ago)`;}
-        else if(s.level==='red'){banner.classList.add('red');dot.style.backgroundColor='#ef4444';txt.textContent=s.hours?`🚨 Stripe webhook down (${s.hours}h ago)`:`🚨 Stripe webhook never received`;}
-        else{banner.classList.add('yellow');dot.style.backgroundColor='#9ca3af';txt.textContent='Stripe status: unknown';}
-        if(s.last){
-            const m=Math.floor((Date.now()-s.last.getTime())/60000);
-            upd.textContent=m<1?'Updated: just now':m<60?`Updated: ${m}m ago`:`Updated: ${Math.floor(m/60)}h ago`;
-        }else{upd.textContent='Updated: never';}
-    }
-
     bootstrap();
-    </script>
+};
+$('#signOutBtn').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+
+async function bootstrap() {
+    const { data: { session: s } } = await sb.auth.getSession();
+    if (!s) return;
+    if (!onlyCompanyEmail(s.user?.email)) { await sb.auth.signOut(); return; }
+    session = s;
+    $('#signin').style.display = 'none';
+    $('#app').classList.add('visible');
+    $('#userName').textContent = s.user.email.split('@')[0];
+    $('#userAvatar').textContent = initials(s.user.email);
+    $('#sidebarUser').textContent = s.user.email;
+    wireSidebar();
+    await loadPricing();
+    await goToPage('dashboard');
+    loadHealth(); setInterval(loadHealth, 30000);
+    wireRealtime();
+}
+
+// ============================================================================
+// NAV
+// ============================================================================
+function wireSidebar() {
+    $('#menuBtn').onclick = () => openSidebar();
+    $('#sidebarBackdrop').onclick = () => closeSidebar();
+    $$('.nav-item').forEach(b => b.onclick = () => { goToPage(b.dataset.page); closeSidebar(); });
+}
+function openSidebar() { $('#sidebar').classList.add('open'); $('#sidebarBackdrop').classList.add('visible'); }
+function closeSidebar() { $('#sidebar').classList.remove('open'); $('#sidebarBackdrop').classList.remove('visible'); }
+
+async function goToPage(page) {
+    currentPage = page;
+    $$('.nav-item').forEach(b => b.classList.toggle('active', b.dataset.page === page));
+    const c = $('#content');
+    c.innerHTML = '<div class="center-spinner"><div class="spinner"></div></div>';
+    try {
+        if (page === 'dashboard') await renderDashboard();
+        else if (page === 'surveys') await renderSurveys();
+        else if (page === 'reviews') await renderReviews();
+        else if (page === 'pricing') await renderPricing();
+        else await renderSettingsList(page);
+    } catch (e) {
+        console.error(e);
+        c.innerHTML = `<div class="queue-empty">Error: ${escapeHtml(e.message)}</div>`;
+    }
+}
+
+// ============================================================================
+// DASHBOARD — the card feed
+// ============================================================================
+async function loadPricing() {
+    const { data } = await sb.from('pricing').select('*').limit(1).maybeSingle();
+    pricing = data || {};
+}
+
+async function renderDashboard() {
+    // Load all orders + customers in two queries
+    const { data: orders, error } = await sb.from('orders').select('*').order('created_at', { ascending: false });
+    if (error) throw error;
+    allOrders = orders || [];
+
+    const customerIds = [...new Set(allOrders.map(o => o.customer_id).filter(Boolean))];
+    if (customerIds.length) {
+        const { data: cust } = await sb.from('customers').select('*').in('id', customerIds);
+        customers.clear();
+        (cust || []).forEach(c => customers.set(c.id, c));
+    }
+
+    // Bucketize
+    const buckets = {
+        needsAttention: [],  // active + unpaid (no link generated)
+        awaitingPayment: [], // active + pending (link sent)
+        inProgress: [],      // active + paid
+        completed: [],
+        canceled: []
+    };
+    for (const o of allOrders) {
+        if (o.status === 'Canceled') buckets.canceled.push(o);
+        else if (o.status === 'Completed') buckets.completed.push(o);
+        else if (o.payment_status === 'paid') buckets.inProgress.push(o);
+        else if (o.payment_status === 'pending') buckets.awaitingPayment.push(o);
+        else buckets.needsAttention.push(o);
+    }
+
+    // Filter by search
+    const search = ''; // we'll attach this below
+    const searchFilter = q => o => {
+        if (!q) return true;
+        const c = customers.get(o.customer_id);
+        const hay = [c?.first_name, c?.last_name, c?.email, c?.phone, o.event_type_name, String(o.cookie_amount_dzns)].join(' ').toLowerCase();
+        return hay.includes(q);
+    };
+
+    const c = $('#content');
+    c.innerHTML = '';
+
+    const header = h('div', { class: 'page-header' },
+        h('div', { class: 'page-eyebrow' }, 'Welcome back'),
+        h('h1', { class: 'page-title', html: 'Today\'s <em>orders</em>' }),
+        h('p', { class: 'page-subtitle' }, allOrders.length === 0 ? 'No orders yet — they\'ll appear here.' : `${allOrders.length} order${allOrders.length===1?'':'s'} total · ${buckets.needsAttention.length + buckets.awaitingPayment.length} need attention`)
+    );
+    c.appendChild(header);
+
+    // Search bar
+    const searchBar = h('div', { class: 'toolbar' },
+        h('div', { class: 'search-wrap' },
+            h('span', { html: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>' }),
+            h('input', { type: 'search', class: 'search-input', placeholder: 'Search by name, email, event…', id: 'dashSearch' })
+        )
+    );
+    c.appendChild(searchBar);
+
+    const sectionsHost = h('div', { id: 'sectionsHost' });
+    c.appendChild(sectionsHost);
+
+    function renderSections(q) {
+        sectionsHost.innerHTML = '';
+        const filt = searchFilter(q);
+
+        renderQueueSection(sectionsHost, '🔥 Needs Attention', 'No payment link sent yet', buckets.needsAttention.filter(filt), true);
+        renderQueueSection(sectionsHost, '💸 Awaiting Payment', 'Link sent, waiting for customer', buckets.awaitingPayment.filter(filt), false);
+        renderQueueSection(sectionsHost, '🏭 In Progress', 'Paid · being made', buckets.inProgress.filter(filt), false);
+        renderQueueSection(sectionsHost, '✅ Completed', 'Delivered or fulfilled', buckets.completed.filter(filt), false);
+        if (buckets.canceled.length) renderQueueSection(sectionsHost, '❌ Canceled', '', buckets.canceled.filter(filt), false);
+    }
+    renderSections('');
+    $('#dashSearch').oninput = (e) => renderSections(e.target.value.trim().toLowerCase());
+
+    // Update sidebar counts
+    $('#nc-dashboard').textContent = buckets.needsAttention.length + buckets.awaitingPayment.length;
+    updateOtherCounts();
+}
+
+function renderQueueSection(host, title, description, orders, urgent) {
+    if (!orders.length) return;
+    const sec = h('section', { class: 'queue-section' });
+    sec.appendChild(h('div', { class: 'queue-header' },
+        h('h2', { class: 'queue-title' }, title),
+        h('span', { class: 'queue-count' }, String(orders.length)),
+        description ? h('span', { class: 'queue-description' }, description) : null
+    ));
+    const grid = h('div', { class: 'cards-grid' });
+    for (const o of orders.slice(0, 30)) grid.appendChild(renderOrderCard(o, urgent));
+    sec.appendChild(grid);
+    host.appendChild(sec);
+}
+
+function renderOrderCard(o, urgent) {
+    const cust = customers.get(o.customer_id);
+    const name = cust ? `${cust.first_name || ''} ${cust.last_name || ''}`.trim() : 'Unknown';
+    const eventDate = o.pickup_delivery_date;
+    const days = daysFromNow(eventDate);
+    const dueSoon = days !== null && days <= 7 && days >= 0;
+
+    const card = h('button', {
+        class: `order-card ${urgent || dueSoon ? 'urgent' : ''}`,
+        on: { click: () => openOrderSheet(o.id) }
+    });
+    card.appendChild(h('div', { class: 'order-card-row' },
+        h('div', null,
+            h('div', { class: 'order-customer' }, name),
+            h('div', { class: 'order-meta' }, `${o.cookie_amount_dzns||0} dozen · ${o.flavor || 'Flavor TBD'}`)
+        ),
+        o.event_type_name ? h('span', { class: 'order-event' }, o.event_type_name) : null
+    ));
+    card.appendChild(h('div', { class: 'order-detail-line' },
+        h('span', null, `📅 `, h('strong', null, formatDate(eventDate) || 'No date')),
+        days !== null && days >= 0 ? h('span', { class: dueSoon ? 'pill-due-soon order-status-pill' : '' }, dueSoon ? `${days}d away` : '') : null
+    ));
+    // Status row
+    const statusRow = h('div', { class: 'order-action-strip' });
+    if (o.status === 'Canceled') statusRow.appendChild(h('span', { class: 'order-status-pill pill-canceled' }, 'Canceled'));
+    else if (o.status === 'Completed') statusRow.appendChild(h('span', { class: 'order-status-pill pill-completed' }, 'Completed'));
+    else if (o.payment_status === 'paid') statusRow.appendChild(h('span', { class: 'order-status-pill pill-paid' }, 'Paid · In progress'));
+    else if (o.payment_status === 'pending') statusRow.appendChild(h('span', { class: 'order-status-pill pill-sent' }, 'Payment sent'));
+    else statusRow.appendChild(h('span', { class: 'order-status-pill pill-needs' }, 'Needs payment link'));
+    card.appendChild(statusRow);
+    return card;
+}
+
+// ============================================================================
+// ORDER DETAIL SHEET
+// ============================================================================
+async function openOrderSheet(orderId) {
+    $('#orderSheet').classList.add('open');
+    $('#sheetTitle').textContent = '...';
+    $('#sheetSubtitle').textContent = '';
+    $('#sheetBody').innerHTML = '<div class="center-spinner"><div class="spinner"></div></div>';
+
+    const [orderResp, adjResp] = await Promise.all([
+        sb.from('orders').select('*').eq('id', orderId).single(),
+        sb.from('order_adjustments').select('*').eq('order_id', orderId).order('created_at', { ascending: false })
+    ]);
+    if (orderResp.error) { $('#sheetBody').innerHTML = `<div class="queue-empty">Error: ${orderResp.error.message}</div>`; return; }
+    activeOrder = orderResp.data;
+    adjustments = (adjResp.data || []).map(r => ({...r, amount: Number(r.amount||0)}));
+
+    if (activeOrder.customer_id) {
+        const { data } = await sb.from('customers').select('*').eq('id', activeOrder.customer_id).single();
+        activeCustomer = data;
+    } else activeCustomer = null;
+
+    if (activeOrder.discount_code_used) {
+        const { data } = await sb.from('discount_codes').select('*').eq('code', activeOrder.discount_code_used).maybeSingle();
+        discountDetails = data;
+    } else discountDetails = null;
+    if (activeOrder.referral_code_used) {
+        const { data } = await sb.from('referral_codes').select('*').eq('code', activeOrder.referral_code_used).maybeSingle();
+        referralDetails = data;
+    } else referralDetails = null;
+
+    renderOrderSheet();
+}
+
+function closeOrderSheet() {
+    $('#orderSheet').classList.remove('open');
+    activeOrder = null; activeCustomer = null;
+}
+$('#sheetClose').onclick = closeOrderSheet;
+$('#sheetBackdrop').onclick = closeOrderSheet;
+
+function calculateTotals() {
+    const o = activeOrder;
+    const ppd = Number(pricing?.price_per_dozen||0);
+    const dz = Number(o?.cookie_amount_dzns||0);
+    const base = dz * ppd;
+    const consult = o?.consultation_requested ? Number(pricing?.consultation_fee||0) : 0;
+    const gift = o?.gift_note ? Number(pricing?.gift_note_fee||0) : 0;
+    const feeSum = adjustments.filter(a=>a.kind==='fee').reduce((s,a)=>s+a.amount,0);
+    const discSum = adjustments.filter(a=>a.kind==='discount').reduce((s,a)=>s+a.amount,0);
+    const baseForCodes = base + consult + gift + feeSum;
+
+    let codeDisc = 0, refDisc = 0;
+    if (discountDetails && discountDetails.amount > 0) {
+        const v = Number(discountDetails.amount);
+        codeDisc = discountDetails.type === 'percent' ? baseForCodes * (v/100) : Math.min(v, baseForCodes);
+    }
+    if (referralDetails && referralDetails.referee_discount > 0) {
+        refDisc = baseForCodes * (Number(referralDetails.referee_discount)/100);
+    }
+    const total = Math.max(0, base + consult + gift + feeSum - discSum - codeDisc - refDisc);
+    return { ppd, dz, base, consult, gift, feeSum, discSum, codeDisc, refDisc, total };
+}
+
+function renderOrderSheet() {
+    const o = activeOrder, c = activeCustomer;
+    const t = calculateTotals();
+    const name = c ? `${c.first_name||''} ${c.last_name||''}`.trim() : 'Order';
+    $('#sheetTitle').textContent = name;
+    $('#sheetSubtitle').textContent = `${o.cookie_amount_dzns||0} dozen · ${o.event_type_name||'Event'} · ${formatDate(o.pickup_delivery_date)||'No date'}`;
+
+    const body = $('#sheetBody');
+    body.innerHTML = '';
+
+    // ---- Status switcher
+    body.appendChild(renderStatusSwitcher(o));
+
+    // ---- Stripe action
+    body.appendChild(renderStripePanel(o, c, t));
+
+    // ---- Pricing
+    body.appendChild(renderPricingSection(o, t));
+
+    // ---- Customer
+    body.appendChild(renderCustomerSection(c));
+
+    // ---- Order details
+    body.appendChild(renderOrderDetailsSection(o));
+
+    // ---- Fees & Discounts
+    body.appendChild(renderAdjustmentsSection());
+
+    // ---- Survey
+    body.appendChild(renderSurveySection(o));
+}
+
+function renderStatusSwitcher(o) {
+    const sec = h('div', { class: 'detail-section' });
+    sec.appendChild(h('h3', null, '📌 Order Status'));
+    const sw = h('div', { class: 'status-switcher' });
+    const statuses = ['Active','Completed','Canceled'];
+    for (const s of statuses) {
+        const btn = h('button', {
+            class: o.status === s ? 'active' : '',
+            on: { click: async () => {
+                await sb.from('orders').update({ status: s }).eq('id', o.id);
+                o.status = s;
+                renderOrderSheet();
+                // Refresh dashboard cache silently
+                const idx = allOrders.findIndex(x=>x.id===o.id);
+                if (idx >= 0) allOrders[idx] = {...allOrders[idx], status: s};
+            }}
+        }, s);
+        sw.appendChild(btn);
+    }
+    sec.appendChild(sw);
+    return sec;
+}
+
+function renderStripePanel(o, c, t) {
+    const status = o.payment_status || 'unpaid';
+    const wrap = h('div', { class: `stripe-action ${status}` });
+    wrap.appendChild(h('h3', null,
+        h('span', null, '💳 Payment'),
+        h('span', { class: `order-status-pill pill-${status === 'paid' ? 'paid' : status === 'pending' ? 'sent' : 'needs'}` }, status === 'paid' ? 'Paid' : status === 'pending' ? 'Link Sent' : 'Unpaid')
+    ));
+
+    if (status === 'paid') {
+        wrap.appendChild(h('p', { html: `Paid <strong>${money(o.payment_amount||t.total)}</strong> on ${formatDate(o.paid_at) || '—'}` }));
+    } else if (o.stripe_payment_link_url) {
+        wrap.appendChild(h('p', { html: `Amount: <strong>${money(o.payment_amount||t.total)}</strong>` }));
+        const linkDisp = h('div', { class: 'stripe-link-display' },
+            h('code', null, o.stripe_payment_link_url),
+            h('button', {
+                class: 'btn btn-secondary btn-sm',
+                on: { click: () => { navigator.clipboard.writeText(o.stripe_payment_link_url); }}
+            }, '📋 Copy')
+        );
+        wrap.appendChild(linkDisp);
+        const sendBtns = h('div', { class: 'send-buttons' });
+        if (c?.email) {
+            const subj = encodeURIComponent('Your Rebel Ribbon order — payment link');
+            const bod = encodeURIComponent(`Hi ${c.first_name||''}!\n\nHere is the secure payment link for your custom cookie order:\n\n${o.stripe_payment_link_url}\n\nThanks so much!\n— Rebel Ribbon`);
+            sendBtns.appendChild(h('a', { href: `mailto:${c.email}?subject=${subj}&body=${bod}`, class: 'btn btn-secondary btn-sm' }, '📧 Email'));
+        }
+        if (c?.phone) {
+            const sms = encodeURIComponent(`Hi ${c.first_name||''}! Payment link for your Rebel Ribbon order: ${o.stripe_payment_link_url}`);
+            sendBtns.appendChild(h('a', { href: `sms:${c.phone.replace(/\D/g,'')}?body=${sms}`, class: 'btn btn-secondary btn-sm' }, '💬 Text'));
+        }
+        sendBtns.appendChild(h('button', { class: 'btn btn-secondary btn-sm', on: { click: () => generateCheckout() } }, '🔄 Regen'));
+        sendBtns.appendChild(h('button', { class: 'btn btn-success btn-sm', on: { click: async () => {
+            if (!confirm('Mark as paid manually? This bypasses Stripe.')) return;
+            await sb.from('orders').update({ payment_status: 'paid', paid_at: new Date().toISOString(), payment_amount: t.total }).eq('id', o.id);
+            activeOrder = {...o, payment_status: 'paid', paid_at: new Date().toISOString(), payment_amount: t.total };
+            renderOrderSheet();
+        }}}, '✓ Mark Paid'));
+        wrap.appendChild(sendBtns);
+    } else {
+        wrap.appendChild(h('p', { html: `Total: <strong>${money(t.total)}</strong>` }));
+        wrap.appendChild(h('button', {
+            class: 'btn btn-primary btn-block btn-lg',
+            style: 'margin-top: 0.625rem;',
+            on: { click: () => generateCheckout() }
+        }, '⚡ Generate Stripe Checkout Link'));
+        wrap.appendChild(h('div', { style: 'margin-top: 0.5rem; display: flex; gap: 0.5rem;' },
+            h('button', {
+                class: 'btn btn-secondary btn-sm', style: 'flex: 1;',
+                on: { click: async () => {
+                    if (!confirm('Mark as paid manually? This bypasses Stripe.')) return;
+                    await sb.from('orders').update({ payment_status: 'paid', paid_at: new Date().toISOString(), payment_amount: t.total }).eq('id', o.id);
+                    activeOrder = {...o, payment_status: 'paid', paid_at: new Date().toISOString(), payment_amount: t.total };
+                    renderOrderSheet();
+                }}
+            }, '✓ Already paid (manual)')
+        ));
+    }
+    return wrap;
+}
+
+async function generateCheckout() {
+    if (!activeOrder) return;
+    const t = calculateTotals();
+    const lineItems = [];
+    if (t.base > 0) lineItems.push({ label: `Custom Cookies (${t.dz} dozen)`, amount: t.base, quantity: 1 });
+    if (t.consult > 0) lineItems.push({ label: 'Consultation', amount: t.consult, quantity: 1 });
+    if (t.gift > 0) lineItems.push({ label: 'Gift Note', amount: t.gift, quantity: 1 });
+    for (const a of adjustments) {
+        lineItems.push({ label: a.label, amount: a.kind === 'discount' ? -Math.abs(a.amount) : a.amount, quantity: 1 });
+    }
+    if (t.codeDisc > 0) lineItems.push({ label: `Discount: ${activeOrder.discount_code_used}`, amount: -t.codeDisc, quantity: 1 });
+    if (t.refDisc > 0) lineItems.push({ label: `Referral: ${activeOrder.referral_code_used}`, amount: -t.refDisc, quantity: 1 });
+
+    const stripeBody = document.querySelector('.stripe-action');
+    if (stripeBody) stripeBody.innerHTML = '<div class="center-spinner"><div class="spinner"></div></div>';
+
+    try {
+        const res = await fetch(`${SUPABASE_URL}/functions/v1/create-checkout-session`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+            body: JSON.stringify({
+                orderId: activeOrder.id,
+                lineItems,
+                customerEmail: activeCustomer?.email || '',
+                customerName: `${activeCustomer?.first_name||''} ${activeCustomer?.last_name||''}`.trim()
+            })
+        });
+        const result = await res.json();
+        if (!res.ok) throw new Error(result.error || `Error ${res.status}`);
+        const { data: fresh } = await sb.from('orders').select('*').eq('id', activeOrder.id).single();
+        activeOrder = fresh;
+        renderOrderSheet();
+    } catch (e) {
+        alert(`Stripe error: ${e.message}\n\nIf this says "STRIPE_SECRET_KEY is not configured" — go to Supabase Dashboard → Edge Functions → Secrets and add it.`);
+        renderOrderSheet();
+    }
+}
+
+function renderPricingSection(o, t) {
+    const sec = h('div', { class: 'detail-section' });
+    sec.appendChild(h('h3', null, '💰 Pricing'));
+    const rows = h('div', { class: 'pricing-rows' });
+    const addRow = (label, val, cls='') => rows.appendChild(h('div', { class: `pricing-row ${cls}` }, h('span', null, label), h('span', null, val)));
+    addRow(`${t.dz} dz × ${money(t.ppd)}`, money(t.base));
+    if (t.consult > 0) addRow('Consultation', money(t.consult));
+    if (t.gift > 0) addRow('Gift note', money(t.gift));
+    if (t.feeSum > 0) addRow('Fees', money(t.feeSum), 'fee-row');
+    if (t.codeDisc > 0) addRow(`Discount (${o.discount_code_used})`, '−'+money(t.codeDisc), 'discount-row');
+    if (t.refDisc > 0) addRow(`Referral (${o.referral_code_used})`, '−'+money(t.refDisc), 'discount-row');
+    if (t.discSum > 0) addRow('Other discounts', '−'+money(t.discSum), 'discount-row');
+    addRow('Total', money(t.total), 'total');
+    sec.appendChild(rows);
+    sec.appendChild(h('button', { class: 'btn btn-secondary btn-sm', style: 'margin-top: 0.625rem;', on: { click: () => printInvoice() }}, '📄 Print invoice'));
+    return sec;
+}
+
+function renderCustomerSection(c) {
+    const sec = h('div', { class: 'detail-section' });
+    sec.appendChild(h('h3', null, '👤 Customer'));
+    if (!c) {
+        sec.appendChild(h('p', { class: 'text-ink-soft' }, 'No customer linked'));
+        return sec;
+    }
+    const addRow = (label, val) => sec.appendChild(h('div', { class: 'detail-row' }, h('span', { class: 'detail-label' }, label), h('span', { class: 'detail-value' }, val || '—')));
+    sec.appendChild(h('div', { class: 'detail-row' },
+        h('span', { class: 'detail-label' }, 'Name'),
+        h('span', { class: 'detail-value' }, `${c.first_name||''} ${c.last_name||''}`.trim() || '—')
+    ));
+    if (c.email) sec.appendChild(h('div', { class: 'detail-row' },
+        h('span', { class: 'detail-label' }, 'Email'),
+        h('span', { class: 'detail-value' }, h('a', { href: `mailto:${c.email}` }, c.email))
+    ));
+    if (c.phone) sec.appendChild(h('div', { class: 'detail-row' },
+        h('span', { class: 'detail-label' }, 'Phone'),
+        h('span', { class: 'detail-value' }, h('a', { href: `tel:${c.phone.replace(/\D/g,'')}` }, formatPhone(c.phone)))
+    ));
+    const addr = [c.street_address, c.street_address_cont, [c.city, c.state, c.zip].filter(Boolean).join(', ')].filter(Boolean);
+    if (addr.length) {
+        const addrEl = h('div', { class: 'detail-value' });
+        addr.forEach(line => addrEl.appendChild(h('div', null, line)));
+        addrEl.appendChild(h('a', { href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr.join(' '))}`, target: '_blank', style: 'font-size: 0.75rem;' }, '📍 View on map'));
+        sec.appendChild(h('div', { class: 'detail-row' },
+            h('span', { class: 'detail-label' }, 'Address'),
+            addrEl
+        ));
+    }
+    return sec;
+}
+
+function renderOrderDetailsSection(o) {
+    const sec = h('div', { class: 'detail-section' });
+    sec.appendChild(h('h3', null, '📝 Order Details'));
+    const add = (label, val) => sec.appendChild(h('div', { class: 'detail-row' },
+        h('span', { class: 'detail-label' }, label),
+        h('span', { class: 'detail-value' }, val || '—')
+    ));
+    add('Submitted', formatDate(o.created_at));
+    add('Event date', formatDate(o.event_date));
+    add('Pickup / Delivery', `${formatDate(o.pickup_delivery_date)} · ${o.pickup_delivery_type||'—'}`);
+    add('Flavor', o.flavor);
+    add('Dietary', o.dietary_option);
+    if (o.consultation_requested) add('Consultation', 'Yes');
+    if (o.gift_note) {
+        add('Gift note', 'Yes');
+        if (o.gift_note_text) add('Gift message', o.gift_note_text);
+    }
+    if (o.design_notes) {
+        sec.appendChild(h('div', { class: 'detail-row', style: 'flex-direction: column; align-items: flex-start;' },
+            h('span', { class: 'detail-label' }, 'Design notes'),
+            h('div', { class: 'detail-value', style: 'background: var(--pink-50); padding: 0.5rem 0.75rem; border-radius: 8px; margin-top: 0.25rem; width: 100%;' }, o.design_notes)
+        ));
+    }
+    if (o.design_inspiration_photo) {
+        sec.appendChild(h('div', { class: 'detail-row', style: 'flex-direction: column; align-items: flex-start;' },
+            h('span', { class: 'detail-label' }, 'Inspiration'),
+            h('a', { href: o.design_inspiration_photo, target: '_blank' },
+                h('img', { src: o.design_inspiration_photo, style: 'max-width: 200px; max-height: 200px; border-radius: 8px; margin-top: 0.375rem; border: 1px solid var(--line);' })
+            )
+        ));
+    }
+    return sec;
+}
+
+function renderAdjustmentsSection() {
+    const sec = h('div', { class: 'detail-section' });
+    sec.appendChild(h('h3', null, '➕ Fees & Discounts'));
+    const form = h('div', { class: 'adj-form' });
+    const labelI = h('input', { type: 'text', placeholder: 'Label (e.g. Rush)' });
+    const amtI = h('input', { type: 'number', step: '0.01', placeholder: '$' });
+    const kindI = h('select', null,
+        h('option', { value: 'fee' }, 'Fee'),
+        h('option', { value: 'discount' }, 'Disc')
+    );
+    const addBtn = h('button', {
+        class: 'btn btn-primary btn-sm adj-add-btn',
+        on: { click: async () => {
+            const label = labelI.value.trim(); const amount = Number(amtI.value);
+            if (!label || !amount || amount <= 0) return alert('Need label + positive amount');
+            const { data, error } = await sb.from('order_adjustments').insert({
+                order_id: activeOrder.id, label, amount, kind: kindI.value
+            }).select('*').single();
+            if (error) return alert(error.message);
+            adjustments.unshift({...data, amount: Number(data.amount)});
+            renderOrderSheet();
+        }}
+    }, 'Add');
+    form.append(labelI, amtI, kindI, addBtn);
+    sec.appendChild(form);
+    const list = h('div', { class: 'adj-list' });
+    if (!adjustments.length) list.appendChild(h('p', { class: 'text-ink-soft', style: 'text-align: center; padding: 0.625rem; font-size: 0.8125rem;' }, 'No adjustments'));
+    for (const a of adjustments) {
+        list.appendChild(h('div', { class: 'adj-item' },
+            h('span', { class: 'adj-item-label' }, a.label),
+            h('span', { class: `adj-item-amount ${a.kind}` }, (a.kind==='discount'?'−':'')+money(a.amount)),
+            h('button', { class: 'adj-item-remove', on: { click: async () => {
+                if (!confirm('Remove?')) return;
+                await sb.from('order_adjustments').delete().eq('id', a.id);
+                adjustments = adjustments.filter(x=>x.id!==a.id);
+                renderOrderSheet();
+            }}}, '×')
+        ));
+    }
+    sec.appendChild(list);
+    return sec;
+}
+
+function renderSurveySection(o) {
+    const sec = h('div', { class: 'detail-section' });
+    sec.appendChild(h('h3', null, '⭐ Customer Survey'));
+    const slot = h('div', null, h('div', { class: 'center-spinner' }, h('div', { class: 'spinner' })));
+    sec.appendChild(slot);
+    sb.from('survey_tokens').select('*').eq('order_id', o.id).order('created_at', { ascending: false }).limit(1).maybeSingle()
+        .then(({ data: tok }) => {
+            slot.innerHTML = '';
+            if (!tok) {
+                slot.appendChild(h('div', { class: 'survey-status none' }, 'No survey sent yet.'));
+                slot.appendChild(h('button', {
+                    class: 'btn btn-primary btn-block btn-sm',
+                    on: { click: () => generateSurveyToken(o.id, slot) }
+                }, '📝 Generate Survey Link'));
+                return;
+            }
+            const url = `${SURVEY_BASE}?token=${tok.token}`;
+            const expired = tok.expires_at && new Date(tok.expires_at) < new Date();
+            const used = tok.used;
+            const status = used ? 'completed' : expired ? 'expired' : 'active';
+            slot.appendChild(h('div', { class: `survey-status ${status}` },
+                used ? `✅ Completed ${tok.used_at?formatDate(tok.used_at):''}` :
+                expired ? `⚠ Expired ${formatDate(tok.expires_at)}` :
+                `📨 Active · expires ${formatDate(tok.expires_at)}`
+            ));
+            if (!used) {
+                slot.appendChild(h('div', { class: 'stripe-link-display' },
+                    h('code', null, url),
+                    h('button', {
+                        class: 'btn btn-secondary btn-sm',
+                        on: { click: () => navigator.clipboard.writeText(url) }
+                    }, '📋')
+                ));
+                if (expired) slot.appendChild(h('button', {
+                    class: 'btn btn-secondary btn-sm btn-block',
+                    on: { click: () => generateSurveyToken(o.id, slot) }
+                }, '🔄 Regenerate'));
+            }
+        });
+    return sec;
+}
+
+async function generateSurveyToken(orderId, slot) {
+    slot.innerHTML = '<div class="center-spinner"><div class="spinner"></div></div>';
+    const bytes = new Uint8Array(24); crypto.getRandomValues(bytes);
+    const token = btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
+    const exp = new Date(); exp.setDate(exp.getDate()+30);
+    const { error } = await sb.from('survey_tokens').insert({ token, order_id: orderId, expires_at: exp.toISOString() });
+    if (error) { slot.innerHTML = `<div class="survey-status expired">${error.message}</div>`; return; }
+    renderOrderSheet();
+}
+
+function printInvoice() {
+    if (!activeOrder || !activeCustomer) return alert('Customer info needed');
+    const t = calculateTotals();
+    const items = [];
+    if (t.base > 0) items.push([`${t.dz} dozen × ${money(t.ppd)}`, money(t.base)]);
+    if (t.consult > 0) items.push(['Consultation', money(t.consult)]);
+    if (t.gift > 0) items.push(['Gift note', money(t.gift)]);
+    adjustments.filter(a=>a.kind==='fee').forEach(a=>items.push([a.label, money(a.amount)]));
+    if (t.codeDisc > 0) items.push([`Discount (${activeOrder.discount_code_used})`, '−'+money(t.codeDisc)]);
+    if (t.refDisc > 0) items.push([`Referral (${activeOrder.referral_code_used})`, '−'+money(t.refDisc)]);
+    adjustments.filter(a=>a.kind==='discount').forEach(a=>items.push([a.label, '−'+money(a.amount)]));
+    const c = activeCustomer;
+    const orderId = String(activeOrder.id).slice(0,8).toUpperCase();
+    const html = `<!doctype html><html><head><title>Invoice ${orderId}</title>
+<style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;700&family=Inter:wght@400;500;600&display=swap');
+*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;padding:40px;background:#fffbf5;color:#1a0d12}
+.inv{max-width:680px;margin:auto;background:white;border-radius:24px;padding:48px;box-shadow:0 20px 60px -20px rgba(131,24,67,.15)}
+.hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:32px;padding-bottom:24px;border-bottom:1px solid rgba(131,24,67,.1)}
+.brand{font-family:'Playfair Display',serif;font-size:28px;color:#831843;font-weight:500}.brand em{font-style:italic;color:#db2777}
+.pill{background:#fdf2f8;color:#be185d;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+.parties{display:flex;justify-content:space-between;margin-bottom:32px;font-size:14px}
+.lbl{font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#6b4c54;margin-bottom:6px;font-weight:600}
+table{width:100%;border-collapse:collapse;margin-bottom:24px}td{padding:12px 0;font-size:14px;border-bottom:1px solid rgba(131,24,67,.06)}td:last-child{text-align:right}
+.tot td{font-family:'Playfair Display',serif;font-size:20px;color:#831843;font-weight:700;border-bottom:none;border-top:2px solid #be185d;padding-top:16px}
+.ftr{text-align:center;font-size:11px;color:#6b4c54;margin-top:32px;font-style:italic}
+@media print{body{background:white;padding:0}.inv{box-shadow:none;border-radius:0}}</style></head><body>
+<div class="inv"><div class="hd"><div><div class="brand">Rebel <em>Ribbon</em></div><div style="font-size:11px;color:#6b4c54;margin-top:4px">Custom Cookies · San Antonio</div></div>
+<div style="text-align:right"><div class="pill">Invoice ${orderId}</div><div style="margin-top:8px;font-size:12px;color:#6b4c54">${new Date().toLocaleDateString()}</div></div></div>
+<div class="parties"><div><div class="lbl">Bill to</div><div style="font-weight:600;font-size:15px">${c.first_name||''} ${c.last_name||''}</div><div style="color:#6b4c54">${c.email||''}</div><div style="color:#6b4c54">${formatPhone(c.phone)||''}</div></div>
+<div style="text-align:right"><div class="lbl">From</div><div style="font-weight:600;font-size:15px">Rebel Ribbon</div><div style="color:#6b4c54">rebelribbon.com</div><div style="color:#6b4c54">info@rebelribbon.com</div></div></div>
+<table><tbody>${items.map(([l,a])=>`<tr><td>${l}</td><td>${a}</td></tr>`).join('')}<tr class="tot"><td>Total Due</td><td>${money(t.total)}</td></tr></tbody></table>
+<div class="ftr">Thank you for ordering from two sisters in San Antonio.</div></div>
+<script>window.onload=()=>window.print()<\/script></body></html>`;
+    const w = window.open('', '_blank', 'width=900,height=900');
+    w.document.write(html); w.document.close();
+}
+
+// ============================================================================
+// SURVEYS PAGE
+// ============================================================================
+async function renderSurveys() {
+    const c = $('#content');
+    c.innerHTML = '';
+    c.appendChild(h('div', { class: 'page-header' },
+        h('div', { class: 'page-eyebrow' }, 'Customer voices'),
+        h('h1', { class: 'page-title', html: 'Surveys' })
+    ));
+    const { data: surveys } = await sb.from('surveys').select('*').order('created_at', { ascending: false });
+    if (!surveys?.length) {
+        c.appendChild(h('div', { class: 'queue-empty' }, h('span', { class: 'empty-emoji' }, '📋'), 'No survey responses yet.'));
+        return;
+    }
+    const list = h('div', { class: 'cards-grid' });
+    const custIds = [...new Set(surveys.map(s=>s.customer_id).filter(Boolean))];
+    let custMap = new Map();
+    if (custIds.length) {
+        const { data } = await sb.from('customers').select('id,first_name,last_name').in('id', custIds);
+        (data||[]).forEach(x=>custMap.set(x.id,x));
+    }
+    for (const s of surveys) {
+        const cu = custMap.get(s.customer_id);
+        const card = h('div', { class: 'order-card', style: 'cursor: default;' },
+            h('div', { class: 'order-card-row' },
+                h('div', null,
+                    h('div', { class: 'order-customer' }, cu ? `${cu.first_name||''} ${cu.last_name||''}`.trim() : 'Anonymous'),
+                    h('div', { class: 'order-meta' }, formatDate(s.created_at))
+                )
+            ),
+            h('div', { class: 'detail-row' },
+                h('span', { class: 'detail-label' }, 'Cookies'),
+                h('span', { class: 'review-stars' }, '★'.repeat(s.cookies_stars||0)+'☆'.repeat(5-(s.cookies_stars||0)))
+            ),
+            h('div', { class: 'detail-row' },
+                h('span', { class: 'detail-label' }, 'Service'),
+                h('span', { class: 'review-stars' }, '★'.repeat(s.service_stars||0)+'☆'.repeat(5-(s.service_stars||0)))
+            ),
+            s.website_review ? h('p', { class: 'review-text' }, `"${s.website_review}"`) : null
+        );
+        list.appendChild(card);
+    }
+    c.appendChild(list);
+}
+
+// ============================================================================
+// REVIEWS PAGE (with moderation)
+// ============================================================================
+async function renderReviews() {
+    const c = $('#content');
+    c.innerHTML = '';
+    c.appendChild(h('div', { class: 'page-header' },
+        h('div', { class: 'page-eyebrow' }, 'Public testimonials'),
+        h('h1', { class: 'page-title', html: 'Reviews <em>moderation</em>' }),
+        h('p', { class: 'page-subtitle' }, 'Approve customer reviews before they appear on rebelribbon.com')
+    ));
+    const counts = await Promise.all([
+        sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+        sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+        sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'rejected')
+    ]);
+    const tabsBar = h('div', { class: 'review-tabs-bar' });
+    const tabs = [['pending', '🔔 Pending', counts[0].count||0], ['approved', '✅ Approved', counts[1].count||0], ['rejected', '❌ Rejected', counts[2].count||0]];
+    tabs.forEach(([key,label,n]) => {
+        tabsBar.appendChild(h('button', {
+            class: 'review-tab-btn' + (activeReviewTab === key ? ' active' : ''),
+            on: { click: () => { activeReviewTab = key; renderReviews(); } }
+        }, label, h('span', { class: 'count' }, `(${n})`)));
+    });
+    c.appendChild(tabsBar);
+    const { data: reviews } = await sb.from('website_reviews').select('*').eq('status', activeReviewTab).order('created_at', { ascending: false });
+    if (!reviews?.length) {
+        c.appendChild(h('div', { class: 'queue-empty' }, h('span', { class: 'empty-emoji' }, '⭐'), `No ${activeReviewTab} reviews`));
+        return;
+    }
+    const list = h('div', null);
+    for (const r of reviews) {
+        const card = h('div', { class: 'review-card' });
+        card.appendChild(h('div', { class: 'review-card-head' },
+            h('div', null,
+                h('div', { class: 'review-customer' }, escapeHtml(r.customer_name || 'Anonymous')),
+                h('div', { class: 'review-stars' }, '★'.repeat(r.stars||5)+'☆'.repeat(5-(r.stars||5)))
+            ),
+            h('span', { class: `order-status-pill pill-${r.status==='approved'?'paid':r.status==='rejected'?'canceled':'needs'}` }, r.status)
+        ));
+        card.appendChild(h('p', { class: 'review-text' }, `"${escapeHtml(r.review_text)}"`));
+        card.appendChild(h('div', { class: 'review-date' }, formatDate(r.created_at)));
+        const actions = h('div', { class: 'review-actions-row' });
+        if (activeReviewTab === 'pending') {
+            actions.appendChild(h('button', { class: 'btn btn-success btn-sm', on: { click: () => updateReview(r.id, 'approved') }}, '✓ Approve'));
+            actions.appendChild(h('button', { class: 'btn btn-danger btn-sm', on: { click: () => updateReview(r.id, 'rejected') }}, '✕ Reject'));
+        } else if (activeReviewTab === 'approved') {
+            actions.appendChild(h('button', { class: 'btn btn-secondary btn-sm', on: { click: () => { navigator.clipboard.writeText(`"${r.review_text}"\n— ${r.customer_name}`); }}}, '📋 Copy'));
+            actions.appendChild(h('button', { class: 'btn btn-ghost btn-sm', on: { click: () => updateReview(r.id, 'pending') }}, 'Unpublish'));
+        } else {
+            actions.appendChild(h('button', { class: 'btn btn-secondary btn-sm', on: { click: () => updateReview(r.id, 'pending') }}, 'Restore'));
+            actions.appendChild(h('button', { class: 'btn btn-danger btn-sm', on: { click: async () => {
+                if (!confirm('Permanently delete?')) return;
+                await sb.from('website_reviews').delete().eq('id', r.id); renderReviews();
+            }}}, '🗑'));
+        }
+        card.appendChild(actions);
+        list.appendChild(card);
+    }
+    c.appendChild(list);
+}
+
+async function updateReview(id, status) {
+    const u = { status };
+    if (status === 'approved') { u.approved_at = new Date().toISOString(); u.approved_by = session.user.email; }
+    await sb.from('website_reviews').update(u).eq('id', id);
+    renderReviews();
+}
+
+// ============================================================================
+// SETTINGS (generic list pages)
+// ============================================================================
+const SETTINGS_CONFIG = {
+    discount_codes: {
+        title: 'Discount Codes', table: 'discount_codes',
+        emoji: '🎟️',
+        eyebrow: 'Save the day',
+        primaryKey: 'code',
+        fields: [
+            { key: 'code', label: 'Code', type: 'text', required: true, transform: v => v?.toUpperCase() },
+            { key: 'type', label: 'Type', type: 'select', options: ['percent','fixed'], required: true },
+            { key: 'amount', label: 'Amount', type: 'number', step: '0.01', required: true },
+            { key: 'uses_allowed', label: 'Uses allowed (blank = unlimited)', type: 'number' },
+            { key: 'email_allowed', label: 'Customer email (blank = public)', type: 'email' },
+            { key: 'good_through_date', label: 'Expires', type: 'date' }
+        ],
+        renderRow: (row) => `<strong>${row.code}</strong>${row.amount?` · ${row.type==='percent'?row.amount+'%':'$'+row.amount} off`:''}${row.email_allowed?' · '+row.email_allowed:''}${row.good_through_date?' · exp '+formatDate(row.good_through_date):''}`
+    },
+    referral_codes: {
+        title: 'Referral Codes', table: 'referral_codes',
+        emoji: '🔗',
+        eyebrow: 'Word of mouth',
+        primaryKey: 'code',
+        fields: [
+            { key: 'code', label: 'Code', type: 'text', required: true, transform: v => v?.toUpperCase() },
+            { key: 'associated_customer_id', label: 'Customer', type: 'customer' },
+            { key: 'referrer_discount', label: 'Referrer discount %', type: 'number', step: '0.01' },
+            { key: 'referee_discount', label: 'Referee discount %', type: 'number', step: '0.01' },
+            { key: 'good_through_date', label: 'Expires', type: 'date' }
+        ],
+        renderRow: (row) => `<strong>${row.code}</strong>`
+    },
+    flavors: {
+        title: 'Flavors & Dietary', table: 'flavors',
+        emoji: '🍪',
+        eyebrow: 'Menu options',
+        primaryKey: 'name',
+        fields: [{ key: 'name', label: 'Name', type: 'text', required: true }],
+        renderRow: (row) => row.name
+    },
+    dietary_options: {
+        title: 'Dietary Options', table: 'dietary_options',
+        emoji: '🌱',
+        eyebrow: 'Accommodations',
+        primaryKey: 'name',
+        fields: [{ key: 'name', label: 'Name', type: 'text', required: true }],
+        renderRow: (row) => row.name
+    },
+    costs: {
+        title: 'Costs', table: 'costs',
+        emoji: '📒',
+        eyebrow: 'Expenses log',
+        primaryKey: 'item_name',
+        fields: [
+            { key: 'cost_date', label: 'Date', type: 'date' },
+            { key: 'item_name', label: 'Item', type: 'text', required: true },
+            { key: 'amount', label: 'Amount', type: 'number', step: '0.01', required: true }
+        ],
+        renderRow: (row) => `<strong>${row.item_name}</strong> · ${money(row.amount)} · ${formatDate(row.cost_date)}`
+    }
+};
+
+async function renderSettingsList(key) {
+    const cfg = SETTINGS_CONFIG[key];
+    if (!cfg) return;
+    const c = $('#content');
+    c.innerHTML = '';
+    const header = h('div', { class: 'page-header' });
+    header.appendChild(h('div', { class: 'page-eyebrow' }, cfg.eyebrow));
+    header.appendChild(h('h1', { class: 'page-title' }, cfg.title));
+    c.appendChild(header);
+
+    const toolbar = h('div', { class: 'toolbar' },
+        h('button', { class: 'btn btn-primary', on: { click: () => openEditor(cfg, null) }}, '+ Add new')
+    );
+    c.appendChild(toolbar);
+
+    const { data: rows } = await sb.from(cfg.table).select('*').order('created_at', { ascending: false });
+    if (!rows?.length) {
+        c.appendChild(h('div', { class: 'queue-empty' }, h('span', { class: 'empty-emoji' }, cfg.emoji), 'Nothing yet.'));
+        return;
+    }
+    const list = h('div', { class: 'settings-list' });
+    for (const r of rows) {
+        const row = h('div', { class: 'settings-row' });
+        row.appendChild(h('div', { class: 'settings-row-main' }, h('div', { class: 'settings-row-label', html: cfg.renderRow(r) })));
+        row.appendChild(h('div', { class: 'settings-row-actions' },
+            h('button', { class: 'btn btn-secondary btn-sm', on: { click: () => openEditor(cfg, r) }}, 'Edit')
+        ));
+        list.appendChild(row);
+    }
+    c.appendChild(list);
+}
+
+async function renderPricing() {
+    const c = $('#content');
+    c.innerHTML = '';
+    c.appendChild(h('div', { class: 'page-header' },
+        h('div', { class: 'page-eyebrow' }, 'Set the rates'),
+        h('h1', { class: 'page-title' }, 'Pricing')
+    ));
+    const { data } = await sb.from('pricing').select('*').limit(1);
+    if (!data?.length) return;
+    const p = data[0];
+    const list = h('div', { class: 'settings-list' });
+    const items = [
+        ['price_per_dozen', 'Price per dozen', 0.01],
+        ['delivery_fee', 'Delivery fee', 0.01],
+        ['consultation_fee', 'Consultation fee', 0.01],
+        ['gift_note_fee', 'Gift note fee', 0.01],
+        ['rush_fee', 'Rush fee', 0.01]
+    ];
+    for (const [key, label, step] of items) {
+        const row = h('div', { class: 'settings-row' });
+        row.appendChild(h('div', { class: 'settings-row-main' },
+            h('div', { class: 'settings-row-label' }, label),
+            h('div', { class: 'settings-row-meta' }, money(p[key]))
+        ));
+        row.appendChild(h('button', { class: 'btn btn-secondary btn-sm', on: { click: () => openEditor({
+            title: label, table: 'pricing', primaryKey: key,
+            fields: [{ key, label, type: 'number', step: String(step), required: true }]
+        }, { id: p.id, [key]: p[key] }) }}, 'Edit'));
+        list.appendChild(row);
+    }
+    c.appendChild(list);
+}
+
+// ============================================================================
+// EDITOR DIALOG
+// ============================================================================
+$('#editorClose').onclick = () => $('#editor').classList.remove('open');
+$('#editorCancel').onclick = () => $('#editor').classList.remove('open');
+async function openEditor(cfg, row) {
+    $('#editorTitle').textContent = row ? `Edit ${cfg.title}` : `New ${cfg.title}`;
+    const body = $('#editorBody');
+    body.innerHTML = '';
+    for (const f of cfg.fields) {
+        const wrap = h('div', { class: 'field' });
+        wrap.appendChild(h('label', { for: `fld_${f.key}` }, f.label));
+        let input;
+        if (f.type === 'textarea') input = h('textarea', { id: `fld_${f.key}`, rows: 3 });
+        else if (f.type === 'select') {
+            input = h('select', { id: `fld_${f.key}` });
+            for (const o of f.options) input.appendChild(h('option', { value: o }, o));
+        } else if (f.type === 'customer') {
+            input = h('select', { id: `fld_${f.key}` });
+            input.appendChild(h('option', { value: '' }, '— Select customer —'));
+            const { data } = await sb.from('customers').select('id,first_name,last_name').limit(1000);
+            (data||[]).forEach(c => input.appendChild(h('option', { value: c.id }, `${c.first_name} ${c.last_name}`)));
+        } else {
+            input = h('input', { id: `fld_${f.key}`, type: f.type, step: f.step });
+        }
+        if (row && row[f.key] != null) {
+            if (f.type === 'date') input.value = dateOnly(row[f.key]);
+            else input.value = row[f.key];
+        }
+        wrap.appendChild(input);
+        body.appendChild(wrap);
+    }
+    $('#editorDelete').classList.toggle('hidden', !row || cfg.table === 'pricing');
+    $('#editorDelete').onclick = async () => {
+        if (!confirm('Delete?')) return;
+        await sb.from(cfg.table).delete().eq('id', row.id);
+        $('#editor').classList.remove('open');
+        goToPage(currentPage);
+    };
+    $('#editorSave').onclick = async () => {
+        const payload = {};
+        for (const f of cfg.fields) {
+            const el = document.getElementById(`fld_${f.key}`);
+            let v = el.value;
+            if (f.transform) v = f.transform(v);
+            if (v === '' || v === null) v = null;
+            else if (f.type === 'number' && v !== null) v = Number(v);
+            payload[f.key] = v;
+        }
+        const result = row && row.id
+            ? await sb.from(cfg.table).update(payload).eq('id', row.id).select('*').single()
+            : await sb.from(cfg.table).insert(payload).select('*').single();
+        if (result.error) return alert(result.error.message);
+        $('#editor').classList.remove('open');
+        goToPage(currentPage);
+    };
+    $('#editor').classList.add('open');
+}
+
+// ============================================================================
+// HEALTH BANNER + REALTIME + COUNTS
+// ============================================================================
+async function loadHealth() {
+    try {
+        const { data } = await sb.from('system_status').select('*').limit(1).maybeSingle();
+        const banner = $('#health-banner');
+        if (!data || !data.last_webhook_received_at) {
+            banner.classList.remove('visible'); return;
+        }
+        const hours = (Date.now() - new Date(data.last_webhook_received_at).getTime()) / 3600000;
+        if (hours < 24) { banner.classList.remove('visible', 'red'); return; }
+        banner.classList.add('visible');
+        if (hours >= 72) { banner.classList.add('red'); $('#healthText').textContent = `Stripe webhook down — ${Math.round(hours)}h since last event`; }
+        else { banner.classList.remove('red'); $('#healthText').textContent = `Stripe webhook delayed — ${Math.round(hours)}h since last event`; }
+    } catch {}
+}
+
+async function updateOtherCounts() {
+    try {
+        const [su, rev] = await Promise.all([
+            sb.from('surveys').select('id', { count: 'exact', head: true }),
+            sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'pending')
+        ]);
+        $('#nc-surveys').textContent = su.count || 0;
+        $('#nc-reviews').textContent = rev.count || 0;
+    } catch {}
+}
+
+function wireRealtime() {
+    sb.channel('orders-ch').on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, () => {
+        if (currentPage === 'dashboard') renderDashboard();
+    }).subscribe();
+    sb.channel('reviews-ch').on('postgres_changes', { event: '*', schema: 'public', table: 'website_reviews' }, () => {
+        if (currentPage === 'reviews') renderReviews();
+        updateOtherCounts();
+    }).subscribe();
+}
+
+// Boot
+bootstrap();
+</script>
 </body>
 </html>
