@@ -5,10 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gallery | Rebel Ribbon Custom Cookies San Antonio</title>
   <meta name="description" content="Browse our gallery of custom decorated cookies. From weddings to birthdays, see our edible art handmade in San Antonio.">
-  
+  <link rel="canonical" href="https://rebelribbon.com/gallery.html">
+  <link rel="icon" type="image/png" href="Bowtrans.png">
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Rebel Ribbon">
+  <meta property="og:title" content="Gallery | Rebel Ribbon Custom Cookies">
+  <meta property="og:description" content="A peek at our favorite custom decorated cookie designs, handmade in San Antonio.">
+  <meta property="og:url" content="https://rebelribbon.com/gallery.html">
+  <meta property="og:image" content="https://rebelribbon.com/sisters.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&amp;family=Nunito:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   
   <style>
     :root {
@@ -175,7 +187,51 @@
 
     /* Main Gallery Section */
     .gallery-section { padding: 4rem 0 6rem; background: var(--white); }
-    .instagram-wrapper { background: var(--pink-soft); padding: 2.5rem; border-radius: 32px; min-height: 500px; box-shadow: 0 10px 40px rgba(93, 78, 78, 0.04); }
+
+    /* Tag filters */
+    .filters { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; margin-bottom: 2.5rem; }
+    .filter-chip {
+      background: var(--pink-soft); border: 1.5px solid var(--pink-light); color: var(--brown-light);
+      padding: 0.45rem 1.1rem; border-radius: 50px; font-family: inherit; font-size: 0.9rem; font-weight: 600;
+      cursor: pointer; transition: all 0.2s;
+    }
+    .filter-chip:hover { border-color: var(--pink); color: var(--brown); }
+    .filter-chip.active { background: var(--pink); border-color: var(--pink); color: var(--brown); }
+
+    /* Masonry-ish responsive grid */
+    .gallery-grid { columns: 3 260px; column-gap: 1rem; }
+    .g-item {
+      break-inside: avoid; margin-bottom: 1rem; border-radius: 18px; overflow: hidden; position: relative;
+      cursor: zoom-in; background: var(--pink-soft); box-shadow: 0 6px 22px rgba(93, 78, 78, 0.07);
+      transition: transform 0.25s ease, box-shadow 0.25s ease; display: block;
+    }
+    .g-item:hover { transform: translateY(-4px); box-shadow: 0 14px 34px rgba(93, 78, 78, 0.14); }
+    .g-item img { width: 100%; height: auto; display: block; }
+    .g-item figcaption {
+      position: absolute; left: 0; right: 0; bottom: 0; padding: 1.2rem 0.9rem 0.7rem;
+      color: #fff; font-size: 0.9rem; font-weight: 600;
+      background: linear-gradient(to top, rgba(93,78,78,0.75), transparent);
+      opacity: 0; transition: opacity 0.25s ease;
+    }
+    .g-item:hover figcaption, .g-item:focus-visible figcaption { opacity: 1; }
+
+    .gallery-state { text-align: center; padding: 3rem 1rem; color: var(--brown-light); }
+    .gallery-state .btn { margin-top: 1.25rem; }
+    .skeleton { columns: 3 260px; column-gap: 1rem; }
+    .skeleton .sk { break-inside: avoid; margin-bottom: 1rem; border-radius: 18px; background: linear-gradient(110deg, var(--pink-soft) 30%, var(--pink-light) 50%, var(--pink-soft) 70%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    /* Lightbox */
+    .lightbox { position: fixed; inset: 0; z-index: 1000; background: rgba(40,30,30,0.92); display: none; align-items: center; justify-content: center; padding: 2rem; }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 90vw; max-height: 82vh; border-radius: 12px; box-shadow: 0 20px 60px rgba(0,0,0,0.5); }
+    .lb-cap { position: absolute; bottom: 1.5rem; left: 0; right: 0; text-align: center; color: #fff; font-size: 1rem; padding: 0 1rem; }
+    .lb-close, .lb-nav { position: absolute; background: rgba(255,255,255,0.15); color: #fff; border: none; cursor: pointer; border-radius: 50%; width: 48px; height: 48px; font-size: 1.6rem; display: flex; align-items: center; justify-content: center; transition: background 0.2s; }
+    .lb-close:hover, .lb-nav:hover { background: rgba(255,255,255,0.3); }
+    .lb-close { top: 1.2rem; right: 1.2rem; }
+    .lb-nav.prev { left: 1.2rem; top: 50%; transform: translateY(-50%); }
+    .lb-nav.next { right: 1.2rem; top: 50%; transform: translateY(-50%); }
+    @media (max-width: 600px) { .lb-nav { width: 40px; height: 40px; } }
 
     /* Footer */
     footer { background: var(--cream); padding: 4rem 0 2rem; border-top: 1px solid var(--pink-light); }
@@ -233,12 +289,32 @@
 
   <section class="gallery-section">
     <div class="container">
-      <div class="instagram-wrapper">
-        <script src="https://static.elfsight.com/platform/platform.js" async></script>
-        <div class="elfsight-app-8c8d7c3b-2d79-4370-a4ec-ed7ae38f08bc" data-elfsight-app-lazy></div>
+      <div id="filters" class="filters"></div>
+      <div id="galleryGrid" class="gallery-grid"></div>
+      <div id="skeleton" class="skeleton">
+        <div class="sk" style="height:300px"></div>
+        <div class="sk" style="height:240px"></div>
+        <div class="sk" style="height:320px"></div>
+        <div class="sk" style="height:260px"></div>
+        <div class="sk" style="height:300px"></div>
+        <div class="sk" style="height:280px"></div>
+      </div>
+      <div id="galleryEmpty" class="gallery-state" style="display:none">
+        <p>Our gallery is being freshly baked. 🍪</p>
+        <p>In the meantime, see our latest creations on Instagram.</p>
+        <a class="btn" href="https://instagram.com/rebel_ribbon" target="_blank" rel="noopener">Visit our Instagram</a>
       </div>
     </div>
   </section>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox" role="dialog" aria-modal="true" aria-label="Photo viewer">
+    <button class="lb-close" id="lbClose" aria-label="Close">&times;</button>
+    <button class="lb-nav prev" id="lbPrev" aria-label="Previous">&#8249;</button>
+    <img id="lbImg" src="" alt="">
+    <button class="lb-nav next" id="lbNext" aria-label="Next">&#8250;</button>
+    <div class="lb-cap" id="lbCap"></div>
+  </div>
 
   <!-- Footer -->
   <footer>
@@ -296,6 +372,112 @@
       document.getElementById('header').classList.toggle('scrolled', window.scrollY > 50);
     });
     function toggleNav() { document.getElementById('nav').classList.toggle('open'); }
+
+    // ---- Curated gallery ----
+    const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    let allImages = [];
+    let viewImages = [];
+    let activeTag = 'all';
+
+    const esc = s => (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    async function loadGallery() {
+      const skeleton = document.getElementById('skeleton');
+      try {
+        const { data, error } = await sb
+          .from('gallery_images')
+          .select('image_url, caption, alt_text, tags')
+          .eq('active', true)
+          .order('sort_order', { ascending: true })
+          .order('created_at', { ascending: false });
+        if (error) throw error;
+        allImages = data || [];
+      } catch (err) {
+        console.error('Gallery load failed:', err);
+        allImages = [];
+      }
+      skeleton.style.display = 'none';
+      if (allImages.length === 0) {
+        document.getElementById('galleryEmpty').style.display = 'block';
+        return;
+      }
+      buildFilters();
+      applyFilter('all');
+    }
+
+    function buildFilters() {
+      const tags = new Set();
+      allImages.forEach(i => (i.tags || []).forEach(t => tags.add(t)));
+      if (tags.size === 0) return;
+      const wrap = document.getElementById('filters');
+      const mk = (label, val) => {
+        const b = document.createElement('button');
+        b.className = 'filter-chip' + (val === 'all' ? ' active' : '');
+        b.textContent = label;
+        b.onclick = () => applyFilter(val, b);
+        return b;
+      };
+      wrap.appendChild(mk('All', 'all'));
+      [...tags].sort().forEach(t => wrap.appendChild(mk('#' + t, t)));
+    }
+
+    function applyFilter(tag, btn) {
+      activeTag = tag;
+      document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+      else document.querySelector('.filter-chip')?.classList.add('active');
+      viewImages = tag === 'all' ? allImages : allImages.filter(i => (i.tags || []).includes(tag));
+      renderGrid();
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('galleryGrid');
+      grid.innerHTML = '';
+      viewImages.forEach((img, idx) => {
+        const fig = document.createElement('figure');
+        fig.className = 'g-item';
+        fig.tabIndex = 0;
+        fig.setAttribute('role', 'button');
+        fig.setAttribute('aria-label', img.alt_text || img.caption || 'View photo');
+        fig.innerHTML = `<img src="${esc(img.image_url)}" alt="${esc(img.alt_text || img.caption || 'Rebel Ribbon custom cookies')}" loading="lazy" decoding="async">` +
+          (img.caption ? `<figcaption>${esc(img.caption)}</figcaption>` : '');
+        fig.onclick = () => openLightbox(idx);
+        fig.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openLightbox(idx); } };
+        grid.appendChild(fig);
+      });
+    }
+
+    // ---- Lightbox ----
+    let lbIndex = 0;
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lbImg');
+    const lbCap = document.getElementById('lbCap');
+    function openLightbox(i) {
+      lbIndex = i;
+      const img = viewImages[i];
+      lbImg.src = img.image_url;
+      lbImg.alt = img.alt_text || img.caption || 'Rebel Ribbon custom cookies';
+      lbCap.textContent = img.caption || '';
+      lb.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+    function closeLightbox() { lb.classList.remove('open'); document.body.style.overflow = ''; }
+    function step(d) { lbIndex = (lbIndex + d + viewImages.length) % viewImages.length; openLightbox(lbIndex); }
+    document.getElementById('lbClose').onclick = closeLightbox;
+    document.getElementById('lbPrev').onclick = e => { e.stopPropagation(); step(-1); };
+    document.getElementById('lbNext').onclick = e => { e.stopPropagation(); step(1); };
+    lb.onclick = e => { if (e.target === lb) closeLightbox(); };
+    document.addEventListener('keydown', e => {
+      if (!lb.classList.contains('open')) return;
+      if (e.key === 'Escape') closeLightbox();
+      else if (e.key === 'ArrowLeft') step(-1);
+      else if (e.key === 'ArrowRight') step(1);
+    });
+
+    loadGallery();
   </script>
 </body>
 </html>

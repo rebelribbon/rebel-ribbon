@@ -5,7 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Order Custom Cookies | Rebel Ribbon</title>
   <meta name="description" content="Order custom decorated cookies for your next event. Handmade with love by two sisters in San Antonio, TX.">
-  
+  <link rel="canonical" href="https://rebelribbon.com/order.html">
+  <link rel="icon" type="image/png" href="Bowtrans.png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Rebel Ribbon">
+  <meta property="og:title" content="Order Custom Cookies | Rebel Ribbon">
+  <meta property="og:description" content="Order custom decorated cookies for your next event, handmade in San Antonio, TX.">
+  <meta property="og:url" content="https://rebelribbon.com/order.html">
+  <meta property="og:image" content="https://rebelribbon.com/sisters.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1237,48 +1246,7 @@
         const referral_code_used = getVal("referral_code_used");
         let design_inspiration_photo = null;
         
-        // Customer lookup or create
-        debugLog("Looking up customer by email...");
-        let customerId = null;
-        const { data: existingCustomers, error: lookupErr } = await sb.from("customers").select("id").eq("email", email);
-        
-        if (lookupErr) {
-          debugLog("ERROR looking up customer: " + lookupErr.message);
-          throw new Error("Customer lookup error: " + lookupErr.message);
-        }
-        
-        if (existingCustomers?.length) {
-          customerId = existingCustomers[0].id;
-          debugLog("Found existing customer: " + customerId);
-        } else {
-          debugLog("Creating new customer...");
-          debugLog("Customer data being inserted: " + JSON.stringify({first_name, last_name, email, phone, street_address, street_address_cont, city, state, zip}));
-          
-          const { data: newCustomer, error: custErr } = await sb.from("customers").insert([{
-            first_name, last_name, email, phone,
-            street_address, street_address_cont, city, state, zip,
-            customer_id: generateNumericId(7)
-          }]).select("id").single();
-          
-          if (custErr) {
-            debugLog("ERROR creating customer: " + JSON.stringify(custErr));
-            throw new Error("Customer Insert Error: " + custErr.message);
-          }
-          customerId = newCustomer.id;
-          debugLog("Created new customer: " + customerId);
-        }
-        
-        // Referral code creation
-        try {
-          debugLog("Creating referral code...");
-          const referralCode = await generateUniqueReferralCode(first_name, last_name);
-          await sb.from("referral_codes").insert([{ code: referralCode, associated_customer_id: customerId }]);
-          debugLog("Referral code created: " + referralCode);
-        } catch (refErr) {
-          debugLog("Referral creation failed (non critical): " + refErr.message);
-        }
-        
-        // File upload
+        // ---- Optional photo upload (sets design_inspiration_photo) ----
         const fileInput = document.getElementById('design_inspiration_photo');
         if (fileInput.files?.[0]) {
           try {
@@ -1287,26 +1255,43 @@
             const ext = file.name.split('.').pop();
             const uploadFolderId = generateNumericId(9);
             const path = `inspirations/${uploadFolderId}_${Date.now()}.${ext}`;
-
-            const { data: uploadData, error: uploadErr } = await sb.storage.from('order_uploads').upload(path, file);
-            
-            if (uploadErr) {
-              debugLog("Photo upload error: " + uploadErr.message);
-              throw new Error('Upload failed: ' + uploadErr.message);
-            }
-            
+            const { error: uploadErr } = await sb.storage.from('order_uploads').upload(path, file);
+            if (uploadErr) throw new Error('Upload failed: ' + uploadErr.message);
             const { data: urlData } = sb.storage.from('order_uploads').getPublicUrl(path);
             design_inspiration_photo = urlData?.publicUrl || null;
             debugLog("Photo URL generated: " + design_inspiration_photo);
           } catch (uploadErr) {
-            debugLog("Photo upload failed: " + uploadErr.message);
+            debugLog("Photo upload failed (non critical): " + uploadErr.message);
           }
         }
-        
-        debugLog("Building order payload...");
+
+        // Generate a referral code for this customer (non-critical; applied server-side)
+        let referralCode = null;
+        try {
+          referralCode = await generateUniqueReferralCode(first_name, last_name);
+        } catch (refErr) {
+          debugLog("Referral code generation failed (non critical): " + refErr.message);
+        }
+
+        // Rush fee decided client-side from pricing; applied server-side
+        let adjustment = null;
+        if (currentPricing && currentPricing.rush_fee > 0) {
+          const daysOut = getDaysFromToday(pickup_delivery_date);
+          if (daysOut !== null && daysOut >= 0 && daysOut <= 10) {
+            adjustment = { label: "Rush fee", amount: currentPricing.rush_fee, kind: "fee" };
+          }
+        }
+
+        // ---- Submit everything through one secure server-side function ----
+        // submit_order() handles customer dedupe/create, order, referral, and
+        // adjustment server-side, so the public site never reads customers/orders.
+        const customerPayload = {
+          first_name, last_name, email, phone,
+          street_address, street_address_cont, city, state, zip,
+          customer_id: generateNumericId(7)
+        };
         const orderPayload = {
           order_id: generateNumericId(9),
-          customer_id: customerId,
           pickup_delivery_type: getVal("pickup_delivery_type"),
           pickup_delivery_date,
           event_date: event_date_value,
@@ -1323,41 +1308,20 @@
           referral_code_used,
           status: "Active"
         };
-        
-        debugLog("Order payload: " + JSON.stringify(orderPayload));
-        debugLog("Inserting order into database...");
-        
-        const { error: ordErr, data: newOrder } = await sb.from("orders").insert([orderPayload]).select("id").maybeSingle();
-        
-        if (ordErr) {
-          debugLog("ORDER INSERT ERROR: " + JSON.stringify(ordErr));
-          debugLog("Error message: " + ordErr.message);
-          debugLog("Error details: " + ordErr.details);
-          debugLog("Error hint: " + ordErr.hint);
-          debugLog("Error code: " + ordErr.code);
-          throw new Error("Order Save Error: " + (ordErr.message || ordErr.details || ordErr.hint || "Unknown insert error"));
+
+        debugLog("Submitting order via submit_order RPC...");
+        const { data: rpcData, error: rpcErr } = await sb.rpc('submit_order', {
+          p_customer: customerPayload,
+          p_order: orderPayload,
+          p_referral_code: referralCode,
+          p_adjustment: adjustment
+        });
+
+        if (rpcErr) {
+          debugLog("ORDER SUBMIT ERROR: " + JSON.stringify(rpcErr));
+          throw new Error("Order Save Error: " + (rpcErr.message || "Unknown error"));
         }
-        
-        debugLog("Order inserted successfully! ID: " + newOrder.id);
-        
-        // Rush fee adjustment
-        if (newOrder && newOrder.id && currentPricing && currentPricing.rush_fee > 0) {
-          const daysOut = getDaysFromToday(pickup_delivery_date);
-          if (daysOut !== null && daysOut >= 0 && daysOut <= 10) {
-            try {
-              debugLog("Adding rush fee adjustment...");
-              await sb.from("order_adjustments").insert([{
-                order_id: newOrder.id,
-                label: "Rush fee",
-                amount: currentPricing.rush_fee,
-                kind: "fee"
-              }]);
-              debugLog("Rush fee added");
-            } catch (adjErr) {
-              debugLog("Order adjustment insert failed (non critical): " + adjErr.message);
-            }
-          }
-        }
+        debugLog("Order submitted successfully! " + JSON.stringify(rpcData));
         
         // Success
         debugLog("===== ORDER SUBMISSION COMPLETE =====");

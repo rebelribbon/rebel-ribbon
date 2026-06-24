@@ -3,7 +3,9 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Rebel Ribbon Survey</title>
+  <title>Customer Survey | Rebel Ribbon</title>
+  <meta name="robots" content="noindex">
+  <link rel="icon" type="image/png" href="Bowtrans.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -279,66 +281,17 @@
       document.getElementById('submitBtn').textContent = 'Submitting...';
 
       try {
-        // Verify token and get order info
-        const { data: tokenData, error: tokenError } = await sb
-          .from('survey_tokens')
-          .select('*')
-          .eq('token', token)
-          .single();
-
-        if (tokenError || !tokenData) {
-          throw new Error('Invalid or expired survey link');
-        }
-
-        if (tokenData.used) {
-          throw new Error('This survey has already been completed');
-        }
-
-        if (tokenData.expires_at && new Date(tokenData.expires_at) < new Date()) {
-          throw new Error('This survey link has expired');
-        }
-
-        // Get order and customer info
-        const { data: order } = await sb
-          .from('orders')
-          .select('customer_id')
-          .eq('id', tokenData.order_id)
-          .single();
-
-        // Save survey
-        const { error: surveyError } = await sb.from('surveys').insert({
-          customer_id: order.customer_id,
-          cookies_stars: cookiesRating,
-          service_stars: serviceRating,
-          recommend: document.getElementById('recommend').checked,
-          improvements: document.getElementById('improvements').value.trim() || null,
-          website_review: document.getElementById('websiteReview').value.trim() || null
+        // Validate token + save survey + create pending review, all server-side.
+        const { error: rpcErr } = await sb.rpc('submit_survey', {
+          p_token: token,
+          p_cookies_stars: cookiesRating,
+          p_service_stars: serviceRating,
+          p_recommend: document.getElementById('recommend').checked,
+          p_improvements: document.getElementById('improvements').value.trim() || null,
+          p_website_review: document.getElementById('websiteReview').value.trim() || null
         });
 
-        if (surveyError) throw surveyError;
-
-        // Mark token as used
-        await sb.from('survey_tokens').update({
-          used: true,
-          used_at: new Date().toISOString()
-        }).eq('token', token);
-
-        // If website review provided, create pending review
-        const reviewText = document.getElementById('websiteReview').value.trim();
-        if (reviewText) {
-          const { data: customer } = await sb
-            .from('customers')
-            .select('first_name, last_name')
-            .eq('id', order.customer_id)
-            .single();
-
-          await sb.from('website_reviews').insert({
-            customer_name: `${customer.first_name} ${customer.last_name}`,
-            stars: Math.round((cookiesRating + serviceRating) / 2),
-            review_text: reviewText,
-            status: 'pending'
-          });
-        }
+        if (rpcErr) throw new Error(rpcErr.message);
 
         // Show success
         document.getElementById('form').classList.add('hidden');

@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Gallery Manager · Rebel Ribbon Staff</title>
+  <link rel="icon" type="image/png" href="Bowtrans.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500;600&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+  <style>
+    :root{
+      --pink:#F4B4B8; --pink-light:#FAE0E2; --pink-soft:#FFF8F8; --rose:#E8A0A4;
+      --brown:#5D4E4E; --brown-light:#7A6B6B; --cream:#FFFCFB; --white:#FFFFFF;
+      --ok:#2e9e6b; --err:#c0392b;
+      --font-display:'Playfair Display',serif; --font-body:'Nunito',sans-serif;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:var(--font-body);background:var(--cream);color:var(--brown);line-height:1.6}
+    a{color:var(--rose);text-decoration:none}
+    .wrap{max-width:1100px;margin:0 auto;padding:1.5rem}
+    header.bar{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1.5rem;flex-wrap:wrap}
+    .brand{display:flex;align-items:center;gap:.6rem;font-family:var(--font-display);font-size:1.3rem}
+    .brand img{height:34px}
+    .btn{display:inline-flex;align-items:center;gap:.4rem;background:var(--pink);color:var(--brown);border:none;padding:.65rem 1.2rem;border-radius:50px;font-weight:600;font-size:.95rem;cursor:pointer;transition:all .2s;font-family:inherit}
+    .btn:hover{background:var(--rose);transform:translateY(-1px)}
+    .btn-ghost{background:transparent;border:2px solid var(--pink)}
+    .btn-danger{background:#f7dada;color:var(--err)}
+    .btn-danger:hover{background:#f0c4c4}
+    .btn-sm{padding:.4rem .8rem;font-size:.85rem}
+    .card{background:var(--white);border-radius:18px;padding:1.5rem;box-shadow:0 6px 24px rgba(93,78,78,.06);margin-bottom:1.5rem}
+    label{display:block;font-weight:600;font-size:.85rem;margin:.6rem 0 .25rem;color:var(--brown-light)}
+    input[type=text],input[type=email],input[type=password],input[type=number],textarea{
+      width:100%;padding:.6rem .8rem;border:1.5px solid var(--pink-light);border-radius:10px;font-family:inherit;font-size:.95rem;color:var(--brown);background:var(--pink-soft)}
+    input:focus,textarea:focus{outline:none;border-color:var(--pink)}
+    .row{display:flex;gap:1rem;flex-wrap:wrap}
+    .row>div{flex:1;min-width:180px}
+    .check{display:flex;align-items:center;gap:.5rem;margin-top:1.4rem}
+    .check input{width:auto}
+    .msg{font-size:.9rem;margin-top:.5rem;min-height:1.2em}
+    .msg.ok{color:var(--ok)} .msg.err{color:var(--err)}
+    .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+    .tile{background:var(--white);border-radius:14px;overflow:hidden;box-shadow:0 4px 16px rgba(93,78,78,.07);display:flex;flex-direction:column}
+    .tile img{width:100%;aspect-ratio:1/1;object-fit:cover;background:var(--pink-soft)}
+    .tile .body{padding:.7rem;display:flex;flex-direction:column;gap:.35rem;flex:1}
+    .tile .cap{font-size:.85rem;font-weight:600}
+    .tile .tags{font-size:.75rem;color:var(--brown-light)}
+    .badge{display:inline-block;font-size:.7rem;font-weight:700;padding:.1rem .5rem;border-radius:50px;background:var(--pink-light)}
+    .badge.feat{background:#ffe9a8}
+    .badge.off{background:#eee;color:#999}
+    .tile .actions{display:flex;gap:.4rem;flex-wrap:wrap;margin-top:auto;padding-top:.4rem}
+    .hide{display:none!important}
+    .login{max-width:360px;margin:8vh auto}
+    .muted{color:var(--brown-light);font-size:.9rem}
+    .dropzone{border:2px dashed var(--pink);border-radius:12px;padding:1.2rem;text-align:center;background:var(--pink-soft);cursor:pointer}
+    .dropzone.drag{background:var(--pink-light)}
+  </style>
+</head>
+<body>
+  <!-- LOGIN -->
+  <div id="loginView" class="wrap login">
+    <div class="brand" style="justify-content:center;margin-bottom:1rem"><img src="Bowtrans.png" alt="Rebel Ribbon"> Gallery Manager</div>
+    <div class="card">
+      <label for="email">Staff email</label>
+      <input id="email" type="email" placeholder="you@rebelribbon.com" autocomplete="username">
+      <label for="password">Password</label>
+      <input id="password" type="password" autocomplete="current-password">
+      <button id="signInBtn" class="btn" style="margin-top:1rem;width:100%">Sign In</button>
+      <p id="authMsg" class="msg err"></p>
+      <p class="muted">Staff only. Manage the photos shown on the public gallery &amp; homepage.</p>
+    </div>
+  </div>
+
+  <!-- APP -->
+  <div id="appView" class="wrap hide">
+    <header class="bar">
+      <div class="brand"><img src="Bowtrans.png" alt="Rebel Ribbon"> Gallery Manager</div>
+      <div>
+        <a class="btn btn-ghost btn-sm" href="gallery.html" target="_blank">View public gallery ↗</a>
+        <button id="logoutBtn" class="btn btn-ghost btn-sm">Sign out</button>
+      </div>
+    </header>
+
+    <div class="card">
+      <h2 style="font-family:var(--font-display);margin-bottom:.5rem">Add a photo</h2>
+      <div id="dropzone" class="dropzone">
+        <strong>Click to choose</strong> or drag an image here
+        <input id="file" type="file" accept="image/*" class="hide">
+        <div id="fileName" class="muted" style="margin-top:.4rem"></div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="caption">Caption</label>
+          <input id="caption" type="text" placeholder="e.g. Floral birthday set">
+        </div>
+        <div>
+          <label for="alt">Alt text (accessibility)</label>
+          <input id="alt" type="text" placeholder="Describe the photo">
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label for="tags">Tags (comma separated)</label>
+          <input id="tags" type="text" placeholder="birthday, floral, pink">
+        </div>
+        <div style="max-width:140px">
+          <label for="sort">Sort order</label>
+          <input id="sort" type="number" value="0">
+        </div>
+        <div class="check"><input id="featured" type="checkbox"><label for="featured" style="margin:0">Feature on homepage</label></div>
+      </div>
+      <button id="uploadBtn" class="btn" style="margin-top:1rem">Upload photo</button>
+      <p id="uploadMsg" class="msg"></p>
+    </div>
+
+    <div class="card">
+      <div class="bar" style="margin-bottom:1rem">
+        <h2 style="font-family:var(--font-display)">Gallery photos (<span id="count">0</span>)</h2>
+        <button id="refreshBtn" class="btn btn-ghost btn-sm">Refresh</button>
+      </div>
+      <div id="grid" class="grid"></div>
+      <p id="emptyMsg" class="muted hide">No photos yet. Add your first one above.</p>
+    </div>
+  </div>
+
+  <script>
+    const SUPABASE_URL='https://zyntkwammltmjjvgelwg.supabase.co';
+    const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
+    const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    const BUCKET='gallery';
+    const $=s=>document.querySelector(s);
+    const onlyCompanyEmail=e=>/@rebelribbon\.com$/i.test((e||'').trim());
+
+    // ---- Auth ----
+    async function checkSession(){
+      const {data:{session}}=await sb.auth.getSession();
+      if(session && onlyCompanyEmail(session.user?.email)){ showApp(); }
+      else { $('#loginView').classList.remove('hide'); $('#appView').classList.add('hide'); }
+    }
+    $('#signInBtn').onclick=async()=>{
+      const email=$('#email').value.trim(), password=$('#password').value;
+      $('#authMsg').textContent='';
+      if(!onlyCompanyEmail(email)){ $('#authMsg').textContent='Use your @rebelribbon.com email.'; return; }
+      const {error}=await sb.auth.signInWithPassword({email,password});
+      if(error){ $('#authMsg').textContent=error.message; return; }
+      showApp();
+    };
+    $('#logoutBtn').onclick=async()=>{ await sb.auth.signOut(); location.reload(); };
+    function showApp(){ $('#loginView').classList.add('hide'); $('#appView').classList.remove('hide'); loadImages(); }
+
+    // ---- File picker ----
+    const dz=$('#dropzone'), fileInput=$('#file');
+    dz.onclick=()=>fileInput.click();
+    fileInput.onchange=()=>{ $('#fileName').textContent=fileInput.files[0]?fileInput.files[0].name:''; };
+    ['dragover','dragenter'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.add('drag');}));
+    ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove('drag');}));
+    dz.addEventListener('drop',e=>{ if(e.dataTransfer.files[0]){ fileInput.files=e.dataTransfer.files; $('#fileName').textContent=e.dataTransfer.files[0].name; }});
+
+    // ---- Upload ----
+    $('#uploadBtn').onclick=async()=>{
+      const f=fileInput.files[0];
+      const msg=$('#uploadMsg'); msg.className='msg'; msg.textContent='';
+      if(!f){ msg.className='msg err'; msg.textContent='Choose an image first.'; return; }
+      $('#uploadBtn').disabled=true; msg.textContent='Uploading…';
+      try{
+        const ext=(f.name.split('.').pop()||'jpg').toLowerCase();
+        const path=`${Date.now()}_${Math.random().toString(36).slice(2,8)}.${ext}`;
+        const {error:upErr}=await sb.storage.from(BUCKET).upload(path,f,{cacheControl:'31536000',upsert:false});
+        if(upErr) throw upErr;
+        const {data:pub}=sb.storage.from(BUCKET).getPublicUrl(path);
+        const tags=$('#tags').value.split(',').map(t=>t.trim().toLowerCase()).filter(Boolean);
+        const {error:insErr}=await sb.from('gallery_images').insert({
+          image_url:pub.publicUrl, storage_path:path,
+          caption:$('#caption').value.trim()||null,
+          alt_text:$('#alt').value.trim()||$('#caption').value.trim()||'Rebel Ribbon cookies',
+          tags, featured:$('#featured').checked, sort_order:parseInt($('#sort').value,10)||0
+        });
+        if(insErr) throw insErr;
+        msg.className='msg ok'; msg.textContent='Added!';
+        fileInput.value=''; $('#fileName').textContent=''; $('#caption').value=''; $('#alt').value=''; $('#tags').value=''; $('#featured').checked=false; $('#sort').value=0;
+        loadImages();
+      }catch(err){ msg.className='msg err'; msg.textContent=err.message||'Upload failed'; }
+      finally{ $('#uploadBtn').disabled=false; }
+    };
+
+    // ---- List / manage ----
+    $('#refreshBtn').onclick=loadImages;
+    async function loadImages(){
+      const {data,error}=await sb.from('gallery_images').select('*').order('sort_order').order('created_at',{ascending:false});
+      const grid=$('#grid'); grid.innerHTML='';
+      if(error){ grid.innerHTML='<p class="msg err">'+error.message+'</p>'; return; }
+      $('#count').textContent=data.length;
+      $('#emptyMsg').classList.toggle('hide',data.length>0);
+      data.forEach(img=>grid.appendChild(tile(img)));
+    }
+    function tile(img){
+      const el=document.createElement('div'); el.className='tile';
+      const badges=`${img.featured?'<span class="badge feat">★ Featured</span> ':''}${img.active?'':'<span class="badge off">Hidden</span>'}`;
+      el.innerHTML=`
+        <img src="${img.image_url}" alt="${(img.alt_text||'').replace(/"/g,'&quot;')}" loading="lazy">
+        <div class="body">
+          <div>${badges||'<span class="badge">Live</span>'}</div>
+          <div class="cap">${img.caption||'<span class="muted">No caption</span>'}</div>
+          <div class="tags">${(img.tags||[]).map(t=>'#'+t).join(' ')||'&nbsp;'}</div>
+          <div class="actions">
+            <button class="btn btn-ghost btn-sm" data-act="feat">${img.featured?'Unfeature':'Feature'}</button>
+            <button class="btn btn-ghost btn-sm" data-act="active">${img.active?'Hide':'Show'}</button>
+            <button class="btn btn-danger btn-sm" data-act="del">Delete</button>
+          </div>
+        </div>`;
+      el.querySelector('[data-act=feat]').onclick=async()=>{ await sb.from('gallery_images').update({featured:!img.featured}).eq('id',img.id); loadImages(); };
+      el.querySelector('[data-act=active]').onclick=async()=>{ await sb.from('gallery_images').update({active:!img.active}).eq('id',img.id); loadImages(); };
+      el.querySelector('[data-act=del]').onclick=async()=>{
+        if(!confirm('Delete this photo permanently?')) return;
+        if(img.storage_path){ await sb.storage.from(BUCKET).remove([img.storage_path]); }
+        await sb.from('gallery_images').delete().eq('id',img.id); loadImages();
+      };
+      return el;
+    }
+
+    checkSession();
+  </script>
+</body>
+</html>

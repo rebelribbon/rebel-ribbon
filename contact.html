@@ -5,10 +5,20 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Contact Us | Rebel Ribbon Custom Cookies</title>
   <meta name="description" content="Get in touch with Rebel Ribbon. Questions about custom cookies? We'd love to hear from you.">
-  
+  <link rel="canonical" href="https://rebelribbon.com/contact.html">
+  <link rel="icon" type="image/png" href="Bowtrans.png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Rebel Ribbon">
+  <meta property="og:title" content="Contact Us | Rebel Ribbon Custom Cookies">
+  <meta property="og:description" content="Questions about custom cookies? Get in touch with Rebel Ribbon in San Antonio.">
+  <meta property="og:url" content="https://rebelribbon.com/contact.html">
+  <meta property="og:image" content="https://rebelribbon.com/sisters.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
   
   <style>
     :root {
@@ -613,7 +623,7 @@
           <p>Have a question or just want to say hi? Fill out the form below.</p>
           
           <div class="form-container">
-            <form action="https://formspree.io/f/info@rebelribbon.com" method="POST">
+            <form id="contactForm">
               <div class="form-group">
                 <label for="name">Your Name</label>
                 <input type="text" id="name" name="name" placeholder="Name" required>
@@ -629,9 +639,8 @@
                 <textarea id="message" name="message" rows="5" placeholder="How can we help you today?" required></textarea>
               </div>
 
-              <input type="hidden" name="_subject" value="New Website Inquiry">
-              
-              <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Send Message</button>
+              <button type="submit" id="contactSubmit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Send Message</button>
+              <p id="contactStatus" role="status" aria-live="polite" style="margin-top: 1rem; text-align: center; min-height: 1.2em;"></p>
             </form>
           </div>
 
@@ -721,6 +730,42 @@
       link.addEventListener('click', () => {
         document.getElementById('nav').classList.remove('open');
       });
+    });
+
+    // Contact form -> Supabase
+    const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    const contactForm = document.getElementById('contactForm');
+    const contactStatus = document.getElementById('contactStatus');
+    const contactSubmit = document.getElementById('contactSubmit');
+
+    contactForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      contactStatus.style.color = 'var(--brown-light)';
+      contactStatus.textContent = 'Sending…';
+      contactSubmit.disabled = true;
+
+      const payload = {
+        name: document.getElementById('name').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        message: document.getElementById('message').value.trim()
+      };
+
+      try {
+        const { error } = await sb.from('contact_messages').insert(payload);
+        if (error) throw error;
+        contactForm.reset();
+        contactStatus.style.color = '#2e9e6b';
+        contactStatus.textContent = "Thank you! We've received your message and will be in touch soon. 💌";
+      } catch (err) {
+        console.error('Contact submit failed:', err);
+        contactStatus.style.color = '#c0392b';
+        contactStatus.innerHTML = 'Something went wrong. Please email us directly at <a href="mailto:info@rebelribbon.com">info@rebelribbon.com</a>.';
+      } finally {
+        contactSubmit.disabled = false;
+      }
     });
   </script>
 

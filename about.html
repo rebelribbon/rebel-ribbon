@@ -1,389 +1,298 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Rebel Ribbon - About</title>
-  <!-- Google Fonts: Playfair Display (elegant serif) + Open Sans (clean sans-serif) -->
-  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;700&display=swap"
-        rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About Us | Rebel Ribbon Custom Cookies San Antonio</title>
+  <meta name="description" content="Meet Alinka and Tabata, the two sisters behind Rebel Ribbon. Learn the story behind our handcrafted custom cookies in San Antonio, TX.">
+  <link rel="canonical" href="https://rebelribbon.com/about.html">
+  <link rel="icon" type="image/png" href="Bowtrans.png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Rebel Ribbon">
+  <meta property="og:title" content="About Us | Rebel Ribbon Custom Cookies">
+  <meta property="og:description" content="Meet the two sisters behind Rebel Ribbon's handcrafted custom cookies in San Antonio.">
+  <meta property="og:url" content="https://rebelribbon.com/about.html">
+  <meta property="og:image" content="https://rebelribbon.com/sisters.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
+
   <style>
-    /* Prevent horizontal scroll on all devices */
-    html, body {
-      overflow-x: hidden;
-    }
-    
-    /* ==========================
-       Base & Reset
-       ========================== */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
     :root {
-      --heading-font: 'Playfair Display', serif;
-      --body-font: 'Open Sans', sans-serif;
-      --pink: #FFC0CB;
-      --black: #000;
-      --dark-gray: #333;
+      --pink: #F4B4B8; --pink-light: #FAE0E2; --pink-soft: #FFF8F8; --rose: #E8A0A4;
+      --brown: #5D4E4E; --brown-light: #7A6B6B; --cream: #FFFCFB; --white: #FFFFFF;
+      --font-display: 'Playfair Display', serif; --font-body: 'Nunito', sans-serif;
     }
-    body {
-      font-family: var(--body-font);
-      color: var(--dark-gray);
-      line-height: 1.6;
-      background-color: #fff;
-    }
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-    img {
-      max-width: 100%;
-      display: block;
-    }
-    
-    /* ==========================
-       1. Header & Navigation
-       ========================== */
-    header {
-      background: #fff;
-      padding: 20px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: relative;
-    }
-    .logo {
-      display: flex;
-      align-items: center;
-    }
-    .logo img {
-      height: 50px;
-    }
-    nav ul {
-      list-style: none;
-      display: flex;
-    }
-    nav li {
-      margin-left: 20px;
-    }
-    nav a {
-      font-size: 16px;
-      color: var(--black);
-      transition: color 0.3s;
-      font-family: var(--body-font);
-    }
-    nav a:hover {
-      color: var(--pink);
-      text-decoration: underline;
-    }
-    .hamburger {
-      display: none;
-      font-size: 24px;
-      cursor: pointer;
-      color: var(--black);
-      background-color: var(--pink);
-      padding: 10px;
-      border-radius: 50%;
-      z-index: 1000;
-      margin-left: auto;
-      margin-right: 10px;
-      inline-size: 40px;
-      block-size: 40px;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body { font-family: var(--font-body); background: var(--cream); color: var(--brown); line-height: 1.6; overflow-x: hidden; }
+    img { max-width: 100%; display: block; }
+    a { color: inherit; text-decoration: none; }
+    .container { width: 90%; max-width: 1100px; margin: 0 auto; }
+
+    /* Header */
+    header { position: fixed; top: 0; left: 0; right: 0; z-index: 100; background: var(--cream); padding: 1rem 0; transition: box-shadow 0.3s ease; }
+    header.scrolled { box-shadow: 0 2px 20px rgba(93, 78, 78, 0.08); }
+    header .container { display: flex; justify-content: space-between; align-items: center; }
+    .logo { display: flex; align-items: center; gap: 0.5rem; }
+    .logo img { height: 36px; }
+    .logo span { font-family: var(--font-display); font-size: 1.5rem; font-weight: 500; color: var(--brown); }
+    nav { display: flex; align-items: center; gap: 2rem; }
+    nav a { font-size: 0.95rem; font-weight: 500; color: var(--brown-light); transition: color 0.2s; }
+    nav a:hover { color: var(--rose); }
+    .btn { display: inline-flex; align-items: center; gap: 0.5rem; background: var(--pink); color: var(--brown); padding: 0.75rem 1.5rem; border-radius: 50px; font-weight: 600; font-size: 0.95rem; transition: all 0.2s ease; border: none; cursor: pointer; }
+    .btn:hover { background: var(--rose); transform: translateY(-2px); }
+    .btn-outline { background: transparent; border: 2px solid var(--pink); }
+    .btn-outline:hover { background: var(--pink-light); }
+    .mobile-menu { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 8px; background: none; border: none; }
+    .mobile-menu span { width: 22px; height: 2px; background: var(--brown); border-radius: 2px; }
     @media (max-width: 768px) {
-      header {
-        padding: 15px 20px;
-      }
-      nav ul {
-        display: none;
-        flex-direction: column;
-        position: absolute;
-        top: 70px;
-        left: 0;
-        right: 0;
-        background: #fff;
-        padding: 20px 0;
-        z-index: 999;
-        text-align: center;
-      }
-      nav li {
-        margin: 10px 0;
-      }
-      .hamburger {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-      }
+      .mobile-menu { display: flex; }
+      nav { position: fixed; top: 0; right: -100%; width: 70%; max-width: 280px; height: 100vh; background: var(--white); flex-direction: column; justify-content: center; gap: 1.5rem; transition: right 0.3s ease; box-shadow: -5px 0 30px rgba(0,0,0,0.1); }
+      nav.open { right: 0; }
+      nav a { font-size: 1.1rem; }
     }
-    
-    /* ==========================
-       2. Hero Section for About Page
-       ========================== */
-    .hero {
-      position: relative;
-      height: 40vh; /* A bit shorter for the about page */
-      background: url('https://via.placeholder.com/1920x1080?text=About+Rebel+Ribbon') center/cover no-repeat;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-    }
-    .hero::before {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-color: rgba(255, 192, 203, 0.5);
-    }
-    .hero-content {
-      position: relative;
-      z-index: 1;
-      animation: fadeIn 1s ease-in;
-    }
-    .hero h1 {
-      font-size: 36px;
-      color: var(--black);
-      margin-bottom: 10px;
-      font-family: var(--heading-font);
-    }
-    .hero p {
-      font-size: 18px;
-      color: var(--black);
-      font-family: var(--body-font);
-    }
-    @keyframes fadeIn {
-      from { opacity: 0; }
-      to { opacity: 1; }
-    }
-    
-    /* ==========================
-       3. Content Sections
-       ========================== */
-    .content-section {
-      padding: 40px 20px;
-      max-width: 900px;
-      margin: 20px auto;
-      text-align: left;
-      font-size: 16px;
-      line-height: 1.8;
-    }
-    .content-section h2 {
-      font-family: var(--heading-font);
-      font-size: 28px;
-      color: var(--black);
-      margin-bottom: 20px;
-      text-align: left;
-    }
-    .content-section p {
-      margin-bottom: 20px;
-    }
-    /* Floating images for wrapping text on desktop: 25% */
-    .story-float-left {
-      float: left;
-      margin: 0 20px 20px 0;
-      width: 25%;
-      max-width: 25%;
-    }
-    .story-float-right {
-      float: right;
-      margin: 0 0 20px 20px;
-      width: 25%;
-      max-width: 25%;
-    }
-    /* Clear floats after paragraphs */
-    .clear {
-      clear: both;
-    }
-    /* Sisters image styling remains centered */
-    .sisters-image {
-      display: block;
-      margin: 20px auto;
-      width: calc(100% - 20px);
-      max-width: none;
-    }
-    
-    /* ==========================
-       4. Footer
-       ========================== */
-    footer {
-      background-color: var(--pink);
-      color: var(--black);
-      padding: 30px 20px;
-    }
-    footer .footer-content {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: space-between;
-    }
-    footer .footer-section {
-      flex: 1;
-      min-width: 200px;
-    }
-    footer h3 {
-      margin-bottom: 10px;
-      font-size: 18px;
-      font-family: var(--heading-font);
-    }
-    footer p, footer a {
-      font-size: 14px;
-      color: var(--black);
-      font-family: var(--body-font);
-    }
-    footer a:hover {
-      text-decoration: underline;
-    }
-    .footer-section.newsletter {
-      text-align: left;
-    }
-    .newsletter iframe {
-      width: 100%;
-      border: 0;
-    }
-    
-    /* ==========================
-       5. Mobile Refinements
-       ========================== */
+
+    /* Page hero */
+    .page-hero { padding: 160px 0 80px; background: linear-gradient(135deg, var(--pink-soft) 0%, var(--pink-light) 50%, var(--cream) 100%); text-align: center; position: relative; overflow: hidden; }
+    .page-hero::before { content: ''; position: absolute; top: -30%; right: -10%; width: 50%; height: 70%; background: radial-gradient(ellipse, var(--pink) 0%, transparent 70%); opacity: 0.3; pointer-events: none; }
+    .page-hero .container { position: relative; z-index: 1; }
+    .page-hero h1 { font-family: var(--font-display); font-size: clamp(2.25rem, 5vw, 3.5rem); color: var(--brown); margin-bottom: 1rem; line-height: 1.2; }
+    .page-hero h1 span { display: block; font-style: italic; font-weight: 400; color: var(--rose); font-size: 0.7em; }
+    .page-hero p { font-size: 1.1rem; color: var(--brown-light); max-width: 600px; margin: 0 auto; }
+
+    /* Story */
+    .story { padding: 5rem 0; background: var(--white); }
+    .story-row { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center; margin-bottom: 4rem; }
+    .story-row:last-child { margin-bottom: 0; }
+    .story-row.reverse .story-img { order: 2; }
+    .story-img img { border-radius: 24px; box-shadow: 0 14px 40px rgba(93, 78, 78, 0.12); width: 100%; }
+    .story-text h2 { font-family: var(--font-display); font-size: clamp(1.6rem, 3vw, 2.2rem); color: var(--brown); margin-bottom: 1rem; }
+    .story-text p { color: var(--brown-light); margin-bottom: 1rem; }
+    .story-text p:last-child { margin-bottom: 0; }
+
     @media (max-width: 768px) {
-      /* Increase floated image size to 40% on mobile */
-      .story-float-left, .story-float-right {
-        width: 40%;
-        max-width: 40%;
-      }
-      .content-section p {
-        text-align: justify;
-      }
-      .sisters-image {
-        width: calc(100% - 20px);
-        max-width: none;
-        margin: 20px auto;
-      }
+      .story-row { grid-template-columns: 1fr; gap: 1.5rem; margin-bottom: 3rem; }
+      .story-row.reverse .story-img { order: 0; }
+      .story-img { max-width: 360px; margin: 0 auto; }
     }
+
+    /* Together / sisters band */
+    .together { padding: 5rem 0; background: var(--pink-soft); text-align: center; }
+    .together .container { max-width: 900px; }
+    .together img { border-radius: 24px; box-shadow: 0 14px 40px rgba(93, 78, 78, 0.12); margin: 0 auto 2rem; }
+    .together h2 { font-family: var(--font-display); font-size: clamp(1.6rem, 3vw, 2.2rem); color: var(--brown); margin-bottom: 1rem; }
+    .together p { color: var(--brown-light); max-width: 680px; margin: 0 auto 1rem; }
+
+    /* Mission */
+    .mission { padding: 5rem 0; background: var(--white); }
+    .mission .container { max-width: 800px; text-align: center; }
+    .mission h2 { font-family: var(--font-display); font-size: clamp(1.6rem, 3vw, 2.2rem); color: var(--brown); margin-bottom: 1.5rem; }
+    .mission p { color: var(--brown-light); font-size: 1.05rem; margin-bottom: 1rem; }
+
+    /* Newsletter */
+    .newsletter-section { padding: 4rem 0; background: var(--pink-light); text-align: center; }
+    .newsletter-section h2 { font-family: var(--font-display); font-size: 1.8rem; color: var(--brown); margin-bottom: 0.5rem; }
+    .newsletter-section p { color: var(--brown); margin-bottom: 1.5rem; }
+    .newsletter-section .embed { max-width: 480px; margin: 0 auto; background: var(--white); border-radius: 18px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(93, 78, 78, 0.08); }
+    .newsletter-section iframe { width: 100%; border: 0; }
+
+    /* CTA */
+    .cta-section { padding: 5rem 0; background: var(--pink); text-align: center; }
+    .cta-section h2 { font-family: var(--font-display); font-size: clamp(1.75rem, 4vw, 2.5rem); color: var(--brown); margin-bottom: 0.5rem; }
+    .cta-section p { color: var(--brown); margin-bottom: 2rem; font-size: 1.1rem; }
+    .cta-section .btn { background: var(--brown); color: var(--white); padding: 1rem 2.5rem; font-size: 1.1rem; }
+    .cta-section .btn:hover { background: var(--brown-light); }
+
+    /* Footer */
+    footer { background: var(--cream); padding: 4rem 0 2rem; border-top: 1px solid var(--pink-light); }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem; margin-bottom: 3rem; }
+    .footer-brand .logo { margin-bottom: 1rem; }
+    .footer-brand p { color: var(--brown-light); font-size: 0.95rem; max-width: 280px; }
+    .footer-social { display: flex; gap: 0.75rem; margin-top: 1.25rem; }
+    .footer-social a { width: 38px; height: 38px; background: var(--pink-light); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .footer-social a:hover { background: var(--pink); transform: translateY(-2px); }
+    .footer-col h4 { font-size: 1rem; font-weight: 700; margin-bottom: 1rem; color: var(--brown); }
+    .footer-col ul { list-style: none; }
+    .footer-col li { margin-bottom: 0.6rem; }
+    .footer-col a { font-size: 0.95rem; color: var(--brown-light); transition: color 0.2s; }
+    .footer-col a:hover { color: var(--rose); }
+    .footer-bottom { text-align: center; padding-top: 2rem; border-top: 1px solid var(--pink-light); font-size: 0.9rem; color: var(--brown-light); }
+    @media (max-width: 768px) { .footer-grid { grid-template-columns: 1fr 1fr; } .footer-brand { grid-column: span 2; } }
+    @media (max-width: 480px) { .footer-grid { grid-template-columns: 1fr; } .footer-brand { grid-column: span 1; } }
   </style>
 </head>
 <body>
+
   <!-- Header -->
-  <header>
-    <div class="logo">
-      <img src="horizontaltrans.png" alt="Rebel Ribbon Logo">
+  <header id="header">
+    <div class="container">
+      <a href="index.html" class="logo">
+        <img src="Bowtrans.png" alt="Rebel Ribbon">
+        <span>Rebel Ribbon</span>
+      </a>
+      <button class="mobile-menu" onclick="toggleNav()" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav">
+        <span></span><span></span><span></span>
+      </button>
+      <nav id="nav">
+        <a href="about.html">About</a>
+        <a href="gallery.html">Gallery</a>
+        <a href="ingredients.html">Ingredients</a>
+        <a href="contact.html">Contact</a>
+        <a href="order.html" class="btn">Order Cookies</a>
+      </nav>
     </div>
-    <div class="hamburger" onclick="toggleMenu()">&#9776;</div>
-    <nav>
-      <ul class="nav-menu" id="navMenu">
-        <li><a href="index.html">Home</a></li>
-        <li><a href="about.html">About Us</a></li>
-        <li><a href="ingredients.html">Ingredients</a></li>
-        <li><a href="gallery.html">Gallery</a></li>
-        <li><a href="contact.html">Contact</a></li>
-        <li><a href="order.html">Order</a></li>
-      </ul>
-    </nav>
   </header>
-  
-  <!-- Hero Section -->
-  <section class="hero">
-    <div class="hero-content">
-      <h1>About Rebel Ribbon</h1>
-      <p>Discover the passion behind our handcrafted cookies.</p>
+
+  <!-- Hero -->
+  <section class="page-hero">
+    <div class="container">
+      <h1>Our Story <span>Two Sisters, One Sweet Dream</span></h1>
+      <p>A celebration of art, creativity, and the magic of family — handcrafted into edible art in San Antonio, Texas.</p>
     </div>
   </section>
-  
-  <!-- Our Story Content Section -->
-  <section class="content-section">
-    <h2>Our Story</h2>
-    <p>Welcome to Rebel Ribbon—a celebration of art, creativity, and the magic of family. Our story began in 2017 as Alinka's Custom Cookies, a personal creative outlet for Alinka Chalker. Although baking wasn’t her first passion, her love for art transformed cookie-making into a unique way to celebrate life’s milestones. Through many late nights of self-teaching and overcoming setbacks, she mastered the art of cookie creation, turning every cookie into a heartfelt work of art.</p>
-    
-    <!-- Alinka: Float image left, text wraps around -->
-    <img src="alinka.png" alt="Alinka" class="story-float-left">
-    <p>Alinka, now 30, proudly embraces her Mexican roots and lives by the language of cooking. With her supportive husband Tom and her three-year-old son Atom—our official cookie tester—she juggles her role at HEB while nurturing her dream of making Rebel Ribbon her full-time passion.</p>
-    <div class="clear"></div>
-    
-    <!-- Tabata: Float image right, text wraps around -->
-    <img src="tabata.png" alt="Tabata" class="story-float-right">
-    <p>On February 14, 2025, a long-held dream came true when Alinka’s inseparable sister, Tabata Santiago Kim, joined the venture. At 28, Tabata brings nine years of hospitality expertise from Hyatt, with a keen eye for customer service and sales. Like her sister, Tabata cherishes her Mexican heritage and infuses that vibrant spirit into everything she does. As a devoted mom to one-year-old Penelope—with another little one on the way—and a passionate plant lover, Tabata adds warmth, professionalism, and an eye for detail to our family venture.</p>
-    <div class="clear"></div>
-    
-    <p>For years, these sisters dreamed of working side by side on a project that perfectly blends creativity with expertise. Their unbreakable bond and shared vision have given rise to Rebel Ribbon—a brand where art meets heart. Together, they don’t just make cookies; they craft memories, ensuring that every treat is a celebration of life’s sweetest moments.</p>
-    
 
-     
-    <!-- Sisters image centered below the paragraph -->
-    <img src="sisters.png" alt="Sisters" class="sisters-image">
- </section>
+  <!-- Story -->
+  <section class="story">
+    <div class="container">
+      <div class="story-row">
+        <div class="story-img">
+          <img src="alinka.jpg" alt="Alinka, co-founder of Rebel Ribbon" width="289" height="600" loading="lazy" decoding="async">
+        </div>
+        <div class="story-text">
+          <h2>Where It Began</h2>
+          <p>Our story began in 2017 as <em>Alinka's Custom Cookies</em>, a personal creative outlet for Alinka Chalker. Although baking wasn't her first passion, her love for art transformed cookie-making into a unique way to celebrate life's milestones. Through many late nights of self-teaching and overcoming setbacks, she mastered the art of cookie creation — turning every cookie into a heartfelt work of art.</p>
+          <p>Alinka, now 30, proudly embraces her Mexican roots and lives by the language of cooking. With her supportive husband Tom and her three-year-old son Atom — our official cookie tester — she nurtures her dream of making Rebel Ribbon her full-time passion.</p>
+        </div>
+      </div>
 
- <!-- Our Mission Content Section -->
-  <section class="content-section">
-    <h2>Our Mission</h2>
-    <p>At Rebel Ribbon, our mission is to bring joy to every occasion with cookies that are as unique as our customers. We are dedicated to perfection—from selecting premium ingredients to creating eye-catching designs that spark conversation.</p>
-    <p>We believe every celebration deserves something extraordinary. Our cookies are not just desserts; they are expressions of creativity, passion, and the art of making memorable moments.</p>
+      <div class="story-row reverse">
+        <div class="story-img">
+          <img src="tabata.jpg" alt="Tabata, co-founder of Rebel Ribbon" width="900" height="1734" loading="lazy" decoding="async">
+        </div>
+        <div class="story-text">
+          <h2>A Sister Joins</h2>
+          <p>On February 14, 2025, a long-held dream came true when Alinka's inseparable sister, Tabata Santiago Kim, joined the venture. At 28, Tabata brings nine years of hospitality expertise from Hyatt, with a keen eye for customer service and sales.</p>
+          <p>Like her sister, Tabata cherishes her Mexican heritage and infuses that vibrant spirit into everything she does. As a devoted mom to one-year-old Penelope — with another little one on the way — and a passionate plant lover, Tabata adds warmth, professionalism, and an eye for detail to our family venture.</p>
+        </div>
+      </div>
+    </div>
   </section>
-  
-  <!-- Footer -->
-  <footer>
-    <div class="footer-content">
-      <div class="footer-section">
-        <h3>Contact Us</h3>
-        <p>Email: <a href="mailto:info@rebelribbon.com">info@rebelribbon.com</a></p>
-        <p>Phone: <a href="tel:2102397471">(210) 239-7471</a></p>
-      </div>
-      <div class="footer-section">
-        <h3>Quick Links</h3>
-        <p><a href="index.html">Home</a></p>
-        <p><a href="about.html">About Us</a></p>
-        <p><a href="ingredients.html">Ingredients</a></p>
-        <p><a href="gallery.html">Gallery</a></p>
-        <p><a href="contact.html">Contact</a></p>
-        <p><a href="order.html">Order</a></p>
-      </div>
-      <div class="footer-section newsletter">
-        <h3>Newsletter</h3>
-        <!-- Tally Embed Code for Newsletter Signup -->
+
+  <!-- Together -->
+  <section class="together">
+    <div class="container">
+      <img src="sisters.jpg" alt="Alinka and Tabata, the sisters behind Rebel Ribbon" width="1280" height="854" loading="lazy" decoding="async">
+      <h2>Better Together</h2>
+      <p>For years, these sisters dreamed of working side by side on a project that perfectly blends creativity with expertise. Their unbreakable bond and shared vision gave rise to Rebel Ribbon — a brand where art meets heart.</p>
+      <p>Together, they don't just make cookies; they craft memories, ensuring that every treat is a celebration of life's sweetest moments.</p>
+    </div>
+  </section>
+
+  <!-- Mission -->
+  <section class="mission">
+    <div class="container">
+      <h2>Our Mission</h2>
+      <p>At Rebel Ribbon, our mission is to bring joy to every occasion with cookies that are as unique as our customers. We are dedicated to perfection — from selecting premium ingredients to creating eye-catching designs that spark conversation.</p>
+      <p>We believe every celebration deserves something extraordinary. Our cookies are not just desserts; they are expressions of creativity, passion, and the art of making memorable moments.</p>
+    </div>
+  </section>
+
+  <!-- Newsletter -->
+  <section class="newsletter-section">
+    <div class="container">
+      <h2>Stay in the Loop</h2>
+      <p>Sweet updates, seasonal designs, and the occasional treat — straight to your inbox.</p>
+      <div class="embed">
         <iframe data-tally-src="https://tally.so/embed/wokM7x?alignLeft=1&hideTitle=1&transparentBackground=1&dynamicHeight=1"
                 loading="lazy" width="100%" height="157" frameborder="0" marginheight="0" marginwidth="0"
-                title="News Letter"></iframe>
-        <script>
-          var d=document,
-              w="https://tally.so/widgets/embed.js",
-              v=function(){
-                if(typeof Tally!="undefined"){
-                  Tally.loadEmbeds();
-                } else {
-                  d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function(e){
-                    e.src = e.dataset.tallySrc;
-                  });
-                }
-              };
-          if(typeof Tally!="undefined"){
-            v();
-          } else if(d.querySelector('script[src="'+w+'"]')==null){
-            var s=d.createElement("script");
-            s.src=w;
-            s.onload=v;
-            s.onerror=v;
-            d.body.appendChild(s);
-          }
-        </script>
+                title="Newsletter signup"></iframe>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section">
+    <div class="container">
+      <h2>Ready to Order?</h2>
+      <p>Let us turn your next celebration into something sweet and unforgettable.</p>
+      <a href="order.html" class="btn">Start Your Order</a>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div class="logo">
+            <img src="Bowtrans.png" alt="Rebel Ribbon" style="height: 32px;">
+            <span>Rebel Ribbon</span>
+          </div>
+          <p>Custom decorated cookies made by two sisters in San Antonio, Texas. Every cookie is a little work of art.</p>
+          <div class="footer-social">
+            <a href="https://instagram.com/rebel_ribbon" aria-label="Instagram">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+        <div class="footer-col">
+          <h4>Pages</h4>
+          <ul>
+            <li><a href="about.html">About Us</a></li>
+            <li><a href="gallery.html">Gallery</a></li>
+            <li><a href="order.html">Order</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Info</h4>
+          <ul>
+            <li><a href="ingredients.html">Ingredients</a></li>
+            <li><a href="privacy.html">Privacy</a></li>
+            <li><a href="terms.html">Terms</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Contact</h4>
+          <ul>
+            <li><a href="mailto:info@rebelribbon.com">info@rebelribbon.com</a></li>
+            <li><a href="tel:2102397471">(210) 239-7471</a></li>
+            <li>San Antonio, TX</li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        © 2025 Rebel Ribbon. Made with love in San Antonio.
       </div>
     </div>
   </footer>
-  
-  <!-- Minimal JavaScript for Mobile Menu -->
+
   <script>
-    function toggleMenu() {
-      var menu = document.getElementById('navMenu');
-      var currentDisplay = window.getComputedStyle(menu).display;
-      if (currentDisplay === 'none') {
-        menu.style.display = 'flex';
-        menu.style.flexDirection = 'column';
-      } else {
-        menu.style.display = 'none';
-      }
+    window.addEventListener('scroll', () => {
+      document.getElementById('header').classList.toggle('scrolled', window.scrollY > 50);
+    });
+    function toggleNav() {
+      const open = document.getElementById('nav').classList.toggle('open');
+      document.querySelector('.mobile-menu')?.setAttribute('aria-expanded', open);
+    }
+    document.querySelectorAll('nav a').forEach(link => {
+      link.addEventListener('click', () => document.getElementById('nav').classList.remove('open'));
+    });
+
+    // Tally newsletter embed loader
+    var d=document, w="https://tally.so/widgets/embed.js",
+      v=function(){
+        if(typeof Tally!="undefined"){ Tally.loadEmbeds(); }
+        else { d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach(function(e){ e.src = e.dataset.tallySrc; }); }
+      };
+    if(typeof Tally!="undefined"){ v(); }
+    else if(d.querySelector('script[src="'+w+'"]')==null){
+      var s=d.createElement("script"); s.src=w; s.onload=v; s.onerror=v; d.body.appendChild(s);
     }
   </script>
 </body>

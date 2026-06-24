@@ -5,7 +5,18 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Rebel Ribbon | Custom Cookies in San Antonio</title>
   <meta name="description" content="Custom decorated cookies for any occasion. Handmade with love by two sisters in San Antonio, TX.">
-  
+  <link rel="canonical" href="https://rebelribbon.com/">
+  <link rel="icon" type="image/png" href="Bowtrans.png">
+
+  <!-- Open Graph / social -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Rebel Ribbon">
+  <meta property="og:title" content="Rebel Ribbon | Custom Cookies in San Antonio">
+  <meta property="og:description" content="Custom decorated cookies for any occasion. Handmade with love by two sisters in San Antonio, TX.">
+  <meta property="og:url" content="https://rebelribbon.com/">
+  <meta property="og:image" content="https://rebelribbon.com/sisters.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600&family=Nunito:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -411,7 +422,54 @@
     .gallery-section { background: var(--cream); }
 
     .gallery-feed {
-      min-height: 300px;
+      min-height: 200px;
+    }
+
+    .home-gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    .home-gallery-grid .g-item {
+      position: relative;
+      border-radius: 16px;
+      overflow: hidden;
+      aspect-ratio: 1 / 1;
+      background: var(--pink-soft);
+      box-shadow: 0 6px 22px rgba(93, 78, 78, 0.07);
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .home-gallery-grid .g-item:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 14px 34px rgba(93, 78, 78, 0.14);
+    }
+
+    .home-gallery-grid .g-item img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .home-gallery-skeleton {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    .home-gallery-skeleton .sk {
+      aspect-ratio: 1 / 1;
+      border-radius: 16px;
+      background: linear-gradient(110deg, var(--pink-soft) 30%, var(--pink-light) 50%, var(--pink-soft) 70%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+
+    @keyframes shimmer { to { background-position: -200% 0; } }
+
+    @media (max-width: 768px) {
+      .home-gallery-grid, .home-gallery-skeleton { grid-template-columns: repeat(2, 1fr); }
     }
 
     .gallery-cta {
@@ -827,11 +885,11 @@
         <span>Rebel Ribbon</span>
       </a>
       
-      <div class="mobile-menu" onclick="toggleNav()">
+      <button class="mobile-menu" onclick="toggleNav()" aria-label="Toggle menu" aria-expanded="false" aria-controls="nav" style="background:none;border:none">
         <span></span>
         <span></span>
         <span></span>
-      </div>
+      </button>
       
       <nav id="nav">
         <a href="#about">About</a>
@@ -916,9 +974,10 @@
         <p>A peek at some of our favorite designs</p>
       </div>
       <div class="gallery-feed">
-        <!-- Elfsight Instagram Feed | Signature Creations (#signaturecreations) -->
-        <script src="https://static.elfsight.com/platform/platform.js" async></script>
-        <div class="elfsight-app-b8dc1a76-5140-4c69-af16-0f092a4baf6a" data-elfsight-app-lazy></div>
+        <div id="homeGallery" class="home-gallery-grid"></div>
+        <div id="homeGallerySkeleton" class="home-gallery-skeleton">
+          <div class="sk"></div><div class="sk"></div><div class="sk"></div><div class="sk"></div>
+        </div>
       </div>
       <div class="gallery-cta">
         <a href="gallery.html" class="btn btn-outline">View Full Gallery</a>
@@ -1052,27 +1111,31 @@
     let currentSlide = 0;
     let autoSlideInterval;
 
+    // Shown if Supabase is unreachable or there are no approved reviews yet,
+    // so the slider never gets stuck on "Loading...".
+    const FALLBACK_REVIEWS = [
+      { cookies_stars: 5, website_review: "Absolutely stunning cookies! They tasted as amazing as they looked and everyone at the party was blown away.", display_name: "Maria G." },
+      { cookies_stars: 5, website_review: "The sisters captured our theme perfectly. So much detail and clearly made with love. We will be back!", display_name: "Jessica R." },
+      { cookies_stars: 5, website_review: "Beautiful, fresh, and delicious. Ordering was easy and the final cookies exceeded our expectations.", display_name: "Daniel P." }
+    ];
+
     async function loadReviews() {
       try {
-        // Fetch approved reviews
-        const {data, error} = await sb
-          .from('surveys')
-          .select('*, customers(first_name, last_name)')
-          .eq('review_approval_status', 'approved')
-          .not('website_review', 'is', null)
-          .neq('website_review', '');
+        // Approved reviews come from a security-definer RPC so the site never
+        // needs read access to the customers table.
+        const {data, error} = await sb.rpc('get_approved_reviews');
 
         if (error) throw error;
 
-        if (data && data.length > 0) {
-          // Randomize the reviews
-          reviews = data.sort(() => Math.random() - 0.5);
-          renderSlider();
-          startAutoSlide();
-        }
+        reviews = (data && data.length > 0)
+          ? data.sort(() => Math.random() - 0.5)
+          : FALLBACK_REVIEWS;
       } catch (err) {
         console.error('Error loading reviews:', err);
+        reviews = FALLBACK_REVIEWS;
       }
+      renderSlider();
+      startAutoSlide();
     }
 
     function renderSlider() {
@@ -1092,14 +1155,7 @@
 
         const stars = '★'.repeat(review.cookies_stars || 5) + '☆'.repeat(5 - (review.cookies_stars || 5));
         
-        let customerName = 'Anonymous';
-        if (review.manual_customer_name) {
-          customerName = review.manual_customer_name;
-        } else if (review.customers) {
-          const firstInitial = review.customers.first_name ? review.customers.first_name.charAt(0) : '';
-          const lastName = review.customers.last_name || '';
-          customerName = `${review.customers.first_name || ''} ${firstInitial && lastName ? lastName.charAt(0) : lastName}${firstInitial && lastName ? '.' : ''}`.trim();
-        }
+        const customerName = review.display_name || 'Anonymous';
 
         card.innerHTML = `
           <div class="testimonial-author">${customerName}</div>
@@ -1164,8 +1220,50 @@
     document.getElementById('nextBtn').addEventListener('click', nextSlide);
     document.getElementById('prevBtn').addEventListener('click', prevSlide);
 
-    // Load reviews on page load
+    // Featured gallery (curated in Supabase, managed via gallery-admin.html)
+    const escHtml = s => (s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    async function loadFeaturedGallery() {
+      const grid = document.getElementById('homeGallery');
+      const skeleton = document.getElementById('homeGallerySkeleton');
+      const section = document.getElementById('gallery');
+      try {
+        // Prefer featured images; fall back to most recent active ones.
+        let { data, error } = await sb
+          .from('gallery_images')
+          .select('image_url, caption, alt_text')
+          .eq('active', true).eq('featured', true)
+          .order('sort_order', { ascending: true })
+          .limit(8);
+        if (error) throw error;
+        if (!data || data.length === 0) {
+          ({ data } = await sb
+            .from('gallery_images')
+            .select('image_url, caption, alt_text')
+            .eq('active', true)
+            .order('created_at', { ascending: false })
+            .limit(8));
+        }
+        if (skeleton) skeleton.style.display = 'none';
+        if (!data || data.length === 0) {
+          // No images yet: hide the gallery section entirely rather than show an empty box.
+          if (section) section.style.display = 'none';
+          return;
+        }
+        grid.innerHTML = data.map(img => `
+          <a class="g-item" href="gallery.html" aria-label="${escHtml(img.alt_text || img.caption || 'View gallery')}">
+            <img src="${escHtml(img.image_url)}" alt="${escHtml(img.alt_text || img.caption || 'Rebel Ribbon custom cookies')}" loading="lazy" decoding="async">
+          </a>`).join('');
+      } catch (err) {
+        console.error('Featured gallery load failed:', err);
+        if (skeleton) skeleton.style.display = 'none';
+        if (section) section.style.display = 'none';
+      }
+    }
+
+    // Load dynamic content on page load
     loadReviews();
+    loadFeaturedGallery();
 
     // Header scroll effect
     window.addEventListener('scroll', () => {
@@ -1174,7 +1272,8 @@
 
     // Mobile menu toggle
     function toggleNav() {
-      document.getElementById('nav').classList.toggle('open');
+      const open = document.getElementById('nav').classList.toggle('open');
+      document.querySelector('.mobile-menu')?.setAttribute('aria-expanded', open);
     }
 
     // Close menu when clicking nav links

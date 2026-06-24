@@ -502,14 +502,32 @@
 // System Health Banner - Monitors Stripe webhook status
 async function loadSystemHealth() {
   try {
-    const response = await fetch('/api/system-status');
-    if (!response.ok) throw new Error('Failed to load system status');
-    
-    const status = await response.json();
-    updateHealthBanner(status);
+    // Read system status straight from Supabase (no server endpoint on static hosting).
+    const { data: status, error } = await sb
+      .from('system_status')
+      .select('*')
+      .order('updated_at', { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    if (error || !status) {
+      updateHealthBanner({ status: 'unknown', webhook_status: 'unknown' });
+      return;
+    }
+
+    const now = new Date();
+    const last = status.last_webhook_received_at ? new Date(status.last_webhook_received_at) : null;
+    let health_status = 'green';
+    let webhook_status = 'unknown';
+    if (last) {
+      const hoursSince = (now - last) / (1000 * 60 * 60);
+      if (hoursSince < 24) { webhook_status = 'green'; }
+      else if (hoursSince < 72) { webhook_status = 'yellow'; health_status = 'yellow'; }
+      else { webhook_status = 'red'; health_status = 'red'; }
+    }
+    updateHealthBanner({ status: health_status, webhook_status, last_webhook_received_at: status.last_webhook_received_at });
   } catch (error) {
     console.error('Error loading system health:', error);
-    // Set to unknown state on error
     updateHealthBanner({ status: 'unknown', webhook_status: 'unknown' });
   }
 }
