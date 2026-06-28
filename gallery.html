@@ -236,6 +236,20 @@
     .lb-nav.next { right: 1.2rem; top: 50%; transform: translateY(-50%); }
     @media (max-width: 600px) { .lb-nav { width: 40px; height: 40px; } }
 
+    /* Instagram feed */
+    .ig-section { padding: 1rem 0 5rem; background: var(--white); }
+    .ig-head { text-align: center; margin-bottom: 2rem; }
+    .ig-head h2 { font-family: var(--font-display); font-size: clamp(1.6rem, 4vw, 2.2rem); color: var(--brown); margin-bottom: 0.3rem; }
+    .ig-head a { color: var(--rose); font-weight: 600; letter-spacing: 0.02em; }
+    .ig-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; }
+    .ig-grid a { position: relative; aspect-ratio: 1 / 1; overflow: hidden; border-radius: 12px; background: var(--pink-soft); display: block; }
+    .ig-grid img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.3s ease; }
+    .ig-grid a:hover img { transform: scale(1.06); }
+    .ig-grid .ig-ic { position: absolute; top: 8px; right: 8px; color: #fff; opacity: 0; transition: opacity 0.3s; filter: drop-shadow(0 1px 2px rgba(0,0,0,0.4)); }
+    .ig-grid a:hover .ig-ic { opacity: 1; }
+    @media (max-width: 768px) { .ig-grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 480px) { .ig-grid { grid-template-columns: repeat(2, 1fr); } }
+
     /* Footer */
     footer { background: var(--cream); padding: 4rem 0 2rem; border-top: 1px solid var(--pink-light); }
     .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2rem; margin-bottom: 3rem; }
@@ -307,6 +321,17 @@
         <p>In the meantime, see our latest creations on Instagram.</p>
         <a class="btn" href="https://instagram.com/rebel_ribbon" target="_blank" rel="noopener">Visit our Instagram</a>
       </div>
+    </div>
+  </section>
+
+  <!-- Instagram feed (auto-synced from @rebel_ribbon) -->
+  <section class="ig-section" id="instagramSection" style="display:none">
+    <div class="container">
+      <div class="ig-head">
+        <h2>From our Instagram</h2>
+        <p><a href="https://instagram.com/rebel_ribbon" target="_blank" rel="noopener">Follow @rebel_ribbon &rarr;</a></p>
+      </div>
+      <div id="igGrid" class="ig-grid"></div>
     </div>
   </section>
 
@@ -480,7 +505,31 @@
       else if (e.key === 'ArrowRight') step(1);
     });
 
+    // ---- Instagram feed (auto-synced into instagram_media by the edge function) ----
+    async function loadInstagram() {
+      try {
+        const { data, error } = await sb
+          .from('instagram_media')
+          .select('image_url, permalink, caption')
+          .eq('active', true)
+          .order('posted_at', { ascending: false })
+          .limit(12);
+        if (error) throw error;
+        if (!data || data.length === 0) return; // section stays hidden
+        const grid = document.getElementById('igGrid');
+        grid.innerHTML = data.map(p => `
+          <a href="${esc(p.permalink || 'https://instagram.com/rebel_ribbon')}" target="_blank" rel="noopener" aria-label="${esc((p.caption || 'Instagram post').slice(0,80))}">
+            <img src="${esc(p.image_url)}" alt="${esc((p.caption || 'Rebel Ribbon on Instagram').slice(0,100))}" loading="lazy" decoding="async">
+            <svg class="ig-ic" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.27.07 1.65.07 4.85s0 3.58-.07 4.85c-.15 3.23-1.66 4.77-4.92 4.92-1.27.06-1.64.07-4.85.07s-3.58 0-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92C2.2 15.58 2.2 15.2 2.2 12s0-3.58.07-4.85C2.42 3.92 3.93 2.38 7.15 2.27 8.42 2.21 8.8 2.2 12 2.2zm0 3.65A6.15 6.15 0 1 0 18.15 12 6.16 6.16 0 0 0 12 5.85zm0 10.15A4 4 0 1 1 16 12a4 4 0 0 1-4 4zm6.4-10.55a1.44 1.44 0 1 0 1.44 1.44 1.44 1.44 0 0 0-1.44-1.44z"/></svg>
+          </a>`).join('');
+        document.getElementById('instagramSection').style.display = 'block';
+      } catch (err) {
+        console.error('Instagram load failed:', err);
+      }
+    }
+
     loadGallery();
+    loadInstagram();
   </script>
 </body>
 </html>
