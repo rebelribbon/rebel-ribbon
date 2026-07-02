@@ -971,8 +971,24 @@
       const { data: flavors, error: flavorError } = await sb.from("flavors").select("name").order("name");
       if (flavorError) debugLog("ERROR loading flavors: " + flavorError.message);
       else debugLog("Loaded " + (flavors?.length || 0) + " flavors");
-      flavorSelect.innerHTML = '<option value="">Select Flavor</option>';
-      if (flavors) flavors.forEach(f => flavorSelect.innerHTML += `<option value="${f.name}">${f.name}</option>`);
+      if (flavors && flavors.length) {
+        flavorSelect.innerHTML = '<option value="">Select Flavor</option>';
+        flavors.forEach(f => {
+          const opt = document.createElement("option");
+          opt.value = f.name;
+          opt.textContent = f.name;
+          flavorSelect.appendChild(opt);
+        });
+      } else {
+        // No flavors in the database (or load failed): fall back to free text
+        // so the required field can still be filled and orders keep flowing.
+        const flavorInput = document.createElement("input");
+        flavorInput.type = "text";
+        flavorInput.id = "flavor";
+        flavorInput.required = true;
+        flavorInput.placeholder = "Tell us what flavor you'd like";
+        flavorSelect.replaceWith(flavorInput);
+      }
       
       // Load Dietary
       debugLog("Loading dietary options...");
@@ -1048,17 +1064,22 @@
       if (daysOut !== null && daysOut >= 0 && daysOut <= 10) rushCharge = rushFee;
       
       const totalBeforeDiscount = baseSubtotal + deliveryCharge + consultCharge + giftCharge + rushCharge;
-      
+      // Percent codes apply to cookies + fees but not the delivery charge,
+      // matching how staff-side totals are computed.
+      const baseForCodes = baseSubtotal + consultCharge + giftCharge + rushCharge;
+
       let discountTotal = 0;
       let discountLines = "";
-      
-      if (appliedDiscount && appliedDiscount.amount > 0) {
-        let discountAmount = appliedDiscount.type === "percent" ? totalBeforeDiscount * (appliedDiscount.amount / 100) : appliedDiscount.amount;
+
+      if (appliedDiscount && appliedDiscount.amount > 0 && baseForCodes > 0) {
+        let discountAmount = appliedDiscount.type === "percent" ? baseForCodes * (appliedDiscount.amount / 100) : appliedDiscount.amount;
+        if (discountAmount > baseForCodes) discountAmount = baseForCodes;
         discountTotal += discountAmount;
         discountLines += `<div class='estimate-row'><span>${appliedDiscount.label || "Discount"}</span><span>-${formatMoney(discountAmount)}</span></div>`;
       }
-      if (appliedReferral && appliedReferral.amount > 0) {
-        let referralAmount = appliedReferral.type === "percent" ? totalBeforeDiscount * (appliedReferral.amount / 100) : appliedReferral.amount;
+      if (appliedReferral && appliedReferral.amount > 0 && baseForCodes > 0) {
+        let referralAmount = appliedReferral.type === "percent" ? baseForCodes * (appliedReferral.amount / 100) : appliedReferral.amount;
+        if (referralAmount > baseForCodes) referralAmount = baseForCodes;
         discountTotal += referralAmount;
         discountLines += `<div class='estimate-row'><span>${appliedReferral.label || "Referral discount"}</span><span>-${formatMoney(referralAmount)}</span></div>`;
       }
@@ -1088,19 +1109,38 @@
       if (discountCode) {
         debugLog("Checking discount code: " + discountCode);
         const { data: disc, error } = await sb.from("discount_codes").select("*").eq("code", discountCode).maybeSingle();
+        const email = document.getElementById("email").value.trim();
         if (error) {
           debugLog("ERROR checking discount: " + error.message);
           discountHelp.textContent = "Error checking code.";
           discountHelp.classList.add("error");
-        } else if (disc) {
-          debugLog("Discount found");
-          appliedDiscount = { type: "percent", amount: 10, label: "Discount (10%)" };
-          discountHelp.textContent = "Discount applied!";
-          discountHelp.classList.add("success");
-        } else {
+        } else if (!disc) {
           debugLog("Discount not found");
           discountHelp.textContent = "Code not found.";
           discountHelp.classList.add("error");
+        } else if (disc.good_through_date && getDaysFromToday(disc.good_through_date) < 0) {
+          debugLog("Discount expired");
+          discountHelp.textContent = "This code has expired.";
+          discountHelp.classList.add("error");
+        } else if (disc.email_allowed && email && disc.email_allowed.toLowerCase() !== email.toLowerCase()) {
+          debugLog("Discount email mismatch");
+          discountHelp.textContent = "This code is reserved for a different email.";
+          discountHelp.classList.add("error");
+        } else if (!(Number(disc.amount) > 0)) {
+          debugLog("Discount has no value");
+          discountHelp.textContent = "This code is not active.";
+          discountHelp.classList.add("error");
+        } else {
+          const amount = Number(disc.amount);
+          const isPercent = disc.type === "percent";
+          appliedDiscount = {
+            type: isPercent ? "percent" : "fixed",
+            amount,
+            label: isPercent ? `Discount (${amount}% off)` : `Discount (${formatMoney(amount)} off)`
+          };
+          debugLog("Discount applied: " + appliedDiscount.label);
+          discountHelp.textContent = "Discount applied!";
+          discountHelp.classList.add("success");
         }
       } else {
         discountHelp.textContent = "";
@@ -1121,15 +1161,24 @@
           debugLog("ERROR checking referral: " + error.message);
           referralHelp.textContent = "Error checking code.";
           referralHelp.classList.add("error");
-        } else if (ref) {
-          debugLog("Referral found");
-          appliedReferral = { type: "percent", amount: 5, label: "Referral (5%)" };
-          referralHelp.textContent = "Referral applied!";
-          referralHelp.classList.add("success");
-        } else {
+        } else if (!ref) {
           debugLog("Referral not found");
           referralHelp.textContent = "Code not found.";
           referralHelp.classList.add("error");
+        } else if (ref.good_through_date && getDaysFromToday(ref.good_through_date) < 0) {
+          debugLog("Referral expired");
+          referralHelp.textContent = "This referral code has expired.";
+          referralHelp.classList.add("error");
+        } else if (!(Number(ref.referee_discount) > 0)) {
+          debugLog("Referral has no referee discount");
+          referralHelp.textContent = "This code is not active.";
+          referralHelp.classList.add("error");
+        } else {
+          const amount = Number(ref.referee_discount);
+          appliedReferral = { type: "percent", amount, label: `Referral (${amount}% off)` };
+          debugLog("Referral applied: " + appliedReferral.label);
+          referralHelp.textContent = "Referral applied!";
+          referralHelp.classList.add("success");
         }
       } else {
         referralHelp.textContent = "";
