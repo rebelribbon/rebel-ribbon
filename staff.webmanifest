@@ -1,0 +1,9 @@
+{
+  "name": "Rebel Ribbon Staff",
+  "short_name": "RR Staff",
+  "start_url": "/staff_ui.html",
+  "display": "browser",
+  "background_color": "#fdf2f8",
+  "theme_color": "#be185d",
+  "icons": [{ "src": "Bowtrans.png", "sizes": "any", "type": "image/png" }]
+}
