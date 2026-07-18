@@ -217,7 +217,7 @@
                     <div class="bg-white rounded-lg border p-4">
                         <h3 class="text-lg font-semibold mb-3">👤 Customer Info</h3>
                         <div class="grid grid-cols-2 gap-3 text-sm">
-                            <div><span class="font-medium">Name:</span><div id="cust_name"></div></div>
+                            <div><span class="font-medium">Name:</span><div id="cust_name"></div><button id="addContact" class="btn btn-secondary text-xs mt-1 lg:hidden hidden">📇 Save Contact</button></div>
                             <div><span class="font-medium">ID:</span><div id="cust_id" class="text-gray-700"></div></div>
                             <div><span class="font-medium">Phone:</span><br/><a id="cust_phone_link" class="text-blue-600"></a></div>
                             <div><span class="font-medium">Email:</span><br/><a id="cust_email" class="text-blue-600 break-all"></a></div>
@@ -527,10 +527,38 @@
 
     function renderReferralExtras(){
         document.getElementById('shareReferral').classList.toggle('hidden',!activeCustomerReferralCode);
+        document.getElementById('addContact').classList.toggle('hidden',!activeCustomer);
         const hasReward=!!activeOrder?.referral_reward_code;
         document.getElementById('rewardRow').classList.toggle('hidden',!hasReward);
         document.getElementById('ov_reward_code').textContent=activeOrder?.referral_reward_code||'';
     }
+
+    // Build a vCard for the active customer and hand it to the phone via the
+    // native share sheet (Add to Contacts), falling back to a .vcf download.
+    function buildVCard(c){
+        const esc=v=>String(v||'').replace(/[\\;,]/g,m=>'\\'+m).replace(/\n/g,'\\n');
+        const lines=['BEGIN:VCARD','VERSION:3.0',
+            `N:${esc(c.last_name)};${esc(c.first_name)};;;`,
+            `FN:${esc([c.first_name,c.last_name].filter(Boolean).join(' '))}`];
+        if(c.phone)lines.push(`TEL;TYPE=CELL:${String(c.phone).replace(/\D/g,'')}`);
+        if(c.email)lines.push(`EMAIL:${esc(c.email)}`);
+        if(c.street_address)lines.push(`ADR;TYPE=HOME:;;${esc([c.street_address,c.street_address_cont].filter(Boolean).join(', '))};${esc(c.city)};${esc(c.state)};${esc(c.zip)};USA`);
+        lines.push('NOTE:Rebel Ribbon customer','END:VCARD');
+        return lines.join('\r\n');
+    }
+    document.getElementById('addContact').onclick=async()=>{
+        const c=activeCustomer; if(!c){alert('No customer on this order.');return;}
+        const name=[c.first_name,c.last_name].filter(Boolean).join(' ')||'customer';
+        const blob=new Blob([buildVCard(c)],{type:'text/vcard'});
+        const file=new File([blob],`${name.replace(/\s+/g,'-')}.vcf`,{type:'text/vcard'});
+        if(navigator.canShare&&navigator.canShare({files:[file]})){
+            try{await navigator.share({files:[file],title:name});return;}
+            catch(e){if(e.name==='AbortError')return;/* fall through to download */}
+        }
+        const url=URL.createObjectURL(blob);const a=document.createElement('a');
+        a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();
+        setTimeout(()=>URL.revokeObjectURL(url),10000);
+    };
 
     // Square (1080x1080) branded share image with the customer's referral code.
     async function generateReferralImage(){
