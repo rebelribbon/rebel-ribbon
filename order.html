@@ -1122,6 +1122,10 @@
           debugLog("Discount expired");
           discountHelp.textContent = "This code has expired.";
           discountHelp.classList.add("error");
+        } else if (disc.uses_allowed != null && (disc.uses_count || 0) >= disc.uses_allowed) {
+          debugLog("Discount exhausted");
+          discountHelp.textContent = "This code has already been used.";
+          discountHelp.classList.add("error");
         } else if (disc.email_allowed && email && disc.email_allowed.toLowerCase() !== email.toLowerCase()) {
           debugLog("Discount email mismatch");
           discountHelp.textContent = "This code is reserved for a different email.";

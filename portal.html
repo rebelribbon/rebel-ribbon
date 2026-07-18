@@ -2046,6 +2046,7 @@ function wireRealtime(){
       const{data}=await sb.from('discount_codes').select('*').eq('code',code).maybeSingle();
       if(!data)return r;
       if(data.good_through_date&&isDatePast(data.good_through_date))return r;
+      if(data.uses_allowed!=null&&(data.uses_count||0)>data.uses_allowed)return r;
       if(data.email_allowed&&email&&data.email_allowed.toLowerCase()!==email.toLowerCase())return r;
       const v=Number(data.amount||0);
       if(v<=0)return r;
