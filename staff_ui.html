@@ -3,16 +3,17 @@
 <head>
     <meta charset="utf-8"/>
     <meta name="viewport" content="width=device-width,initial-scale=1"/>
-    <title>Rebel Ribbon Staff UI</title>
+    <title>Rebel Ribbon Staff</title>
     <!-- display:browser makes an iOS home-screen icon open this page in real
          Safari instead of the sealed web-app shell, whose in-app browser
          cannot render vCard contact previews and caches stale builds. -->
     <link rel="manifest" href="staff.webmanifest"/>
     <link rel="apple-touch-icon" href="apple-touch-icon.png"/>
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@400;600;700;800&display=swap');
+
+        /* ---------- Brand tokens ---------- */
         :root {
             --pink: #F4B4B8; --pink-light: #FAE0E2; --pink-soft: #FFF8F8;
             --rose: #E8A0A4; --rose-deep: #C0777D;
@@ -21,25 +22,23 @@
             --green: #5A9A6E; --green-soft: #EAF4EE;
             --amber: #A97F4F; --amber-soft: #F7EFE3;
             --red: #C94A4A; --red-soft: #F9E7E7;
+            --blue-soft: #E6EDF3;
             --radius: 14px;
             --shadow-sm: 0 1px 3px rgba(93,78,78,.06);
+            --shadow-md: 0 6px 18px -6px rgba(93,78,78,.15);
             --shadow: 0 12px 40px -12px rgba(93,78,78,.22);
         }
         * { box-sizing: border-box; }
         html { overflow-x: hidden; }
         body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; font-family: 'Nunito', sans-serif; background: var(--cream); color: var(--brown); }
         button, input, select, textarea { font-family: inherit; }
-        /* Recolor Tailwind's neutral grays into the warm brand palette */
-        .bg-gray-50 { background-color: var(--pink-soft) !important; }
-        .bg-gray-100 { background-color: var(--pink-soft) !important; }
-        .border, .border-b, .border-t, .border-2 { border-color: var(--line) !important; }
-        .text-gray-500, .text-gray-600 { color: var(--brown-light) !important; }
-        .text-gray-700, .text-gray-900 { color: var(--brown) !important; }
+        a { color: inherit; }
+        .serif { font-family: 'Playfair Display', Georgia, serif; }
         .link { color: var(--rose-deep); font-weight: 600; text-decoration: none; }
         .link:hover { text-decoration: underline; }
         .code-text { color: var(--rose-deep); font-weight: 700; }
 
-        /* Header */
+        /* ---------- Header ---------- */
         #header-banner { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(255,252,251,.94); backdrop-filter: blur(8px); color: var(--brown); z-index: 100; display: flex; align-items: center; padding: 0 1rem; border-bottom: 1px solid var(--line); }
         #menuToggle { margin-right: 1rem; background: transparent; border: 1px solid var(--line); width: 40px; height: 40px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: border-color .2s; }
         #menuToggle:hover { border-color: var(--rose); }
@@ -47,7 +46,7 @@
         #logo-wrapper { display: flex; align-items: center; gap: 0.6rem; position: absolute; left: 50%; transform: translateX(-50%); }
         #logo-text { font-family: 'Playfair Display', serif; font-size: 1.35rem; font-weight: 600; letter-spacing: 0.02em; color: var(--brown); }
 
-        /* Health strip */
+        /* ---------- Health strip ---------- */
         #health-banner { position: fixed; top: 60px; left: 0; right: 0; z-index: 80; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.45rem 1.1rem; background: var(--pink-soft); border-bottom: 1px solid var(--line); font-size: 0.78rem; color: var(--brown-light); }
         #health-banner.green { background: var(--green-soft); }
         #health-banner.yellow { background: var(--amber-soft); }
@@ -55,7 +54,7 @@
         .health-indicator { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
         .health-dot { width: 9px; height: 9px; border-radius: 50%; background-color: #b9a6a0; flex: none; }
 
-        /* Sidebar */
+        /* ---------- Sidebar ---------- */
         #sidebar { width: 260px; background: var(--brown-deep); color: #F1E9E5; position: fixed; top: 0; left: 0; height: 100vh; z-index: 90; padding-top: 60px; transform: translateX(-100%); transition: transform 0.3s ease; box-shadow: 12px 0 40px rgba(70,58,58,.25); display: flex; flex-direction: column; overflow-y: auto; }
         #sidebar.open { transform: translateX(0); }
         .sidebar-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600; color: #fff; padding: 1.1rem 1.25rem 0.9rem; margin: 0 0 0.75rem; border-bottom: 1px solid rgba(255,255,255,.08); }
@@ -68,50 +67,62 @@
         #logout-sidebar .btn-secondary { background: transparent; color: #E9DFDA; border-color: rgba(255,255,255,.25); }
         #logout-sidebar .btn-secondary:hover { border-color: var(--rose); color: #fff; background: rgba(232,160,164,.12); }
 
-        /* Layout */
+        /* ---------- Layout ---------- */
         #app-wrapper { display: flex; width: 100%; padding-top: 104px; }
-        #app-wrapper.hidden { display: none; }
         #content { flex-grow: 1; padding: 1rem; max-width: 100%; }
         @media (min-width: 768px) { #content { padding: 2rem; max-width: 1200px; margin: 0 auto; } }
         #pageTitle { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--brown); }
-        #searchContainer { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; }
+        #searchContainer { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; }
         #globalSearch { padding: 0.5rem 1rem; border-radius: 999px; border: 1px solid var(--line); background: #fff; flex-grow: 1; width: 100%; max-width: 320px; font-size: 0.9rem; color: var(--brown); }
         #globalSearch:focus { outline: none; border-color: var(--rose); box-shadow: 0 0 0 3px rgba(232,160,164,.18); }
-        /* Four equal-width tabs on small screens so they always fit one row */
+        #orderSort { padding: 0.45rem 0.75rem; border-radius: 999px; border: 1px solid var(--line); background: #fff; font-size: 0.82rem; color: var(--brown); }
         #orderFilters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; margin-bottom: 1.1rem; }
         @media (min-width: 640px) { #orderFilters { display: flex; flex-wrap: nowrap; gap: 0.5rem; justify-content: center; } }
         .filter-tab { font-size: 0.78rem; font-weight: 600; padding: 0.45rem 0.25rem; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--brown-light); transition: all 0.2s; cursor: pointer; text-align: center; white-space: nowrap; overflow: hidden; }
-        @media (min-width: 640px) { .filter-tab { font-size: 0.8rem; padding: 0.4rem 1rem; } }
         .filter-tab:hover { border-color: var(--rose); color: var(--rose-deep); }
         .filter-active { border-color: var(--brown); background: var(--brown); color: #fff; }
         .filter-active:hover { border-color: var(--brown); color: #fff; }
 
-        /* Table */
+        /* ---------- Table ---------- */
         .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--line); background: #fff; box-shadow: var(--shadow-sm); }
         table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
         #grid thead { background: var(--pink-soft); color: var(--brown-light); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; }
         .thcell { padding: 0.7rem 0.75rem; font-weight: 800; }
+        .thcell.sortable { cursor: pointer; user-select: none; }
+        .thcell.sortable:hover { color: var(--rose-deep); }
         .cell { padding: 0.9rem 0.75rem; overflow-wrap: break-word; vertical-align: middle; border-top: 1px solid var(--line-soft); }
         .pricing-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid var(--line-soft); }
         .pricing-item:last-child { border-bottom: none; }
 
-        /* Dialogs */
+        /* ---------- Dashboard ---------- */
+        .stat-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1.5rem; }
+        @media (min-width: 768px) { .stat-grid { grid-template-columns: repeat(4, 1fr); gap: 1rem; } }
+        .stat-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 1.1rem 1.25rem; box-shadow: var(--shadow-sm); }
+        .stat-value { font-family: 'Playfair Display', serif; font-size: 2rem; font-weight: 700; color: var(--brown); line-height: 1.1; }
+        .stat-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--brown-light); font-weight: 700; margin-top: 0.25rem; }
+        .stat-sub { font-size: 0.78rem; color: var(--rose-deep); margin-top: 0.2rem; font-weight: 600; }
+        .pickup-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.85rem 0; border-top: 1px solid var(--line-soft); cursor: pointer; }
+        .pickup-row:hover { background: var(--pink-soft); }
+        .pickup-when { font-weight: 700; color: var(--brown); white-space: nowrap; }
+
+        /* ---------- Dialogs ---------- */
         dialog::backdrop { background: rgba(70,58,58,0.45); backdrop-filter: blur(2px); }
         dialog { max-height: 90vh; overflow-y: auto; border: none; background: var(--cream); color: var(--brown); box-shadow: var(--shadow); }
-        #orderDrawer { width: 100%; max-width: 100%; margin: 0; border-radius: 0; height: 100%; overflow-x: hidden; }
+        #editor { border-radius: var(--radius); padding: 0; width: 100%; max-width: 48rem; }
+        #orderDrawer { width: 100%; max-width: 100%; margin: 0; border-radius: 0; height: 100%; overflow-x: hidden; padding: 0; }
         @media (min-width: 1024px) { #orderDrawer { max-width: 1080px; height: auto; border-radius: var(--radius); } }
         #drawerTitle { font-family: 'Playfair Display', serif; font-weight: 600; }
         #drawerActions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; width: 100%; margin-top: 0.85rem; }
         @media (min-width: 1024px) { #drawerActions { display: flex; width: auto; margin-top: 0; } }
-        #signinCard { position: fixed; inset: 0; z-index: 1000; background: linear-gradient(160deg, var(--pink-soft), var(--pink-light) 55%, var(--cream)); }
+        #signinCard { position: fixed; inset: 0; z-index: 1000; background: linear-gradient(160deg, var(--pink-soft), var(--pink-light) 55%, var(--cream)); display: flex; align-items: center; justify-content: center; padding: 1rem; }
         #signinTitle { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--brown); }
 
-        /* Cards */
-        .card { background: #fff; border: 1px solid var(--line) !important; border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow-sm); }
-        .card-accent { border-color: var(--pink) !important; }
+        /* ---------- Cards ---------- */
+        .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow-sm); }
+        .card-accent { border-color: var(--pink); }
         .card-label { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--rose-deep); margin: 0 0 0.9rem; }
 
-        /* Buttons */
+        /* ---------- Buttons ---------- */
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.5rem 1.1rem; border-radius: 999px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.18s; border: 1px solid transparent; white-space: nowrap; }
         .btn-primary { background: var(--brown); color: #fff; }
         .btn-primary:hover { background: var(--brown-light); }
@@ -125,15 +136,16 @@
         .btn-ghost { background: transparent; border: none; color: inherit; font-weight: 600; }
         .btn-ghost:hover { background: rgba(93,78,78,.06); }
         .btn-lg { padding: 0.75rem 1.5rem; font-size: 1rem; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; }
 
-        /* Badges */
-        .status-badge { padding: 0.22rem 0.65rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em; }
+        /* ---------- Badges ---------- */
+        .status-badge { padding: 0.22rem 0.65rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em; display: inline-block; }
         .status-active { background: var(--pink-light); color: #A2565C; }
         .status-completed, .status-approved, .status-paid { background: var(--green-soft); color: var(--green); }
         .status-canceled, .status-rejected, .status-failed, .status-refunded { background: var(--red-soft); color: var(--red); }
         .status-pending, .status-unpaid { background: var(--amber-soft); color: var(--amber); }
 
-        /* Reviews */
+        /* ---------- Reviews ---------- */
         .review-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
         .review-tab { padding: 0.45rem 1rem; border-radius: 999px; font-weight: 600; font-size: 0.85rem; cursor: pointer; border: 1px solid var(--line); background: #fff; color: var(--brown-light); }
         .review-tab:hover { border-color: var(--rose); }
@@ -144,14 +156,64 @@
         .review-stars { color: #D9A441; font-size: 1.05rem; letter-spacing: 0.12em; }
         .review-actions { display: flex; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line-soft); }
 
-        /* Survey link */
+        /* ---------- Survey link ---------- */
         .survey-link-box { background: var(--pink-soft); border: 1px solid var(--line); border-radius: 12px; padding: 1rem; margin-top: 0.5rem; }
         .survey-link-box.expired { background: var(--amber-soft); border-color: #E8D5BC; }
         .survey-link-input { width: 100%; padding: 0.5rem 0.65rem; border: 1px solid var(--line); border-radius: 10px; font-size: 0.85rem; margin: 0.5rem 0; background: #fff; color: var(--brown); }
+
+        /* ---------- Toasts & confirm modal ---------- */
+        #toastWrap { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 2000; display: flex; flex-direction: column; gap: 0.5rem; align-items: center; width: calc(100% - 2rem); max-width: 420px; pointer-events: none; }
+        .toast { pointer-events: auto; width: 100%; padding: 0.8rem 1.1rem; border-radius: 12px; font-size: 0.9rem; font-weight: 600; box-shadow: var(--shadow); animation: toastIn .2s ease; border: 1px solid var(--line); background: #fff; color: var(--brown); }
+        .toast.success { background: var(--green-soft); border-color: #CFE6D6; color: #2F6B45; }
+        .toast.error { background: var(--red-soft); border-color: #EFCFCF; color: #9A3B3B; }
+        @keyframes toastIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+        #confirmModal { border: none; border-radius: var(--radius); padding: 0; max-width: 400px; width: calc(100% - 2rem); background: var(--cream); box-shadow: var(--shadow); }
+        #confirmModal .cm-body { padding: 1.5rem 1.5rem 1rem; font-size: 0.95rem; white-space: pre-line; }
+        #confirmModal .cm-actions { display: flex; gap: 0.5rem; justify-content: flex-end; padding: 0 1.5rem 1.5rem; }
+
+        /* =========================================================
+           Utility classes (replaces the Tailwind CDN). Only the
+           classes actually used in the markup/JS are defined here.
+           ========================================================= */
+        .flex { display: flex; } .grid { display: grid; } .block { display: block; }
+        .hidden { display: none !important; }
+        .sticky { position: sticky; } .top-0 { top: 0; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; } .justify-center { justify-content: center; } .justify-end { justify-content: flex-end; }
+        .flex-wrap { flex-wrap: wrap; } .grow { flex-grow: 1; }
+        .grid-cols-1 { grid-template-columns: repeat(1,1fr); } .grid-cols-2 { grid-template-columns: repeat(2,1fr); } .grid-cols-3 { grid-template-columns: repeat(3,1fr); }
+        .col-span-2 { grid-column: span 2; }
+        .gap-2 { gap: .5rem; } .gap-3 { gap: .75rem; } .gap-4 { gap: 1rem; }
+        .space-y-1 > * + * { margin-top: .25rem; } .space-y-2 > * + * { margin-top: .5rem; } .space-y-3 > * + * { margin-top: .75rem; } .space-y-4 > * + * { margin-top: 1rem; } .space-y-6 > * + * { margin-top: 1.5rem; }
+        .w-full { width: 100%; } .w-20 { width: 5rem; } .w-32 { width: 8rem; } .h-4 { height: 1rem; } .w-4 { width: 1rem; }
+        .min-w-full { min-width: 100%; } .max-w-md { max-width: 28rem; } .max-w-full { max-width: 100%; } .max-h-40 { max-height: 10rem; } .overflow-auto { overflow: auto; }
+        .p-0 { padding: 0; } .p-1 { padding: .25rem; } .p-1\.5 { padding: .375rem; } .p-2 { padding: .5rem; } .p-3 { padding: .75rem; } .p-4 { padding: 1rem; } .p-6 { padding: 1.5rem; } .p-8 { padding: 2rem; }
+        .px-2 { padding-left: .5rem; padding-right: .5rem; } .px-3 { padding-left: .75rem; padding-right: .75rem; } .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .py-1 { padding-top: .25rem; padding-bottom: .25rem; } .py-1\.5 { padding-top: .375rem; padding-bottom: .375rem; } .py-2 { padding-top: .5rem; padding-bottom: .5rem; } .py-2\.5 { padding-top: .625rem; padding-bottom: .625rem; } .py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+        .mb-1 { margin-bottom: .25rem; } .mb-2 { margin-bottom: .5rem; } .mb-3 { margin-bottom: .75rem; } .mb-4 { margin-bottom: 1rem; } .mb-5 { margin-bottom: 1.25rem; } .mb-6 { margin-bottom: 1.5rem; }
+        .mt-1 { margin-top: .25rem; } .mt-1\.5 { margin-top: .375rem; } .mt-2 { margin-top: .5rem; } .mt-4 { margin-top: 1rem; }
+        .text-xs { font-size: .75rem; } .text-sm { font-size: .875rem; } .text-lg { font-size: 1.125rem; } .text-xl { font-size: 1.25rem; } .text-2xl { font-size: 1.5rem; }
+        .text-left { text-align: left; } .text-center { text-align: center; } .text-right { text-align: right; }
+        .font-medium { font-weight: 500; } .font-semibold { font-weight: 600; } .font-bold { font-weight: 700; } .font-extrabold { font-weight: 800; }
+        .uppercase { text-transform: uppercase; } .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .whitespace-nowrap { white-space: nowrap; } .break-all { word-break: break-all; }
+        .text-gray-400 { color: #B9A6A0; } .text-gray-500 { color: var(--brown-light); } .text-gray-600 { color: var(--brown-light); } .text-gray-700 { color: var(--brown); }
+        .text-red-500, .text-red-600, .text-red-700 { color: var(--red); } .text-green-600, .text-green-700 { color: var(--green); } .text-pink-700 { color: var(--rose-deep); } .text-blue-600 { color: var(--rose-deep); }
+        .bg-white { background: #fff; } .bg-gray-50 { background: var(--pink-soft); } .bg-gray-100 { background: var(--pink-soft); } .bg-red-50 { background: var(--red-soft); }
+        .border { border: 1px solid var(--line); } .border-b { border-bottom: 1px solid var(--line); } .border-t { border-top: 1px solid var(--line); }
+        .rounded { border-radius: .375rem; } .rounded-lg { border-radius: .6rem; } .rounded-xl { border-radius: .75rem; } .rounded-2xl { border-radius: 1rem; } .rounded-full { border-radius: 9999px; }
+        .shadow-sm { box-shadow: var(--shadow-sm); } .shadow-md { box-shadow: var(--shadow-md); } .shadow-2xl { box-shadow: var(--shadow); }
+        .cursor-pointer { cursor: pointer; }
+        .hover\:bg-gray-100:hover { background: var(--pink-soft); }
+        @media (min-width: 768px) { .md\:grid-cols-2 { grid-template-columns: repeat(2,1fr); } }
+        @media (min-width: 1024px) {
+            .lg\:col-span-2 { grid-column: span 2; } .lg\:gap-6 { gap: 1.5rem; } .lg\:grid-cols-3 { grid-template-columns: repeat(3,1fr); }
+            .lg\:hidden { display: none; } .lg\:mb-6 { margin-bottom: 1.5rem; } .lg\:p-6 { padding: 1.5rem; }
+            .lg\:space-y-6 > * + * { margin-top: 1.5rem; } .lg\:text-3xl { font-size: 1.875rem; }
+        }
     </style>
 </head>
 <body>
-    <div id="signinCard" class="flex items-center justify-center p-4">
+    <div id="signinCard">
         <div class="w-full max-w-md bg-white rounded-2xl p-8" style="box-shadow: var(--shadow);">
             <img src="Bowtrans.png" alt="Rebel Ribbon" style="height: 44px; margin: 0 auto 0.75rem; display: block;"/>
             <h1 id="signinTitle" class="text-2xl mb-1 text-center">Rebel Ribbon</h1>
@@ -184,7 +246,8 @@
     <nav id="sidebar">
         <h1 class="sidebar-title">Menu</h1>
         <div id="main-nav">
-            <button class="nav-item nav-active" data-key="order_list">Orders</button>
+            <button class="nav-item nav-active" data-key="dashboard">Dashboard</button>
+            <button class="nav-item" data-key="order_list">Orders</button>
             <button class="nav-item" data-key="surveys">Surveys</button>
             <button class="nav-item" data-key="reviews">Website Reviews</button>
         </div>
@@ -194,24 +257,32 @@
             <button class="nav-item submenu-item" data-key="referral_codes">Referral Codes</button>
             <button class="nav-item submenu-item" data-key="flavors">Flavors</button>
             <button class="nav-item submenu-item" data-key="dietary_options">Dietary Options</button>
-            <button class="nav-item submenu-item" data-key="pricing">Pricing & Fees</button>
+            <button class="nav-item submenu-item" data-key="pricing">Pricing &amp; Fees</button>
             <button class="nav-item submenu-item" data-key="costs">Costs</button>
         </div>
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-8</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-9</div>
         </div>
     </nav>
 
     <div id="app-wrapper" class="hidden">
         <main id="content" class="max-w-full">
             <header class="flex flex-wrap items-center justify-between mb-4 lg:mb-6 gap-2">
-                <h2 id="pageTitle" class="text-2xl lg:text-3xl font-bold">Orders</h2>
+                <h2 id="pageTitle" class="text-2xl lg:text-3xl font-bold">Dashboard</h2>
             </header>
-            <div id="orderPageControls">
+
+            <div id="dashboard" class="hidden"></div>
+
+            <div id="orderPageControls" class="hidden">
                 <div id="searchContainer">
-                    <input id="globalSearch" type="search" placeholder="Search customer, ID, date" class="px-3 py-1.5 rounded-lg border shadow-sm text-sm"/>
+                    <input id="globalSearch" type="search" placeholder="Search customer, ID, status" class="px-3 py-1.5 rounded-lg border shadow-sm text-sm"/>
+                    <select id="orderSort" aria-label="Sort orders">
+                        <option value="newest">Newest first</option>
+                        <option value="pickup">Pickup soonest</option>
+                        <option value="name">Customer A–Z</option>
+                    </select>
                     <button id="refreshAll" class="btn btn-secondary shadow-sm">Refresh</button>
                 </div>
                 <div id="orderFilters">
@@ -221,6 +292,7 @@
                     <button class="filter-tab" data-filter="All">All</button>
                 </div>
             </div>
+
             <div id="dataActions" class="flex items-center justify-between mb-2 flex-wrap gap-2">
                 <div class="flex items-center gap-2">
                     <button id="addBtn" class="btn btn-primary shadow-md">Add New</button>
@@ -232,10 +304,11 @@
                     <button id="next" class="btn btn-secondary text-sm px-3 py-1.5">Next</button>
                 </div>
             </div>
+
             <div id="pricingList" class="space-y-3 hidden"></div>
             <div id="reviewsContainer" class="hidden"></div>
             <div class="table-wrap">
-                <table id="grid" class="min-w-full text-sm table-fixed">
+                <table id="grid" class="min-w-full text-sm">
                     <colgroup id="colgroup"></colgroup>
                     <thead><tr id="thead"></tr></thead>
                     <tbody id="tbody"></tbody>
@@ -244,21 +317,21 @@
         </main>
     </div>
 
-    <dialog id="editor" class="rounded-2xl p-0 w-full max-w-3xl shadow-2xl">
+    <dialog id="editor">
         <form method="dialog" class="p-0">
             <div class="p-4 border-b bg-white flex items-center justify-between">
-                <h2 id="editorTitle" class="text-lg font-semibold" style="font-family:'Playfair Display',serif;">Edit</h2>
+                <h2 id="editorTitle" class="text-lg serif">Edit</h2>
                 <button value="close" class="btn btn-ghost text-xl" aria-label="Close">&times;</button>
             </div>
             <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
-            <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
+            <div class="p-4 border-t bg-white flex items-center justify-end gap-2">
                 <button id="deleteBtn" type="button" class="btn btn-danger hidden">Delete</button>
                 <button id="saveBtn" class="btn btn-primary">Save</button>
             </div>
         </form>
     </dialog>
 
-    <dialog id="orderDrawer" class="rounded-2xl p-0 shadow-2xl">
+    <dialog id="orderDrawer">
         <div class="p-0">
             <div class="sticky top-0 p-4 border-b bg-white flex flex-wrap items-center justify-between shadow-sm" style="z-index:10;">
                 <div class="flex items-center gap-3">
@@ -321,7 +394,7 @@
                         <div class="grid grid-cols-3 gap-4 text-sm">
                             <div>
                                 <span class="font-medium">Photo:</span>
-                                <img id="ov_photo" class="w-32 h-32 mt-2 object-cover rounded border cursor-pointer"/>
+                                <img id="ov_photo" class="w-32 h-32 mt-2 rounded border cursor-pointer" style="object-fit:cover;"/>
                                 <input id="uploadPhoto" type="file" accept="image/*" class="block mt-2 text-xs"/>
                                 <button id="btnUploadPhoto" class="btn btn-secondary text-xs mt-1">Upload</button>
                             </div>
@@ -348,19 +421,7 @@
                 <div class="space-y-4 lg:space-y-6">
                     <div class="card card-accent">
                         <h3 class="card-label">Pricing</h3>
-                        <div class="text-sm space-y-2">
-                            <div class="flex justify-between"><span>Price/dz:</span><span id="t_price"></span></div>
-                            <div class="flex justify-between"><span>Base:</span><span id="t_base"></span></div>
-                            <div class="flex justify-between"><span>Delivery:</span><span id="t_delivery"></span></div>
-                            <div class="flex justify-between"><span>Consult:</span><span id="t_consult"></span></div>
-                            <div class="flex justify-between"><span>Gift fee:</span><span id="t_gift"></span></div>
-                            <div class="flex justify-between"><span>Fees:</span><span id="t_adj_fees" style="color:var(--green);"></span></div>
-                            <div class="flex justify-between"><span>Code disc:</span><span id="t_disc_code" style="color:var(--red);"></span></div>
-                            <div class="flex justify-between"><span>Referral:</span><span id="t_disc_referral" style="color:var(--red);"></span></div>
-                            <div class="flex justify-between"><span>Other disc:</span><span id="t_adj_disc" style="color:var(--red);"></span></div>
-                            <hr class="my-2" style="border:none;border-top:1px solid var(--line);"/>
-                            <div class="font-extrabold text-xl flex justify-between">Total:<span id="t_total"></span></div>
-                        </div>
+                        <div id="pricingRows" class="text-sm space-y-2"></div>
                         <div class="mt-4 text-sm space-y-1">
                             <div><span class="font-medium">Discount:</span> <span id="ov_discount_code"></span></div>
                             <div><span class="font-medium">Referral:</span> <span id="ov_referral_code"></span></div>
@@ -391,444 +452,973 @@
         </div>
     </dialog>
 
+    <div id="toastWrap"></div>
+    <dialog id="confirmModal">
+        <div class="cm-body" id="confirmText"></div>
+        <div class="cm-actions">
+            <button id="confirmCancel" class="btn btn-secondary">Cancel</button>
+            <button id="confirmOk" class="btn btn-primary">Confirm</button>
+        </div>
+    </dialog>
+
     <script>
     // =====================================================
-    // FULL INTEGRATED STAFF UI LOGIC
+    //  Rebel Ribbon — Staff console
     // =====================================================
     const SUPABASE_URL = 'https://zyntkwammltmjjvgelwg.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp5bnRrd2FtbWx0bWpqdmdlbHdnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI1MzkxNjYsImV4cCI6MjA3ODExNTE2Nn0.eLkkGBuSRNUd7P7mJT5Be-dsvVjGBZ9pkupQq6KGT9A';
     const SURVEY_BASE_URL = 'https://rebelribbon.com/survey.html';
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+    // Inline placeholder so we never depend on a third-party image service.
+    const NO_PHOTO = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="128" height="128" fill="%23F7EDED"/><text x="64" y="68" font-family="Arial" font-size="12" fill="%237A6B6B" text-anchor="middle">No photo</text></svg>'
+    );
+
+    // ---------- small helpers ----------
+    const $id = id => document.getElementById(id);
+    const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
     const onlyCompanyEmail = e => /@rebelribbon\.com$/i.test(e);
-    const $ = (t,c,h)=>{ const e=document.createElement(t); if(c)e.className=c; if(h!==undefined)e.innerHTML=h; return e; };
-    const fmt = v => v==null ? '' : (typeof v==='boolean' ? (v?'Yes':'No') : String(v));
-    const dateOnly = d => { if(!d)return''; const dt=new Date(d); return new Date(dt.getTime()-dt.getTimezoneOffset()*60000).toISOString().slice(0,10); };
-    const formatOrderId = id => { if(id==null)return''; const n=Number(id); return Number.isFinite(n)?String(Math.trunc(n)).padStart(7,'0'):String(id); };
-    const getStatusClass = s => s ? `status-${s.toLowerCase().replace(/\s/g,'-')}` : 'status-active';
-    const money = n => '$'+(Number(n||0)).toFixed(2);
-    const formatPhone = p => { if(!p)return''; const c=(''+p).replace(/\D/g,''); const m=c.match(/^(\d{3})(\d{3})(\d{4})$/); return m?`(${m[1]}) ${m[2]}-${m[3]}`:p; };
-    const escapeHtml = t => { if(!t)return''; const d=document.createElement('div'); d.textContent=t; return d.innerHTML; };
+    const fmt = v => v == null ? '' : (typeof v === 'boolean' ? (v ? 'Yes' : 'No') : String(v));
+    const money = n => '$' + (Number(n || 0)).toFixed(2);
+    const escapeHtml = t => { if (t == null) return ''; const d = document.createElement('div'); d.textContent = t; return d.innerHTML; };
+    const formatOrderId = id => { if (id == null) return ''; const n = Number(id); return Number.isFinite(n) ? String(Math.trunc(n)).padStart(7, '0') : String(id); };
+    const getStatusClass = s => s ? `status-${String(s).toLowerCase().replace(/\s/g, '-')}` : 'status-active';
+    const dateOnly = d => { if (!d) return ''; const dt = new Date(d); return new Date(dt.getTime() - dt.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+    const formatPhone = p => { if (!p) return ''; const c = ('' + p).replace(/\D/g, ''); const m = c.match(/^(\d{3})(\d{3})(\d{4})$/); return m ? `(${m[1]}) ${m[2]}-${m[3]}` : p; };
+    const prettyDate = s => { const d = s ? new Date(s + 'T00:00:00') : null; return d && !isNaN(d) ? d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) : (s || ''); };
+    const todayStr = () => dateOnly(new Date());
+
+    // ---------- toast + confirm (replace native alert/confirm) ----------
+    function toast(msg, type = 'info', ms = 3200) {
+        const t = el('div', 'toast ' + type, escapeHtml(msg));
+        $id('toastWrap').appendChild(t);
+        setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .3s'; setTimeout(() => t.remove(), 300); }, ms);
+    }
+    function confirmDialog(message, okLabel = 'Confirm', danger = false) {
+        return new Promise(resolve => {
+            const dlg = $id('confirmModal');
+            $id('confirmText').textContent = message;
+            const ok = $id('confirmOk');
+            ok.textContent = okLabel;
+            ok.className = 'btn ' + (danger ? 'btn-danger' : 'btn-primary');
+            const done = val => { dlg.close(); ok.onclick = null; $id('confirmCancel').onclick = null; resolve(val); };
+            ok.onclick = () => done(true);
+            $id('confirmCancel').onclick = () => done(false);
+            dlg.onclose = () => resolve(false);
+            dlg.showModal();
+        });
+    }
+
+    // ---------- table / view configuration ----------
+    const customerOptions = async () => {
+        const { data } = await sb.from('customers').select('id,first_name,last_name').order('first_name').limit(1000);
+        return (data || []).map(c => ({ value: c.id, label: `${c.first_name || ''} ${c.last_name || ''}`.trim() }));
+    };
+    const nameOptions = async (table, col = 'name') => (await sb.from(table).select(col)).data?.map(r => r[col]) || [];
 
     const tables = {
-        order_list: { title:'Orders', table:'orders', readOnly:true, customLoader:'loadOrderList', center:true, cols:[{key:'customer_name',label:'Customer',type:'text',w:'50'},{key:'status',label:'Status',type:'text',w:'50'}] },
-        orders: { title:'Orders', table:'orders', cols:[
-            {key:'order_id',label:'Order ID',type:'text',w:'12'},{key:'customer_id',label:'Customer',type:'select-async',w:'20',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},
-            {key:'event_type_name',label:'Event',type:'text',w:'20'},{key:'pickup_delivery_date',label:'Pickup date',type:'date',w:'18'},{key:'event_date',label:'Event date',type:'date',w:'14'},
-            {key:'pickup_delivery_type',label:'Type',type:'select',w:'18',options:['Pickup','Delivery']},{key:'cookie_amount_dzns',label:'Dozens',type:'number',step:'0.01',w:'18'},
-            {key:'flavor',label:'Flavor',type:'select-async',w:'14',asyncOptions:async()=>(await sb.from('flavors').select('name')).data?.map(r=>r.name)||[]},
-            {key:'dietary_option',label:'Dietary',type:'select-async',w:'16',asyncOptions:async()=>(await sb.from('dietary_options').select('name')).data?.map(r=>r.name)||[]},
-            {key:'design_notes',label:'Notes',type:'textarea',w:'20'},{key:'design_inspiration_photo',label:'Photo URL',type:'url',w:'20'},
-            {key:'gift_note',label:'Gift note',type:'checkbox',w:'10'},{key:'gift_note_text',label:'Gift text',type:'textarea',w:'16'},
-            {key:'consultation_requested',label:'Consult',type:'checkbox',w:'20'},{key:'discount_code_used',label:'Discount code',type:'text',w:'16'},
-            {key:'referral_code_used',label:'Referral code',type:'text',w:'16'},{key:'status',label:'Status',type:'select',w:'14',options:['Active','Completed','Canceled']}
-        ]},
-        discount_codes: { title:'Discount Codes', table:'discount_codes', isSettings:true, list_keys:['code'], cols:[{key:'code',label:'Code',type:'text',required:true,w:'20'},{key:'type',label:'Type',type:'select',options:['percent','fixed'],required:true,w:'20'},{key:'amount',label:'Amount',type:'number',step:'0.01',w:'20'},{key:'uses_allowed',label:'Uses',type:'number',w:'20'},{key:'email_allowed',label:'Email',type:'email',w:'20'},{key:'good_through_date',label:'Expires',type:'date',w:'20'}] },
-        referral_codes: { title:'Referral Codes', table:'referral_codes', isSettings:true, list_keys:['code'], cols:[{key:'code',label:'Code',type:'text',required:true,w:'20'},{key:'associated_customer_id',label:'Customer',type:'select-async',w:'20',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},{key:'good_through_date',label:'Expires',type:'date',w:'20'},{key:'referrer_discount',label:'Referrer %',type:'number',step:'0.01',w:'20'},{key:'referee_discount',label:'Referee %',type:'number',step:'0.01',w:'20'}] },
-        flavors: { title:'Flavors', table:'flavors', isSettings:true, cols:[{key:'name',label:'Name',type:'text',required:true,w:'40'}] },
-        dietary_options: { title:'Dietary Options', table:'dietary_options', isSettings:true, cols:[{key:'name',label:'Name',type:'text',required:true,w:'40'}] },
-        pricing: { title:'Pricing', table:'pricing', isSettings:true, customLoader:'loadPricingList', cols:[{key:'price_per_dozen',label:'Price/dozen',type:'number',step:'0.01',w:'20'},{key:'delivery_fee',label:'Delivery fee',type:'number',step:'0.01',w:'20'},{key:'consultation_fee',label:'Consult fee',type:'number',step:'0.01',w:'20'},{key:'gift_note_fee',label:'Gift fee',type:'number',step:'0.01',w:'20'},{key:'rush_fee',label:'Rush fee',type:'number',step:'0.01',w:'20'}] },
-        costs: { title:'Costs', table:'costs', isSettings:true, cols:[{key:'cost_date',label:'Date',type:'date',w:'25'},{key:'item_name',label:'Item',type:'text',required:true,w:'55'},{key:'amount',label:'Amount',type:'number',step:'0.01',required:true,w:'20'}] },
-        surveys: { title:'Surveys', table:'surveys', customLoader:'loadSurveyList', cols:[{key:'customer_id',label:'Customer',type:'select-async',w:'22',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},{key:'cookies_stars',label:'Cookies',type:'number',min:1,max:5,w:'18'},{key:'service_stars',label:'Service',type:'number',min:1,max:5,w:'18'},{key:'recommend',label:'Recommend',type:'checkbox',w:'22'},{key:'improvements',label:'Improvements',type:'textarea',w:'30'},{key:'website_review',label:'Review',type:'textarea',w:'30'}] },
-        reviews: { title:'Website Reviews', table:'website_reviews', customLoader:'loadReviews', readOnly:true, cols:[] }
+        dashboard: { title: 'Dashboard', customLoader: 'loadDashboard', readOnly: true },
+        order_list: { title: 'Orders', table: 'orders', readOnly: true, customLoader: 'loadOrderList', center: true,
+            cols: [{ key: 'customer_name', label: 'Customer', w: '50' }, { key: 'status', label: 'Status', w: '50' }] },
+        orders: { title: 'Orders', table: 'orders', cols: [
+            { key: 'order_id', label: 'Order ID', type: 'text', w: '12' },
+            { key: 'customer_id', label: 'Customer', type: 'select-async', w: '20', asyncOptions: customerOptions },
+            { key: 'event_type_name', label: 'Event', type: 'text', w: '20' },
+            { key: 'pickup_delivery_date', label: 'Pickup date', type: 'date', w: '18' },
+            { key: 'event_date', label: 'Event date', type: 'date', w: '14' },
+            { key: 'pickup_delivery_type', label: 'Type', type: 'select', w: '18', options: ['Pickup', 'Delivery'] },
+            { key: 'cookie_amount_dzns', label: 'Dozens', type: 'number', step: '0.01', w: '18' },
+            { key: 'flavor', label: 'Flavor', type: 'select-async', w: '14', asyncOptions: () => nameOptions('flavors') },
+            { key: 'dietary_option', label: 'Dietary', type: 'select-async', w: '16', asyncOptions: () => nameOptions('dietary_options') },
+            { key: 'design_notes', label: 'Notes', type: 'textarea', w: '20' },
+            { key: 'design_inspiration_photo', label: 'Photo URL', type: 'url', w: '20' },
+            { key: 'gift_note', label: 'Gift note', type: 'checkbox', w: '10' },
+            { key: 'gift_note_text', label: 'Gift text', type: 'textarea', w: '16' },
+            { key: 'consultation_requested', label: 'Consult', type: 'checkbox', w: '20' },
+            { key: 'discount_code_used', label: 'Discount code', type: 'text', w: '16' },
+            { key: 'referral_code_used', label: 'Referral code', type: 'text', w: '16' },
+            { key: 'status', label: 'Status', type: 'select', w: '14', options: ['Active', 'Completed', 'Canceled'] }
+        ] },
+        discount_codes: { title: 'Discount Codes', table: 'discount_codes', list_keys: ['code'], cols: [
+            { key: 'code', label: 'Code', type: 'text', required: true, w: '20' },
+            { key: 'type', label: 'Type', type: 'select', options: ['percent', 'fixed'], required: true, w: '20' },
+            { key: 'amount', label: 'Amount', type: 'number', step: '0.01', w: '20' },
+            { key: 'uses_allowed', label: 'Uses', type: 'number', w: '20' },
+            { key: 'email_allowed', label: 'Email', type: 'email', w: '20' },
+            { key: 'good_through_date', label: 'Expires', type: 'date', w: '20' }
+        ] },
+        referral_codes: { title: 'Referral Codes', table: 'referral_codes', list_keys: ['code'], cols: [
+            { key: 'code', label: 'Code', type: 'text', required: true, w: '20' },
+            { key: 'associated_customer_id', label: 'Customer', type: 'select-async', w: '20', asyncOptions: customerOptions },
+            { key: 'good_through_date', label: 'Expires', type: 'date', w: '20' },
+            { key: 'referrer_discount', label: 'Referrer %', type: 'number', step: '0.01', w: '20' },
+            { key: 'referee_discount', label: 'Referee %', type: 'number', step: '0.01', w: '20' }
+        ] },
+        flavors: { title: 'Flavors', table: 'flavors', cols: [{ key: 'name', label: 'Name', type: 'text', required: true, w: '40' }] },
+        dietary_options: { title: 'Dietary Options', table: 'dietary_options', cols: [{ key: 'name', label: 'Name', type: 'text', required: true, w: '40' }] },
+        pricing: { title: 'Pricing', table: 'pricing', customLoader: 'loadPricingList', cols: [
+            { key: 'price_per_dozen', label: 'Price/dozen', type: 'number', step: '0.01', w: '20' },
+            { key: 'delivery_fee', label: 'Delivery fee', type: 'number', step: '0.01', w: '20' },
+            { key: 'consultation_fee', label: 'Consult fee', type: 'number', step: '0.01', w: '20' },
+            { key: 'gift_note_fee', label: 'Gift fee', type: 'number', step: '0.01', w: '20' },
+            { key: 'rush_fee', label: 'Rush fee', type: 'number', step: '0.01', w: '20' }
+        ] },
+        costs: { title: 'Costs', table: 'costs', cols: [
+            { key: 'cost_date', label: 'Date', type: 'date', w: '25' },
+            { key: 'item_name', label: 'Item', type: 'text', required: true, w: '55' },
+            { key: 'amount', label: 'Amount', type: 'number', step: '0.01', required: true, w: '20' }
+        ] },
+        surveys: { title: 'Surveys', table: 'surveys', customLoader: 'loadSurveyList', cols: [
+            { key: 'customer_id', label: 'Customer', type: 'select-async', w: '22', asyncOptions: customerOptions },
+            { key: 'cookies_stars', label: 'Cookies', type: 'number', min: 1, max: 5, w: '18' },
+            { key: 'service_stars', label: 'Service', type: 'number', min: 1, max: 5, w: '18' },
+            { key: 'recommend', label: 'Recommend', type: 'checkbox', w: '22' },
+            { key: 'improvements', label: 'Improvements', type: 'textarea', w: '30' },
+            { key: 'website_review', label: 'Review', type: 'textarea', w: '30' }
+        ] },
+        reviews: { title: 'Website Reviews', table: 'website_reviews', customLoader: 'loadReviews', readOnly: true, cols: [] }
     };
 
-    const tabOrder=['order_list','surveys','reviews'], settingsOrder=['discount_codes','referral_codes','flavors','dietary_options','pricing','costs'];
-    let activeKey='order_list', activeOrderFilter='Active', activeReviewTab='pending', page=0, totalCount=0;
-    const pageSize=20;
+    let activeKey = 'dashboard', activeOrderFilter = 'Active', activeReviewTab = 'pending';
+    let orderSort = 'newest', page = 0, totalCount = 0;
+    let sortState = {}; // per-table {key, asc} for the generic settings tables
+    const pageSize = 20;
 
-    // AUTH
-    document.getElementById('signInButton').onclick = async()=>{ const e=document.getElementById('email').value.trim(), p=document.getElementById('password').value.trim(); if(!onlyCompanyEmail(e)){document.getElementById('authMsg').textContent='Use @rebelribbon.com';return;} const{error}=await sb.auth.signInWithPassword({email:e,password:p}); if(error){document.getElementById('authMsg').textContent=error.message;return;} bootstrap(); };
-    document.getElementById('logout').onclick = async()=>{ await sb.auth.signOut(); location.reload(); };
+    // ---------- auth ----------
+    $id('signInButton').onclick = async () => {
+        const email = $id('email').value.trim(), pw = $id('password').value.trim();
+        if (!onlyCompanyEmail(email)) { $id('authMsg').textContent = 'Use your @rebelribbon.com email.'; return; }
+        const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+        if (error) { $id('authMsg').textContent = error.message; return; }
+        bootstrap();
+    };
+    $id('logout').onclick = async () => { await sb.auth.signOut(); location.reload(); };
 
-    async function bootstrap(){ const{data:{session}}=await sb.auth.getSession(); if(!session){document.getElementById('signinCard').classList.remove('hidden');document.getElementById('app-wrapper').classList.add('hidden');return;} if(!onlyCompanyEmail(session.user?.email)){await sb.auth.signOut();return;} document.getElementById('who').textContent=session.user.email.split('@')[0]; document.getElementById('signinCard').classList.add('hidden'); document.getElementById('app-wrapper').classList.remove('hidden'); renderTabs(); loadTable(); wireRealtime(); startHealthMonitor(); }
-
-    document.getElementById('menuToggle').onclick=()=>{document.getElementById('sidebar').classList.toggle('open');};
-    document.getElementById('sidebar').onclick=e=>{if(e.target.closest('.nav-item'))document.getElementById('sidebar').classList.remove('open');};
-    // Click/tap anywhere outside the open sidebar closes it.
-    document.addEventListener('click',e=>{const side=document.getElementById('sidebar');if(!side.classList.contains('open'))return;if(e.target.closest('#sidebar')||e.target.closest('#menuToggle'))return;side.classList.remove('open');});
-
-    // TABLE LOADING
-    async function loadTable(){ const conf=tables[activeKey]; document.getElementById('pageTitle').textContent=conf.title; const isP=activeKey==='pricing',isO=activeKey==='order_list',isR=activeKey==='reviews';
-        document.getElementById('orderPageControls').classList.toggle('hidden',!isO); document.getElementById('addBtn').classList.toggle('hidden',!!conf.readOnly||isP||isR); document.getElementById('dataActions').classList.toggle('hidden',isP||isR);
-        document.getElementById('pricingList').classList.toggle('hidden',!isP); document.getElementById('reviewsContainer').classList.toggle('hidden',!isR); document.getElementById('grid').closest('.table-wrap').classList.toggle('hidden',isP||isR);
-        document.getElementById('exportBtn').classList.toggle('hidden',activeKey!=='costs');
-        if(conf.customLoader==='loadPricingList'){await loadPricingList();return;} if(conf.customLoader==='loadReviews'){await loadReviews();return;}
-        if(conf.customLoader==='loadOrderList'){buildColGroup(conf,conf.cols);buildThead(conf,conf.cols);await loadOrderList();return;}
-        if(conf.customLoader==='loadSurveyList'){await loadSurveyList(conf);return;}
-        const dc=conf.list_keys?conf.cols.filter(c=>conf.list_keys.includes(c.key)):conf.cols; buildColGroup(conf,dc); buildThead(conf,dc);
-        const tbody=document.getElementById('tbody'); tbody.innerHTML='';
-        let q=sb.from(conf.table).select('*',{count:'exact'}); const s=document.getElementById('globalSearch').value?.trim();
-        if(s){const searchable=conf.cols.filter(c=>['text','textarea','email','url','select'].includes(c.type));if(searchable.length)q=q.or(searchable.map(c=>`${c.key}.ilike.%${s}%`).join(','));}
-        q=q.order('updated_at',{ascending:false}).range(page*pageSize,page*pageSize+pageSize-1); const{data,error,count}=await q;
-        if(error){tbody.innerHTML=`<tr><td class="cell text-red-700" colspan="99">${error.message}</td></tr>`;return;} totalCount=count||0;
-        for(const row of(data||[])){ const tr=$('tr','border-b'); for(const c of dc){let v=row[c.key];if(c.type==='checkbox')v=!!v;if(c.type==='date')v=dateOnly(v);tr.appendChild($('td','cell',fmt(v)));} if(!conf.readOnly){const td=$('td','cell text-right');const btn=$('button','btn btn-secondary','Edit');btn.onclick=()=>openEditor(conf,row);td.appendChild(btn);tr.appendChild(td);} tbody.appendChild(tr); }
-        updatePager();
+    async function bootstrap() {
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) { $id('signinCard').classList.remove('hidden'); $id('app-wrapper').classList.add('hidden'); return; }
+        if (!onlyCompanyEmail(session.user?.email)) { await sb.auth.signOut(); return; }
+        $id('who').textContent = session.user.email.split('@')[0];
+        $id('signinCard').classList.add('hidden');
+        $id('app-wrapper').classList.remove('hidden');
+        renderTabs();
+        loadTable();
+        wireRealtime();
+        startHealthMonitor();
     }
 
-    async function loadOrderList(){ const tbody=document.getElementById('tbody'); tbody.innerHTML=''; const st=(document.getElementById('globalSearch').value||'').trim().toLowerCase();
-        let q=sb.from('orders').select('id,customer_id,status',{count:'exact'}).order('created_at',{ascending:false}); if(activeOrderFilter!=='All')q=q.eq('status',activeOrderFilter);
-        let orders,count; if(st){const{data,count:c}=await q;orders=data||[];count=c;}else{const{data,count:c}=await q.range(page*pageSize,page*pageSize+pageSize-1);orders=data||[];count=c;} totalCount=count||0;
-        const ids=[...new Set(orders.map(o=>o.customer_id).filter(Boolean))]; const map=new Map(); if(ids.length){const{data}=await sb.from('customers').select('id,first_name,last_name').in('id',ids);(data||[]).forEach(c=>map.set(c.id,c));}
-        if(st){const f=orders.filter(o=>{const c=map.get(o.customer_id);return[String(o.id),formatOrderId(o.id),o.status||'',c?`${c.first_name} ${c.last_name}`:''].some(x=>x.toLowerCase().includes(st));});totalCount=f.length;orders=f.slice(page*pageSize,page*pageSize+pageSize);}
-        for(const r of orders){const c=map.get(r.customer_id);const tr=$('tr','border-b hover:bg-gray-100 cursor-pointer');tr.appendChild($('td','cell font-medium',c?`${c.first_name||''} ${c.last_name||''}`.trim():'N/A'));const sc=$('td','cell text-center');sc.appendChild($('span',`status-badge ${getStatusClass(r.status)}`,r.status||'Active'));tr.appendChild(sc);tr.onclick=()=>openOrderManager(r.id);tbody.appendChild(tr);}
-        updatePager();
+    $id('menuToggle').onclick = () => $id('sidebar').classList.toggle('open');
+    $id('sidebar').onclick = e => { if (e.target.closest('.nav-item')) $id('sidebar').classList.remove('open'); };
+    document.addEventListener('click', e => {
+        const side = $id('sidebar');
+        if (!side.classList.contains('open')) return;
+        if (e.target.closest('#sidebar') || e.target.closest('#menuToggle')) return;
+        side.classList.remove('open');
+    });
+
+    // ---------- view switching ----------
+    function loadTable() {
+        const conf = tables[activeKey];
+        $id('pageTitle').textContent = conf.title;
+        const isDash = activeKey === 'dashboard', isPricing = activeKey === 'pricing',
+              isOrders = activeKey === 'order_list', isReviews = activeKey === 'reviews';
+
+        $id('orderPageControls').classList.toggle('hidden', !isOrders);
+        $id('dashboard').classList.toggle('hidden', !isDash);
+        $id('dataActions').classList.toggle('hidden', isDash || isPricing || isReviews);
+        $id('addBtn').classList.toggle('hidden', !!conf.readOnly || isPricing);
+        $id('pricingList').classList.toggle('hidden', !isPricing);
+        $id('reviewsContainer').classList.toggle('hidden', !isReviews);
+        $id('grid').closest('.table-wrap').classList.toggle('hidden', isDash || isPricing || isReviews);
+        // CSV export is offered for orders and costs.
+        $id('exportBtn').classList.toggle('hidden', !(isOrders || activeKey === 'costs'));
+
+        if (conf.customLoader === 'loadDashboard') return loadDashboard();
+        if (conf.customLoader === 'loadPricingList') return loadPricingList();
+        if (conf.customLoader === 'loadReviews') return loadReviews();
+        if (conf.customLoader === 'loadOrderList') { buildColGroup(conf, conf.cols); buildThead(conf, conf.cols); return loadOrderList(); }
+        if (conf.customLoader === 'loadSurveyList') return loadSurveyList(conf);
+        return loadGenericTable(conf);
     }
 
-    // Compact survey list: customer name + combined stars + recommend flag.
-    // Full details stay in the editor (Edit button); this keeps the table
-    // readable on narrow/mobile screens.
-    async function loadSurveyList(conf){
-        const listCols=[{label:'Customer',w:'40'},{label:'Stars',w:'30',center:true},{label:'Recommend',w:'14',center:true}];
-        buildColGroup(conf,listCols); const tr=document.getElementById('thead'); tr.innerHTML='';
-        for(const c of listCols)tr.appendChild($('th','thcell '+(c.center?'text-center':'text-left'),c.label));
-        tr.appendChild($('th','thcell text-right',''));
-        const tbody=document.getElementById('tbody'); tbody.innerHTML='';
-        const st=(document.getElementById('globalSearch').value||'').trim().toLowerCase();
-        let{data:surveys,count}=await sb.from('surveys').select('*',{count:'exact'}).order('created_at',{ascending:false});
-        surveys=surveys||[]; totalCount=count||0;
-        const ids=[...new Set(surveys.map(s=>s.customer_id).filter(Boolean))]; const map=new Map();
-        if(ids.length){const{data}=await sb.from('customers').select('id,first_name,last_name').in('id',ids);(data||[]).forEach(c=>map.set(c.id,c));}
-        const custName=s=>{const c=map.get(s.customer_id);return c?`${c.first_name||''} ${c.last_name||''}`.trim():(s.manual_customer_name||'N/A');};
-        if(st){surveys=surveys.filter(s=>[custName(s),s.improvements||'',s.website_review||''].some(x=>x.toLowerCase().includes(st)));totalCount=surveys.length;}
-        surveys=surveys.slice(page*pageSize,page*pageSize+pageSize);
-        for(const s of surveys){
-            const tr2=$('tr','border-b');
-            tr2.appendChild($('td','cell font-medium',custName(s)));
-            tr2.appendChild($('td','cell text-center whitespace-nowrap',`${s.cookies_stars??'–'}★ · ${s.service_stars??'–'}★`));
-            tr2.appendChild($('td','cell text-center',s.recommend?'Yes':'—'));
-            const td=$('td','cell text-right'); const btn=$('button','btn btn-secondary','Edit'); btn.onclick=()=>openEditor(conf,s); td.appendChild(btn); tr2.appendChild(td);
-            tbody.appendChild(tr2);
+    // Generic settings tables (discount codes, flavors, costs, ...)
+    async function loadGenericTable(conf) {
+        const cols = conf.list_keys ? conf.cols.filter(c => conf.list_keys.includes(c.key)) : conf.cols;
+        buildColGroup(conf, cols);
+        buildThead(conf, cols, true);
+        const tbody = $id('tbody'); tbody.innerHTML = '';
+
+        let q = sb.from(conf.table).select('*', { count: 'exact' });
+        const term = $id('globalSearch') && !$id('orderPageControls').classList.contains('hidden') ? '' : '';
+        // (settings tables have no search box; search only applies to orders)
+        const sort = sortState[activeKey];
+        q = sort ? q.order(sort.key, { ascending: sort.asc }) : q.order('updated_at', { ascending: false });
+        q = q.range(page * pageSize, page * pageSize + pageSize - 1);
+
+        const { data, error, count } = await q;
+        if (error) { tbody.innerHTML = `<tr><td class="cell text-red-700" colspan="99">${escapeHtml(error.message)}</td></tr>`; return; }
+        totalCount = count || 0;
+        if (!data?.length) { tbody.innerHTML = `<tr><td class="cell text-center text-gray-500" colspan="99">Nothing here yet.</td></tr>`; updatePager(); return; }
+        for (const row of data) {
+            const tr = el('tr');
+            for (const c of cols) {
+                let v = row[c.key];
+                if (c.type === 'checkbox') v = !!v;
+                if (c.type === 'date') v = dateOnly(v);
+                tr.appendChild(el('td', 'cell', fmt(v)));
+            }
+            const td = el('td', 'cell text-right');
+            const btn = el('button', 'btn btn-secondary', 'Edit');
+            btn.onclick = () => openEditor(conf, row);
+            td.appendChild(btn); tr.appendChild(td);
+            tbody.appendChild(tr);
         }
-        if(!surveys.length)tbody.innerHTML='<tr><td class="cell text-center text-gray-500" colspan="4">No surveys found</td></tr>';
         updatePager();
     }
 
-    async function loadPricingList(){ const el=document.getElementById('pricingList'); el.innerHTML=''; const{data}=await sb.from('pricing').select('*').order('created_at',{ascending:false}).limit(1);
-        if(!data?.length){ const box=$('div','bg-white rounded-xl border p-6 text-center'); box.appendChild($('p','text-gray-600 mb-4','No pricing has been set up yet. Customers will not see an estimate on the order page until prices are entered.')); const btn=$('button','btn btn-primary','Set Up Pricing'); btn.onclick=()=>openEditor({title:'Pricing',table:'pricing',cols:tables.pricing.cols},null); box.appendChild(btn); el.appendChild(box); return; }
-        for(const col of tables.pricing.cols){const item=$('div','pricing-item');item.appendChild($('span','',col.label));item.appendChild($('span','',money(data[0][col.key])));const btn=$('button','btn btn-secondary text-xs','Edit');btn.onclick=()=>openEditor({title:`Edit ${col.label}`,table:'pricing',cols:[col]},{id:data[0].id,[col.key]:data[0][col.key]});item.appendChild(btn);el.appendChild(item);}
+    // Orders list — reads the orders_full view (customer name included), so the
+    // search runs in the database instead of pulling the whole table.
+    async function loadOrderList() {
+        const tbody = $id('tbody'); tbody.innerHTML = '';
+        const term = ($id('globalSearch').value || '').trim();
+        let q = sb.from('orders_full').select('id,order_id,customer_first_name,customer_last_name,status,pickup_delivery_date,cookie_amount_dzns', { count: 'exact' });
+        if (activeOrderFilter !== 'All') q = q.eq('status', activeOrderFilter);
+        if (term) {
+            const safe = term.replace(/[%,()]/g, ' ');
+            q = q.or(`order_id.ilike.%${safe}%,customer_first_name.ilike.%${safe}%,customer_last_name.ilike.%${safe}%,status.ilike.%${safe}%`);
+        }
+        if (orderSort === 'pickup') q = q.order('pickup_delivery_date', { ascending: true, nullsFirst: false });
+        else if (orderSort === 'name') q = q.order('customer_first_name', { ascending: true });
+        else q = q.order('created_at', { ascending: false });
+        q = q.range(page * pageSize, page * pageSize + pageSize - 1);
+
+        const { data, error, count } = await q;
+        if (error) { tbody.innerHTML = `<tr><td class="cell text-red-700 text-center" colspan="3">${escapeHtml(error.message)}</td></tr>`; return; }
+        totalCount = count || 0;
+        if (!data?.length) { tbody.innerHTML = `<tr><td class="cell text-center text-gray-500" colspan="3">No ${activeOrderFilter === 'All' ? '' : activeOrderFilter.toLowerCase() + ' '}orders found.</td></tr>`; updatePager(); return; }
+        for (const r of data) {
+            const name = `${r.customer_first_name || ''} ${r.customer_last_name || ''}`.trim() || 'N/A';
+            const tr = el('tr', 'hover:bg-gray-100 cursor-pointer');
+            tr.appendChild(el('td', 'cell font-medium', escapeHtml(name)));
+            const sc = el('td', 'cell text-center');
+            sc.appendChild(el('span', `status-badge ${getStatusClass(r.status)}`, escapeHtml(r.status || 'Active')));
+            tr.appendChild(sc);
+            tr.onclick = () => openOrderManager(r.id);
+            tbody.appendChild(tr);
+        }
+        updatePager();
     }
 
-    async function loadReviews(){ const c=document.getElementById('reviewsContainer'); c.innerHTML='';
-        const[pC,aC,rC]=await Promise.all([sb.from('website_reviews').select('id',{count:'exact',head:true}).eq('status','pending'),sb.from('website_reviews').select('id',{count:'exact',head:true}).eq('status','approved'),sb.from('website_reviews').select('id',{count:'exact',head:true}).eq('status','rejected')]);
-        c.innerHTML=`<div class="review-tabs"><button class="review-tab ${activeReviewTab==='pending'?'active':''}" data-t="pending">Pending<span class="review-count">${pC.count||0}</span></button><button class="review-tab ${activeReviewTab==='approved'?'active':''}" data-t="approved">Approved<span class="review-count">${aC.count||0}</span></button><button class="review-tab ${activeReviewTab==='rejected'?'active':''}" data-t="rejected">Rejected<span class="review-count">${rC.count||0}</span></button></div><div id="reviewsList"></div>`;
-        c.querySelectorAll('.review-tab').forEach(t=>t.onclick=()=>{activeReviewTab=t.dataset.t;loadReviews();});
-        const{data:reviews}=await sb.from('website_reviews').select('*').eq('status',activeReviewTab).order('created_at',{ascending:false}); const list=document.getElementById('reviewsList');
-        if(!reviews?.length){list.innerHTML=`<div class="text-center py-12 text-gray-500">No ${activeReviewTab} reviews</div>`;return;}
-        for(const r of reviews){ const card=$('div','review-card'); card.innerHTML=`<div class="flex justify-between mb-2"><div><div class="font-semibold">${escapeHtml(r.customer_name||'Anonymous')}</div><div class="review-stars">${'★'.repeat(r.stars||5)}${'☆'.repeat(5-(r.stars||5))}</div></div><span class="status-badge status-${r.status}">${r.status}</span></div><p class="text-gray-700 mb-2">"${escapeHtml(r.review_text)}"</p><div class="text-xs text-gray-500">${new Date(r.created_at).toLocaleDateString()}</div><div class="review-actions" id="ra-${r.id}"></div>`;
-            const act=card.querySelector(`#ra-${r.id}`);
-            if(activeReviewTab==='pending'){const ab=$('button','btn btn-success','Approve');ab.onclick=()=>updateReview(r.id,'approved');const rb=$('button','btn btn-danger','Reject');rb.onclick=()=>updateReview(r.id,'rejected');act.appendChild(ab);act.appendChild(rb);}
-            else if(activeReviewTab==='approved'){const cb=$('button','btn btn-secondary','Copy');cb.onclick=()=>{navigator.clipboard.writeText(`"${r.review_text}"\n— ${r.customer_name}`);cb.textContent='Copied';};const ub=$('button','btn btn-warning','Unpublish');ub.onclick=()=>updateReview(r.id,'pending');act.appendChild(cb);act.appendChild(ub);}
-            else{const rb=$('button','btn btn-secondary','Restore');rb.onclick=()=>updateReview(r.id,'pending');const db=$('button','btn btn-danger','Delete');db.onclick=async()=>{if(confirm('Delete?')){await sb.from('website_reviews').delete().eq('id',r.id);loadReviews();}};act.appendChild(rb);act.appendChild(db);}
+    // Compact survey list (customer name + combined stars + recommend).
+    async function loadSurveyList(conf) {
+        const listCols = [{ label: 'Customer', w: '46' }, { label: 'Stars', w: '30', center: true }, { label: 'Recommend', w: '24', center: true }];
+        buildColGroup(conf, listCols);
+        const thead = $id('thead'); thead.innerHTML = '';
+        for (const c of listCols) thead.appendChild(el('th', 'thcell ' + (c.center ? 'text-center' : 'text-left'), c.label));
+        thead.appendChild(el('th', 'thcell text-right', ''));
+        const tbody = $id('tbody'); tbody.innerHTML = '';
+
+        const { data: surveys, count } = await sb.from('surveys').select('*', { count: 'exact' })
+            .order('created_at', { ascending: false }).range(page * pageSize, page * pageSize + pageSize - 1);
+        totalCount = count || 0;
+        const rows = surveys || [];
+        const ids = [...new Set(rows.map(s => s.customer_id).filter(Boolean))];
+        const map = new Map();
+        if (ids.length) { const { data } = await sb.from('customers').select('id,first_name,last_name').in('id', ids); (data || []).forEach(c => map.set(c.id, c)); }
+        const custName = s => { const c = map.get(s.customer_id); return c ? `${c.first_name || ''} ${c.last_name || ''}`.trim() : (s.manual_customer_name || 'N/A'); };
+
+        if (!rows.length) { tbody.innerHTML = '<tr><td class="cell text-center text-gray-500" colspan="4">No surveys yet.</td></tr>'; updatePager(); return; }
+        for (const s of rows) {
+            const tr = el('tr');
+            tr.appendChild(el('td', 'cell font-medium', escapeHtml(custName(s))));
+            tr.appendChild(el('td', 'cell text-center whitespace-nowrap', `${s.cookies_stars ?? '–'}★ · ${s.service_stars ?? '–'}★`));
+            tr.appendChild(el('td', 'cell text-center', s.recommend ? 'Yes' : '—'));
+            const td = el('td', 'cell text-right'); const btn = el('button', 'btn btn-secondary', 'Edit');
+            btn.onclick = () => openEditor(conf, s); td.appendChild(btn); tr.appendChild(td);
+            tbody.appendChild(tr);
+        }
+        updatePager();
+    }
+
+    async function loadPricingList() {
+        const box = $id('pricingList'); box.innerHTML = '';
+        const { data } = await sb.from('pricing').select('*').order('created_at', { ascending: false }).limit(1);
+        if (!data?.length) {
+            const card = el('div', 'card text-center');
+            card.appendChild(el('p', 'text-gray-600 mb-4', 'No pricing has been set up yet. Customers will not see an estimate until prices are entered.'));
+            const btn = el('button', 'btn btn-primary', 'Set Up Pricing');
+            btn.onclick = () => openEditor({ title: 'Pricing', table: 'pricing', cols: tables.pricing.cols }, null);
+            card.appendChild(btn); box.appendChild(card); return;
+        }
+        const row = data[0];
+        for (const col of tables.pricing.cols) {
+            const item = el('div', 'pricing-item');
+            item.appendChild(el('span', '', col.label));
+            item.appendChild(el('span', 'font-semibold', money(row[col.key])));
+            const btn = el('button', 'btn btn-secondary text-xs', 'Edit');
+            btn.onclick = () => openEditor({ title: `Edit ${col.label}`, table: 'pricing', cols: [col] }, { id: row.id, [col.key]: row[col.key] });
+            item.appendChild(btn); box.appendChild(item);
+        }
+    }
+
+    async function loadReviews() {
+        const c = $id('reviewsContainer'); c.innerHTML = '';
+        const [pC, aC, rC] = await Promise.all([
+            sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+            sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+            sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'rejected')
+        ]);
+        c.innerHTML = `<div class="review-tabs">
+            <button class="review-tab ${activeReviewTab === 'pending' ? 'active' : ''}" data-t="pending">Pending<span class="review-count">${pC.count || 0}</span></button>
+            <button class="review-tab ${activeReviewTab === 'approved' ? 'active' : ''}" data-t="approved">Approved<span class="review-count">${aC.count || 0}</span></button>
+            <button class="review-tab ${activeReviewTab === 'rejected' ? 'active' : ''}" data-t="rejected">Rejected<span class="review-count">${rC.count || 0}</span></button>
+            </div><div id="reviewsList"></div>`;
+        c.querySelectorAll('.review-tab').forEach(t => t.onclick = () => { activeReviewTab = t.dataset.t; loadReviews(); });
+        const { data: reviews } = await sb.from('website_reviews').select('*').eq('status', activeReviewTab).order('created_at', { ascending: false });
+        const list = $id('reviewsList');
+        if (!reviews?.length) { list.innerHTML = `<div class="text-center py-12 text-gray-500">No ${activeReviewTab} reviews</div>`; return; }
+        for (const r of reviews) {
+            const stars = '★'.repeat(r.stars || 5) + '☆'.repeat(5 - (r.stars || 5));
+            const card = el('div', 'review-card');
+            card.innerHTML = `<div class="flex justify-between mb-2">
+                <div><div class="font-semibold">${escapeHtml(r.customer_name || 'Anonymous')}</div><div class="review-stars">${stars}</div></div>
+                <span class="status-badge ${getStatusClass(r.status)}">${escapeHtml(r.status)}</span></div>
+                <p class="text-gray-700 mb-2">"${escapeHtml(r.review_text)}"</p>
+                <div class="text-xs text-gray-500">${new Date(r.created_at).toLocaleDateString()}</div>
+                <div class="review-actions" id="ra-${r.id}"></div>`;
+            const act = card.querySelector(`#ra-${r.id}`);
+            if (activeReviewTab === 'pending') {
+                const ab = el('button', 'btn btn-success', 'Approve'); ab.onclick = () => updateReview(r.id, 'approved');
+                const rb = el('button', 'btn btn-danger', 'Reject'); rb.onclick = () => updateReview(r.id, 'rejected');
+                act.append(ab, rb);
+            } else if (activeReviewTab === 'approved') {
+                const cb = el('button', 'btn btn-secondary', 'Copy');
+                cb.onclick = () => { navigator.clipboard.writeText(`"${r.review_text}"\n— ${r.customer_name}`); toast('Review copied', 'success'); };
+                const ub = el('button', 'btn btn-warning', 'Unpublish'); ub.onclick = () => updateReview(r.id, 'pending');
+                act.append(cb, ub);
+            } else {
+                const rb = el('button', 'btn btn-secondary', 'Restore'); rb.onclick = () => updateReview(r.id, 'pending');
+                const db = el('button', 'btn btn-danger', 'Delete');
+                db.onclick = async () => { if (await confirmDialog('Delete this review permanently?', 'Delete', true)) { await sb.from('website_reviews').delete().eq('id', r.id); loadReviews(); } };
+                act.append(rb, db);
+            }
             list.appendChild(card);
         }
     }
 
-    async function updateReview(id,status){ const u={status}; if(status==='approved'){u.approved_at=new Date().toISOString();const{data:{session}}=await sb.auth.getSession();u.approved_by=session?.user?.email;} await sb.from('website_reviews').update(u).eq('id',id); loadReviews(); }
-
-    // SURVEY SECTION
-    async function loadSurveySection(orderId){ const s=document.getElementById('surveyLinkSection'); s.innerHTML='<p class="text-gray-500 text-sm">Loading...</p>';
-        const{data:tok}=await sb.from('survey_tokens').select('*').eq('order_id',orderId).order('created_at',{ascending:false}).limit(1).maybeSingle();
-        if(tok){ const url=`${SURVEY_BASE_URL}?token=${tok.token}`, used=tok.used, exp=tok.expires_at&&new Date(tok.expires_at)<new Date();
-            s.innerHTML=`<div class="survey-link-box ${used?'':'no-link'} ${exp?'expired':''}"><div class="flex justify-between items-center mb-2"><span class="font-semibold">${used?'Completed':exp?'Expired':'Active'}</span>${!used?`<button id="copyLink" class="btn btn-secondary text-xs">Copy</button>`:''}</div>${!used?`<input class="survey-link-input" value="${url}" readonly/><div class="text-xs text-gray-500">Expires: ${tok.expires_at?new Date(tok.expires_at).toLocaleDateString():'Never'}</div>`:`<div class="text-sm text-gray-600">Done: ${tok.used_at?new Date(tok.used_at).toLocaleDateString():''}</div>`}${exp&&!used?`<button id="regenLink" class="btn btn-warning mt-2 w-full">Regenerate</button>`:''}</div>`;
-            document.getElementById('copyLink')?.addEventListener('click',function(){navigator.clipboard.writeText(url);this.textContent='Copied';});
-            document.getElementById('regenLink')?.addEventListener('click',()=>genSurveyLink(orderId));
-        }else{ s.innerHTML=`<div class="survey-link-box no-link"><p class="text-gray-600 mb-3">No survey link yet.</p><button id="genLink" class="btn btn-primary w-full">Generate Link</button></div>`; document.getElementById('genLink').onclick=()=>genSurveyLink(orderId); }
+    async function updateReview(id, status) {
+        const u = { status };
+        if (status === 'approved') { u.approved_at = new Date().toISOString(); const { data: { session } } = await sb.auth.getSession(); u.approved_by = session?.user?.email; }
+        await sb.from('website_reviews').update(u).eq('id', id);
+        loadReviews();
     }
 
-    async function genSurveyLink(orderId){ const s=document.getElementById('surveyLinkSection'); s.innerHTML='<p class="text-gray-500 text-sm">Generating...</p>';
-        const bytes=new Uint8Array(24); crypto.getRandomValues(bytes); const token=btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=/g,'');
-        const exp=new Date(); exp.setDate(exp.getDate()+30);
-        const{error}=await sb.from('survey_tokens').insert({token,order_id:orderId,expires_at:exp.toISOString()});
-        if(error){s.innerHTML=`<div class="text-red-600 p-3 bg-red-50 rounded">Error: ${error.message}<br/><span class="text-xs">Run database schema first.</span></div>`;return;}
+    // ---------- dashboard ----------
+    async function loadDashboard() {
+        const box = $id('dashboard');
+        box.innerHTML = '<p class="text-gray-500 text-sm">Loading…</p>';
+        const weekEnd = dateOnly(new Date(Date.now() + 7 * 86400000));
+        const [activeC, unpaid, pending, pickups] = await Promise.all([
+            sb.from('orders').select('id', { count: 'exact', head: true }).eq('status', 'Active'),
+            sb.from('orders_full').select('payment_amount', { count: 'exact' }).eq('status', 'Active').neq('payment_status', 'paid'),
+            sb.from('website_reviews').select('id', { count: 'exact', head: true }).eq('status', 'pending'),
+            sb.from('orders_full').select('id,order_id,customer_first_name,customer_last_name,status,pickup_delivery_date,cookie_amount_dzns')
+                .eq('status', 'Active').gte('pickup_delivery_date', todayStr()).order('pickup_delivery_date', { ascending: true }).limit(8)
+        ]);
+        const unpaidTotal = (unpaid.data || []).reduce((s, o) => s + Number(o.payment_amount || 0), 0);
+        const weekCount = (pickups.data || []).filter(o => o.pickup_delivery_date && o.pickup_delivery_date <= weekEnd).length;
+
+        const stat = (value, label, sub) =>
+            `<div class="stat-card"><div class="stat-value">${value}</div><div class="stat-label">${label}</div>${sub ? `<div class="stat-sub">${sub}</div>` : ''}</div>`;
+
+        let html = `<div class="stat-grid">
+            ${stat(activeC.count || 0, 'Active Orders')}
+            ${stat(unpaid.count || 0, 'Unpaid', unpaidTotal ? money(unpaidTotal) + ' outstanding' : '')}
+            ${stat(weekCount, 'Pickups This Week')}
+            ${stat(pending.count || 0, 'Reviews to Approve')}
+        </div>`;
+
+        html += `<div class="card"><h3 class="card-label">Upcoming Pickups &amp; Deliveries</h3><div id="pickupList"></div></div>`;
+        box.innerHTML = html;
+
+        const list = $id('pickupList');
+        const rows = pickups.data || [];
+        if (!rows.length) { list.innerHTML = '<p class="text-gray-500 text-sm">Nothing scheduled. Enjoy the quiet!</p>'; return; }
+        for (const o of rows) {
+            const name = `${o.customer_first_name || ''} ${o.customer_last_name || ''}`.trim() || 'N/A';
+            const row = el('div', 'pickup-row');
+            row.innerHTML = `<div><div class="font-semibold">${escapeHtml(name)}</div>
+                <div class="text-xs text-gray-500">${o.cookie_amount_dzns ?? '?'} dz · ${escapeHtml(o.pickup_delivery_type || '')}</div></div>
+                <div class="pickup-when">${prettyDate(o.pickup_delivery_date)}</div>`;
+            row.onclick = () => openOrderManager(o.id);
+            list.appendChild(row);
+        }
+    }
+
+    // ---------- survey link (in drawer) ----------
+    async function loadSurveySection(orderId) {
+        const s = $id('surveyLinkSection');
+        s.innerHTML = '<p class="text-gray-500 text-sm">Loading...</p>';
+        const { data: tok } = await sb.from('survey_tokens').select('*').eq('order_id', orderId).order('created_at', { ascending: false }).limit(1).maybeSingle();
+        if (!tok) {
+            s.innerHTML = `<div class="survey-link-box"><p class="text-gray-600 mb-3">No survey link yet.</p><button id="genLink" class="btn btn-primary w-full">Generate Link</button></div>`;
+            $id('genLink').onclick = () => genSurveyLink(orderId);
+            return;
+        }
+        const url = `${SURVEY_BASE_URL}?token=${tok.token}`;
+        const used = tok.used, exp = tok.expires_at && new Date(tok.expires_at) < new Date();
+        s.innerHTML = `<div class="survey-link-box ${exp ? 'expired' : ''}">
+            <div class="flex justify-between items-center mb-2">
+                <span class="font-semibold">${used ? 'Completed' : exp ? 'Expired' : 'Active'}</span>
+                ${!used ? `<button id="copyLink" class="btn btn-secondary text-xs">Copy</button>` : ''}
+            </div>
+            ${!used
+                ? `<input class="survey-link-input" value="${escapeHtml(url)}" readonly/><div class="text-xs text-gray-500">Expires: ${tok.expires_at ? new Date(tok.expires_at).toLocaleDateString() : 'Never'}</div>`
+                : `<div class="text-sm text-gray-600">Done: ${tok.used_at ? new Date(tok.used_at).toLocaleDateString() : ''}</div>`}
+            ${exp && !used ? `<button id="regenLink" class="btn btn-warning mt-2 w-full">Regenerate</button>` : ''}</div>`;
+        $id('copyLink')?.addEventListener('click', () => { navigator.clipboard.writeText(url); toast('Survey link copied', 'success'); });
+        $id('regenLink')?.addEventListener('click', () => genSurveyLink(orderId));
+    }
+
+    async function genSurveyLink(orderId) {
+        const s = $id('surveyLinkSection'); s.innerHTML = '<p class="text-gray-500 text-sm">Generating...</p>';
+        const bytes = new Uint8Array(24); crypto.getRandomValues(bytes);
+        const token = btoa(String.fromCharCode(...bytes)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+        const exp = new Date(); exp.setDate(exp.getDate() + 30);
+        const { error } = await sb.from('survey_tokens').insert({ token, order_id: orderId, expires_at: exp.toISOString() });
+        if (error) { s.innerHTML = `<div class="text-red-600 p-3 bg-red-50 rounded">Couldn't create a survey link. Please try again.</div>`; return; }
         loadSurveySection(orderId);
     }
 
-    function buildColGroup(conf,cols){const cg=document.getElementById('colgroup');cg.innerHTML='';let c=cols.slice();if(!conf.readOnly)c.push({w:'20'});const t=c.reduce((s,x)=>s+(Number(x.w)||0),0)||100;for(const x of c){const col=document.createElement('col');col.style.width=((Number(x.w)||0)/t*100)+'%';cg.appendChild(col);}}
-    function buildThead(conf,cols){const tr=document.getElementById('thead');tr.innerHTML='';for(const c of cols)tr.appendChild($('th','thcell '+(conf.center?'text-center':'text-left'),c.label));if(!conf.readOnly)tr.appendChild($('th','thcell text-right',''));}
-    function updatePager(){document.getElementById('prev').disabled=page===0;document.getElementById('next').disabled=(page+1)*pageSize>=totalCount;document.getElementById('pageInfo').textContent=`${Math.min(totalCount,(page+1)*pageSize)} of ${totalCount}`;}
-
-    // EDITOR
-    const dlg=document.getElementById('editor'), formBody=document.getElementById('formBody');
-    async function optionEl(col,val){ const w=$('label','block'); w.appendChild($('span','text-sm block mb-1',col.label)); let inp;
-        if(col.type==='textarea'){inp=$('textarea','px-3 py-2 rounded-lg border w-full');inp.rows=3;}
-        else if(col.type==='checkbox'){inp=$('input','h-4 w-4');inp.type='checkbox';}
-        else if(col.type==='select'||col.type==='select-async'){inp=$('select','px-3 py-2 rounded-lg border w-full');const opts=col.type==='select'?col.options:await col.asyncOptions();for(const o of(opts||[])){const opt=document.createElement('option');if(typeof o==='string'){opt.value=o;opt.textContent=o;}else{opt.value=o.value;opt.textContent=o.label;}inp.appendChild(opt);}}
-        else{inp=$('input','px-3 py-2 rounded-lg border w-full');inp.type=col.type||'text';if(col.step)inp.step=col.step;}
-        inp.id=`fld_${col.key}`;if(col.required)inp.required=true;if(col.type==='checkbox')inp.checked=!!val;else if(col.type==='date')inp.value=dateOnly(val);else inp.value=val??'';w.appendChild(inp);return w;
+    // ---------- table chrome ----------
+    function buildColGroup(conf, cols) {
+        const cg = $id('colgroup'); cg.innerHTML = '';
+        const c = cols.slice(); if (!conf.readOnly) c.push({ w: '20' });
+        const total = c.reduce((s, x) => s + (Number(x.w) || 0), 0) || 100;
+        for (const x of c) { const col = document.createElement('col'); col.style.width = ((Number(x.w) || 0) / total * 100) + '%'; cg.appendChild(col); }
     }
-    async function openEditor(conf,row){document.getElementById('editorTitle').textContent=row?`Edit ${conf.title}`:`New ${conf.title}`;formBody.innerHTML='';for(const c of conf.cols)formBody.appendChild(await optionEl(c,row?.[c.key]));const h=document.createElement('input');h.type='hidden';h.id='row_id';h.value=row?.id||'';formBody.appendChild(h);document.getElementById('deleteBtn').classList.toggle('hidden',!row||conf.table==='orders'||conf.table==='pricing');document.getElementById('deleteBtn').onclick=async()=>{if(row?.id&&confirm('Delete?')){await sb.from(conf.table).delete().eq('id',row.id);dlg.close();loadTable();}};document.getElementById('saveBtn').onclick=async e=>{e.preventDefault();await saveRecord(conf,row);};dlg.showModal();}
-    async function saveRecord(conf,orig){const p={};for(const c of conf.cols){const el=document.getElementById(`fld_${c.key}`);let v=c.type==='checkbox'?el.checked:el.value||null;if(c.type==='number'&&v!==null)v=el.value===''?null:Number(v);p[c.key]=v;}const id=document.getElementById('row_id').value;const r=id?await sb.from(conf.table).update(p).eq('id',id).select('*').single():await sb.from(conf.table).insert(p).select('*').single();if(r.error){alert(r.error.message);return;}dlg.close();loadTable();if(conf.table==='orders'&&orig)openOrderManager(orig.id);}
-
-    // NAV
-    function renderTabs(){document.querySelectorAll('.nav-item').forEach(b=>{b.classList.remove('nav-active');if(b.dataset.key===activeKey)b.classList.add('nav-active');b.onclick=()=>{activeKey=b.dataset.key;page=0;renderTabs();loadTable();};});
-        document.querySelectorAll('#orderFilters .filter-tab').forEach(b=>{b.classList.toggle('filter-active',b.dataset.filter===activeOrderFilter);b.onclick=()=>{activeOrderFilter=b.dataset.filter;page=0;loadTable();};});
-        document.getElementById('addBtn').classList.toggle('hidden',!!tables[activeKey]?.readOnly);document.getElementById('addBtn').onclick=()=>openEditor(tables[activeKey],null);
-        document.getElementById('prev').onclick=()=>{if(page>0){page--;loadTable();}};document.getElementById('next').onclick=()=>{if((page+1)*pageSize<totalCount){page++;loadTable();}};
-        document.getElementById('globalSearch').onkeydown=e=>{if(e.key==='Enter'){page=0;loadTable();}};document.getElementById('refreshAll').onclick=()=>{page=0;loadTable();};}
-    function wireRealtime(){for(const k of Object.keys(tables)){const t=k==='order_list'?'orders':tables[k].table;sb.channel(`${k}-ch`).on('postgres_changes',{event:'*',schema:'public',table:t},()=>{if(k===activeKey)loadTable();}).subscribe();}}
-
-    document.getElementById('exportBtn').onclick=async()=>{const conf=tables[activeKey];const{data,error}=await sb.from(conf.table).select('*').order('created_at',{ascending:false});if(error){alert(error.message);return;}
-        const keys=conf.cols.map(c=>c.key);const esc=v=>{if(v==null)v='';v=String(v).replace(/"/g,'""');return /[",\n]/.test(v)?`"${v}"`:v;};
-        const csv=[keys.join(',')].concat((data||[]).map(r=>keys.map(k=>esc(r[k])).join(','))).join('\n');
-        const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=`${conf.table}_${dateOnly(new Date())}.csv`;a.click();URL.revokeObjectURL(a.href);};
-
-    // ORDER DRAWER
-    const drawer=document.getElementById('orderDrawer');
-    let activeOrder=null,activeCustomer=null,pricing=null,adjustments=[],discountCodeDetails=null,referralCodeDetails=null,discountCodeAmount=0,referralDiscountAmount=0,activeCustomerReferralCode=null,lastComputedTotal=0;
-
-    async function fetchPricing(){const{data}=await sb.from('pricing').select('*').order('created_at',{ascending:false}).limit(1);const p=(data&&data[0])||{};return{price_per_dozen:Number(p.price_per_dozen||0),consultation_fee:Number(p.consultation_fee||0),gift_note_fee:Number(p.gift_note_fee||0),delivery_fee:Number(p.delivery_fee||0)};}
-    function isDatePast(d){return d&&dateOnly(d)<dateOnly(new Date());}
-    async function fetchDiscountCodeDetails(code,email){if(!code)return null;const r={code,isValid:false,type:null,value:0};const{data}=await sb.from('discount_codes').select('*').eq('code',code).maybeSingle();if(!data)return r;if(data.good_through_date&&isDatePast(data.good_through_date))return r;if(data.uses_allowed!=null&&(data.uses_count||0)>data.uses_allowed)return r;if(data.email_allowed&&email&&data.email_allowed.toLowerCase()!==email.toLowerCase())return r;const v=Number(data.amount||0);if(v<=0)return r;r.isValid=true;r.type=data.type==='percent'?'percent':'fixed';r.value=v;return r;}
-    async function fetchReferralCodeDetails(code){if(!code)return null;const r={code,isValid:false,value:0};const{data}=await sb.from('referral_codes').select('*').eq('code',code).maybeSingle();if(!data||data.good_through_date&&isDatePast(data.good_through_date))return r;const v=Number(data.referee_discount||0);if(v<=0)return r;r.isValid=true;r.value=v;return r;}
-    async function fetchAdjustments(id){const{data}=await sb.from('order_adjustments').select('*').eq('order_id',id).order('created_at',{ascending:false});return(data||[]).map(r=>({...r,amount:Number(r.amount||0)}));}
-
-    function computeTotals(){const ppd=pricing?.price_per_dozen||0,consult=activeOrder?.consultation_requested?pricing?.consultation_fee||0:0,delivery=activeOrder?.pickup_delivery_type==='Delivery'?pricing?.delivery_fee||0:0,gift=activeOrder?.gift_note?pricing?.gift_note_fee||0:0,base=Number(activeOrder?.cookie_amount_dzns||0)*ppd,feeSum=adjustments.filter(a=>a.kind==='fee').reduce((s,a)=>s+a.amount,0),discSum=adjustments.filter(a=>a.kind==='discount').reduce((s,a)=>s+a.amount,0),baseForCodes=base+consult+gift+feeSum;
-        discountCodeAmount=0;referralDiscountAmount=0;if(discountCodeDetails?.isValid&&baseForCodes>0){discountCodeAmount=discountCodeDetails.type==='percent'?baseForCodes*(discountCodeDetails.value/100):discountCodeDetails.value;if(discountCodeAmount>baseForCodes)discountCodeAmount=baseForCodes;}if(referralCodeDetails?.isValid&&baseForCodes>0){referralDiscountAmount=baseForCodes*(referralCodeDetails.value/100);if(referralDiscountAmount>baseForCodes)referralDiscountAmount=baseForCodes;}
-        const total=base+delivery+consult+gift+feeSum-discSum-discountCodeAmount-referralDiscountAmount;
-        lastComputedTotal=total;
-        document.getElementById('t_price').textContent=money(ppd);document.getElementById('t_base').textContent=money(base);document.getElementById('t_delivery').textContent=money(delivery);document.getElementById('t_consult').textContent=money(consult);document.getElementById('t_gift').textContent=money(gift);document.getElementById('t_adj_fees').textContent=money(feeSum);document.getElementById('t_disc_code').textContent=discountCodeAmount?'-'+money(discountCodeAmount):'-$0.00';document.getElementById('t_disc_referral').textContent=referralDiscountAmount?'-'+money(referralDiscountAmount):'-$0.00';document.getElementById('t_adj_disc').textContent=discSum?'-'+money(discSum):'-$0.00';document.getElementById('t_total').textContent=money(total);
+    function buildThead(conf, cols, sortable) {
+        const tr = $id('thead'); tr.innerHTML = '';
+        const align = conf.center ? 'text-center' : 'text-left';
+        for (const c of cols) {
+            const th = el('th', 'thcell ' + align + (sortable && c.key ? ' sortable' : ''), c.label);
+            if (sortable && c.key) {
+                const s = sortState[activeKey];
+                if (s && s.key === c.key) th.textContent = c.label + (s.asc ? ' ▲' : ' ▼');
+                th.onclick = () => {
+                    const cur = sortState[activeKey];
+                    sortState[activeKey] = { key: c.key, asc: !(cur && cur.key === c.key && cur.asc) };
+                    page = 0; loadTable();
+                };
+            }
+            tr.appendChild(th);
+        }
+        if (!conf.readOnly) tr.appendChild(el('th', 'thcell text-right', ''));
+    }
+    function updatePager() {
+        $id('prev').disabled = page === 0;
+        $id('next').disabled = (page + 1) * pageSize >= totalCount;
+        $id('pageInfo').textContent = totalCount ? `${Math.min(totalCount, page * pageSize + 1)}–${Math.min(totalCount, (page + 1) * pageSize)} of ${totalCount}` : '0 of 0';
     }
 
-    function renderAdjustments(){const tb=document.getElementById('adjTbody');tb.innerHTML='';if(!adjustments.length){tb.innerHTML='<tr><td colspan="5" class="p-2 text-center text-gray-500">None</td></tr>';return;}for(const a of adjustments){const tr=$('tr','border-b');tr.appendChild($('td','p-1 text-xs',new Date(a.created_at).toLocaleDateString()));tr.appendChild($('td','p-1 text-xs',a.kind));tr.appendChild($('td','p-1',a.label||''));tr.appendChild($('td',`p-1 text-right ${a.kind==='discount'?'text-red-600':'text-green-600'}`,(a.kind==='discount'?'-':'')+money(a.amount)));const rc=$('td','p-1 text-right');const rb=$('button','btn btn-ghost text-red-500 text-xs','×');rb.onclick=async()=>{if(confirm('Remove?')){await sb.from('order_adjustments').delete().eq('id',a.id);adjustments=adjustments.filter(x=>x.id!==a.id);renderAdjustments();computeTotals();}};rc.appendChild(rb);tr.appendChild(rc);tb.appendChild(tr);}}
-
-    function fillDrawer(){const o=activeOrder,c=activeCustomer;document.getElementById('drawerTitle').textContent=`Order #${o?.order_id||formatOrderId(o.id)} (${o?.status||'Active'})`;document.getElementById('cust_name').textContent=c?`${c.first_name||''} ${c.last_name||''}`.trim():'N/A';document.getElementById('cust_id').textContent=c?.customer_id||o?.order_id||'N/A';document.getElementById('cust_email').textContent=c?.email||'N/A';document.getElementById('cust_email').href=c?.email?`mailto:${c.email}`:'#';document.getElementById('cust_phone_link').textContent=formatPhone(c?.phone)||'N/A';document.getElementById('cust_phone_link').href=c?.phone?`tel:${c.phone.replace(/\D/g,'')}`:'#';document.getElementById('cust_addr1').textContent=c?.street_address||'';document.getElementById('cust_addr2').textContent=c?.street_address_cont||'';document.getElementById('cust_citystzip').textContent=[c?.city,c?.state,c?.zip].filter(Boolean).join(', ');document.getElementById('mapLocation').onclick=()=>{const addr=[c?.street_address,c?.city,c?.state,c?.zip].filter(Boolean).join(', ');if(addr)window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`,'_blank');};document.getElementById('cust_referral_code').textContent=activeCustomerReferralCode||'None';document.getElementById('ov_event_name').textContent=o?.event_type_name||'N/A';document.getElementById('ov_event').textContent=dateOnly(o?.event_date);document.getElementById('ov_submitted').textContent=dateOnly(o?.created_at);document.getElementById('ov_pickup').textContent=dateOnly(o?.pickup_delivery_date);document.getElementById('ov_dzns').textContent=o?.cookie_amount_dzns??'0';document.getElementById('ov_flavor').textContent=o?.flavor||'N/A';document.getElementById('ov_dietary').textContent=o?.dietary_option||'None';document.getElementById('ov_notes').textContent=o?.design_notes||'None';document.getElementById('ov_photo').src=o?.design_inspiration_photo||'https://dummyimage.com/320x320/e5e7eb/6b7280.jpg&text=No+photo';document.getElementById('ov_consultation').textContent=o?.consultation_requested?'Yes':'No';document.getElementById('ov_gift_note').textContent=o?.gift_note?'Yes':'No';document.getElementById('ov_gift_text').textContent=o?.gift_note_text||'None';document.getElementById('ov_pd_type').textContent=o?.pickup_delivery_type||'N/A';document.getElementById('ov_discount_code').textContent=o?.discount_code_used?`${o.discount_code_used} (${discountCodeDetails?.isValid?'applied':'invalid'})`:'None';document.getElementById('ov_referral_code').textContent=o?.referral_code_used?`${o.referral_code_used} (${referralCodeDetails?.isValid?'applied':'invalid'})`:'None';document.getElementById('statusSelect').value=o?.status||'Active';renderAdjustments();computeTotals();renderPaymentSection();renderReferralExtras();}
-
-    function renderReferralExtras(){
-        document.getElementById('shareReferral').classList.toggle('hidden',!activeCustomerReferralCode);
-        document.getElementById('addContact').classList.toggle('hidden',!activeCustomer);
-        const hasReward=!!activeOrder?.referral_reward_code;
-        document.getElementById('rewardRow').classList.toggle('hidden',!hasReward);
-        document.getElementById('ov_reward_code').textContent=activeOrder?.referral_reward_code||'';
+    // ---------- editor ----------
+    const dlg = $id('editor'), formBody = $id('formBody');
+    async function optionEl(col, val) {
+        const wrap = el('label', 'block');
+        wrap.appendChild(el('span', 'text-sm block mb-1', col.label));
+        let inp;
+        if (col.type === 'textarea') { inp = el('textarea', 'px-3 py-2 rounded-lg border w-full'); inp.rows = 3; }
+        else if (col.type === 'checkbox') { inp = el('input', 'h-4 w-4'); inp.type = 'checkbox'; }
+        else if (col.type === 'select' || col.type === 'select-async') {
+            inp = el('select', 'px-3 py-2 rounded-lg border w-full');
+            const opts = col.type === 'select' ? col.options : await col.asyncOptions();
+            for (const o of (opts || [])) {
+                const opt = document.createElement('option');
+                if (typeof o === 'string') { opt.value = o; opt.textContent = o; } else { opt.value = o.value; opt.textContent = o.label; }
+                inp.appendChild(opt);
+            }
+        } else { inp = el('input', 'px-3 py-2 rounded-lg border w-full'); inp.type = col.type || 'text'; if (col.step) inp.step = col.step; }
+        inp.id = `fld_${col.key}`;
+        if (col.required) inp.required = true;
+        if (col.type === 'checkbox') inp.checked = !!val;
+        else if (col.type === 'date') inp.value = dateOnly(val);
+        else inp.value = val ?? '';
+        wrap.appendChild(inp);
+        return wrap;
+    }
+    async function openEditor(conf, row) {
+        $id('editorTitle').textContent = row ? `Edit ${conf.title}` : `New ${conf.title}`;
+        formBody.innerHTML = '';
+        for (const c of conf.cols) formBody.appendChild(await optionEl(c, row?.[c.key]));
+        const hidden = document.createElement('input'); hidden.type = 'hidden'; hidden.id = 'row_id'; hidden.value = row?.id || '';
+        formBody.appendChild(hidden);
+        const del = $id('deleteBtn');
+        del.classList.toggle('hidden', !row || conf.table === 'orders' || conf.table === 'pricing');
+        del.onclick = async () => { if (row?.id && await confirmDialog('Delete this record?', 'Delete', true)) { await sb.from(conf.table).delete().eq('id', row.id); dlg.close(); loadTable(); } };
+        $id('saveBtn').onclick = async e => { e.preventDefault(); await saveRecord(conf, row); };
+        dlg.showModal();
+    }
+    async function saveRecord(conf, orig) {
+        const payload = {};
+        for (const c of conf.cols) {
+            const input = $id(`fld_${c.key}`);
+            let v = c.type === 'checkbox' ? input.checked : input.value || null;
+            if (c.type === 'number' && v !== null) v = input.value === '' ? null : Number(v);
+            payload[c.key] = v;
+        }
+        const id = $id('row_id').value;
+        const r = id
+            ? await sb.from(conf.table).update(payload).eq('id', id).select('*').single()
+            : await sb.from(conf.table).insert(payload).select('*').single();
+        if (r.error) { toast(r.error.message, 'error'); return; }
+        dlg.close();
+        toast('Saved', 'success');
+        loadTable();
+        if (conf.table === 'orders' && orig) openOrderManager(orig.id);
     }
 
-    // Build a vCard for the active customer and hand it to the phone via the
-    // native share sheet (Add to Contacts), falling back to a .vcf download.
-    function buildVCard(c){
-        const esc=v=>String(v||'').replace(/[\\;,]/g,m=>'\\'+m).replace(/\n/g,'\\n');
-        const lines=['BEGIN:VCARD','VERSION:3.0',
-            `N:${esc(c.last_name)};${esc(c.first_name)};;;`,
-            `FN:${esc([c.first_name,c.last_name].filter(Boolean).join(' '))}`];
-        if(c.phone)lines.push(`TEL;TYPE=CELL:${String(c.phone).replace(/\D/g,'')}`);
-        if(c.email)lines.push(`EMAIL:${esc(c.email)}`);
-        if(c.street_address)lines.push(`ADR;TYPE=HOME:;;${esc([c.street_address,c.street_address_cont].filter(Boolean).join(', '))};${esc(c.city)};${esc(c.state)};${esc(c.zip)};USA`);
-        lines.push('NOTE:Rebel Ribbon customer','END:VCARD');
+    // ---------- navigation wiring ----------
+    let searchTimer = null;
+    function renderTabs() {
+        document.querySelectorAll('.nav-item').forEach(b => {
+            b.classList.toggle('nav-active', b.dataset.key === activeKey);
+            b.onclick = () => { activeKey = b.dataset.key; page = 0; renderTabs(); loadTable(); };
+        });
+        document.querySelectorAll('#orderFilters .filter-tab').forEach(b => {
+            b.classList.toggle('filter-active', b.dataset.filter === activeOrderFilter);
+            b.onclick = () => { activeOrderFilter = b.dataset.filter; page = 0; loadTable(); };
+        });
+        $id('addBtn').onclick = () => openEditor(tables[activeKey], null);
+        $id('prev').onclick = () => { if (page > 0) { page--; loadTable(); } };
+        $id('next').onclick = () => { if ((page + 1) * pageSize < totalCount) { page++; loadTable(); } };
+        $id('refreshAll').onclick = () => { page = 0; loadTable(); };
+        $id('orderSort').onchange = () => { orderSort = $id('orderSort').value; page = 0; loadTable(); };
+        const search = $id('globalSearch');
+        search.onkeydown = e => { if (e.key === 'Enter') { clearTimeout(searchTimer); page = 0; loadTable(); } };
+        search.oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(() => { page = 0; loadTable(); }, 300); };
+    }
+
+    // Subscribe once per distinct table; reload the current view on any change.
+    function wireRealtime() {
+        const seen = new Set();
+        for (const k of Object.keys(tables)) {
+            const t = k === 'order_list' ? 'orders' : tables[k].table;
+            if (!t || seen.has(t)) continue;
+            seen.add(t);
+            sb.channel(`rt-${t}`).on('postgres_changes', { event: '*', schema: 'public', table: t }, () => {
+                const cur = tables[activeKey];
+                const curTable = activeKey === 'order_list' ? 'orders' : cur.table;
+                if (curTable === t || activeKey === 'dashboard') loadTable();
+            }).subscribe();
+        }
+    }
+
+    // ---------- CSV export ----------
+    function downloadCsv(filename, rows) {
+        const esc = v => { if (v == null) v = ''; v = String(v).replace(/"/g, '""'); return /[",\n]/.test(v) ? `"${v}"` : v; };
+        const csv = rows.map(r => r.map(esc).join(',')).join('\n');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+        a.download = filename; a.click(); URL.revokeObjectURL(a.href);
+    }
+    $id('exportBtn').onclick = async () => {
+        if (activeKey === 'order_list') {
+            let q = sb.from('orders_full').select('order_id,customer_first_name,customer_last_name,customer_email,customer_phone,status,payment_status,pickup_delivery_type,pickup_delivery_date,event_date,event_type_name,cookie_amount_dzns,flavor,dietary_option,payment_amount');
+            if (activeOrderFilter !== 'All') q = q.eq('status', activeOrderFilter);
+            const { data, error } = await q.order('created_at', { ascending: false });
+            if (error) { toast(error.message, 'error'); return; }
+            const cols = ['order_id', 'customer_first_name', 'customer_last_name', 'customer_email', 'customer_phone', 'status', 'payment_status', 'pickup_delivery_type', 'pickup_delivery_date', 'event_date', 'event_type_name', 'cookie_amount_dzns', 'flavor', 'dietary_option', 'payment_amount'];
+            downloadCsv(`orders_${activeOrderFilter}_${todayStr()}.csv`, [cols, ...(data || []).map(r => cols.map(k => r[k]))]);
+        } else {
+            const conf = tables[activeKey];
+            const { data, error } = await sb.from(conf.table).select('*').order('created_at', { ascending: false });
+            if (error) { toast(error.message, 'error'); return; }
+            const cols = conf.cols.map(c => c.key);
+            downloadCsv(`${conf.table}_${todayStr()}.csv`, [cols, ...(data || []).map(r => cols.map(k => r[k]))]);
+        }
+        toast('CSV downloaded', 'success');
+    };
+
+    // ---------- order drawer ----------
+    const drawer = $id('orderDrawer');
+    let activeOrder = null, activeCustomer = null, pricing = null, adjustments = [];
+    let discountCodeDetails = null, referralCodeDetails = null, discountCodeAmount = 0, referralDiscountAmount = 0;
+    let activeCustomerReferralCode = null, lastComputedTotal = 0;
+
+    async function fetchPricing() {
+        const { data } = await sb.from('pricing').select('*').order('created_at', { ascending: false }).limit(1);
+        const p = (data && data[0]) || {};
+        return {
+            price_per_dozen: Number(p.price_per_dozen || 0), consultation_fee: Number(p.consultation_fee || 0),
+            gift_note_fee: Number(p.gift_note_fee || 0), delivery_fee: Number(p.delivery_fee || 0)
+        };
+    }
+    const isDatePast = d => d && dateOnly(d) < todayStr();
+
+    async function fetchDiscountCodeDetails(code, email) {
+        if (!code) return null;
+        const r = { code, isValid: false, type: null, value: 0 };
+        const { data } = await sb.from('discount_codes').select('*').eq('code', code).maybeSingle();
+        if (!data) return r;
+        if (data.good_through_date && isDatePast(data.good_through_date)) return r;
+        // An order's own consumed use should not mark its code "invalid" here,
+        // so we only reject once uses_count exceeds the allowance.
+        if (data.uses_allowed != null && (data.uses_count || 0) > data.uses_allowed) return r;
+        if (data.email_allowed && email && data.email_allowed.toLowerCase() !== email.toLowerCase()) return r;
+        const v = Number(data.amount || 0);
+        if (v <= 0) return r;
+        r.isValid = true; r.type = data.type === 'percent' ? 'percent' : 'fixed'; r.value = v;
+        return r;
+    }
+    async function fetchReferralCodeDetails(code) {
+        if (!code) return null;
+        const r = { code, isValid: false, value: 0 };
+        const { data } = await sb.from('referral_codes').select('*').eq('code', code).maybeSingle();
+        if (!data || (data.good_through_date && isDatePast(data.good_through_date))) return r;
+        const v = Number(data.referee_discount || 0);
+        if (v <= 0) return r;
+        r.isValid = true; r.value = v;
+        return r;
+    }
+    async function fetchAdjustments(id) {
+        const { data } = await sb.from('order_adjustments').select('*').eq('order_id', id).order('created_at', { ascending: false });
+        return (data || []).map(r => ({ ...r, amount: Number(r.amount || 0) }));
+    }
+
+    // Returns the priced breakdown for the active order (used by the panel and invoice).
+    function priceBreakdown() {
+        const ppd = pricing?.price_per_dozen || 0;
+        const consult = activeOrder?.consultation_requested ? pricing?.consultation_fee || 0 : 0;
+        const delivery = activeOrder?.pickup_delivery_type === 'Delivery' ? pricing?.delivery_fee || 0 : 0;
+        const gift = activeOrder?.gift_note ? pricing?.gift_note_fee || 0 : 0;
+        const base = Number(activeOrder?.cookie_amount_dzns || 0) * ppd;
+        const feeSum = adjustments.filter(a => a.kind === 'fee').reduce((s, a) => s + a.amount, 0);
+        const discSum = adjustments.filter(a => a.kind === 'discount').reduce((s, a) => s + a.amount, 0);
+        const baseForCodes = base + consult + gift + feeSum;
+        let codeDisc = 0, refDisc = 0;
+        if (discountCodeDetails?.isValid && baseForCodes > 0) {
+            codeDisc = discountCodeDetails.type === 'percent' ? baseForCodes * (discountCodeDetails.value / 100) : discountCodeDetails.value;
+            if (codeDisc > baseForCodes) codeDisc = baseForCodes;
+        }
+        if (referralCodeDetails?.isValid && baseForCodes > 0) {
+            refDisc = baseForCodes * (referralCodeDetails.value / 100);
+            if (refDisc > baseForCodes) refDisc = baseForCodes;
+        }
+        const total = base + delivery + consult + gift + feeSum - discSum - codeDisc - refDisc;
+        return { ppd, base, delivery, consult, gift, feeSum, discSum, codeDisc, refDisc, total };
+    }
+
+    function computeTotals() {
+        const b = priceBreakdown();
+        discountCodeAmount = b.codeDisc; referralDiscountAmount = b.refDisc; lastComputedTotal = b.total;
+        // Only show line items that carry a value, plus the always-present base + total.
+        const rows = [['Price / dozen', money(b.ppd)], ['Base', money(b.base)]];
+        if (b.delivery) rows.push(['Delivery', money(b.delivery)]);
+        if (b.consult) rows.push(['Consultation', money(b.consult)]);
+        if (b.gift) rows.push(['Gift note', money(b.gift)]);
+        if (b.feeSum) rows.push(['Fees', money(b.feeSum), 'var(--green)']);
+        if (b.codeDisc) rows.push(['Code discount', '-' + money(b.codeDisc), 'var(--red)']);
+        if (b.refDisc) rows.push(['Referral', '-' + money(b.refDisc), 'var(--red)']);
+        if (b.discSum) rows.push(['Other discounts', '-' + money(b.discSum), 'var(--red)']);
+        let html = rows.map(([l, v, color]) => `<div class="flex justify-between"><span>${l}:</span><span${color ? ` style="color:${color}"` : ''}>${v}</span></div>`).join('');
+        html += `<hr style="border:none;border-top:1px solid var(--line);margin:.5rem 0"/>
+            <div class="flex justify-between font-extrabold text-xl"><span>Total</span><span>${money(b.total)}</span></div>`;
+        $id('pricingRows').innerHTML = html;
+    }
+
+    function renderAdjustments() {
+        const tb = $id('adjTbody'); tb.innerHTML = '';
+        if (!adjustments.length) { tb.innerHTML = '<tr><td colspan="5" class="p-2 text-center text-gray-500">None</td></tr>'; return; }
+        for (const a of adjustments) {
+            const tr = el('tr', 'border-b');
+            tr.appendChild(el('td', 'p-1 text-xs', new Date(a.created_at).toLocaleDateString()));
+            tr.appendChild(el('td', 'p-1 text-xs', a.kind));
+            tr.appendChild(el('td', 'p-1', escapeHtml(a.label || '')));
+            tr.appendChild(el('td', `p-1 text-right ${a.kind === 'discount' ? 'text-red-600' : 'text-green-600'}`, (a.kind === 'discount' ? '-' : '') + money(a.amount)));
+            const rc = el('td', 'p-1 text-right');
+            const rb = el('button', 'btn btn-ghost text-red-500 text-xs', '×');
+            rb.onclick = async () => { if (await confirmDialog('Remove this adjustment?', 'Remove', true)) { await sb.from('order_adjustments').delete().eq('id', a.id); adjustments = adjustments.filter(x => x.id !== a.id); renderAdjustments(); computeTotals(); } };
+            rc.appendChild(rb); tr.appendChild(rc); tb.appendChild(tr);
+        }
+    }
+
+    function setText(id, v) { $id(id).textContent = v; }
+    function fillDrawer() {
+        const o = activeOrder, c = activeCustomer;
+        setText('drawerTitle', `Order #${o?.order_id || formatOrderId(o.id)} (${o?.status || 'Active'})`);
+        setText('cust_name', c ? `${c.first_name || ''} ${c.last_name || ''}`.trim() : 'N/A');
+        setText('cust_id', c?.customer_id || o?.order_id || 'N/A');
+        const email = $id('cust_email'); email.textContent = c?.email || 'N/A'; email.href = c?.email ? `mailto:${c.email}` : '#';
+        const phone = $id('cust_phone_link'); phone.textContent = formatPhone(c?.phone) || 'N/A'; phone.href = c?.phone ? `tel:${String(c.phone).replace(/\D/g, '')}` : '#';
+        setText('cust_addr1', c?.street_address || ''); setText('cust_addr2', c?.street_address_cont || '');
+        setText('cust_citystzip', [c?.city, c?.state, c?.zip].filter(Boolean).join(', '));
+        $id('mapLocation').onclick = () => { const addr = [c?.street_address, c?.city, c?.state, c?.zip].filter(Boolean).join(', '); if (addr) window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`, '_blank'); };
+        setText('cust_referral_code', activeCustomerReferralCode || 'None');
+        setText('ov_event_name', o?.event_type_name || 'N/A');
+        setText('ov_event', dateOnly(o?.event_date));
+        setText('ov_submitted', dateOnly(o?.created_at));
+        setText('ov_pickup', dateOnly(o?.pickup_delivery_date));
+        setText('ov_dzns', o?.cookie_amount_dzns ?? '0');
+        setText('ov_flavor', o?.flavor || 'N/A');
+        setText('ov_dietary', o?.dietary_option || 'None');
+        setText('ov_notes', o?.design_notes || 'None');
+        $id('ov_photo').src = o?.design_inspiration_photo || NO_PHOTO;
+        setText('ov_consultation', o?.consultation_requested ? 'Yes' : 'No');
+        setText('ov_gift_note', o?.gift_note ? 'Yes' : 'No');
+        setText('ov_gift_text', o?.gift_note_text || 'None');
+        setText('ov_pd_type', o?.pickup_delivery_type || 'N/A');
+        setText('ov_discount_code', o?.discount_code_used ? `${o.discount_code_used} (${discountCodeDetails?.isValid ? 'applied' : 'invalid'})` : 'None');
+        setText('ov_referral_code', o?.referral_code_used ? `${o.referral_code_used} (${referralCodeDetails?.isValid ? 'applied' : 'invalid'})` : 'None');
+        $id('statusSelect').value = o?.status || 'Active';
+        renderAdjustments(); computeTotals(); renderPaymentSection(); renderReferralExtras();
+    }
+
+    function renderReferralExtras() {
+        $id('shareReferral').classList.toggle('hidden', !activeCustomerReferralCode);
+        $id('addContact').classList.toggle('hidden', !activeCustomer);
+        const hasReward = !!activeOrder?.referral_reward_code;
+        $id('rewardRow').classList.toggle('hidden', !hasReward);
+        setText('ov_reward_code', activeOrder?.referral_reward_code || '');
+    }
+
+    // ---------- vCard / Save Contact ----------
+    function buildVCard(c) {
+        const esc = v => String(v || '').replace(/[\\;,]/g, m => '\\' + m).replace(/\n/g, '\\n');
+        const lines = ['BEGIN:VCARD', 'VERSION:3.0', `N:${esc(c.last_name)};${esc(c.first_name)};;;`, `FN:${esc([c.first_name, c.last_name].filter(Boolean).join(' '))}`];
+        if (c.phone) lines.push(`TEL;TYPE=CELL:${String(c.phone).replace(/\D/g, '')}`);
+        if (c.email) lines.push(`EMAIL:${esc(c.email)}`);
+        if (c.street_address) lines.push(`ADR;TYPE=HOME:;;${esc([c.street_address, c.street_address_cont].filter(Boolean).join(', '))};${esc(c.city)};${esc(c.state)};${esc(c.zip)};USA`);
+        lines.push('NOTE:Rebel Ribbon customer', 'END:VCARD');
         return lines.join('\r\n');
     }
-    document.getElementById('addContact').onclick=async()=>{
-        const c=activeCustomer; if(!c){alert('No customer on this order.');return;}
-        const name=[c.first_name,c.last_name].filter(Boolean).join(' ')||'customer';
-        const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
-        const vcardUrl=()=>{const q=new URLSearchParams({first:c.first_name||'',last:c.last_name||'',tel:c.phone||'',email:c.email||'',street:[c.street_address,c.street_address_cont].filter(Boolean).join(', '),city:c.city||'',state:c.state||'',zip:c.zip||''});return `${SUPABASE_URL}/functions/v1/vcard?${q.toString()}`;};
-        const shareFallback=async()=>{const blob=new Blob([buildVCard(c)],{type:'text/vcard'});const file=new File([blob],`${name.replace(/\s+/g,'-')}.vcf`,{type:'text/vcard'});
-            if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:name});return;}catch(e){if(e.name==='AbortError')return;}}
-            const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);};
-        if(isIOS&&navigator.standalone===true){
-            // Home-screen web app: its in-app browser cannot render the vCard
-            // contact preview, so hand the link to the real Safari app via the
-            // x-safari- scheme. If iOS ignores the scheme (page stays visible),
-            // fall back to instructions after a moment.
-            let leftApp=false; const onHide=()=>{leftApp=true;};
-            document.addEventListener('visibilitychange',onHide);
-            location.href='x-safari-'+vcardUrl();
-            setTimeout(()=>{document.removeEventListener('visibilitychange',onHide);
-                if(leftApp||document.hidden)return;
-                alert('Your phone blocked the jump to Safari. Open rebelribbon.com/staff_ui.html in the Safari app and tap Save Contact there — or use the share option next.');
-                shareFallback();
-            },2000);
+    $id('addContact').onclick = async () => {
+        const c = activeCustomer; if (!c) { toast('No customer on this order.', 'error'); return; }
+        const name = [c.first_name, c.last_name].filter(Boolean).join(' ') || 'customer';
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+        const vcardUrl = () => {
+            const q = new URLSearchParams({ first: c.first_name || '', last: c.last_name || '', tel: c.phone || '', email: c.email || '', street: [c.street_address, c.street_address_cont].filter(Boolean).join(', '), city: c.city || '', state: c.state || '', zip: c.zip || '' });
+            return `${SUPABASE_URL}/functions/v1/vcard?${q.toString()}`;
+        };
+        const shareFallback = async () => {
+            const blob = new Blob([buildVCard(c)], { type: 'text/vcard' });
+            const file = new File([blob], `${name.replace(/\s+/g, '-')}.vcf`, { type: 'text/vcard' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: name }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+            const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 10000);
+        };
+        if (isIOS && navigator.standalone === true) {
+            let leftApp = false; const onHide = () => { leftApp = true; };
+            document.addEventListener('visibilitychange', onHide);
+            location.href = 'x-safari-' + vcardUrl();
+            setTimeout(() => { document.removeEventListener('visibilitychange', onHide); if (leftApp || document.hidden) return; toast('Open this page in the Safari app to save contacts.', 'error', 5000); shareFallback(); }, 2000);
             return;
         }
-        // Regular Safari tab: navigate (GET) to the served .vcf so Safari
-        // shows its native contact preview (Create New Contact).
-        if(isIOS){window.open(vcardUrl(),'_blank');return;}
+        if (isIOS) { window.open(vcardUrl(), '_blank'); return; }
         await shareFallback();
     };
 
-    // Square (1080x1080) branded share image with the customer's referral code.
-    async function generateReferralImage(){
-        const code=activeCustomerReferralCode;
-        if(!code){alert('This customer has no referral code yet.');return;}
-        try{await document.fonts.ready;}catch(_){/* draw with fallbacks */}
-        const S=1080,cv=document.createElement('canvas');cv.width=S;cv.height=S;const c=cv.getContext('2d');
-        const g=c.createLinearGradient(0,0,S,S);g.addColorStop(0,'#fff8f8');g.addColorStop(.5,'#fae0e2');g.addColorStop(1,'#fffcfb');
-        c.fillStyle=g;c.fillRect(0,0,S,S);
-        c.strokeStyle='#e8a0a4';c.lineWidth=6;c.beginPath();c.roundRect(36,36,S-72,S-72,32);c.stroke();
-        try{const img=new Image();img.crossOrigin='anonymous';img.src='Bowtrans.png';await img.decode();const w=170,h=w*(img.height/img.width);c.drawImage(img,(S-w)/2,80,w,h);}catch(_){/* logo optional */}
-        c.textAlign='center';
-        c.fillStyle='#831843';c.font='700 68px "Playfair Display", Georgia, serif';c.fillText('Rebel Ribbon',S/2,330);
-        c.fillStyle='#be185d';c.font='italic 400 40px "Playfair Display", Georgia, serif';c.fillText('Sweet friends share sweet treats',S/2,392);
-        c.fillStyle='#ffffff';c.beginPath();c.roundRect(170,450,S-340,140,28);c.fill();
-        c.strokeStyle='#be185d';c.setLineDash([16,12]);c.lineWidth=5;c.beginPath();c.roundRect(184,464,S-368,112,20);c.stroke();c.setLineDash([]);
-        c.fillStyle='#5d4e4e';c.font='800 76px "Courier New", monospace';c.fillText(code,S/2,545);
-        c.fillStyle='#7a6b6b';c.font='600 38px Arial, sans-serif';
-        c.fillText('Give this code to a friend and',S/2,690);
-        c.fillText('they get 10% off their cookie order!',S/2,744);
-        c.fillStyle='#831843';c.font='700 40px Arial, sans-serif';
-        c.fillText('When their order is completed,',S/2,830);
-        c.fillText('YOU get 15% off your next order 🎉',S/2,884);
-        c.fillStyle='#be185d';c.font='700 34px Arial, sans-serif';c.fillText('rebelribbon.com/order.html',S/2,985);
-        cv.toBlob(async blob=>{
-            if(!blob){alert('Could not create the image.');return;}
-            const file=new File([blob],`rebel-ribbon-referral-${code}.png`,{type:'image/png'});
-            if(navigator.canShare&&navigator.canShare({files:[file]})){
-                try{await navigator.share({files:[file],title:'Rebel Ribbon Referral Code'});return;}
-                catch(e){if(e.name==='AbortError')return;/* else fall through to download */}
-            }
-            const url=URL.createObjectURL(blob);const a=document.createElement('a');
-            a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();
-            setTimeout(()=>URL.revokeObjectURL(url),10000);
-        },'image/png');
+    // ---------- referral share image ----------
+    async function generateReferralImage() {
+        const code = activeCustomerReferralCode;
+        if (!code) { toast('This customer has no referral code yet.', 'error'); return; }
+        try { await document.fonts.ready; } catch (_) {}
+        const S = 1080, cv = document.createElement('canvas'); cv.width = S; cv.height = S; const c = cv.getContext('2d');
+        const g = c.createLinearGradient(0, 0, S, S); g.addColorStop(0, '#fff8f8'); g.addColorStop(.5, '#fae0e2'); g.addColorStop(1, '#fffcfb');
+        c.fillStyle = g; c.fillRect(0, 0, S, S);
+        c.strokeStyle = '#e8a0a4'; c.lineWidth = 6; c.beginPath(); c.roundRect(36, 36, S - 72, S - 72, 32); c.stroke();
+        try { const img = new Image(); img.crossOrigin = 'anonymous'; img.src = 'Bowtrans.png'; await img.decode(); const w = 170, h = w * (img.height / img.width); c.drawImage(img, (S - w) / 2, 80, w, h); } catch (_) {}
+        c.textAlign = 'center';
+        c.fillStyle = '#831843'; c.font = '700 68px "Playfair Display", Georgia, serif'; c.fillText('Rebel Ribbon', S / 2, 330);
+        c.fillStyle = '#be185d'; c.font = 'italic 400 40px "Playfair Display", Georgia, serif'; c.fillText('Sweet friends share sweet treats', S / 2, 392);
+        c.fillStyle = '#ffffff'; c.beginPath(); c.roundRect(170, 450, S - 340, 140, 28); c.fill();
+        c.strokeStyle = '#be185d'; c.setLineDash([16, 12]); c.lineWidth = 5; c.beginPath(); c.roundRect(184, 464, S - 368, 112, 20); c.stroke(); c.setLineDash([]);
+        c.fillStyle = '#5d4e4e'; c.font = '800 76px "Courier New", monospace'; c.fillText(code, S / 2, 545);
+        c.fillStyle = '#7a6b6b'; c.font = '600 38px Arial, sans-serif';
+        c.fillText('Give this code to a friend and', S / 2, 690);
+        c.fillText('they get 10% off their cookie order!', S / 2, 744);
+        c.fillStyle = '#831843'; c.font = '700 40px Arial, sans-serif';
+        c.fillText('When their order is completed,', S / 2, 830);
+        c.fillText('YOU get 15% off your next order 🎉', S / 2, 884);
+        c.fillStyle = '#be185d'; c.font = '700 34px Arial, sans-serif'; c.fillText('rebelribbon.com/order.html', S / 2, 985);
+        cv.toBlob(async blob => {
+            if (!blob) { toast('Could not create the image.', 'error'); return; }
+            const file = new File([blob], `rebel-ribbon-referral-${code}.png`, { type: 'image/png' });
+            if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], title: 'Rebel Ribbon Referral Code' }); return; } catch (e) { if (e.name === 'AbortError') return; } }
+            const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 10000);
+        }, 'image/png');
     }
-    document.getElementById('shareReferral').onclick=generateReferralImage;
+    $id('shareReferral').onclick = generateReferralImage;
 
-    function renderPaymentSection(){
-        const o=activeOrder,el=document.getElementById('paymentSection'); if(!el)return;
-        const status=o?.payment_status||'unpaid';
-        const badgeClass={paid:'status-completed',pending:'status-pending',failed:'status-canceled',refunded:'status-canceled'}[status]||'status-pending';
-        let html=`<div class="flex justify-between items-center"><span>Status:</span><span class="status-badge ${badgeClass}">${status}</span></div>`;
-        if(o?.payment_amount)html+=`<div class="flex justify-between"><span>Amount:</span><span>${money(o.payment_amount)}</span></div>`;
-        if(o?.paid_at)html+=`<div class="flex justify-between"><span>Paid:</span><span>${dateOnly(o.paid_at)}</span></div>`;
-        el.innerHTML=html;
-        if(status==='paid')return;
-        if(o?.stripe_payment_link_url){
-            const inp=$('input','survey-link-input'); inp.readOnly=true; inp.value=o.stripe_payment_link_url; el.appendChild(inp);
-            const cp=$('button','btn btn-secondary text-xs w-full','Copy Payment Link');
-            cp.onclick=()=>{navigator.clipboard.writeText(o.stripe_payment_link_url);cp.textContent='Copied';};
-            el.appendChild(cp);
-        }else{
-            const gen=$('button','btn btn-primary w-full mt-2','Generate Payment Link');
-            gen.onclick=generatePaymentLink; el.appendChild(gen);
+    // ---------- payment ----------
+    function renderPaymentSection() {
+        const o = activeOrder, box = $id('paymentSection'); if (!box) return;
+        const status = o?.payment_status || 'unpaid';
+        let html = `<div class="flex justify-between items-center"><span>Status:</span><span class="status-badge ${getStatusClass(status)}">${status}</span></div>`;
+        if (o?.payment_amount) html += `<div class="flex justify-between"><span>Amount:</span><span>${money(o.payment_amount)}</span></div>`;
+        if (o?.paid_at) html += `<div class="flex justify-between"><span>Paid:</span><span>${dateOnly(o.paid_at)}</span></div>`;
+        box.innerHTML = html;
+        if (status === 'paid') return;
+        if (o?.stripe_payment_link_url) {
+            const inp = el('input', 'survey-link-input'); inp.readOnly = true; inp.value = o.stripe_payment_link_url; box.appendChild(inp);
+            const cp = el('button', 'btn btn-secondary text-xs w-full', 'Copy Payment Link');
+            cp.onclick = () => { navigator.clipboard.writeText(o.stripe_payment_link_url); toast('Payment link copied', 'success'); };
+            box.appendChild(cp);
+        } else {
+            const gen = el('button', 'btn btn-primary w-full mt-2', 'Generate Payment Link');
+            gen.onclick = generatePaymentLink; box.appendChild(gen);
         }
     }
-
-    async function generatePaymentLink(){
-        if(!activeOrder)return;
-        const amount=Math.round((lastComputedTotal||0)*100)/100;
-        if(!(amount>0)){alert('Total must be greater than $0 to create a payment link. Check pricing first.');return;}
-        if(!confirm(`Create a Stripe payment link for ${money(amount)}?`))return;
-        const{data:{session}}=await sb.auth.getSession();
-        if(!session){alert('You are signed out. Please sign in again.');return;}
-        const el=document.getElementById('paymentSection'); el.innerHTML='<p class="text-gray-500">Creating payment link...</p>';
-        try{
-            const resp=await fetch(`${SUPABASE_URL}/functions/v1/create-payment-link`,{
-                method:'POST',
-                headers:{'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}`},
-                body:JSON.stringify({
-                    orderId:activeOrder.id,
-                    amount,
-                    customerEmail:activeCustomer?.email||'',
-                    customerName:activeCustomer?`${activeCustomer.first_name||''} ${activeCustomer.last_name||''}`.trim():'',
-                    description:`Rebel Ribbon Order #${activeOrder.order_id||formatOrderId(activeOrder.id)}`
+    async function generatePaymentLink() {
+        if (!activeOrder) return;
+        const amount = Math.round((lastComputedTotal || 0) * 100) / 100;
+        if (!(amount > 0)) { toast('Total must be greater than $0. Check pricing first.', 'error'); return; }
+        if (!(await confirmDialog(`Create a Stripe payment link for ${money(amount)}?`, 'Create link'))) return;
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) { toast('You are signed out. Please sign in again.', 'error'); return; }
+        $id('paymentSection').innerHTML = '<p class="text-gray-500">Creating payment link…</p>';
+        try {
+            const resp = await fetch(`${SUPABASE_URL}/functions/v1/create-payment-link`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                body: JSON.stringify({
+                    orderId: activeOrder.id, amount,
+                    customerEmail: activeCustomer?.email || '',
+                    customerName: activeCustomer ? `${activeCustomer.first_name || ''} ${activeCustomer.last_name || ''}`.trim() : '',
+                    description: `Rebel Ribbon Order #${activeOrder.order_id || formatOrderId(activeOrder.id)}`
                 })
             });
-            const result=await resp.json();
-            if(!resp.ok)throw new Error(result.error||'Could not create payment link');
-            const upd={stripe_payment_link_url:result.paymentUrl,payment_amount:amount,payment_status:'pending'};
-            if(result.paymentLinkId)upd.stripe_payment_link_id=result.paymentLinkId;
-            await sb.from('orders').update(upd).eq('id',activeOrder.id);
-            activeOrder.stripe_payment_link_url=result.paymentUrl;
-            activeOrder.payment_status='pending';
-            activeOrder.payment_amount=amount;
+            const result = await resp.json();
+            if (!resp.ok) throw new Error(result.error || 'Could not create payment link');
+            const upd = { stripe_payment_link_url: result.paymentUrl, payment_amount: amount, payment_status: 'pending' };
+            if (result.paymentLinkId) upd.stripe_payment_link_id = result.paymentLinkId;
+            await sb.from('orders').update(upd).eq('id', activeOrder.id);
+            Object.assign(activeOrder, { stripe_payment_link_url: result.paymentUrl, payment_status: 'pending', payment_amount: amount });
             renderPaymentSection();
-            try{await navigator.clipboard.writeText(result.paymentUrl);}catch(_){/* clipboard optional */}
-        }catch(err){
-            alert('Error: '+err.message);
-            renderPaymentSection();
-        }
+            try { await navigator.clipboard.writeText(result.paymentUrl); toast('Payment link created & copied', 'success'); } catch (_) { toast('Payment link created', 'success'); }
+        } catch (err) { toast('Error: ' + err.message, 'error'); renderPaymentSection(); }
     }
 
-    async function openOrderManager(orderId){document.body.style.cursor='progress';const[orderResp,pricingData,adjustmentsData]=await Promise.all([sb.from('orders').select('*').eq('id',orderId).single(),fetchPricing(),fetchAdjustments(orderId)]);if(orderResp.error){alert(orderResp.error.message);document.body.style.cursor='default';return;}activeOrder=orderResp.data;pricing=pricingData;adjustments=adjustmentsData;if(activeOrder.customer_id){const{data}=await sb.from('customers').select('*').eq('id',activeOrder.customer_id).single();activeCustomer=data;}else activeCustomer=null;if(activeOrder.customer_id){const{data}=await sb.from('referral_codes').select('code').eq('associated_customer_id',activeOrder.customer_id).order('created_at',{ascending:false}).limit(1).maybeSingle();activeCustomerReferralCode=data?.code||null;}else activeCustomerReferralCode=null;discountCodeDetails=activeOrder.discount_code_used?await fetchDiscountCodeDetails(activeOrder.discount_code_used,activeCustomer?.email):null;referralCodeDetails=activeOrder.referral_code_used?await fetchReferralCodeDetails(activeOrder.referral_code_used):null;document.body.style.cursor='default';fillDrawer();loadSurveySection(orderId);drawer.showModal();}
+    // ---------- open / mutate an order ----------
+    async function openOrderManager(orderId) {
+        document.body.style.cursor = 'progress';
+        const [orderResp, pricingData, adjustmentsData] = await Promise.all([
+            sb.from('orders').select('*').eq('id', orderId).single(), fetchPricing(), fetchAdjustments(orderId)
+        ]);
+        if (orderResp.error) { document.body.style.cursor = 'default'; toast(orderResp.error.message, 'error'); return; }
+        activeOrder = orderResp.data; pricing = pricingData; adjustments = adjustmentsData;
 
-    document.getElementById('saveStatus').onclick=async()=>{const s=document.getElementById('statusSelect').value;const hadReward=activeOrder.referral_reward_code;const{error}=await sb.from('orders').update({status:s}).eq('id',activeOrder.id);if(error){alert(error.message);return;}
-        const{data:fresh}=await sb.from('orders').select('*').eq('id',activeOrder.id).single();if(fresh)activeOrder=fresh;else activeOrder.status=s;
-        fillDrawer();loadTable();
-        if(!hadReward&&activeOrder.referral_reward_code){alert(`Referral reward created!\n\nCode: ${activeOrder.referral_reward_code}\n15% off · single use · expires in 90 days\n\nShare it with the customer who referred this order — it only works with their email.`);}};
-    document.getElementById('editFields').onclick=()=>{if(activeOrder)openEditor(tables.orders,activeOrder);};
-    document.getElementById('deleteOrder').onclick=async()=>{if(!activeOrder)return;const label=`#${activeOrder.order_id||formatOrderId(activeOrder.id)}`;if(!confirm(`Permanently delete order ${label}?\n\nThis also removes its fees/discounts, survey links, and payment logs. This cannot be undone.`))return;const{error}=await sb.rpc('delete_order',{p_order_id:activeOrder.id});if(error){alert('Could not delete: '+error.message);return;}drawer.close();loadTable();};
-    document.getElementById('backToOrders').onclick=e=>{e.preventDefault();drawer.close();};
-    document.getElementById('addAdjustment').onclick=async()=>{const l=document.getElementById('adjLabel').value.trim(),a=Number(document.getElementById('adjAmount').value),k=document.getElementById('adjKind').value;if(!l||!a||a<=0){alert('Enter label and amount');return;}const{data,error}=await sb.from('order_adjustments').insert({order_id:activeOrder.id,label:l,amount:a,kind:k}).select('*').single();if(error){alert(error.message);return;}adjustments.unshift({...data,amount:Number(data.amount||0)});document.getElementById('adjLabel').value='';document.getElementById('adjAmount').value='';renderAdjustments();computeTotals();};
-    document.getElementById('btnUploadPhoto').onclick=async()=>{const f=document.getElementById('uploadPhoto').files?.[0];if(!f){alert('Choose file');return;}const path=`${activeOrder.id}/photo_${Date.now()}.${f.name.split('.').pop()}`;const{data,error}=await sb.storage.from('order_uploads').upload(path,f,{upsert:true});if(error){alert(error.message);return;}const{data:pub}=sb.storage.from('order_uploads').getPublicUrl(data.path);await sb.from('orders').update({design_inspiration_photo:pub?.publicUrl}).eq('id',activeOrder.id);activeOrder.design_inspiration_photo=pub?.publicUrl;document.getElementById('ov_photo').src=pub?.publicUrl;document.getElementById('uploadPhoto').value='';};
-    document.getElementById('ov_photo').onclick=function(){if(this.src)window.open(this.src,'_blank');};
-    document.getElementById('viewInvoice').onclick=()=>{if(!activeOrder||!activeCustomer){alert('Load order first');return;}const orderId=activeOrder.order_id||formatOrderId(activeOrder.id),total=document.getElementById('t_total').textContent;const items=[{l:`Base (${activeOrder.cookie_amount_dzns||0} dz @ ${document.getElementById('t_price').textContent})`,a:document.getElementById('t_base').textContent}];if(activeOrder.pickup_delivery_type==='Delivery'&&(pricing?.delivery_fee||0)>0)items.push({l:'Delivery',a:document.getElementById('t_delivery').textContent});if(activeOrder.consultation_requested)items.push({l:'Consult',a:document.getElementById('t_consult').textContent});if(activeOrder.gift_note)items.push({l:'Gift fee',a:document.getElementById('t_gift').textContent});adjustments.filter(x=>x.kind==='fee').forEach(x=>items.push({l:x.label,a:money(x.amount)}));if(discountCodeAmount>0)items.push({l:`Discount (${activeOrder.discount_code_used})`,a:'-'+money(discountCodeAmount)});if(referralDiscountAmount>0)items.push({l:`Referral (${activeOrder.referral_code_used})`,a:'-'+money(referralDiscountAmount)});adjustments.filter(x=>x.kind==='discount').forEach(x=>items.push({l:x.label,a:'-'+money(x.amount)}));
-        const html=`<!DOCTYPE html><html><head><title>Invoice #${orderId}</title><style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600&display=swap');*{box-sizing:border-box}body{margin:0;padding:24px;font-family:'Nunito',sans-serif;background:#fdf2f8}.inv{max-width:800px;margin:auto;background:#fff;border-radius:20px;padding:32px;box-shadow:0 10px 40px rgba(190,24,93,.15)}.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}.brand{font-family:'Playfair Display',serif;font-size:28px;text-transform:uppercase}.pill{background:#eff6ff;color:#1d4ed8;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600}hr{border:none;border-top:1px solid #e5e7eb;margin:16px 0}.info{display:flex;justify-content:space-between;font-size:13px;margin-bottom:20px}.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9ca3af;margin-bottom:4px}.val{font-weight:600}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}th{text-align:left;padding:10px;background:#f9fafb;font-weight:600}th:last-child{text-align:right}td{padding:10px;border-bottom:1px solid #f3f4f6}td:last-child{text-align:right}.tot td{border-top:2px solid #d1d5db;background:#fef3c7;font-weight:700}.tot td:last-child{font-size:18px;color:#b91c1c}.ftr{text-align:center;margin-top:20px;font-size:11px;color:#9ca3af}.invbar{display:flex;justify-content:space-between;gap:12px;max-width:800px;margin:0 auto 14px}.invbar button{border-radius:999px;padding:10px 20px;font-family:'Nunito',sans-serif;font-weight:600;font-size:14px;cursor:pointer}.btn-back{background:#fff;color:#be185d;border:1px solid #be185d}.btn-print{background:#be185d;color:#fff;border:none}@media print{body{background:#fff;padding:0}.inv{box-shadow:none}.invbar{display:none}}</style></head><body><div class="invbar"><button class="btn-back" onclick="window.close()">Back to Order</button><button class="btn-print" onclick="window.print()">Print / Save PDF</button></div><div class="inv"><div class="hdr"><div><img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" style="height:60px;margin-bottom:8px"><div class="brand">Rebel Ribbon</div></div><div style="text-align:right"><div class="pill">Invoice #${orderId}</div><div style="margin-top:4px;font-size:12px"><strong>Date:</strong> ${new Date().toLocaleDateString()}</div></div></div><hr/><div class="info"><div><div class="lbl">Bill to</div><div class="val">${document.getElementById('cust_name').textContent}</div><div>${document.getElementById('cust_email').textContent}</div><div>${document.getElementById('cust_phone_link').textContent}</div></div><div style="text-align:right"><div class="lbl">From</div><div class="val">Rebel Ribbon</div><div>www.rebelribbon.com</div><div>info@rebelribbon.com</div></div></div><table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>${items.map(i=>`<tr><td>${i.l}</td><td>${i.a}</td></tr>`).join('')}<tr class="tot"><td>Total Due</td><td>${total}</td></tr></tbody></table><div class="ftr">Thank you for supporting handmade custom cookies!</div></div></body></html>`;
-        const w=window.open('','_blank','width=900,height=800');w.document.write(html);w.document.close();
+        if (activeOrder.customer_id) {
+            // customer row + their referral code in parallel
+            const [custR, refR] = await Promise.all([
+                sb.from('customers').select('*').eq('id', activeOrder.customer_id).single(),
+                sb.from('referral_codes').select('code').eq('associated_customer_id', activeOrder.customer_id).order('created_at', { ascending: false }).limit(1).maybeSingle()
+            ]);
+            activeCustomer = custR.data; activeCustomerReferralCode = refR.data?.code || null;
+        } else { activeCustomer = null; activeCustomerReferralCode = null; }
+
+        [discountCodeDetails, referralCodeDetails] = await Promise.all([
+            activeOrder.discount_code_used ? fetchDiscountCodeDetails(activeOrder.discount_code_used, activeCustomer?.email) : null,
+            activeOrder.referral_code_used ? fetchReferralCodeDetails(activeOrder.referral_code_used) : null
+        ]);
+        document.body.style.cursor = 'default';
+        fillDrawer(); loadSurveySection(orderId); drawer.showModal();
+    }
+
+    $id('saveStatus').onclick = async () => {
+        const s = $id('statusSelect').value;
+        const hadReward = activeOrder.referral_reward_code;
+        const { error } = await sb.from('orders').update({ status: s }).eq('id', activeOrder.id);
+        if (error) { toast(error.message, 'error'); return; }
+        const { data: fresh } = await sb.from('orders').select('*').eq('id', activeOrder.id).single();
+        if (fresh) activeOrder = fresh; else activeOrder.status = s;
+        fillDrawer(); loadTable();
+        if (!hadReward && activeOrder.referral_reward_code) {
+            toast(`Referral reward ${activeOrder.referral_reward_code} created — 15% off, single use.`, 'success', 6000);
+        } else { toast('Status updated', 'success'); }
+    };
+    $id('editFields').onclick = () => { if (activeOrder) openEditor(tables.orders, activeOrder); };
+    $id('deleteOrder').onclick = async () => {
+        if (!activeOrder) return;
+        const label = `#${activeOrder.order_id || formatOrderId(activeOrder.id)}`;
+        if (!(await confirmDialog(`Permanently delete order ${label}?\n\nThis also removes its fees, survey links and payment logs. This cannot be undone.`, 'Delete', true))) return;
+        const { error } = await sb.rpc('delete_order', { p_order_id: activeOrder.id });
+        if (error) { toast('Could not delete: ' + error.message, 'error'); return; }
+        drawer.close(); toast('Order deleted', 'success'); loadTable();
+    };
+    $id('backToOrders').onclick = e => { e.preventDefault(); drawer.close(); };
+    $id('addAdjustment').onclick = async () => {
+        const label = $id('adjLabel').value.trim(), amount = Number($id('adjAmount').value), kind = $id('adjKind').value;
+        if (!label || !amount || amount <= 0) { toast('Enter a label and amount.', 'error'); return; }
+        const { data, error } = await sb.from('order_adjustments').insert({ order_id: activeOrder.id, label, amount, kind }).select('*').single();
+        if (error) { toast(error.message, 'error'); return; }
+        adjustments.unshift({ ...data, amount: Number(data.amount || 0) });
+        $id('adjLabel').value = ''; $id('adjAmount').value = '';
+        renderAdjustments(); computeTotals();
+    };
+    $id('btnUploadPhoto').onclick = async () => {
+        const f = $id('uploadPhoto').files?.[0]; if (!f) { toast('Choose a file first.', 'error'); return; }
+        const path = `${activeOrder.id}/photo_${Date.now()}.${f.name.split('.').pop()}`;
+        const { data, error } = await sb.storage.from('order_uploads').upload(path, f, { upsert: true });
+        if (error) { toast(error.message, 'error'); return; }
+        const { data: pub } = sb.storage.from('order_uploads').getPublicUrl(data.path);
+        await sb.from('orders').update({ design_inspiration_photo: pub?.publicUrl }).eq('id', activeOrder.id);
+        activeOrder.design_inspiration_photo = pub?.publicUrl;
+        $id('ov_photo').src = pub?.publicUrl; $id('uploadPhoto').value = '';
+        toast('Photo uploaded', 'success');
+    };
+    $id('ov_photo').onclick = function () { if (this.src && this.src !== NO_PHOTO) window.open(this.src, '_blank'); };
+
+    // Build the invoice from computed data (not from the DOM).
+    $id('viewInvoice').onclick = () => {
+        if (!activeOrder || !activeCustomer) { toast('Load an order first.', 'error'); return; }
+        const b = priceBreakdown();
+        const orderId = activeOrder.order_id || formatOrderId(activeOrder.id);
+        const items = [{ l: `Base (${activeOrder.cookie_amount_dzns || 0} dz @ ${money(b.ppd)})`, a: money(b.base) }];
+        if (b.delivery) items.push({ l: 'Delivery', a: money(b.delivery) });
+        if (b.consult) items.push({ l: 'Consultation', a: money(b.consult) });
+        if (b.gift) items.push({ l: 'Gift note', a: money(b.gift) });
+        adjustments.filter(x => x.kind === 'fee').forEach(x => items.push({ l: x.label, a: money(x.amount) }));
+        if (b.codeDisc > 0) items.push({ l: `Discount (${activeOrder.discount_code_used})`, a: '-' + money(b.codeDisc) });
+        if (b.refDisc > 0) items.push({ l: `Referral (${activeOrder.referral_code_used})`, a: '-' + money(b.refDisc) });
+        adjustments.filter(x => x.kind === 'discount').forEach(x => items.push({ l: x.label, a: '-' + money(x.amount) }));
+        const name = escapeHtml(`${activeCustomer.first_name || ''} ${activeCustomer.last_name || ''}`.trim());
+        const html = `<!DOCTYPE html><html><head><title>Invoice #${orderId}</title><style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600&display=swap');*{box-sizing:border-box}body{margin:0;padding:24px;font-family:'Nunito',sans-serif;background:#fdf2f8}.inv{max-width:800px;margin:auto;background:#fff;border-radius:20px;padding:32px;box-shadow:0 10px 40px rgba(190,24,93,.15)}.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}.brand{font-family:'Playfair Display',serif;font-size:28px}.pill{background:#eff6ff;color:#1d4ed8;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600}hr{border:none;border-top:1px solid #e5e7eb;margin:16px 0}.info{display:flex;justify-content:space-between;font-size:13px;margin-bottom:20px}.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9ca3af;margin-bottom:4px}.val{font-weight:600}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}th{text-align:left;padding:10px;background:#f9fafb;font-weight:600}th:last-child{text-align:right}td{padding:10px;border-bottom:1px solid #f3f4f6}td:last-child{text-align:right}.tot td{border-top:2px solid #d1d5db;background:#fef3c7;font-weight:700}.tot td:last-child{font-size:18px;color:#b91c1c}.ftr{text-align:center;margin-top:20px;font-size:11px;color:#9ca3af}.invbar{display:flex;justify-content:space-between;gap:12px;max-width:800px;margin:0 auto 14px}.invbar button{border-radius:999px;padding:10px 20px;font-family:'Nunito',sans-serif;font-weight:600;font-size:14px;cursor:pointer}.btn-back{background:#fff;color:#be185d;border:1px solid #be185d}.btn-print{background:#be185d;color:#fff;border:none}@media print{body{background:#fff;padding:0}.inv{box-shadow:none}.invbar{display:none}}</style></head><body><div class="invbar"><button class="btn-back" onclick="window.close()">Back to Order</button><button class="btn-print" onclick="window.print()">Print / Save PDF</button></div><div class="inv"><div class="hdr"><div><img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" style="height:60px;margin-bottom:8px"><div class="brand">Rebel Ribbon</div></div><div style="text-align:right"><div class="pill">Invoice #${orderId}</div><div style="margin-top:4px;font-size:12px"><strong>Date:</strong> ${new Date().toLocaleDateString()}</div></div></div><hr/><div class="info"><div><div class="lbl">Bill to</div><div class="val">${name}</div><div>${escapeHtml(activeCustomer.email || '')}</div><div>${escapeHtml(formatPhone(activeCustomer.phone) || '')}</div></div><div style="text-align:right"><div class="lbl">From</div><div class="val">Rebel Ribbon</div><div>www.rebelribbon.com</div><div>info@rebelribbon.com</div></div></div><table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>${items.map(i => `<tr><td>${escapeHtml(i.l)}</td><td>${i.a}</td></tr>`).join('')}<tr class="tot"><td>Total Due</td><td>${money(b.total)}</td></tr></tbody></table><div class="ftr">Thank you for supporting handmade custom cookies!</div></div></body></html>`;
+        const w = window.open('', '_blank', 'width=900,height=800');
+        if (!w) { toast('Please allow pop-ups to view the invoice.', 'error'); return; }
+        w.document.write(html); w.document.close();
     };
 
-    // SYSTEM HEALTH BANNER - monitors Stripe webhook freshness via system_status
+    // ---------- system health banner ----------
     let healthTimer = null;
-    function startHealthMonitor() {
-        if (healthTimer) return;
-        loadSystemHealth();
-        healthTimer = setInterval(loadSystemHealth, 30000);
-    }
-
+    function startHealthMonitor() { if (healthTimer) return; loadSystemHealth(); healthTimer = setInterval(loadSystemHealth, 30000); }
     async function loadSystemHealth() {
         try {
-            // Read system status straight from Supabase (no server endpoint on static hosting).
-            const { data: status, error } = await sb
-                .from('system_status')
-                .select('*')
-                .order('updated_at', { ascending: false })
-                .limit(1)
-                .maybeSingle();
-
-            if (error || !status) {
-                updateHealthBanner({ status: 'unknown', webhook_status: 'unknown' });
-                return;
-            }
-
-            const now = new Date();
+            const { data: status, error } = await sb.from('system_status').select('*').order('updated_at', { ascending: false }).limit(1).maybeSingle();
+            if (error || !status) { updateHealthBanner({ status: 'unknown', webhook_status: 'unknown' }); return; }
             const last = status.last_webhook_received_at ? new Date(status.last_webhook_received_at) : null;
-            let health_status = 'green';
-            let webhook_status = 'unknown';
-            let hours_since_webhook = null;
+            let health = 'green', webhook = 'unknown', hours = null;
             if (last) {
-                const hoursSince = (now - last) / (1000 * 60 * 60);
-                hours_since_webhook = Math.round(hoursSince);
-                if (hoursSince < 24) { webhook_status = 'green'; }
-                else if (hoursSince < 72) { webhook_status = 'yellow'; health_status = 'yellow'; }
-                else { webhook_status = 'red'; health_status = 'red'; }
+                hours = Math.round((Date.now() - last) / 3600000);
+                if (hours < 24) webhook = 'green';
+                else if (hours < 72) { webhook = 'yellow'; health = 'yellow'; }
+                else { webhook = 'red'; health = 'red'; }
             }
-            updateHealthBanner({ status: health_status, webhook_status, hours_since_webhook, last_webhook_received_at: status.last_webhook_received_at });
-        } catch (error) {
-            console.error('Error loading system health:', error);
-            updateHealthBanner({ status: 'unknown', webhook_status: 'unknown' });
-        }
+            updateHealthBanner({ status: health, webhook_status: webhook, hours_since_webhook: hours, last_webhook_received_at: status.last_webhook_received_at });
+        } catch (err) { console.error('health:', err); updateHealthBanner({ status: 'unknown', webhook_status: 'unknown' }); }
     }
-
-    function updateHealthBanner(status) {
-        const banner = document.getElementById('health-banner');
-        const indicator = document.getElementById('health-webhook-indicator');
-        const statusText = document.getElementById('health-webhook-status');
-        const lastUpdate = document.getElementById('health-last-update');
-
+    function updateHealthBanner(s) {
+        const banner = $id('health-banner'), indicator = $id('health-webhook-indicator'), statusText = $id('health-webhook-status'), lastUpdate = $id('health-last-update');
         if (!banner || !indicator || !statusText) return;
-
-        banner.className = status.status === 'green' ? 'green' : status.status === 'red' ? 'red' : 'yellow';
-
-        let dotColor = '#22c55e';
-        let dotLabel = 'Stripe: Connected';
-        if (status.webhook_status === 'yellow') {
-            dotColor = '#facc15';
-            dotLabel = `Stripe: Slow (${status.hours_since_webhook ?? '?'} hrs since last webhook)`;
-        } else if (status.webhook_status === 'red') {
-            dotColor = '#ef4444';
-            dotLabel = `Stripe: DISCONNECTED (${status.hours_since_webhook ?? '?'} hrs since last webhook)`;
-        } else if (status.webhook_status === 'unknown') {
-            dotColor = '#9ca3af';
-            dotLabel = 'Stripe: Checking...';
-        }
-        indicator.style.backgroundColor = dotColor;
-        statusText.textContent = dotLabel;
-
-        if (status.last_webhook_received_at) {
-            const minutes = Math.floor((new Date() - new Date(status.last_webhook_received_at)) / 60000);
-            if (minutes < 1) lastUpdate.textContent = 'Last webhook: just now';
-            else if (minutes < 60) lastUpdate.textContent = `Last webhook: ${minutes}m ago`;
-            else lastUpdate.textContent = `Last webhook: ${Math.floor(minutes / 60)}h ago`;
-        } else {
-            lastUpdate.textContent = 'Last webhook: never';
-        }
+        banner.className = s.status === 'green' ? 'green' : s.status === 'red' ? 'red' : 'yellow';
+        let dot = '#5A9A6E', label = 'Stripe: Connected';
+        if (s.webhook_status === 'yellow') { dot = '#A97F4F'; label = `Stripe: Slow (${s.hours_since_webhook ?? '?'} hrs since last webhook)`; }
+        else if (s.webhook_status === 'red') { dot = '#C94A4A'; label = `Stripe: DISCONNECTED (${s.hours_since_webhook ?? '?'} hrs since last webhook)`; }
+        else if (s.webhook_status === 'unknown') { dot = '#9ca3af'; label = 'Stripe: Checking...'; }
+        indicator.style.backgroundColor = dot; statusText.textContent = label;
+        if (s.last_webhook_received_at) {
+            const mins = Math.floor((Date.now() - new Date(s.last_webhook_received_at)) / 60000);
+            lastUpdate.textContent = mins < 1 ? 'Last webhook: just now' : mins < 60 ? `Last webhook: ${mins}m ago` : `Last webhook: ${Math.floor(mins / 60)}h ago`;
+        } else lastUpdate.textContent = 'Last webhook: never';
     }
 
     bootstrap();
