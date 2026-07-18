@@ -1,8 +1,6 @@
 User-agent: *
 Allow: /
-Disallow: /portal.html
 Disallow: /staff_ui.html
-Disallow: /staff_ui_new.html
 Disallow: /gallery-admin.html
 
 Sitemap: https://rebelribbon.com/sitemap.xml
