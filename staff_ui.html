@@ -131,7 +131,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-3</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-4</div>
         </div>
     </nav>
 
@@ -550,23 +550,30 @@
     document.getElementById('addContact').onclick=async()=>{
         const c=activeCustomer; if(!c){alert('No customer on this order.');return;}
         const name=[c.first_name,c.last_name].filter(Boolean).join(' ')||'customer';
-        // iOS: navigate (GET) to a served .vcf so Safari shows its native
-        // contact preview (Create New Contact). Safari will not render the
-        // preview from a form POST response, so this must be a plain link.
-        if(/iPad|iPhone|iPod/.test(navigator.userAgent)){
-            const q=new URLSearchParams({first:c.first_name||'',last:c.last_name||'',tel:c.phone||'',email:c.email||'',street:[c.street_address,c.street_address_cont].filter(Boolean).join(', '),city:c.city||'',state:c.state||'',zip:c.zip||''});
-            window.open(`${SUPABASE_URL}/functions/v1/vcard?${q.toString()}`,'_blank');
+        const isIOS=/iPad|iPhone|iPod/.test(navigator.userAgent);
+        const vcardUrl=()=>{const q=new URLSearchParams({first:c.first_name||'',last:c.last_name||'',tel:c.phone||'',email:c.email||'',street:[c.street_address,c.street_address_cont].filter(Boolean).join(', '),city:c.city||'',state:c.state||'',zip:c.zip||''});return `${SUPABASE_URL}/functions/v1/vcard?${q.toString()}`;};
+        const shareFallback=async()=>{const blob=new Blob([buildVCard(c)],{type:'text/vcard'});const file=new File([blob],`${name.replace(/\s+/g,'-')}.vcf`,{type:'text/vcard'});
+            if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file],title:name});return;}catch(e){if(e.name==='AbortError')return;}}
+            const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),10000);};
+        if(isIOS&&navigator.standalone===true){
+            // Home-screen web app: its in-app browser cannot render the vCard
+            // contact preview, so hand the link to the real Safari app via the
+            // x-safari- scheme. If iOS ignores the scheme (page stays visible),
+            // fall back to instructions after a moment.
+            let leftApp=false; const onHide=()=>{leftApp=true;};
+            document.addEventListener('visibilitychange',onHide);
+            location.href='x-safari-'+vcardUrl();
+            setTimeout(()=>{document.removeEventListener('visibilitychange',onHide);
+                if(leftApp||document.hidden)return;
+                alert('Your phone blocked the jump to Safari. Open rebelribbon.com/staff_ui.html in the Safari app and tap Save Contact there — or use the share option next.');
+                shareFallback();
+            },2000);
             return;
         }
-        const blob=new Blob([buildVCard(c)],{type:'text/vcard'});
-        const file=new File([blob],`${name.replace(/\s+/g,'-')}.vcf`,{type:'text/vcard'});
-        if(navigator.canShare&&navigator.canShare({files:[file]})){
-            try{await navigator.share({files:[file],title:name});return;}
-            catch(e){if(e.name==='AbortError')return;/* fall through to download */}
-        }
-        const url=URL.createObjectURL(blob);const a=document.createElement('a');
-        a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();
-        setTimeout(()=>URL.revokeObjectURL(url),10000);
+        // Regular Safari tab: navigate (GET) to the served .vcf so Safari
+        // shows its native contact preview (Create New Contact).
+        if(isIOS){window.open(vcardUrl(),'_blank');return;}
+        await shareFallback();
     };
 
     // Square (1080x1080) branded share image with the customer's referral code.
