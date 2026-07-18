@@ -12,99 +12,160 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&display=swap');
-        body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; }
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Nunito:wght@400;600;700;800&display=swap');
+        :root {
+            --pink: #F4B4B8; --pink-light: #FAE0E2; --pink-soft: #FFF8F8;
+            --rose: #E8A0A4; --rose-deep: #C0777D;
+            --brown: #5D4E4E; --brown-light: #7A6B6B; --brown-deep: #463A3A;
+            --cream: #FFFCFB; --line: #F0E3E3; --line-soft: #F7EDED;
+            --green: #5A9A6E; --green-soft: #EAF4EE;
+            --amber: #A97F4F; --amber-soft: #F7EFE3;
+            --red: #C94A4A; --red-soft: #F9E7E7;
+            --radius: 14px;
+            --shadow-sm: 0 1px 3px rgba(93,78,78,.06);
+            --shadow: 0 12px 40px -12px rgba(93,78,78,.22);
+        }
+        * { box-sizing: border-box; }
         html { overflow-x: hidden; }
-        button { font-family: inherit; }
-        #header-banner { position: fixed; top: 0; left: 0; right: 0; height: 60px; background-color: #fbcfe8; color: #4c0519; z-index: 100; display: flex; align-items: center; padding: 0 1rem; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); }
-        #menuToggle { margin-right: 1rem; background: #fdf2f8; color: #be185d; width: 40px; height: 40px; border-radius: 6px; font-size: 1.5rem; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        #logo-wrapper { display: flex; align-items: center; gap: 0.5rem; position: absolute; left: 50%; transform: translateX(-50%); }
-        #logo-text { font-family: 'Playfair Display', serif; font-size: 1.5rem; font-weight: 700; letter-spacing: 0.08em; color: #831843; }
-        #sidebar { width: 250px; background-color: #1f2937; color: white; position: fixed; top: 0; left: 0; height: 100vh; z-index: 90; padding-top: 60px; transform: translateX(-100%); transition: transform 0.3s ease; box-shadow: 4px 0 10px rgba(0, 0, 0, 0.5); display: flex; flex-direction: column; overflow-y: auto; }
+        body { margin: 0; min-height: 100vh; display: flex; flex-direction: column; font-family: 'Nunito', sans-serif; background: var(--cream); color: var(--brown); }
+        button, input, select, textarea { font-family: inherit; }
+        /* Recolor Tailwind's neutral grays into the warm brand palette */
+        .bg-gray-50 { background-color: var(--pink-soft) !important; }
+        .bg-gray-100 { background-color: var(--pink-soft) !important; }
+        .border, .border-b, .border-t, .border-2 { border-color: var(--line) !important; }
+        .text-gray-500, .text-gray-600 { color: var(--brown-light) !important; }
+        .text-gray-700, .text-gray-900 { color: var(--brown) !important; }
+        .link { color: var(--rose-deep); font-weight: 600; text-decoration: none; }
+        .link:hover { text-decoration: underline; }
+        .code-text { color: var(--rose-deep); font-weight: 700; }
+
+        /* Header */
+        #header-banner { position: fixed; top: 0; left: 0; right: 0; height: 60px; background: rgba(255,252,251,.94); backdrop-filter: blur(8px); color: var(--brown); z-index: 100; display: flex; align-items: center; padding: 0 1rem; border-bottom: 1px solid var(--line); }
+        #menuToggle { margin-right: 1rem; background: transparent; border: 1px solid var(--line); width: 40px; height: 40px; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; cursor: pointer; transition: border-color .2s; }
+        #menuToggle:hover { border-color: var(--rose); }
+        #menuToggle span { display: block; width: 16px; height: 2px; background: var(--brown); border-radius: 2px; }
+        #logo-wrapper { display: flex; align-items: center; gap: 0.6rem; position: absolute; left: 50%; transform: translateX(-50%); }
+        #logo-text { font-family: 'Playfair Display', serif; font-size: 1.35rem; font-weight: 600; letter-spacing: 0.02em; color: var(--brown); }
+
+        /* Health strip */
+        #health-banner { position: fixed; top: 60px; left: 0; right: 0; z-index: 80; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.45rem 1.1rem; background: var(--pink-soft); border-bottom: 1px solid var(--line); font-size: 0.78rem; color: var(--brown-light); }
+        #health-banner.green { background: var(--green-soft); }
+        #health-banner.yellow { background: var(--amber-soft); }
+        #health-banner.red { background: var(--red-soft); }
+        .health-indicator { display: flex; align-items: center; gap: 0.5rem; font-weight: 600; }
+        .health-dot { width: 9px; height: 9px; border-radius: 50%; background-color: #b9a6a0; flex: none; }
+
+        /* Sidebar */
+        #sidebar { width: 260px; background: var(--brown-deep); color: #F1E9E5; position: fixed; top: 0; left: 0; height: 100vh; z-index: 90; padding-top: 60px; transform: translateX(-100%); transition: transform 0.3s ease; box-shadow: 12px 0 40px rgba(70,58,58,.25); display: flex; flex-direction: column; overflow-y: auto; }
         #sidebar.open { transform: translateX(0); }
-        .nav-item { display: block; padding: 0.75rem 1rem; cursor: pointer; transition: background-color 0.15s; }
-        .nav-item:hover { background-color: #374151; }
-        .nav-active { background-color: #374151; font-weight: 600; border-left: 4px solid #3b82f6; padding-left: calc(1rem - 4px); }
-        .submenu-item { padding: 0.5rem 1rem 0.5rem 2rem; font-size: 0.875rem; }
-        #logout-sidebar { padding: 1rem; border-top: 1px solid #374151; }
+        .sidebar-title { font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 600; color: #fff; padding: 1.1rem 1.25rem 0.9rem; margin: 0 0 0.75rem; border-bottom: 1px solid rgba(255,255,255,.08); }
+        .sidebar-section { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.14em; color: #B9A6A0; padding: 0 1.25rem; margin-bottom: 0.4rem; }
+        .nav-item { display: block; width: 100%; text-align: left; padding: 0.7rem 1.25rem; background: transparent; border: none; color: #E9DFDA; font-size: 0.95rem; cursor: pointer; transition: background .15s; border-left: 3px solid transparent; }
+        .nav-item:hover { background: rgba(255,255,255,.06); }
+        .nav-active { background: rgba(232,160,164,.14); border-left-color: var(--rose); font-weight: 700; color: #fff; }
+        .submenu-item { padding: 0.55rem 1.25rem 0.55rem 2rem; font-size: 0.85rem; }
+        #logout-sidebar { padding: 1rem 1.25rem 1.25rem; border-top: 1px solid rgba(255,255,255,.08); margin-top: auto; }
+        #logout-sidebar .btn-secondary { background: transparent; color: #E9DFDA; border-color: rgba(255,255,255,.25); }
+        #logout-sidebar .btn-secondary:hover { border-color: var(--rose); color: #fff; background: rgba(232,160,164,.12); }
+
+        /* Layout */
         #app-wrapper { display: flex; width: 100%; padding-top: 104px; }
         #app-wrapper.hidden { display: none; }
         #content { flex-grow: 1; padding: 1rem; max-width: 100%; }
-        @media (min-width: 768px) { #content { padding: 2rem; } }
+        @media (min-width: 768px) { #content { padding: 2rem; max-width: 1200px; margin: 0 auto; } }
+        #pageTitle { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--brown); }
         #searchContainer { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; }
-        #globalSearch { padding: 0.4rem 0.75rem; border-radius: 9999px; border: 1px solid #d1d5db; flex-grow: 1; width: 100%; max-width: 300px; }
-        #orderFilters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; justify-content: center; }
-        .filter-tab { font-size: 0.75rem; padding: 0.3rem 0.75rem; border-radius: 0.5rem; border: 1px solid #d1d5db; background-color: #ffffff; color: #374151; transition: all 0.2s; }
-        .filter-active { border: 2px solid #be185d; background-color: #be185d; color: white; font-weight: 600; }
-        .table-wrap { overflow-x: auto; border-radius: 0.75rem; border: 1px solid #e5e7eb; background: #fff; }
+        #globalSearch { padding: 0.5rem 1rem; border-radius: 999px; border: 1px solid var(--line); background: #fff; flex-grow: 1; width: 100%; max-width: 320px; font-size: 0.9rem; color: var(--brown); }
+        #globalSearch:focus { outline: none; border-color: var(--rose); box-shadow: 0 0 0 3px rgba(232,160,164,.18); }
+        #orderFilters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.1rem; justify-content: center; }
+        .filter-tab { font-size: 0.8rem; font-weight: 600; padding: 0.4rem 1rem; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--brown-light); transition: all 0.2s; cursor: pointer; }
+        .filter-tab:hover { border-color: var(--rose); color: var(--rose-deep); }
+        .filter-active { border-color: var(--brown); background: var(--brown); color: #fff; }
+        .filter-active:hover { border-color: var(--brown); color: #fff; }
+
+        /* Table */
+        .table-wrap { overflow-x: auto; border-radius: var(--radius); border: 1px solid var(--line); background: #fff; box-shadow: var(--shadow-sm); }
         table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; }
-        .thcell { padding: 0.75rem; font-weight: 600; }
-        .cell { padding: 1rem 0.75rem; overflow-wrap: break-word; vertical-align: middle; }
-        .pricing-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb; }
-        dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
-        dialog { max-height: 90vh; overflow-y: auto; }
+        #grid thead { background: var(--pink-soft); color: var(--brown-light); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; }
+        .thcell { padding: 0.7rem 0.75rem; font-weight: 800; }
+        .cell { padding: 0.9rem 0.75rem; overflow-wrap: break-word; vertical-align: middle; border-top: 1px solid var(--line-soft); }
+        .pricing-item { display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 0; border-bottom: 1px solid var(--line-soft); }
+        .pricing-item:last-child { border-bottom: none; }
+
+        /* Dialogs */
+        dialog::backdrop { background: rgba(70,58,58,0.45); backdrop-filter: blur(2px); }
+        dialog { max-height: 90vh; overflow-y: auto; border: none; background: var(--cream); color: var(--brown); box-shadow: var(--shadow); }
         #orderDrawer { width: 100%; max-width: 100%; margin: 0; border-radius: 0; height: 100%; overflow-x: hidden; }
-        @media (min-width: 1024px) { #orderDrawer { max-width: 1080px; height: auto; border-radius: 1rem; } }
-        #signinCard { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1000; background-color: #f9fafb; }
-        .btn { display: inline-flex; align-items: center; justify-content: center; padding: 0.5rem 1rem; border-radius: 0.375rem; font-size: 0.875rem; font-weight: 500; cursor: pointer; transition: all 0.2s; }
-        .btn-primary { background-color: #be185d; color: white; border: none; }
-        .btn-primary:hover { background-color: #9d174d; }
-        .btn-secondary { background-color: white; color: #be185d; border: 1px solid #be185d; }
-        .btn-secondary:hover { background-color: #fdf2f8; }
-        .btn-success { background-color: #22c55e; color: white; border: none; }
-        .btn-success:hover { background-color: #16a34a; }
-        .btn-danger { background-color: #fee2e2; color: #b91c1c; border: 1px solid #f87171; }
-        .btn-danger:hover { background-color: #fecaca; }
-        .btn-ghost { background-color: transparent; border: none; color: inherit; }
-        .btn-ghost:hover { background-color: rgba(0,0,0,0.05); }
-        .btn-warning { background-color: #fef3c7; color: #92400e; border: 1px solid #fbbf24; }
+        @media (min-width: 1024px) { #orderDrawer { max-width: 1080px; height: auto; border-radius: var(--radius); } }
+        #drawerTitle { font-family: 'Playfair Display', serif; font-weight: 600; }
+        #drawerActions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; width: 100%; margin-top: 0.85rem; }
+        @media (min-width: 1024px) { #drawerActions { display: flex; width: auto; margin-top: 0; } }
+        #signinCard { position: fixed; inset: 0; z-index: 1000; background: linear-gradient(160deg, var(--pink-soft), var(--pink-light) 55%, var(--cream)); }
+        #signinTitle { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--brown); }
+
+        /* Cards */
+        .card { background: #fff; border: 1px solid var(--line) !important; border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow-sm); }
+        .card-accent { border-color: var(--pink) !important; }
+        .card-label { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--rose-deep); margin: 0 0 0.9rem; }
+
+        /* Buttons */
+        .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.5rem 1.1rem; border-radius: 999px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.18s; border: 1px solid transparent; white-space: nowrap; }
+        .btn-primary { background: var(--brown); color: #fff; }
+        .btn-primary:hover { background: var(--brown-light); }
+        .btn-secondary { background: #fff; color: var(--brown); border-color: var(--line); }
+        .btn-secondary:hover { border-color: var(--rose); color: var(--rose-deep); background: var(--pink-soft); }
+        .btn-success { background: var(--green); color: #fff; }
+        .btn-success:hover { filter: brightness(1.06); }
+        .btn-danger { background: #fff; color: var(--red); border-color: #EFCFCF; }
+        .btn-danger:hover { background: var(--red-soft); }
+        .btn-warning { background: var(--amber-soft); color: var(--amber); border-color: #E8D5BC; }
+        .btn-ghost { background: transparent; border: none; color: inherit; font-weight: 600; }
+        .btn-ghost:hover { background: rgba(93,78,78,.06); }
         .btn-lg { padding: 0.75rem 1.5rem; font-size: 1rem; }
-        .status-badge { padding: 0.25rem 0.5rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
-        .status-active { background: #dbeafe; color: #1d4ed8; }
-        .status-completed { background: #d1fae5; color: #065f46; }
-        .status-approved { background: #dcfce7; color: #15803d; }
-        .status-canceled, .status-rejected { background: #fee2e2; color: #b91c1c; }
-        .status-pending { background: #fef3c7; color: #92400e; }
-        .review-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; border-bottom: 2px solid #e5e7eb; padding-bottom: 0.5rem; }
-        .review-tab { padding: 0.5rem 1rem; border-radius: 6px 6px 0 0; font-weight: 500; cursor: pointer; border: none; background: transparent; color: #6b7280; }
-        .review-tab:hover { background: #f3f4f6; }
-        .review-tab.active { background: #be185d; color: white; }
-        .review-count { background: #e5e7eb; padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.75rem; margin-left: 0.5rem; }
-        .review-tab.active .review-count { background: rgba(255,255,255,0.3); }
-        .review-card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 1.25rem; margin-bottom: 1rem; }
-        .review-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
-        .review-stars { color: #fbbf24; font-size: 1.1rem; }
-        .review-actions { display: flex; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e5e7eb; }
-        .survey-link-box { background: #f0fdf4; border: 2px solid #22c55e; border-radius: 12px; padding: 1rem; margin-top: 0.5rem; }
-        .survey-link-box.no-link { background: #f9fafb; border-color: #d1d5db; }
-        .survey-link-box.expired { background: #fef3c7; border-color: #f59e0b; }
-        .survey-link-input { width: 100%; padding: 0.5rem; border: 1px solid #d1d5db; border-radius: 6px; font-size: 0.85rem; margin: 0.5rem 0; background: white; }
-        #health-banner { position: fixed; top: 60px; left: 0; right: 0; height: auto; background-color: white; z-index: 80; display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.6rem 1rem; border-bottom: 2px solid #e5e7eb; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); }
-        #health-banner.green { border-bottom-color: #22c55e; background-color: #f0fdf4; }
-        #health-banner.yellow { border-bottom-color: #facc15; background-color: #fefce8; }
-        #health-banner.red { border-bottom-color: #ef4444; background-color: #fef2f2; }
-        .health-indicator { display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem; }
-        .health-dot { width: 12px; height: 12px; border-radius: 50%; background-color: #9ca3af; }
+
+        /* Badges */
+        .status-badge { padding: 0.22rem 0.65rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em; }
+        .status-active { background: var(--pink-light); color: #A2565C; }
+        .status-completed, .status-approved, .status-paid { background: var(--green-soft); color: var(--green); }
+        .status-canceled, .status-rejected, .status-failed, .status-refunded { background: var(--red-soft); color: var(--red); }
+        .status-pending, .status-unpaid { background: var(--amber-soft); color: var(--amber); }
+
+        /* Reviews */
+        .review-tabs { display: flex; gap: 0.5rem; margin-bottom: 1.25rem; flex-wrap: wrap; }
+        .review-tab { padding: 0.45rem 1rem; border-radius: 999px; font-weight: 600; font-size: 0.85rem; cursor: pointer; border: 1px solid var(--line); background: #fff; color: var(--brown-light); }
+        .review-tab:hover { border-color: var(--rose); }
+        .review-tab.active { background: var(--brown); color: #fff; border-color: var(--brown); }
+        .review-count { background: rgba(93,78,78,.08); padding: 0.05rem 0.5rem; border-radius: 999px; font-size: 0.72rem; margin-left: 0.4rem; }
+        .review-tab.active .review-count { background: rgba(255,255,255,.25); }
+        .review-card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; margin-bottom: 1rem; box-shadow: var(--shadow-sm); }
+        .review-stars { color: #D9A441; font-size: 1.05rem; letter-spacing: 0.12em; }
+        .review-actions { display: flex; gap: 0.5rem; margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line-soft); }
+
+        /* Survey link */
+        .survey-link-box { background: var(--pink-soft); border: 1px solid var(--line); border-radius: 12px; padding: 1rem; margin-top: 0.5rem; }
+        .survey-link-box.expired { background: var(--amber-soft); border-color: #E8D5BC; }
+        .survey-link-input { width: 100%; padding: 0.5rem 0.65rem; border: 1px solid var(--line); border-radius: 10px; font-size: 0.85rem; margin: 0.5rem 0; background: #fff; color: var(--brown); }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-900">
+<body>
     <div id="signinCard" class="flex items-center justify-center p-4">
-        <div class="w-full max-w-md bg-white rounded-2xl shadow p-6">
-            <h1 class="text-2xl font-semibold mb-2">Rebel Ribbon Staff Sign in</h1>
-            <p class="text-sm text-gray-600 mb-4">Use your @rebelribbon.com email and password.</p>
-            <label class="block text-sm mb-2">Email</label>
-            <input id="email" type="email" placeholder="you@rebelribbon.com" class="w-full px-3 py-2 rounded-lg border mb-4"/>
-            <label class="block text-sm mb-2">Password</label>
-            <input id="password" type="password" placeholder="Password" class="w-full px-3 py-2 rounded-lg border mb-4"/>
-            <button id="signInButton" class="w-full btn btn-primary">Sign In</button>
-            <p id="authMsg" class="text-sm text-red-600 mt-3"></p>
+        <div class="w-full max-w-md bg-white rounded-2xl p-8" style="box-shadow: var(--shadow);">
+            <img src="Bowtrans.png" alt="Rebel Ribbon" style="height: 44px; margin: 0 auto 0.75rem; display: block;"/>
+            <h1 id="signinTitle" class="text-2xl mb-1 text-center">Rebel Ribbon</h1>
+            <p class="text-sm text-gray-600 mb-6 text-center">Staff sign in with your @rebelribbon.com email.</p>
+            <label class="block text-sm font-bold mb-1">Email</label>
+            <input id="email" type="email" placeholder="you@rebelribbon.com" class="w-full px-4 py-2.5 rounded-xl border mb-4"/>
+            <label class="block text-sm font-bold mb-1">Password</label>
+            <input id="password" type="password" placeholder="Password" class="w-full px-4 py-2.5 rounded-xl border mb-5"/>
+            <button id="signInButton" class="w-full btn btn-primary btn-lg">Sign In</button>
+            <p id="authMsg" class="text-sm mt-3 text-center" style="color: var(--red);"></p>
         </div>
     </div>
 
     <div id="header-banner">
-        <button id="menuToggle">☰</button>
+        <button id="menuToggle" aria-label="Menu"><span></span><span></span><span></span></button>
         <div id="logo-wrapper">
-            <img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" alt="Rebel Ribbon Logo" style="height: 40px;">
+            <img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" alt="Rebel Ribbon Logo" style="height: 38px;">
             <span id="logo-text">Rebel Ribbon</span>
         </div>
     </div>
@@ -118,14 +179,14 @@
     </div>
 
     <nav id="sidebar">
-        <h1 class="text-xl font-semibold px-4 pt-4 mb-6 text-white/90 border-b border-gray-700">Navigation</h1>
+        <h1 class="sidebar-title">Menu</h1>
         <div id="main-nav">
             <button class="nav-item nav-active" data-key="order_list">Orders</button>
             <button class="nav-item" data-key="surveys">Surveys</button>
             <button class="nav-item" data-key="reviews">Website Reviews</button>
         </div>
         <div class="mt-8">
-            <h3 class="text-xs uppercase font-medium text-gray-400 px-4 mb-2">Admin / Settings</h3>
+            <h3 class="sidebar-section">Admin &amp; Settings</h3>
             <button class="nav-item submenu-item" data-key="discount_codes">Discount Codes</button>
             <button class="nav-item submenu-item" data-key="referral_codes">Referral Codes</button>
             <button class="nav-item submenu-item" data-key="flavors">Flavors</button>
@@ -136,7 +197,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-5</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-6</div>
         </div>
     </nav>
 
@@ -152,9 +213,9 @@
                 </div>
                 <div id="orderFilters">
                     <button class="filter-tab filter-active" data-filter="All">All Orders</button>
-                    <button class="filter-tab" data-filter="Active">🔥 Active</button>
-                    <button class="filter-tab" data-filter="Completed">✅ Completed</button>
-                    <button class="filter-tab" data-filter="Canceled">🚫 Canceled</button>
+                    <button class="filter-tab" data-filter="Active">Active</button>
+                    <button class="filter-tab" data-filter="Completed">Completed</button>
+                    <button class="filter-tab" data-filter="Canceled">Canceled</button>
                 </div>
             </div>
             <div id="dataActions" class="flex items-center justify-between mb-2 flex-wrap gap-2">
@@ -173,7 +234,7 @@
             <div class="table-wrap">
                 <table id="grid" class="min-w-full text-sm table-fixed">
                     <colgroup id="colgroup"></colgroup>
-                    <thead class="bg-gray-100 text-gray-700"><tr id="thead"></tr></thead>
+                    <thead><tr id="thead"></tr></thead>
                     <tbody id="tbody"></tbody>
                 </table>
             </div>
@@ -182,9 +243,9 @@
 
     <dialog id="editor" class="rounded-2xl p-0 w-full max-w-3xl shadow-2xl">
         <form method="dialog" class="p-0">
-            <div class="p-4 border-b bg-gray-50 flex items-center justify-between">
-                <h2 id="editorTitle" class="text-lg font-semibold">Edit</h2>
-                <button value="close" class="btn btn-ghost text-xl">✕</button>
+            <div class="p-4 border-b bg-white flex items-center justify-between">
+                <h2 id="editorTitle" class="text-lg font-semibold" style="font-family:'Playfair Display',serif;">Edit</h2>
+                <button value="close" class="btn btn-ghost text-xl" aria-label="Close">&times;</button>
             </div>
             <div id="formBody" class="p-4 grid grid-cols-1 md:grid-cols-2 gap-3"></div>
             <div class="p-4 border-t bg-gray-50 flex items-center justify-end gap-2">
@@ -196,58 +257,57 @@
 
     <dialog id="orderDrawer" class="rounded-2xl p-0 shadow-2xl">
         <div class="p-0">
-            <div class="sticky top-0 p-4 border-b bg-white flex flex-wrap items-center justify-between shadow-sm">
-                <div class="flex items-center gap-4">
-                    <button id="backToOrders" class="btn btn-ghost text-sm">← Back</button>
+            <div class="sticky top-0 p-4 border-b bg-white flex flex-wrap items-center justify-between shadow-sm" style="z-index:10;">
+                <div class="flex items-center gap-3">
+                    <button id="backToOrders" class="btn btn-ghost text-sm px-2">Back</button>
                     <div>
-                        <h2 id="drawerTitle" class="text-xl font-semibold">Order #XXXX</h2>
-                        <div class="mt-1 flex items-center gap-2 text-sm">
-                            <span class="font-medium">Status:</span>
-                            <select id="statusSelect" class="px-3 py-1 rounded-lg border text-sm">
+                        <h2 id="drawerTitle" class="text-xl">Order #XXXX</h2>
+                        <div class="mt-1.5 flex items-center gap-2 text-sm">
+                            <select id="statusSelect" class="px-3 py-1.5 rounded-full border text-sm bg-white">
                                 <option value="Active">Active</option>
                                 <option value="Completed">Completed</option>
                                 <option value="Canceled">Canceled</option>
                             </select>
-                            <button id="saveStatus" class="btn btn-success text-sm">Save</button>
+                            <button id="saveStatus" class="btn btn-success text-sm py-1.5">Save</button>
                         </div>
                     </div>
                 </div>
-                <div class="flex gap-2 mt-2 lg:mt-0">
-                    <button id="editFields" class="btn btn-secondary">Edit Fields</button>
+                <div id="drawerActions">
+                    <button id="editFields" class="btn btn-secondary">Edit</button>
                     <button id="viewInvoice" class="btn btn-primary">Invoice</button>
                     <button id="deleteOrder" class="btn btn-danger">Delete</button>
                 </div>
             </div>
-            <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="bg-white rounded-lg border p-4">
-                        <h3 class="text-lg font-semibold mb-3">👤 Customer Info</h3>
+            <div class="p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
+                <div class="lg:col-span-2 space-y-4 lg:space-y-6">
+                    <div class="card">
+                        <h3 class="card-label">Customer</h3>
                         <div class="grid grid-cols-2 gap-3 text-sm">
-                            <div><span class="font-medium">Name:</span><div id="cust_name"></div><button id="addContact" class="btn btn-secondary text-xs mt-1 lg:hidden hidden">📇 Save Contact</button></div>
+                            <div><span class="font-medium">Name:</span><div id="cust_name"></div><button id="addContact" class="btn btn-secondary text-xs mt-1 lg:hidden hidden">Save Contact</button></div>
                             <div><span class="font-medium">ID:</span><div id="cust_id" class="text-gray-700"></div></div>
-                            <div><span class="font-medium">Phone:</span><br/><a id="cust_phone_link" class="text-blue-600"></a></div>
-                            <div><span class="font-medium">Email:</span><br/><a id="cust_email" class="text-blue-600 break-all"></a></div>
+                            <div><span class="font-medium">Phone:</span><br/><a id="cust_phone_link" class="link"></a></div>
+                            <div><span class="font-medium">Email:</span><br/><a id="cust_email" class="link break-all"></a></div>
                         </div>
                         <div class="mt-4 text-sm">
                             <span class="font-medium">Address:</span>
                             <div id="cust_addr1"></div><div id="cust_addr2"></div><div id="cust_citystzip"></div>
-                            <button id="mapLocation" class="btn btn-ghost text-xs text-blue-600 mt-1">View on Map</button>
+                            <button id="mapLocation" class="btn btn-ghost text-xs mt-1" style="color:var(--rose-deep);">View on Map</button>
                         </div>
                         <div class="mt-4 text-sm">
                             <span class="font-medium">Referral Code:</span>
-                            <div id="cust_referral_code" class="mt-1 text-pink-700 font-semibold" style="word-break:break-all"></div>
-                            <button id="shareReferral" class="btn btn-secondary text-xs mt-2 hidden">🎨 Referral Share Image</button>
+                            <div id="cust_referral_code" class="mt-1 code-text" style="word-break:break-all"></div>
+                            <button id="shareReferral" class="btn btn-secondary text-xs mt-2 hidden">Share Image</button>
                         </div>
                     </div>
-                    <div class="bg-white rounded-lg border p-4">
-                        <h3 class="text-lg font-semibold mb-3">📅 Event Info</h3>
+                    <div class="card">
+                        <h3 class="card-label">Event</h3>
                         <div class="grid grid-cols-2 gap-3 text-sm">
                             <div><span class="font-medium">Event:</span><div id="ov_event_name"></div></div>
                             <div><span class="font-medium">Date:</span><div id="ov_event"></div></div>
                         </div>
                     </div>
-                    <div class="bg-white rounded-lg border p-4">
-                        <h3 class="text-lg font-semibold mb-3">📝 Order Details</h3>
+                    <div class="card">
+                        <h3 class="card-label">Order Details</h3>
                         <div class="grid grid-cols-3 gap-3 text-sm mb-4">
                             <div><span class="font-medium">Submitted:</span><div id="ov_submitted"></div></div>
                             <div class="col-span-2"><span class="font-medium">Pickup/Delivery:</span><div id="ov_pickup"></div></div>
@@ -268,8 +328,8 @@
                             </div>
                         </div>
                     </div>
-                    <div class="bg-white rounded-lg border p-4">
-                        <h3 class="text-lg font-semibold mb-3">✨ Extras</h3>
+                    <div class="card">
+                        <h3 class="card-label">Extras</h3>
                         <div class="grid grid-cols-3 gap-3 text-sm">
                             <div><span class="font-medium">Type:</span><div id="ov_pd_type"></div></div>
                             <div><span class="font-medium">Consult:</span><div id="ov_consultation"></div></div>
@@ -277,39 +337,39 @@
                         </div>
                         <div class="mt-2 text-sm"><span class="font-medium">Gift Text:</span><p id="ov_gift_text" class="p-2 border rounded bg-gray-50 mt-1"></p></div>
                     </div>
-                    <div class="bg-white rounded-lg border p-4">
-                        <h3 class="text-lg font-semibold mb-3">📋 Customer Survey</h3>
+                    <div class="card">
+                        <h3 class="card-label">Customer Survey</h3>
                         <div id="surveyLinkSection"><p class="text-gray-500 text-sm">Loading...</p></div>
                     </div>
                 </div>
-                <div class="space-y-6">
-                    <div class="bg-white rounded-lg border-2 border-blue-200 shadow-xl p-4">
-                        <h3 class="text-lg font-bold mb-3">💰 Pricing</h3>
+                <div class="space-y-4 lg:space-y-6">
+                    <div class="card card-accent">
+                        <h3 class="card-label">Pricing</h3>
                         <div class="text-sm space-y-2">
                             <div class="flex justify-between"><span>Price/dz:</span><span id="t_price"></span></div>
                             <div class="flex justify-between"><span>Base:</span><span id="t_base"></span></div>
                             <div class="flex justify-between"><span>Delivery:</span><span id="t_delivery"></span></div>
                             <div class="flex justify-between"><span>Consult:</span><span id="t_consult"></span></div>
                             <div class="flex justify-between"><span>Gift fee:</span><span id="t_gift"></span></div>
-                            <div class="flex justify-between"><span>Fees:</span><span id="t_adj_fees" class="text-green-700"></span></div>
-                            <div class="flex justify-between"><span>Code disc:</span><span id="t_disc_code" class="text-red-700"></span></div>
-                            <div class="flex justify-between"><span>Referral:</span><span id="t_disc_referral" class="text-red-700"></span></div>
-                            <div class="flex justify-between"><span>Other disc:</span><span id="t_adj_disc" class="text-red-700"></span></div>
-                            <hr class="my-2"/>
+                            <div class="flex justify-between"><span>Fees:</span><span id="t_adj_fees" style="color:var(--green);"></span></div>
+                            <div class="flex justify-between"><span>Code disc:</span><span id="t_disc_code" style="color:var(--red);"></span></div>
+                            <div class="flex justify-between"><span>Referral:</span><span id="t_disc_referral" style="color:var(--red);"></span></div>
+                            <div class="flex justify-between"><span>Other disc:</span><span id="t_adj_disc" style="color:var(--red);"></span></div>
+                            <hr class="my-2" style="border:none;border-top:1px solid var(--line);"/>
                             <div class="font-extrabold text-xl flex justify-between">Total:<span id="t_total"></span></div>
                         </div>
                         <div class="mt-4 text-sm space-y-1">
                             <div><span class="font-medium">Discount:</span> <span id="ov_discount_code"></span></div>
                             <div><span class="font-medium">Referral:</span> <span id="ov_referral_code"></span></div>
-                            <div id="rewardRow" class="hidden"><span class="font-medium">🎁 Reward issued:</span> <span id="ov_reward_code" class="text-pink-700 font-semibold"></span></div>
+                            <div id="rewardRow" class="hidden"><span class="font-medium">Reward issued:</span> <span id="ov_reward_code" class="code-text"></span></div>
                         </div>
                     </div>
-                    <div class="bg-white rounded-lg border p-4">
-                        <h3 class="font-semibold mb-3">💳 Payment</h3>
+                    <div class="card">
+                        <h3 class="card-label">Payment</h3>
                         <div id="paymentSection" class="text-sm space-y-2"></div>
                     </div>
-                    <div class="bg-white rounded-lg border p-4">
-                        <h3 class="font-semibold mb-3">➕ Fees & Discounts</h3>
+                    <div class="card">
+                        <h3 class="card-label">Fees &amp; Discounts</h3>
                         <div class="flex flex-wrap gap-2 mb-3">
                             <input id="adjLabel" class="px-2 py-1 rounded border grow" placeholder="Label"/>
                             <input id="adjAmount" type="number" step="0.01" class="px-2 py-1 rounded border w-20" placeholder="Amt"/>
@@ -318,7 +378,7 @@
                         </div>
                         <div class="overflow-auto max-h-40">
                             <table class="min-w-full text-sm">
-                                <thead class="bg-gray-100"><tr><th class="text-left p-1">When</th><th class="text-left p-1">Type</th><th class="text-left p-1">Label</th><th class="text-right p-1">Amt</th><th class="p-1"></th></tr></thead>
+                                <thead class="bg-gray-100 text-xs uppercase" style="color:var(--brown-light);letter-spacing:.06em;"><tr><th class="text-left p-1.5">When</th><th class="text-left p-1.5">Type</th><th class="text-left p-1.5">Label</th><th class="text-right p-1.5">Amt</th><th class="p-1.5"></th></tr></thead>
                                 <tbody id="adjTbody"></tbody>
                             </table>
                         </div>
@@ -432,8 +492,8 @@
         for(const s of surveys){
             const tr2=$('tr','border-b');
             tr2.appendChild($('td','cell font-medium',custName(s)));
-            tr2.appendChild($('td','cell text-center whitespace-nowrap',`🍪 ${s.cookies_stars??'–'} · 🛎️ ${s.service_stars??'–'}`));
-            tr2.appendChild($('td','cell text-center',s.recommend?'✅':'—'));
+            tr2.appendChild($('td','cell text-center whitespace-nowrap',`${s.cookies_stars??'–'}★ · ${s.service_stars??'–'}★`));
+            tr2.appendChild($('td','cell text-center',s.recommend?'Yes':'—'));
             const td=$('td','cell text-right'); const btn=$('button','btn btn-secondary','Edit'); btn.onclick=()=>openEditor(conf,s); td.appendChild(btn); tr2.appendChild(td);
             tbody.appendChild(tr2);
         }
@@ -448,14 +508,14 @@
 
     async function loadReviews(){ const c=document.getElementById('reviewsContainer'); c.innerHTML='';
         const[pC,aC,rC]=await Promise.all([sb.from('website_reviews').select('id',{count:'exact',head:true}).eq('status','pending'),sb.from('website_reviews').select('id',{count:'exact',head:true}).eq('status','approved'),sb.from('website_reviews').select('id',{count:'exact',head:true}).eq('status','rejected')]);
-        c.innerHTML=`<div class="review-tabs"><button class="review-tab ${activeReviewTab==='pending'?'active':''}" data-t="pending">🔔 Pending<span class="review-count">${pC.count||0}</span></button><button class="review-tab ${activeReviewTab==='approved'?'active':''}" data-t="approved">✅ Approved<span class="review-count">${aC.count||0}</span></button><button class="review-tab ${activeReviewTab==='rejected'?'active':''}" data-t="rejected">❌ Rejected<span class="review-count">${rC.count||0}</span></button></div><div id="reviewsList"></div>`;
+        c.innerHTML=`<div class="review-tabs"><button class="review-tab ${activeReviewTab==='pending'?'active':''}" data-t="pending">Pending<span class="review-count">${pC.count||0}</span></button><button class="review-tab ${activeReviewTab==='approved'?'active':''}" data-t="approved">Approved<span class="review-count">${aC.count||0}</span></button><button class="review-tab ${activeReviewTab==='rejected'?'active':''}" data-t="rejected">Rejected<span class="review-count">${rC.count||0}</span></button></div><div id="reviewsList"></div>`;
         c.querySelectorAll('.review-tab').forEach(t=>t.onclick=()=>{activeReviewTab=t.dataset.t;loadReviews();});
         const{data:reviews}=await sb.from('website_reviews').select('*').eq('status',activeReviewTab).order('created_at',{ascending:false}); const list=document.getElementById('reviewsList');
         if(!reviews?.length){list.innerHTML=`<div class="text-center py-12 text-gray-500">No ${activeReviewTab} reviews</div>`;return;}
         for(const r of reviews){ const card=$('div','review-card'); card.innerHTML=`<div class="flex justify-between mb-2"><div><div class="font-semibold">${escapeHtml(r.customer_name||'Anonymous')}</div><div class="review-stars">${'★'.repeat(r.stars||5)}${'☆'.repeat(5-(r.stars||5))}</div></div><span class="status-badge status-${r.status}">${r.status}</span></div><p class="text-gray-700 mb-2">"${escapeHtml(r.review_text)}"</p><div class="text-xs text-gray-500">${new Date(r.created_at).toLocaleDateString()}</div><div class="review-actions" id="ra-${r.id}"></div>`;
             const act=card.querySelector(`#ra-${r.id}`);
-            if(activeReviewTab==='pending'){const ab=$('button','btn btn-success','✓ Approve');ab.onclick=()=>updateReview(r.id,'approved');const rb=$('button','btn btn-danger','✕ Reject');rb.onclick=()=>updateReview(r.id,'rejected');act.appendChild(ab);act.appendChild(rb);}
-            else if(activeReviewTab==='approved'){const cb=$('button','btn btn-secondary','📋 Copy');cb.onclick=()=>{navigator.clipboard.writeText(`"${r.review_text}"\n— ${r.customer_name}`);cb.textContent='✓ Copied!';};const ub=$('button','btn btn-warning','Unpublish');ub.onclick=()=>updateReview(r.id,'pending');act.appendChild(cb);act.appendChild(ub);}
+            if(activeReviewTab==='pending'){const ab=$('button','btn btn-success','Approve');ab.onclick=()=>updateReview(r.id,'approved');const rb=$('button','btn btn-danger','Reject');rb.onclick=()=>updateReview(r.id,'rejected');act.appendChild(ab);act.appendChild(rb);}
+            else if(activeReviewTab==='approved'){const cb=$('button','btn btn-secondary','Copy');cb.onclick=()=>{navigator.clipboard.writeText(`"${r.review_text}"\n— ${r.customer_name}`);cb.textContent='Copied';};const ub=$('button','btn btn-warning','Unpublish');ub.onclick=()=>updateReview(r.id,'pending');act.appendChild(cb);act.appendChild(ub);}
             else{const rb=$('button','btn btn-secondary','Restore');rb.onclick=()=>updateReview(r.id,'pending');const db=$('button','btn btn-danger','Delete');db.onclick=async()=>{if(confirm('Delete?')){await sb.from('website_reviews').delete().eq('id',r.id);loadReviews();}};act.appendChild(rb);act.appendChild(db);}
             list.appendChild(card);
         }
@@ -467,10 +527,10 @@
     async function loadSurveySection(orderId){ const s=document.getElementById('surveyLinkSection'); s.innerHTML='<p class="text-gray-500 text-sm">Loading...</p>';
         const{data:tok}=await sb.from('survey_tokens').select('*').eq('order_id',orderId).order('created_at',{ascending:false}).limit(1).maybeSingle();
         if(tok){ const url=`${SURVEY_BASE_URL}?token=${tok.token}`, used=tok.used, exp=tok.expires_at&&new Date(tok.expires_at)<new Date();
-            s.innerHTML=`<div class="survey-link-box ${used?'':'no-link'} ${exp?'expired':''}"><div class="flex justify-between items-center mb-2"><span class="font-semibold">${used?'✅ Completed':exp?'⚠️ Expired':'📨 Active'}</span>${!used?`<button id="copyLink" class="btn btn-secondary text-xs">📋 Copy</button>`:''}</div>${!used?`<input class="survey-link-input" value="${url}" readonly/><div class="text-xs text-gray-500">Expires: ${tok.expires_at?new Date(tok.expires_at).toLocaleDateString():'Never'}</div>`:`<div class="text-sm text-gray-600">Done: ${tok.used_at?new Date(tok.used_at).toLocaleDateString():''}</div>`}${exp&&!used?`<button id="regenLink" class="btn btn-warning mt-2 w-full">🔄 Regenerate</button>`:''}</div>`;
-            document.getElementById('copyLink')?.addEventListener('click',function(){navigator.clipboard.writeText(url);this.textContent='✓ Copied!';});
+            s.innerHTML=`<div class="survey-link-box ${used?'':'no-link'} ${exp?'expired':''}"><div class="flex justify-between items-center mb-2"><span class="font-semibold">${used?'Completed':exp?'Expired':'Active'}</span>${!used?`<button id="copyLink" class="btn btn-secondary text-xs">Copy</button>`:''}</div>${!used?`<input class="survey-link-input" value="${url}" readonly/><div class="text-xs text-gray-500">Expires: ${tok.expires_at?new Date(tok.expires_at).toLocaleDateString():'Never'}</div>`:`<div class="text-sm text-gray-600">Done: ${tok.used_at?new Date(tok.used_at).toLocaleDateString():''}</div>`}${exp&&!used?`<button id="regenLink" class="btn btn-warning mt-2 w-full">Regenerate</button>`:''}</div>`;
+            document.getElementById('copyLink')?.addEventListener('click',function(){navigator.clipboard.writeText(url);this.textContent='Copied';});
             document.getElementById('regenLink')?.addEventListener('click',()=>genSurveyLink(orderId));
-        }else{ s.innerHTML=`<div class="survey-link-box no-link"><p class="text-gray-600 mb-3">No survey link yet.</p><button id="genLink" class="btn btn-primary w-full">📝 Generate Link</button></div>`; document.getElementById('genLink').onclick=()=>genSurveyLink(orderId); }
+        }else{ s.innerHTML=`<div class="survey-link-box no-link"><p class="text-gray-600 mb-3">No survey link yet.</p><button id="genLink" class="btn btn-primary w-full">Generate Link</button></div>`; document.getElementById('genLink').onclick=()=>genSurveyLink(orderId); }
     }
 
     async function genSurveyLink(orderId){ const s=document.getElementById('surveyLinkSection'); s.innerHTML='<p class="text-gray-500 text-sm">Generating...</p>';
@@ -629,11 +689,11 @@
         if(status==='paid')return;
         if(o?.stripe_payment_link_url){
             const inp=$('input','survey-link-input'); inp.readOnly=true; inp.value=o.stripe_payment_link_url; el.appendChild(inp);
-            const cp=$('button','btn btn-secondary text-xs w-full','📋 Copy Payment Link');
-            cp.onclick=()=>{navigator.clipboard.writeText(o.stripe_payment_link_url);cp.textContent='✓ Copied!';};
+            const cp=$('button','btn btn-secondary text-xs w-full','Copy Payment Link');
+            cp.onclick=()=>{navigator.clipboard.writeText(o.stripe_payment_link_url);cp.textContent='Copied';};
             el.appendChild(cp);
         }else{
-            const gen=$('button','btn btn-primary w-full mt-2','💳 Generate Payment Link');
+            const gen=$('button','btn btn-primary w-full mt-2','Generate Payment Link');
             gen.onclick=generatePaymentLink; el.appendChild(gen);
         }
     }
@@ -679,7 +739,7 @@
     document.getElementById('saveStatus').onclick=async()=>{const s=document.getElementById('statusSelect').value;const hadReward=activeOrder.referral_reward_code;const{error}=await sb.from('orders').update({status:s}).eq('id',activeOrder.id);if(error){alert(error.message);return;}
         const{data:fresh}=await sb.from('orders').select('*').eq('id',activeOrder.id).single();if(fresh)activeOrder=fresh;else activeOrder.status=s;
         fillDrawer();loadTable();
-        if(!hadReward&&activeOrder.referral_reward_code){alert(`🎁 Referral reward created!\n\nCode: ${activeOrder.referral_reward_code}\n15% off · single use · expires in 90 days\n\nShare it with the customer who referred this order — it only works with their email.`);}};
+        if(!hadReward&&activeOrder.referral_reward_code){alert(`Referral reward created!\n\nCode: ${activeOrder.referral_reward_code}\n15% off · single use · expires in 90 days\n\nShare it with the customer who referred this order — it only works with their email.`);}};
     document.getElementById('editFields').onclick=()=>{if(activeOrder)openEditor(tables.orders,activeOrder);};
     document.getElementById('deleteOrder').onclick=async()=>{if(!activeOrder)return;const label=`#${activeOrder.order_id||formatOrderId(activeOrder.id)}`;if(!confirm(`Permanently delete order ${label}?\n\nThis also removes its fees/discounts, survey links, and payment logs. This cannot be undone.`))return;const{error}=await sb.rpc('delete_order',{p_order_id:activeOrder.id});if(error){alert('Could not delete: '+error.message);return;}drawer.close();loadTable();};
     document.getElementById('backToOrders').onclick=e=>{e.preventDefault();drawer.close();};
@@ -687,7 +747,7 @@
     document.getElementById('btnUploadPhoto').onclick=async()=>{const f=document.getElementById('uploadPhoto').files?.[0];if(!f){alert('Choose file');return;}const path=`${activeOrder.id}/photo_${Date.now()}.${f.name.split('.').pop()}`;const{data,error}=await sb.storage.from('order_uploads').upload(path,f,{upsert:true});if(error){alert(error.message);return;}const{data:pub}=sb.storage.from('order_uploads').getPublicUrl(data.path);await sb.from('orders').update({design_inspiration_photo:pub?.publicUrl}).eq('id',activeOrder.id);activeOrder.design_inspiration_photo=pub?.publicUrl;document.getElementById('ov_photo').src=pub?.publicUrl;document.getElementById('uploadPhoto').value='';};
     document.getElementById('ov_photo').onclick=function(){if(this.src)window.open(this.src,'_blank');};
     document.getElementById('viewInvoice').onclick=()=>{if(!activeOrder||!activeCustomer){alert('Load order first');return;}const orderId=activeOrder.order_id||formatOrderId(activeOrder.id),total=document.getElementById('t_total').textContent;const items=[{l:`Base (${activeOrder.cookie_amount_dzns||0} dz @ ${document.getElementById('t_price').textContent})`,a:document.getElementById('t_base').textContent}];if(activeOrder.pickup_delivery_type==='Delivery'&&(pricing?.delivery_fee||0)>0)items.push({l:'Delivery',a:document.getElementById('t_delivery').textContent});if(activeOrder.consultation_requested)items.push({l:'Consult',a:document.getElementById('t_consult').textContent});if(activeOrder.gift_note)items.push({l:'Gift fee',a:document.getElementById('t_gift').textContent});adjustments.filter(x=>x.kind==='fee').forEach(x=>items.push({l:x.label,a:money(x.amount)}));if(discountCodeAmount>0)items.push({l:`Discount (${activeOrder.discount_code_used})`,a:'-'+money(discountCodeAmount)});if(referralDiscountAmount>0)items.push({l:`Referral (${activeOrder.referral_code_used})`,a:'-'+money(referralDiscountAmount)});adjustments.filter(x=>x.kind==='discount').forEach(x=>items.push({l:x.label,a:'-'+money(x.amount)}));
-        const html=`<!DOCTYPE html><html><head><title>Invoice #${orderId}</title><style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600&display=swap');*{box-sizing:border-box}body{margin:0;padding:24px;font-family:'Nunito',sans-serif;background:#fdf2f8}.inv{max-width:800px;margin:auto;background:#fff;border-radius:20px;padding:32px;box-shadow:0 10px 40px rgba(190,24,93,.15)}.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}.brand{font-family:'Playfair Display',serif;font-size:28px;text-transform:uppercase}.pill{background:#eff6ff;color:#1d4ed8;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600}hr{border:none;border-top:1px solid #e5e7eb;margin:16px 0}.info{display:flex;justify-content:space-between;font-size:13px;margin-bottom:20px}.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9ca3af;margin-bottom:4px}.val{font-weight:600}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}th{text-align:left;padding:10px;background:#f9fafb;font-weight:600}th:last-child{text-align:right}td{padding:10px;border-bottom:1px solid #f3f4f6}td:last-child{text-align:right}.tot td{border-top:2px solid #d1d5db;background:#fef3c7;font-weight:700}.tot td:last-child{font-size:18px;color:#b91c1c}.ftr{text-align:center;margin-top:20px;font-size:11px;color:#9ca3af}.invbar{display:flex;justify-content:space-between;gap:12px;max-width:800px;margin:0 auto 14px}.invbar button{border-radius:999px;padding:10px 20px;font-family:'Nunito',sans-serif;font-weight:600;font-size:14px;cursor:pointer}.btn-back{background:#fff;color:#be185d;border:1px solid #be185d}.btn-print{background:#be185d;color:#fff;border:none}@media print{body{background:#fff;padding:0}.inv{box-shadow:none}.invbar{display:none}}</style></head><body><div class="invbar"><button class="btn-back" onclick="window.close()">← Back to Order</button><button class="btn-print" onclick="window.print()">🖨 Print / Save PDF</button></div><div class="inv"><div class="hdr"><div><img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" style="height:60px;margin-bottom:8px"><div class="brand">Rebel Ribbon</div></div><div style="text-align:right"><div class="pill">Invoice #${orderId}</div><div style="margin-top:4px;font-size:12px"><strong>Date:</strong> ${new Date().toLocaleDateString()}</div></div></div><hr/><div class="info"><div><div class="lbl">Bill to</div><div class="val">${document.getElementById('cust_name').textContent}</div><div>${document.getElementById('cust_email').textContent}</div><div>${document.getElementById('cust_phone_link').textContent}</div></div><div style="text-align:right"><div class="lbl">From</div><div class="val">Rebel Ribbon</div><div>www.rebelribbon.com</div><div>info@rebelribbon.com</div></div></div><table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>${items.map(i=>`<tr><td>${i.l}</td><td>${i.a}</td></tr>`).join('')}<tr class="tot"><td>Total Due</td><td>${total}</td></tr></tbody></table><div class="ftr">Thank you for supporting handmade custom cookies!</div></div></body></html>`;
+        const html=`<!DOCTYPE html><html><head><title>Invoice #${orderId}</title><style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600&display=swap');*{box-sizing:border-box}body{margin:0;padding:24px;font-family:'Nunito',sans-serif;background:#fdf2f8}.inv{max-width:800px;margin:auto;background:#fff;border-radius:20px;padding:32px;box-shadow:0 10px 40px rgba(190,24,93,.15)}.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}.brand{font-family:'Playfair Display',serif;font-size:28px;text-transform:uppercase}.pill{background:#eff6ff;color:#1d4ed8;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600}hr{border:none;border-top:1px solid #e5e7eb;margin:16px 0}.info{display:flex;justify-content:space-between;font-size:13px;margin-bottom:20px}.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9ca3af;margin-bottom:4px}.val{font-weight:600}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}th{text-align:left;padding:10px;background:#f9fafb;font-weight:600}th:last-child{text-align:right}td{padding:10px;border-bottom:1px solid #f3f4f6}td:last-child{text-align:right}.tot td{border-top:2px solid #d1d5db;background:#fef3c7;font-weight:700}.tot td:last-child{font-size:18px;color:#b91c1c}.ftr{text-align:center;margin-top:20px;font-size:11px;color:#9ca3af}.invbar{display:flex;justify-content:space-between;gap:12px;max-width:800px;margin:0 auto 14px}.invbar button{border-radius:999px;padding:10px 20px;font-family:'Nunito',sans-serif;font-weight:600;font-size:14px;cursor:pointer}.btn-back{background:#fff;color:#be185d;border:1px solid #be185d}.btn-print{background:#be185d;color:#fff;border:none}@media print{body{background:#fff;padding:0}.inv{box-shadow:none}.invbar{display:none}}</style></head><body><div class="invbar"><button class="btn-back" onclick="window.close()">Back to Order</button><button class="btn-print" onclick="window.print()">Print / Save PDF</button></div><div class="inv"><div class="hdr"><div><img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" style="height:60px;margin-bottom:8px"><div class="brand">Rebel Ribbon</div></div><div style="text-align:right"><div class="pill">Invoice #${orderId}</div><div style="margin-top:4px;font-size:12px"><strong>Date:</strong> ${new Date().toLocaleDateString()}</div></div></div><hr/><div class="info"><div><div class="lbl">Bill to</div><div class="val">${document.getElementById('cust_name').textContent}</div><div>${document.getElementById('cust_email').textContent}</div><div>${document.getElementById('cust_phone_link').textContent}</div></div><div style="text-align:right"><div class="lbl">From</div><div class="val">Rebel Ribbon</div><div>www.rebelribbon.com</div><div>info@rebelribbon.com</div></div></div><table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>${items.map(i=>`<tr><td>${i.l}</td><td>${i.a}</td></tr>`).join('')}<tr class="tot"><td>Total Due</td><td>${total}</td></tr></tbody></table><div class="ftr">Thank you for supporting handmade custom cookies!</div></div></body></html>`;
         const w=window.open('','_blank','width=900,height=800');w.document.write(html);w.document.close();
     };
 
