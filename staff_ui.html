@@ -549,14 +549,12 @@
     document.getElementById('addContact').onclick=async()=>{
         const c=activeCustomer; if(!c){alert('No customer on this order.');return;}
         const name=[c.first_name,c.last_name].filter(Boolean).join(' ')||'customer';
-        // iOS: navigate to a served .vcf so Safari shows its native contact
-        // preview (Create New Contact) - the share sheet buries that option.
+        // iOS: navigate (GET) to a served .vcf so Safari shows its native
+        // contact preview (Create New Contact). Safari will not render the
+        // preview from a form POST response, so this must be a plain link.
         if(/iPad|iPhone|iPod/.test(navigator.userAgent)){
-            const f=document.createElement('form');
-            f.method='POST'; f.action=`${SUPABASE_URL}/functions/v1/vcard`; f.target='_blank';
-            const fields={first:c.first_name,last:c.last_name,tel:c.phone,email:c.email,street:[c.street_address,c.street_address_cont].filter(Boolean).join(', '),city:c.city,state:c.state,zip:c.zip};
-            for(const[k,v]of Object.entries(fields)){const i=document.createElement('input');i.type='hidden';i.name=k;i.value=v||'';f.appendChild(i);}
-            document.body.appendChild(f); f.submit(); f.remove();
+            const q=new URLSearchParams({first:c.first_name||'',last:c.last_name||'',tel:c.phone||'',email:c.email||'',street:[c.street_address,c.street_address_cont].filter(Boolean).join(', '),city:c.city||'',state:c.state||'',zip:c.zip||''});
+            window.open(`${SUPABASE_URL}/functions/v1/vcard?${q.toString()}`,'_blank');
             return;
         }
         const blob=new Blob([buildVCard(c)],{type:'text/vcard'});
