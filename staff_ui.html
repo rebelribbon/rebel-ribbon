@@ -77,8 +77,11 @@
         #searchContainer { display: flex; gap: 0.5rem; align-items: center; margin-bottom: 1rem; }
         #globalSearch { padding: 0.5rem 1rem; border-radius: 999px; border: 1px solid var(--line); background: #fff; flex-grow: 1; width: 100%; max-width: 320px; font-size: 0.9rem; color: var(--brown); }
         #globalSearch:focus { outline: none; border-color: var(--rose); box-shadow: 0 0 0 3px rgba(232,160,164,.18); }
-        #orderFilters { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1.1rem; justify-content: center; }
-        .filter-tab { font-size: 0.8rem; font-weight: 600; padding: 0.4rem 1rem; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--brown-light); transition: all 0.2s; cursor: pointer; }
+        /* Four equal-width tabs on small screens so they always fit one row */
+        #orderFilters { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.4rem; margin-bottom: 1.1rem; }
+        @media (min-width: 640px) { #orderFilters { display: flex; flex-wrap: nowrap; gap: 0.5rem; justify-content: center; } }
+        .filter-tab { font-size: 0.78rem; font-weight: 600; padding: 0.45rem 0.25rem; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--brown-light); transition: all 0.2s; cursor: pointer; text-align: center; white-space: nowrap; overflow: hidden; }
+        @media (min-width: 640px) { .filter-tab { font-size: 0.8rem; padding: 0.4rem 1rem; } }
         .filter-tab:hover { border-color: var(--rose); color: var(--rose-deep); }
         .filter-active { border-color: var(--brown); background: var(--brown); color: #fff; }
         .filter-active:hover { border-color: var(--brown); color: #fff; }
@@ -197,7 +200,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-7</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-8</div>
         </div>
     </nav>
 
@@ -212,10 +215,10 @@
                     <button id="refreshAll" class="btn btn-secondary shadow-sm">Refresh</button>
                 </div>
                 <div id="orderFilters">
-                    <button class="filter-tab filter-active" data-filter="All">All Orders</button>
-                    <button class="filter-tab" data-filter="Active">Active</button>
+                    <button class="filter-tab filter-active" data-filter="Active">Active</button>
                     <button class="filter-tab" data-filter="Completed">Completed</button>
                     <button class="filter-tab" data-filter="Canceled">Canceled</button>
+                    <button class="filter-tab" data-filter="All">All</button>
                 </div>
             </div>
             <div id="dataActions" class="flex items-center justify-between mb-2 flex-wrap gap-2">
@@ -431,7 +434,7 @@
     };
 
     const tabOrder=['order_list','surveys','reviews'], settingsOrder=['discount_codes','referral_codes','flavors','dietary_options','pricing','costs'];
-    let activeKey='order_list', activeOrderFilter='All', activeReviewTab='pending', page=0, totalCount=0;
+    let activeKey='order_list', activeOrderFilter='Active', activeReviewTab='pending', page=0, totalCount=0;
     const pageSize=20;
 
     // AUTH
