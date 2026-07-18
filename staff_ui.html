@@ -229,7 +229,8 @@
                         </div>
                         <div class="mt-4 text-sm">
                             <span class="font-medium">Referral Code:</span>
-                            <div id="cust_referral_code" class="mt-1 text-pink-700 font-semibold"></div>
+                            <div id="cust_referral_code" class="mt-1 text-pink-700 font-semibold" style="word-break:break-all"></div>
+                            <button id="shareReferral" class="btn btn-secondary text-xs mt-2 hidden">🎨 Referral Share Image</button>
                         </div>
                     </div>
                     <div class="bg-white rounded-lg border p-4">
@@ -294,6 +295,7 @@
                         <div class="mt-4 text-sm space-y-1">
                             <div><span class="font-medium">Discount:</span> <span id="ov_discount_code"></span></div>
                             <div><span class="font-medium">Referral:</span> <span id="ov_referral_code"></span></div>
+                            <div id="rewardRow" class="hidden"><span class="font-medium">🎁 Reward issued:</span> <span id="ov_reward_code" class="text-pink-700 font-semibold"></span></div>
                         </div>
                     </div>
                     <div class="bg-white rounded-lg border p-4">
@@ -521,7 +523,51 @@
 
     function renderAdjustments(){const tb=document.getElementById('adjTbody');tb.innerHTML='';if(!adjustments.length){tb.innerHTML='<tr><td colspan="5" class="p-2 text-center text-gray-500">None</td></tr>';return;}for(const a of adjustments){const tr=$('tr','border-b');tr.appendChild($('td','p-1 text-xs',new Date(a.created_at).toLocaleDateString()));tr.appendChild($('td','p-1 text-xs',a.kind));tr.appendChild($('td','p-1',a.label||''));tr.appendChild($('td',`p-1 text-right ${a.kind==='discount'?'text-red-600':'text-green-600'}`,(a.kind==='discount'?'-':'')+money(a.amount)));const rc=$('td','p-1 text-right');const rb=$('button','btn btn-ghost text-red-500 text-xs','×');rb.onclick=async()=>{if(confirm('Remove?')){await sb.from('order_adjustments').delete().eq('id',a.id);adjustments=adjustments.filter(x=>x.id!==a.id);renderAdjustments();computeTotals();}};rc.appendChild(rb);tr.appendChild(rc);tb.appendChild(tr);}}
 
-    function fillDrawer(){const o=activeOrder,c=activeCustomer;document.getElementById('drawerTitle').textContent=`Order #${o?.order_id||formatOrderId(o.id)} (${o?.status||'Active'})`;document.getElementById('cust_name').textContent=c?`${c.first_name||''} ${c.last_name||''}`.trim():'N/A';document.getElementById('cust_id').textContent=c?.customer_id||o?.order_id||'N/A';document.getElementById('cust_email').textContent=c?.email||'N/A';document.getElementById('cust_email').href=c?.email?`mailto:${c.email}`:'#';document.getElementById('cust_phone_link').textContent=formatPhone(c?.phone)||'N/A';document.getElementById('cust_phone_link').href=c?.phone?`tel:${c.phone.replace(/\D/g,'')}`:'#';document.getElementById('cust_addr1').textContent=c?.street_address||'';document.getElementById('cust_addr2').textContent=c?.street_address_cont||'';document.getElementById('cust_citystzip').textContent=[c?.city,c?.state,c?.zip].filter(Boolean).join(', ');document.getElementById('mapLocation').onclick=()=>{const addr=[c?.street_address,c?.city,c?.state,c?.zip].filter(Boolean).join(', ');if(addr)window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`,'_blank');};document.getElementById('cust_referral_code').textContent=activeCustomerReferralCode||'None';document.getElementById('ov_event_name').textContent=o?.event_type_name||'N/A';document.getElementById('ov_event').textContent=dateOnly(o?.event_date);document.getElementById('ov_submitted').textContent=dateOnly(o?.created_at);document.getElementById('ov_pickup').textContent=dateOnly(o?.pickup_delivery_date);document.getElementById('ov_dzns').textContent=o?.cookie_amount_dzns??'0';document.getElementById('ov_flavor').textContent=o?.flavor||'N/A';document.getElementById('ov_dietary').textContent=o?.dietary_option||'None';document.getElementById('ov_notes').textContent=o?.design_notes||'None';document.getElementById('ov_photo').src=o?.design_inspiration_photo||'https://dummyimage.com/320x320/e5e7eb/6b7280.jpg&text=No+photo';document.getElementById('ov_consultation').textContent=o?.consultation_requested?'Yes':'No';document.getElementById('ov_gift_note').textContent=o?.gift_note?'Yes':'No';document.getElementById('ov_gift_text').textContent=o?.gift_note_text||'None';document.getElementById('ov_pd_type').textContent=o?.pickup_delivery_type||'N/A';document.getElementById('ov_discount_code').textContent=o?.discount_code_used?`${o.discount_code_used} (${discountCodeDetails?.isValid?'applied':'invalid'})`:'None';document.getElementById('ov_referral_code').textContent=o?.referral_code_used?`${o.referral_code_used} (${referralCodeDetails?.isValid?'applied':'invalid'})`:'None';document.getElementById('statusSelect').value=o?.status||'Active';renderAdjustments();computeTotals();renderPaymentSection();}
+    function fillDrawer(){const o=activeOrder,c=activeCustomer;document.getElementById('drawerTitle').textContent=`Order #${o?.order_id||formatOrderId(o.id)} (${o?.status||'Active'})`;document.getElementById('cust_name').textContent=c?`${c.first_name||''} ${c.last_name||''}`.trim():'N/A';document.getElementById('cust_id').textContent=c?.customer_id||o?.order_id||'N/A';document.getElementById('cust_email').textContent=c?.email||'N/A';document.getElementById('cust_email').href=c?.email?`mailto:${c.email}`:'#';document.getElementById('cust_phone_link').textContent=formatPhone(c?.phone)||'N/A';document.getElementById('cust_phone_link').href=c?.phone?`tel:${c.phone.replace(/\D/g,'')}`:'#';document.getElementById('cust_addr1').textContent=c?.street_address||'';document.getElementById('cust_addr2').textContent=c?.street_address_cont||'';document.getElementById('cust_citystzip').textContent=[c?.city,c?.state,c?.zip].filter(Boolean).join(', ');document.getElementById('mapLocation').onclick=()=>{const addr=[c?.street_address,c?.city,c?.state,c?.zip].filter(Boolean).join(', ');if(addr)window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`,'_blank');};document.getElementById('cust_referral_code').textContent=activeCustomerReferralCode||'None';document.getElementById('ov_event_name').textContent=o?.event_type_name||'N/A';document.getElementById('ov_event').textContent=dateOnly(o?.event_date);document.getElementById('ov_submitted').textContent=dateOnly(o?.created_at);document.getElementById('ov_pickup').textContent=dateOnly(o?.pickup_delivery_date);document.getElementById('ov_dzns').textContent=o?.cookie_amount_dzns??'0';document.getElementById('ov_flavor').textContent=o?.flavor||'N/A';document.getElementById('ov_dietary').textContent=o?.dietary_option||'None';document.getElementById('ov_notes').textContent=o?.design_notes||'None';document.getElementById('ov_photo').src=o?.design_inspiration_photo||'https://dummyimage.com/320x320/e5e7eb/6b7280.jpg&text=No+photo';document.getElementById('ov_consultation').textContent=o?.consultation_requested?'Yes':'No';document.getElementById('ov_gift_note').textContent=o?.gift_note?'Yes':'No';document.getElementById('ov_gift_text').textContent=o?.gift_note_text||'None';document.getElementById('ov_pd_type').textContent=o?.pickup_delivery_type||'N/A';document.getElementById('ov_discount_code').textContent=o?.discount_code_used?`${o.discount_code_used} (${discountCodeDetails?.isValid?'applied':'invalid'})`:'None';document.getElementById('ov_referral_code').textContent=o?.referral_code_used?`${o.referral_code_used} (${referralCodeDetails?.isValid?'applied':'invalid'})`:'None';document.getElementById('statusSelect').value=o?.status||'Active';renderAdjustments();computeTotals();renderPaymentSection();renderReferralExtras();}
+
+    function renderReferralExtras(){
+        document.getElementById('shareReferral').classList.toggle('hidden',!activeCustomerReferralCode);
+        const hasReward=!!activeOrder?.referral_reward_code;
+        document.getElementById('rewardRow').classList.toggle('hidden',!hasReward);
+        document.getElementById('ov_reward_code').textContent=activeOrder?.referral_reward_code||'';
+    }
+
+    // Square (1080x1080) branded share image with the customer's referral code.
+    async function generateReferralImage(){
+        const code=activeCustomerReferralCode;
+        if(!code){alert('This customer has no referral code yet.');return;}
+        try{await document.fonts.ready;}catch(_){/* draw with fallbacks */}
+        const S=1080,cv=document.createElement('canvas');cv.width=S;cv.height=S;const c=cv.getContext('2d');
+        const g=c.createLinearGradient(0,0,S,S);g.addColorStop(0,'#fff8f8');g.addColorStop(.5,'#fae0e2');g.addColorStop(1,'#fffcfb');
+        c.fillStyle=g;c.fillRect(0,0,S,S);
+        c.strokeStyle='#e8a0a4';c.lineWidth=6;c.beginPath();c.roundRect(36,36,S-72,S-72,32);c.stroke();
+        try{const img=new Image();img.crossOrigin='anonymous';img.src='Bowtrans.png';await img.decode();const w=170,h=w*(img.height/img.width);c.drawImage(img,(S-w)/2,80,w,h);}catch(_){/* logo optional */}
+        c.textAlign='center';
+        c.fillStyle='#831843';c.font='700 68px "Playfair Display", Georgia, serif';c.fillText('Rebel Ribbon',S/2,330);
+        c.fillStyle='#be185d';c.font='italic 400 40px "Playfair Display", Georgia, serif';c.fillText('Sweet friends share sweet treats',S/2,392);
+        c.fillStyle='#ffffff';c.beginPath();c.roundRect(170,450,S-340,140,28);c.fill();
+        c.strokeStyle='#be185d';c.setLineDash([16,12]);c.lineWidth=5;c.beginPath();c.roundRect(184,464,S-368,112,20);c.stroke();c.setLineDash([]);
+        c.fillStyle='#5d4e4e';c.font='800 76px "Courier New", monospace';c.fillText(code,S/2,545);
+        c.fillStyle='#7a6b6b';c.font='600 38px Arial, sans-serif';
+        c.fillText('Give this code to a friend and',S/2,690);
+        c.fillText('they get 10% off their cookie order!',S/2,744);
+        c.fillStyle='#831843';c.font='700 40px Arial, sans-serif';
+        c.fillText('When their order is completed,',S/2,830);
+        c.fillText('YOU get 15% off your next order 🎉',S/2,884);
+        c.fillStyle='#be185d';c.font='700 34px Arial, sans-serif';c.fillText('rebelribbon.com/order.html',S/2,985);
+        cv.toBlob(async blob=>{
+            if(!blob){alert('Could not create the image.');return;}
+            const file=new File([blob],`rebel-ribbon-referral-${code}.png`,{type:'image/png'});
+            if(navigator.canShare&&navigator.canShare({files:[file]})){
+                try{await navigator.share({files:[file],title:'Rebel Ribbon Referral Code'});return;}
+                catch(e){if(e.name==='AbortError')return;/* else fall through to download */}
+            }
+            const url=URL.createObjectURL(blob);const a=document.createElement('a');
+            a.href=url;a.download=file.name;document.body.appendChild(a);a.click();a.remove();
+            setTimeout(()=>URL.revokeObjectURL(url),10000);
+        },'image/png');
+    }
+    document.getElementById('shareReferral').onclick=generateReferralImage;
 
     function renderPaymentSection(){
         const o=activeOrder,el=document.getElementById('paymentSection'); if(!el)return;
@@ -581,7 +627,10 @@
 
     async function openOrderManager(orderId){document.body.style.cursor='progress';const[orderResp,pricingData,adjustmentsData]=await Promise.all([sb.from('orders').select('*').eq('id',orderId).single(),fetchPricing(),fetchAdjustments(orderId)]);if(orderResp.error){alert(orderResp.error.message);document.body.style.cursor='default';return;}activeOrder=orderResp.data;pricing=pricingData;adjustments=adjustmentsData;if(activeOrder.customer_id){const{data}=await sb.from('customers').select('*').eq('id',activeOrder.customer_id).single();activeCustomer=data;}else activeCustomer=null;if(activeOrder.customer_id){const{data}=await sb.from('referral_codes').select('code').eq('associated_customer_id',activeOrder.customer_id).order('created_at',{ascending:false}).limit(1).maybeSingle();activeCustomerReferralCode=data?.code||null;}else activeCustomerReferralCode=null;discountCodeDetails=activeOrder.discount_code_used?await fetchDiscountCodeDetails(activeOrder.discount_code_used,activeCustomer?.email):null;referralCodeDetails=activeOrder.referral_code_used?await fetchReferralCodeDetails(activeOrder.referral_code_used):null;document.body.style.cursor='default';fillDrawer();loadSurveySection(orderId);drawer.showModal();}
 
-    document.getElementById('saveStatus').onclick=async()=>{const s=document.getElementById('statusSelect').value;await sb.from('orders').update({status:s}).eq('id',activeOrder.id);activeOrder.status=s;fillDrawer();loadTable();};
+    document.getElementById('saveStatus').onclick=async()=>{const s=document.getElementById('statusSelect').value;const hadReward=activeOrder.referral_reward_code;const{error}=await sb.from('orders').update({status:s}).eq('id',activeOrder.id);if(error){alert(error.message);return;}
+        const{data:fresh}=await sb.from('orders').select('*').eq('id',activeOrder.id).single();if(fresh)activeOrder=fresh;else activeOrder.status=s;
+        fillDrawer();loadTable();
+        if(!hadReward&&activeOrder.referral_reward_code){alert(`🎁 Referral reward created!\n\nCode: ${activeOrder.referral_reward_code}\n15% off · single use · expires in 90 days\n\nShare it with the customer who referred this order — it only works with their email.`);}};
     document.getElementById('editFields').onclick=()=>{if(activeOrder)openEditor(tables.orders,activeOrder);};
     document.getElementById('deleteOrder').onclick=async()=>{if(!activeOrder)return;const label=`#${activeOrder.order_id||formatOrderId(activeOrder.id)}`;if(!confirm(`Permanently delete order ${label}?\n\nThis also removes its fees/discounts, survey links, and payment logs. This cannot be undone.`))return;const{error}=await sb.rpc('delete_order',{p_order_id:activeOrder.id});if(error){alert('Could not delete: '+error.message);return;}drawer.close();loadTable();};
     document.getElementById('backToOrders').onclick=e=>{e.preventDefault();drawer.close();};
