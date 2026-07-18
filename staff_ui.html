@@ -209,6 +209,7 @@
                 <div class="flex gap-2 mt-2 lg:mt-0">
                     <button id="editFields" class="btn btn-secondary">Edit Fields</button>
                     <button id="viewInvoice" class="btn btn-primary">Invoice</button>
+                    <button id="deleteOrder" class="btn btn-danger">Delete</button>
                 </div>
             </div>
             <div class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -296,6 +297,10 @@
                         </div>
                     </div>
                     <div class="bg-white rounded-lg border p-4">
+                        <h3 class="font-semibold mb-3">💳 Payment</h3>
+                        <div id="paymentSection" class="text-sm space-y-2"></div>
+                    </div>
+                    <div class="bg-white rounded-lg border p-4">
                         <h3 class="font-semibold mb-3">➕ Fees & Discounts</h3>
                         <div class="flex flex-wrap gap-2 mb-3">
                             <input id="adjLabel" class="px-2 py-1 rounded border grow" placeholder="Label"/>
@@ -353,7 +358,7 @@
         dietary_options: { title:'Dietary Options', table:'dietary_options', isSettings:true, cols:[{key:'name',label:'Name',type:'text',required:true,w:'40'}] },
         pricing: { title:'Pricing', table:'pricing', isSettings:true, customLoader:'loadPricingList', cols:[{key:'price_per_dozen',label:'Price/dozen',type:'number',step:'0.01',w:'20'},{key:'delivery_fee',label:'Delivery fee',type:'number',step:'0.01',w:'20'},{key:'consultation_fee',label:'Consult fee',type:'number',step:'0.01',w:'20'},{key:'gift_note_fee',label:'Gift fee',type:'number',step:'0.01',w:'20'},{key:'rush_fee',label:'Rush fee',type:'number',step:'0.01',w:'20'}] },
         costs: { title:'Costs', table:'costs', isSettings:true, cols:[{key:'cost_date',label:'Date',type:'date',w:'25'},{key:'item_name',label:'Item',type:'text',required:true,w:'55'},{key:'amount',label:'Amount',type:'number',step:'0.01',required:true,w:'20'}] },
-        surveys: { title:'Surveys', table:'surveys', cols:[{key:'customer_id',label:'Customer',type:'select-async',w:'22',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},{key:'cookies_stars',label:'Cookies',type:'number',min:1,max:5,w:'18'},{key:'service_stars',label:'Service',type:'number',min:1,max:5,w:'18'},{key:'recommend',label:'Recommend',type:'checkbox',w:'22'},{key:'improvements',label:'Improvements',type:'textarea',w:'30'},{key:'website_review',label:'Review',type:'textarea',w:'30'}] },
+        surveys: { title:'Surveys', table:'surveys', customLoader:'loadSurveyList', cols:[{key:'customer_id',label:'Customer',type:'select-async',w:'22',asyncOptions:async()=>{const{data}=await sb.from('customers').select('id,first_name,last_name').limit(1000);return(data||[]).map(c=>({value:c.id,label:`${c.first_name} ${c.last_name}`}))}},{key:'cookies_stars',label:'Cookies',type:'number',min:1,max:5,w:'18'},{key:'service_stars',label:'Service',type:'number',min:1,max:5,w:'18'},{key:'recommend',label:'Recommend',type:'checkbox',w:'22'},{key:'improvements',label:'Improvements',type:'textarea',w:'30'},{key:'website_review',label:'Review',type:'textarea',w:'30'}] },
         reviews: { title:'Website Reviews', table:'website_reviews', customLoader:'loadReviews', readOnly:true, cols:[] }
     };
 
@@ -375,7 +380,9 @@
         document.getElementById('orderPageControls').classList.toggle('hidden',!isO); document.getElementById('addBtn').classList.toggle('hidden',!!conf.readOnly||isP||isR); document.getElementById('dataActions').classList.toggle('hidden',isP||isR);
         document.getElementById('pricingList').classList.toggle('hidden',!isP); document.getElementById('reviewsContainer').classList.toggle('hidden',!isR); document.getElementById('grid').closest('.table-wrap').classList.toggle('hidden',isP||isR);
         document.getElementById('exportBtn').classList.toggle('hidden',activeKey!=='costs');
-        if(conf.customLoader==='loadPricingList'){await loadPricingList();return;} if(conf.customLoader==='loadReviews'){await loadReviews();return;} if(conf.customLoader==='loadOrderList'){await loadOrderList();return;}
+        if(conf.customLoader==='loadPricingList'){await loadPricingList();return;} if(conf.customLoader==='loadReviews'){await loadReviews();return;}
+        if(conf.customLoader==='loadOrderList'){buildColGroup(conf,conf.cols);buildThead(conf,conf.cols);await loadOrderList();return;}
+        if(conf.customLoader==='loadSurveyList'){await loadSurveyList(conf);return;}
         const dc=conf.list_keys?conf.cols.filter(c=>conf.list_keys.includes(c.key)):conf.cols; buildColGroup(conf,dc); buildThead(conf,dc);
         const tbody=document.getElementById('tbody'); tbody.innerHTML='';
         let q=sb.from(conf.table).select('*',{count:'exact'}); const s=document.getElementById('globalSearch').value?.trim();
@@ -392,6 +399,35 @@
         const ids=[...new Set(orders.map(o=>o.customer_id).filter(Boolean))]; const map=new Map(); if(ids.length){const{data}=await sb.from('customers').select('id,first_name,last_name').in('id',ids);(data||[]).forEach(c=>map.set(c.id,c));}
         if(st){const f=orders.filter(o=>{const c=map.get(o.customer_id);return[String(o.id),formatOrderId(o.id),o.status||'',c?`${c.first_name} ${c.last_name}`:''].some(x=>x.toLowerCase().includes(st));});totalCount=f.length;orders=f.slice(page*pageSize,page*pageSize+pageSize);}
         for(const r of orders){const c=map.get(r.customer_id);const tr=$('tr','border-b hover:bg-gray-100 cursor-pointer');tr.appendChild($('td','cell font-medium',c?`${c.first_name||''} ${c.last_name||''}`.trim():'N/A'));const sc=$('td','cell text-center');sc.appendChild($('span',`status-badge ${getStatusClass(r.status)}`,r.status||'Active'));tr.appendChild(sc);tr.onclick=()=>openOrderManager(r.id);tbody.appendChild(tr);}
+        updatePager();
+    }
+
+    // Compact survey list: customer name + combined stars + recommend flag.
+    // Full details stay in the editor (Edit button); this keeps the table
+    // readable on narrow/mobile screens.
+    async function loadSurveyList(conf){
+        const listCols=[{label:'Customer',w:'40'},{label:'Stars',w:'30',center:true},{label:'Recommend',w:'14',center:true}];
+        buildColGroup(conf,listCols); const tr=document.getElementById('thead'); tr.innerHTML='';
+        for(const c of listCols)tr.appendChild($('th','thcell '+(c.center?'text-center':'text-left'),c.label));
+        tr.appendChild($('th','thcell text-right',''));
+        const tbody=document.getElementById('tbody'); tbody.innerHTML='';
+        const st=(document.getElementById('globalSearch').value||'').trim().toLowerCase();
+        let{data:surveys,count}=await sb.from('surveys').select('*',{count:'exact'}).order('created_at',{ascending:false});
+        surveys=surveys||[]; totalCount=count||0;
+        const ids=[...new Set(surveys.map(s=>s.customer_id).filter(Boolean))]; const map=new Map();
+        if(ids.length){const{data}=await sb.from('customers').select('id,first_name,last_name').in('id',ids);(data||[]).forEach(c=>map.set(c.id,c));}
+        const custName=s=>{const c=map.get(s.customer_id);return c?`${c.first_name||''} ${c.last_name||''}`.trim():(s.manual_customer_name||'N/A');};
+        if(st){surveys=surveys.filter(s=>[custName(s),s.improvements||'',s.website_review||''].some(x=>x.toLowerCase().includes(st)));totalCount=surveys.length;}
+        surveys=surveys.slice(page*pageSize,page*pageSize+pageSize);
+        for(const s of surveys){
+            const tr2=$('tr','border-b');
+            tr2.appendChild($('td','cell font-medium',custName(s)));
+            tr2.appendChild($('td','cell text-center whitespace-nowrap',`🍪 ${s.cookies_stars??'–'} · 🛎️ ${s.service_stars??'–'}`));
+            tr2.appendChild($('td','cell text-center',s.recommend?'✅':'—'));
+            const td=$('td','cell text-right'); const btn=$('button','btn btn-secondary','Edit'); btn.onclick=()=>openEditor(conf,s); td.appendChild(btn); tr2.appendChild(td);
+            tbody.appendChild(tr2);
+        }
+        if(!surveys.length)tbody.innerHTML='<tr><td class="cell text-center text-gray-500" colspan="4">No surveys found</td></tr>';
         updatePager();
     }
 
@@ -466,7 +502,7 @@
 
     // ORDER DRAWER
     const drawer=document.getElementById('orderDrawer');
-    let activeOrder=null,activeCustomer=null,pricing=null,adjustments=[],discountCodeDetails=null,referralCodeDetails=null,discountCodeAmount=0,referralDiscountAmount=0,activeCustomerReferralCode=null;
+    let activeOrder=null,activeCustomer=null,pricing=null,adjustments=[],discountCodeDetails=null,referralCodeDetails=null,discountCodeAmount=0,referralDiscountAmount=0,activeCustomerReferralCode=null,lastComputedTotal=0;
 
     async function fetchPricing(){const{data}=await sb.from('pricing').select('*').order('created_at',{ascending:false}).limit(1);const p=(data&&data[0])||{};return{price_per_dozen:Number(p.price_per_dozen||0),consultation_fee:Number(p.consultation_fee||0),gift_note_fee:Number(p.gift_note_fee||0),delivery_fee:Number(p.delivery_fee||0)};}
     function isDatePast(d){return d&&dateOnly(d)<dateOnly(new Date());}
@@ -477,17 +513,75 @@
     function computeTotals(){const ppd=pricing?.price_per_dozen||0,consult=activeOrder?.consultation_requested?pricing?.consultation_fee||0:0,delivery=activeOrder?.pickup_delivery_type==='Delivery'?pricing?.delivery_fee||0:0,gift=activeOrder?.gift_note?pricing?.gift_note_fee||0:0,base=Number(activeOrder?.cookie_amount_dzns||0)*ppd,feeSum=adjustments.filter(a=>a.kind==='fee').reduce((s,a)=>s+a.amount,0),discSum=adjustments.filter(a=>a.kind==='discount').reduce((s,a)=>s+a.amount,0),baseForCodes=base+consult+gift+feeSum;
         discountCodeAmount=0;referralDiscountAmount=0;if(discountCodeDetails?.isValid&&baseForCodes>0){discountCodeAmount=discountCodeDetails.type==='percent'?baseForCodes*(discountCodeDetails.value/100):discountCodeDetails.value;if(discountCodeAmount>baseForCodes)discountCodeAmount=baseForCodes;}if(referralCodeDetails?.isValid&&baseForCodes>0){referralDiscountAmount=baseForCodes*(referralCodeDetails.value/100);if(referralDiscountAmount>baseForCodes)referralDiscountAmount=baseForCodes;}
         const total=base+delivery+consult+gift+feeSum-discSum-discountCodeAmount-referralDiscountAmount;
+        lastComputedTotal=total;
         document.getElementById('t_price').textContent=money(ppd);document.getElementById('t_base').textContent=money(base);document.getElementById('t_delivery').textContent=money(delivery);document.getElementById('t_consult').textContent=money(consult);document.getElementById('t_gift').textContent=money(gift);document.getElementById('t_adj_fees').textContent=money(feeSum);document.getElementById('t_disc_code').textContent=discountCodeAmount?'-'+money(discountCodeAmount):'-$0.00';document.getElementById('t_disc_referral').textContent=referralDiscountAmount?'-'+money(referralDiscountAmount):'-$0.00';document.getElementById('t_adj_disc').textContent=discSum?'-'+money(discSum):'-$0.00';document.getElementById('t_total').textContent=money(total);
     }
 
     function renderAdjustments(){const tb=document.getElementById('adjTbody');tb.innerHTML='';if(!adjustments.length){tb.innerHTML='<tr><td colspan="5" class="p-2 text-center text-gray-500">None</td></tr>';return;}for(const a of adjustments){const tr=$('tr','border-b');tr.appendChild($('td','p-1 text-xs',new Date(a.created_at).toLocaleDateString()));tr.appendChild($('td','p-1 text-xs',a.kind));tr.appendChild($('td','p-1',a.label||''));tr.appendChild($('td',`p-1 text-right ${a.kind==='discount'?'text-red-600':'text-green-600'}`,(a.kind==='discount'?'-':'')+money(a.amount)));const rc=$('td','p-1 text-right');const rb=$('button','btn btn-ghost text-red-500 text-xs','×');rb.onclick=async()=>{if(confirm('Remove?')){await sb.from('order_adjustments').delete().eq('id',a.id);adjustments=adjustments.filter(x=>x.id!==a.id);renderAdjustments();computeTotals();}};rc.appendChild(rb);tr.appendChild(rc);tb.appendChild(tr);}}
 
-    function fillDrawer(){const o=activeOrder,c=activeCustomer;document.getElementById('drawerTitle').textContent=`Order #${o?.order_id||formatOrderId(o.id)} (${o?.status||'Active'})`;document.getElementById('cust_name').textContent=c?`${c.first_name||''} ${c.last_name||''}`.trim():'N/A';document.getElementById('cust_id').textContent=c?.customer_id||o?.order_id||'N/A';document.getElementById('cust_email').textContent=c?.email||'N/A';document.getElementById('cust_email').href=c?.email?`mailto:${c.email}`:'#';document.getElementById('cust_phone_link').textContent=formatPhone(c?.phone)||'N/A';document.getElementById('cust_phone_link').href=c?.phone?`tel:${c.phone.replace(/\D/g,'')}`:'#';document.getElementById('cust_addr1').textContent=c?.street_address||'';document.getElementById('cust_addr2').textContent=c?.street_address_cont||'';document.getElementById('cust_citystzip').textContent=[c?.city,c?.state,c?.zip].filter(Boolean).join(', ');document.getElementById('mapLocation').onclick=()=>{const addr=[c?.street_address,c?.city,c?.state,c?.zip].filter(Boolean).join(', ');if(addr)window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`,'_blank');};document.getElementById('cust_referral_code').textContent=activeCustomerReferralCode||'None';document.getElementById('ov_event_name').textContent=o?.event_type_name||'N/A';document.getElementById('ov_event').textContent=dateOnly(o?.event_date);document.getElementById('ov_submitted').textContent=dateOnly(o?.created_at);document.getElementById('ov_pickup').textContent=dateOnly(o?.pickup_delivery_date);document.getElementById('ov_dzns').textContent=o?.cookie_amount_dzns??'0';document.getElementById('ov_flavor').textContent=o?.flavor||'N/A';document.getElementById('ov_dietary').textContent=o?.dietary_option||'None';document.getElementById('ov_notes').textContent=o?.design_notes||'None';document.getElementById('ov_photo').src=o?.design_inspiration_photo||'https://dummyimage.com/320x320/e5e7eb/6b7280.jpg&text=No+photo';document.getElementById('ov_consultation').textContent=o?.consultation_requested?'Yes':'No';document.getElementById('ov_gift_note').textContent=o?.gift_note?'Yes':'No';document.getElementById('ov_gift_text').textContent=o?.gift_note_text||'None';document.getElementById('ov_pd_type').textContent=o?.pickup_delivery_type||'N/A';document.getElementById('ov_discount_code').textContent=o?.discount_code_used?`${o.discount_code_used} (${discountCodeDetails?.isValid?'applied':'invalid'})`:'None';document.getElementById('ov_referral_code').textContent=o?.referral_code_used?`${o.referral_code_used} (${referralCodeDetails?.isValid?'applied':'invalid'})`:'None';document.getElementById('statusSelect').value=o?.status||'Active';renderAdjustments();computeTotals();}
+    function fillDrawer(){const o=activeOrder,c=activeCustomer;document.getElementById('drawerTitle').textContent=`Order #${o?.order_id||formatOrderId(o.id)} (${o?.status||'Active'})`;document.getElementById('cust_name').textContent=c?`${c.first_name||''} ${c.last_name||''}`.trim():'N/A';document.getElementById('cust_id').textContent=c?.customer_id||o?.order_id||'N/A';document.getElementById('cust_email').textContent=c?.email||'N/A';document.getElementById('cust_email').href=c?.email?`mailto:${c.email}`:'#';document.getElementById('cust_phone_link').textContent=formatPhone(c?.phone)||'N/A';document.getElementById('cust_phone_link').href=c?.phone?`tel:${c.phone.replace(/\D/g,'')}`:'#';document.getElementById('cust_addr1').textContent=c?.street_address||'';document.getElementById('cust_addr2').textContent=c?.street_address_cont||'';document.getElementById('cust_citystzip').textContent=[c?.city,c?.state,c?.zip].filter(Boolean).join(', ');document.getElementById('mapLocation').onclick=()=>{const addr=[c?.street_address,c?.city,c?.state,c?.zip].filter(Boolean).join(', ');if(addr)window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(addr)}`,'_blank');};document.getElementById('cust_referral_code').textContent=activeCustomerReferralCode||'None';document.getElementById('ov_event_name').textContent=o?.event_type_name||'N/A';document.getElementById('ov_event').textContent=dateOnly(o?.event_date);document.getElementById('ov_submitted').textContent=dateOnly(o?.created_at);document.getElementById('ov_pickup').textContent=dateOnly(o?.pickup_delivery_date);document.getElementById('ov_dzns').textContent=o?.cookie_amount_dzns??'0';document.getElementById('ov_flavor').textContent=o?.flavor||'N/A';document.getElementById('ov_dietary').textContent=o?.dietary_option||'None';document.getElementById('ov_notes').textContent=o?.design_notes||'None';document.getElementById('ov_photo').src=o?.design_inspiration_photo||'https://dummyimage.com/320x320/e5e7eb/6b7280.jpg&text=No+photo';document.getElementById('ov_consultation').textContent=o?.consultation_requested?'Yes':'No';document.getElementById('ov_gift_note').textContent=o?.gift_note?'Yes':'No';document.getElementById('ov_gift_text').textContent=o?.gift_note_text||'None';document.getElementById('ov_pd_type').textContent=o?.pickup_delivery_type||'N/A';document.getElementById('ov_discount_code').textContent=o?.discount_code_used?`${o.discount_code_used} (${discountCodeDetails?.isValid?'applied':'invalid'})`:'None';document.getElementById('ov_referral_code').textContent=o?.referral_code_used?`${o.referral_code_used} (${referralCodeDetails?.isValid?'applied':'invalid'})`:'None';document.getElementById('statusSelect').value=o?.status||'Active';renderAdjustments();computeTotals();renderPaymentSection();}
+
+    function renderPaymentSection(){
+        const o=activeOrder,el=document.getElementById('paymentSection'); if(!el)return;
+        const status=o?.payment_status||'unpaid';
+        const badgeClass={paid:'status-completed',pending:'status-pending',failed:'status-canceled',refunded:'status-canceled'}[status]||'status-pending';
+        let html=`<div class="flex justify-between items-center"><span>Status:</span><span class="status-badge ${badgeClass}">${status}</span></div>`;
+        if(o?.payment_amount)html+=`<div class="flex justify-between"><span>Amount:</span><span>${money(o.payment_amount)}</span></div>`;
+        if(o?.paid_at)html+=`<div class="flex justify-between"><span>Paid:</span><span>${dateOnly(o.paid_at)}</span></div>`;
+        el.innerHTML=html;
+        if(status==='paid')return;
+        if(o?.stripe_payment_link_url){
+            const inp=$('input','survey-link-input'); inp.readOnly=true; inp.value=o.stripe_payment_link_url; el.appendChild(inp);
+            const cp=$('button','btn btn-secondary text-xs w-full','📋 Copy Payment Link');
+            cp.onclick=()=>{navigator.clipboard.writeText(o.stripe_payment_link_url);cp.textContent='✓ Copied!';};
+            el.appendChild(cp);
+        }else{
+            const gen=$('button','btn btn-primary w-full mt-2','💳 Generate Payment Link');
+            gen.onclick=generatePaymentLink; el.appendChild(gen);
+        }
+    }
+
+    async function generatePaymentLink(){
+        if(!activeOrder)return;
+        const amount=Math.round((lastComputedTotal||0)*100)/100;
+        if(!(amount>0)){alert('Total must be greater than $0 to create a payment link. Check pricing first.');return;}
+        if(!confirm(`Create a Stripe payment link for ${money(amount)}?`))return;
+        const{data:{session}}=await sb.auth.getSession();
+        if(!session){alert('You are signed out. Please sign in again.');return;}
+        const el=document.getElementById('paymentSection'); el.innerHTML='<p class="text-gray-500">Creating payment link...</p>';
+        try{
+            const resp=await fetch(`${SUPABASE_URL}/functions/v1/create-payment-link`,{
+                method:'POST',
+                headers:{'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}`},
+                body:JSON.stringify({
+                    orderId:activeOrder.id,
+                    amount,
+                    customerEmail:activeCustomer?.email||'',
+                    customerName:activeCustomer?`${activeCustomer.first_name||''} ${activeCustomer.last_name||''}`.trim():'',
+                    description:`Rebel Ribbon Order #${activeOrder.order_id||formatOrderId(activeOrder.id)}`
+                })
+            });
+            const result=await resp.json();
+            if(!resp.ok)throw new Error(result.error||'Could not create payment link');
+            const upd={stripe_payment_link_url:result.paymentUrl,payment_amount:amount,payment_status:'pending'};
+            if(result.paymentLinkId)upd.stripe_payment_link_id=result.paymentLinkId;
+            await sb.from('orders').update(upd).eq('id',activeOrder.id);
+            activeOrder.stripe_payment_link_url=result.paymentUrl;
+            activeOrder.payment_status='pending';
+            activeOrder.payment_amount=amount;
+            renderPaymentSection();
+            try{await navigator.clipboard.writeText(result.paymentUrl);}catch(_){/* clipboard optional */}
+        }catch(err){
+            alert('Error: '+err.message);
+            renderPaymentSection();
+        }
+    }
 
     async function openOrderManager(orderId){document.body.style.cursor='progress';const[orderResp,pricingData,adjustmentsData]=await Promise.all([sb.from('orders').select('*').eq('id',orderId).single(),fetchPricing(),fetchAdjustments(orderId)]);if(orderResp.error){alert(orderResp.error.message);document.body.style.cursor='default';return;}activeOrder=orderResp.data;pricing=pricingData;adjustments=adjustmentsData;if(activeOrder.customer_id){const{data}=await sb.from('customers').select('*').eq('id',activeOrder.customer_id).single();activeCustomer=data;}else activeCustomer=null;if(activeOrder.customer_id){const{data}=await sb.from('referral_codes').select('code').eq('associated_customer_id',activeOrder.customer_id).order('created_at',{ascending:false}).limit(1).maybeSingle();activeCustomerReferralCode=data?.code||null;}else activeCustomerReferralCode=null;discountCodeDetails=activeOrder.discount_code_used?await fetchDiscountCodeDetails(activeOrder.discount_code_used,activeCustomer?.email):null;referralCodeDetails=activeOrder.referral_code_used?await fetchReferralCodeDetails(activeOrder.referral_code_used):null;document.body.style.cursor='default';fillDrawer();loadSurveySection(orderId);drawer.showModal();}
 
     document.getElementById('saveStatus').onclick=async()=>{const s=document.getElementById('statusSelect').value;await sb.from('orders').update({status:s}).eq('id',activeOrder.id);activeOrder.status=s;fillDrawer();loadTable();};
     document.getElementById('editFields').onclick=()=>{if(activeOrder)openEditor(tables.orders,activeOrder);};
+    document.getElementById('deleteOrder').onclick=async()=>{if(!activeOrder)return;const label=`#${activeOrder.order_id||formatOrderId(activeOrder.id)}`;if(!confirm(`Permanently delete order ${label}?\n\nThis also removes its fees/discounts, survey links, and payment logs. This cannot be undone.`))return;const{error}=await sb.rpc('delete_order',{p_order_id:activeOrder.id});if(error){alert('Could not delete: '+error.message);return;}drawer.close();loadTable();};
     document.getElementById('backToOrders').onclick=e=>{e.preventDefault();drawer.close();};
     document.getElementById('addAdjustment').onclick=async()=>{const l=document.getElementById('adjLabel').value.trim(),a=Number(document.getElementById('adjAmount').value),k=document.getElementById('adjKind').value;if(!l||!a||a<=0){alert('Enter label and amount');return;}const{data,error}=await sb.from('order_adjustments').insert({order_id:activeOrder.id,label:l,amount:a,kind:k}).select('*').single();if(error){alert(error.message);return;}adjustments.unshift({...data,amount:Number(data.amount||0)});document.getElementById('adjLabel').value='';document.getElementById('adjAmount').value='';renderAdjustments();computeTotals();};
     document.getElementById('btnUploadPhoto').onclick=async()=>{const f=document.getElementById('uploadPhoto').files?.[0];if(!f){alert('Choose file');return;}const path=`${activeOrder.id}/photo_${Date.now()}.${f.name.split('.').pop()}`;const{data,error}=await sb.storage.from('order_uploads').upload(path,f,{upsert:true});if(error){alert(error.message);return;}const{data:pub}=sb.storage.from('order_uploads').getPublicUrl(data.path);await sb.from('orders').update({design_inspiration_photo:pub?.publicUrl}).eq('id',activeOrder.id);activeOrder.design_inspiration_photo=pub?.publicUrl;document.getElementById('ov_photo').src=pub?.publicUrl;document.getElementById('uploadPhoto').value='';};
