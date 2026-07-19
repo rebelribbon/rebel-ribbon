@@ -119,8 +119,9 @@
         .dtab:hover { border-color: var(--rose); color: var(--rose-deep); }
         .dtab.active { background: var(--brown); color: #fff; border-color: var(--brown); }
         .tabpane[hidden] { display: none; }
-        #drawerActions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; width: 100%; margin-top: 0.85rem; }
-        @media (min-width: 1024px) { #drawerActions { display: flex; width: auto; margin-top: 0; } }
+        #drawerActions { display: flex; flex-wrap: wrap; gap: 0.5rem; width: 100%; margin-top: 0.85rem; }
+        #drawerActions .btn { flex: 1 1 auto; }
+        @media (min-width: 1024px) { #drawerActions { width: auto; margin-top: 0; } #drawerActions .btn { flex: 0 0 auto; } }
         #signinCard { position: fixed; inset: 0; z-index: 1000; background: linear-gradient(160deg, var(--pink-soft), var(--pink-light) 55%, var(--cream)); display: flex; align-items: center; justify-content: center; padding: 1rem; }
         #signinTitle { font-family: 'Playfair Display', serif; font-weight: 600; color: var(--brown); }
 
@@ -285,7 +286,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-18</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-19</div>
         </div>
     </nav>
 
@@ -372,8 +373,9 @@
                         </div>
                     </div>
                     <div id="drawerActions">
-                        <button id="editFields" class="btn btn-secondary">Edit</button>
                         <button id="viewInvoice" class="btn btn-primary">Invoice</button>
+                        <button id="reshareReferral" class="btn btn-secondary" hidden>Re-share Referral</button>
+                        <button id="reshareSurvey" class="btn btn-secondary" hidden>Re-share Survey</button>
                         <button id="deleteOrder" class="btn btn-danger">Delete</button>
                     </div>
                 </div>
@@ -388,7 +390,10 @@
                 <!-- ORDER tab: what to make and when -->
                 <div class="tabpane space-y-4 lg:space-y-6" data-pane="order">
                     <div class="card">
-                        <h3 class="card-label">Order</h3>
+                        <div class="flex items-center justify-between gap-2" style="margin-bottom:1rem;">
+                            <h3 class="card-label" style="margin:0;">Order</h3>
+                            <button id="editOrder" class="btn btn-secondary text-xs">Edit</button>
+                        </div>
                         <div class="dl">
                             <div class="field"><div class="k">Submitted</div><div class="v" id="ov_submitted"></div></div>
                             <div class="field"><div class="k">Pickup / Delivery</div><div class="v" id="ov_pickup"></div></div>
@@ -426,7 +431,10 @@
                     <div class="card">
                         <div class="flex items-center justify-between gap-2" style="margin-bottom:1rem;">
                             <h3 class="card-label" style="margin:0;">Customer</h3>
-                            <button id="addContact" class="btn btn-secondary text-xs lg:hidden hidden">Save Contact</button>
+                            <div class="flex gap-2">
+                                <button id="editCustomer" class="btn btn-secondary text-xs">Edit</button>
+                                <button id="addContact" class="btn btn-secondary text-xs lg:hidden hidden">Save Contact</button>
+                            </div>
                         </div>
                         <div class="dl">
                             <div class="field full"><div class="k">Name</div><div class="v" id="cust_name"></div></div>
@@ -440,9 +448,8 @@
                             </div>
                             <div class="field full">
                                 <div class="k">Referral Code</div>
-                                <div class="flex items-center flex-wrap gap-2 mt-1">
+                                <div class="mt-1">
                                     <span class="code-text" id="cust_referral_code" style="word-break:break-all;font-weight:700;"></span>
-                                    <button id="shareReferral" class="btn btn-secondary text-xs hidden">Share Image</button>
                                 </div>
                             </div>
                         </div>
@@ -918,10 +925,9 @@
             ${!used
                 ? `<input class="survey-link-input" value="${escapeHtml(url)}" readonly/><div class="text-xs text-gray-500">Expires: ${tok.expires_at ? new Date(tok.expires_at).toLocaleDateString() : 'Never'}</div>`
                 : `<div class="text-sm text-gray-600">Done: ${tok.used_at ? new Date(tok.used_at).toLocaleDateString() : ''}</div>`}
-            ${!used && !exp ? `<button id="emailSurvey" class="btn btn-primary mt-2 w-full">Email to Customer${alreadySent('survey_email') ? ' (sent)' : ''}</button>` : ''}
+            ${alreadySent('survey_email') ? `<div class="text-xs text-gray-500 mt-2">Emailed to the customer. Use “Re-share Survey” above to send again.</div>` : ''}
             ${exp && !used ? `<button id="regenLink" class="btn btn-warning mt-2 w-full">Regenerate</button>` : ''}</div>`;
         $id('copyLink')?.addEventListener('click', () => { navigator.clipboard.writeText(url); toast('Survey link copied', 'success'); });
-        $id('emailSurvey')?.addEventListener('click', () => sendCustomerEmail('survey'));
         $id('regenLink')?.addEventListener('click', () => genSurveyLink(orderId));
     }
 
@@ -998,7 +1004,7 @@
         const hidden = document.createElement('input'); hidden.type = 'hidden'; hidden.id = 'row_id'; hidden.value = row?.id || '';
         formBody.appendChild(hidden);
         const del = $id('deleteBtn');
-        del.classList.toggle('hidden', !row || conf.table === 'orders' || conf.table === 'pricing');
+        del.classList.toggle('hidden', !row || conf.table === 'orders' || conf.table === 'pricing' || conf.table === 'customers');
         del.onclick = async () => { if (row?.id && await confirmDialog('Delete this record?', 'Delete', true)) { await sb.from(conf.table).delete().eq('id', row.id); dlg.close(); loadTable(); } };
         $id('saveBtn').onclick = async e => { e.preventDefault(); await saveRecord(conf, row); };
         dlg.showModal();
@@ -1019,7 +1025,9 @@
         dlg.close();
         toast('Saved', 'success');
         loadTable();
-        if (conf.table === 'orders' && orig) openOrderManager(orig.id);
+        // If we edited from inside the order drawer, refresh it in place
+        // (keeping the current tab) rather than falling back to the table.
+        if (orig && activeOrder && drawer.open && (conf.table === 'orders' || conf.table === 'customers')) openOrderManager(activeOrder.id, true);
     }
 
     // ---------- navigation wiring ----------
@@ -1232,15 +1240,22 @@
         setText('ov_discount_code', o?.discount_code_used ? `${o.discount_code_used} (${discountCodeDetails?.isValid ? 'applied' : 'invalid'})` : 'None');
         setText('ov_referral_code', o?.referral_code_used ? `${o.referral_code_used} (${referralCodeDetails?.isValid ? 'applied' : 'invalid'})` : 'None');
         $id('statusSelect').value = o?.status || 'Active';
-        renderAdjustments(); computeTotals(); renderPaymentSection(); renderReferralExtras();
+        renderAdjustments(); computeTotals(); renderPaymentSection(); renderReferralExtras(); updateHeaderActions();
     }
 
     function renderReferralExtras() {
-        $id('shareReferral').classList.toggle('hidden', !activeCustomerReferralCode);
         $id('addContact').classList.toggle('hidden', !activeCustomer);
         const hasReward = !!activeOrder?.referral_reward_code;
         $id('rewardRow').classList.toggle('hidden', !hasReward);
         setText('ov_reward_code', activeOrder?.referral_reward_code || '');
+    }
+
+    // The referral/survey "Re-share" buttons only make sense once the order is
+    // Completed (that is when the code + survey are first sent). Invoice stays.
+    function updateHeaderActions() {
+        const done = activeOrder?.status === 'Completed';
+        $id('reshareReferral').hidden = !(done && activeCustomerReferralCode);
+        $id('reshareSurvey').hidden = !done;
     }
 
     // ---------- vCard / Save Contact ----------
@@ -1308,7 +1323,8 @@
             const url = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = url; a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(url), 10000);
         }, 'image/png');
     }
-    $id('shareReferral').onclick = generateReferralImage;
+    $id('reshareReferral').onclick = generateReferralImage;
+    $id('reshareSurvey').onclick = () => sendCustomerEmail('survey');
 
     // ---------- payment ----------
     // Ask the staff-only edge function to email the customer (payment link or invoice).
@@ -1419,7 +1435,7 @@
     }
 
     // ---------- open / mutate an order ----------
-    async function openOrderManager(orderId) {
+    async function openOrderManager(orderId, keepTab = false) {
         document.body.style.cursor = 'progress';
         const [orderResp, pricingData, adjustmentsData] = await Promise.all([
             sb.from('orders').select('*').eq('id', orderId).single(), fetchPricing(), fetchAdjustments(orderId)
@@ -1443,7 +1459,8 @@
         const { data: comms } = await sb.from('customer_communications').select('kind,subject,created_at,metadata').eq('order_id', orderId).order('created_at', { ascending: false });
         activeComms = comms || [];
         document.body.style.cursor = 'default';
-        switchDrawerTab('order'); fillDrawer(); updateSurveyTab(); drawer.showModal();
+        const tab = keepTab ? (document.querySelector('#drawerTabs .dtab.active')?.dataset.pane || 'order') : 'order';
+        switchDrawerTab(tab); fillDrawer(); updateSurveyTab(); if (!drawer.open) drawer.showModal();
     }
 
     const alreadySent = kind => activeComms.some(c => c.kind === kind);
@@ -1460,7 +1477,24 @@
             toast(`Referral reward ${activeOrder.referral_reward_code} created — 15% off, single use.`, 'success', 6000);
         } else { toast('Status updated', 'success'); }
     };
-    $id('editFields').onclick = () => { if (activeOrder) openEditor(tables.orders, activeOrder); };
+    // Per-tab editing: each tab's Edit button opens the form scoped to just
+    // that tab's fields. Order/Extras/Event live on the order row; Customer
+    // fields live on the shared customer record.
+    const ORDER_TAB_KEYS = ['event_type_name', 'pickup_delivery_date', 'event_date', 'pickup_delivery_type', 'cookie_amount_dzns', 'flavor', 'dietary_option', 'design_notes', 'design_inspiration_photo', 'gift_note', 'gift_note_text', 'consultation_requested'];
+    const orderEditConf = () => ({ title: 'Order', table: 'orders', cols: tables.orders.cols.filter(c => ORDER_TAB_KEYS.includes(c.key)) });
+    const customerEditConf = () => ({ title: 'Customer', table: 'customers', cols: [
+        { key: 'first_name', label: 'First name', type: 'text' },
+        { key: 'last_name', label: 'Last name', type: 'text' },
+        { key: 'phone', label: 'Phone', type: 'text' },
+        { key: 'email', label: 'Email', type: 'email' },
+        { key: 'street_address', label: 'Street address', type: 'text' },
+        { key: 'street_address_cont', label: 'Address line 2', type: 'text' },
+        { key: 'city', label: 'City', type: 'text' },
+        { key: 'state', label: 'State', type: 'text' },
+        { key: 'zip', label: 'ZIP', type: 'text' }
+    ] });
+    $id('editOrder').onclick = () => { if (activeOrder) openEditor(orderEditConf(), activeOrder); };
+    $id('editCustomer').onclick = () => { if (!activeCustomer) { toast('This order has no customer on file.', 'error'); return; } openEditor(customerEditConf(), activeCustomer); };
     $id('deleteOrder').onclick = async () => {
         if (!activeOrder) return;
         const label = `#${activeOrder.order_id || formatOrderId(activeOrder.id)}`;
