@@ -263,7 +263,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-11</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-12</div>
         </div>
     </nav>
 
@@ -354,8 +354,9 @@
                     <button id="deleteOrder" class="btn btn-danger">Delete</button>
                 </div>
             </div>
-            <div class="p-4 lg:p-6 grid grid-cols-1 lg:grid-cols-3 gap-4 lg:gap-6">
-                <div class="lg:col-span-2 space-y-4 lg:space-y-6">
+            <div class="p-4 lg:p-6" style="max-width:760px;margin:0 auto;">
+                <div class="space-y-4 lg:space-y-6">
+                    <!-- 1. Customer -->
                     <div class="card">
                         <h3 class="card-label">Customer</h3>
                         <div class="grid grid-cols-2 gap-3 text-sm">
@@ -375,6 +376,7 @@
                             <button id="shareReferral" class="btn btn-secondary text-xs mt-2 hidden">Share Image</button>
                         </div>
                     </div>
+                    <!-- 2. Event -->
                     <div class="card">
                         <h3 class="card-label">Event</h3>
                         <div class="grid grid-cols-2 gap-3 text-sm">
@@ -382,8 +384,9 @@
                             <div><span class="font-medium">Date:</span><div id="ov_event"></div></div>
                         </div>
                     </div>
+                    <!-- 3. Order -->
                     <div class="card">
-                        <h3 class="card-label">Order Details</h3>
+                        <h3 class="card-label">Order</h3>
                         <div class="grid grid-cols-3 gap-3 text-sm mb-4">
                             <div><span class="font-medium">Submitted:</span><div id="ov_submitted"></div></div>
                             <div class="col-span-2"><span class="font-medium">Pickup/Delivery:</span><div id="ov_pickup"></div></div>
@@ -404,6 +407,7 @@
                             </div>
                         </div>
                     </div>
+                    <!-- 4. Extras -->
                     <div class="card">
                         <h3 class="card-label">Extras</h3>
                         <div class="grid grid-cols-3 gap-3 text-sm">
@@ -413,12 +417,7 @@
                         </div>
                         <div class="mt-2 text-sm"><span class="font-medium">Gift Text:</span><p id="ov_gift_text" class="p-2 border rounded bg-gray-50 mt-1"></p></div>
                     </div>
-                    <div class="card">
-                        <h3 class="card-label">Customer Survey</h3>
-                        <div id="surveyLinkSection"><p class="text-gray-500 text-sm">Loading...</p></div>
-                    </div>
-                </div>
-                <div class="space-y-4 lg:space-y-6">
+                    <!-- 5. Pricing -->
                     <div class="card card-accent">
                         <h3 class="card-label">Pricing</h3>
                         <div id="pricingRows" class="text-sm space-y-2"></div>
@@ -428,14 +427,7 @@
                             <div id="rewardRow" class="hidden"><span class="font-medium">Reward issued:</span> <span id="ov_reward_code" class="code-text"></span></div>
                         </div>
                     </div>
-                    <div class="card">
-                        <h3 class="card-label">Payment</h3>
-                        <div id="paymentSection" class="text-sm space-y-2"></div>
-                    </div>
-                    <div class="card">
-                        <h3 class="card-label">Sent to Customer</h3>
-                        <div id="commsSection" class="text-sm space-y-2"></div>
-                    </div>
+                    <!-- 6. Fees and Discounts -->
                     <div class="card">
                         <h3 class="card-label">Fees &amp; Discounts</h3>
                         <div class="flex flex-wrap gap-2 mb-3">
@@ -450,6 +442,16 @@
                                 <tbody id="adjTbody"></tbody>
                             </table>
                         </div>
+                    </div>
+                    <!-- 7. Payment -->
+                    <div class="card">
+                        <h3 class="card-label">Payment</h3>
+                        <div id="paymentSection" class="text-sm space-y-2"></div>
+                    </div>
+                    <!-- 8. Customer Survey -->
+                    <div class="card">
+                        <h3 class="card-label">Customer Survey</h3>
+                        <div id="surveyLinkSection"><p class="text-gray-500 text-sm">Loading...</p></div>
                     </div>
                 </div>
             </div>
@@ -1175,7 +1177,7 @@
         setText('ov_discount_code', o?.discount_code_used ? `${o.discount_code_used} (${discountCodeDetails?.isValid ? 'applied' : 'invalid'})` : 'None');
         setText('ov_referral_code', o?.referral_code_used ? `${o.referral_code_used} (${referralCodeDetails?.isValid ? 'applied' : 'invalid'})` : 'None');
         $id('statusSelect').value = o?.status || 'Active';
-        renderAdjustments(); computeTotals(); renderPaymentSection(); renderReferralExtras(); renderComms();
+        renderAdjustments(); computeTotals(); renderPaymentSection(); renderReferralExtras();
     }
 
     function renderReferralExtras() {
@@ -1255,9 +1257,18 @@
 
     // ---------- payment ----------
     // Ask the staff-only edge function to email the customer (payment link or invoice).
-    async function sendCustomerEmail(kind, extra = {}) {
+    // Always confirms first (Send / Resend), then shows a success message.
+    // Pass opts.skipConfirm when the caller already confirmed (e.g. the invoice window).
+    async function sendCustomerEmail(kind, extra = {}, opts = {}) {
         if (!activeOrder) return false;
         if (!activeCustomer?.email) { toast('This customer has no email on file.', 'error'); return false; }
+        const commKind = kind === 'payment' ? 'payment_email' : 'invoice_email';
+        const thing = kind === 'payment' ? 'the payment link' : 'the invoice';
+        const sent = alreadySent(commKind);
+        if (!opts.skipConfirm) {
+            const q = sent ? `Resend ${thing} to ${activeCustomer.email}?` : `Send ${thing} to ${activeCustomer.email}?`;
+            if (!(await confirmDialog(q, sent ? 'Resend' : 'Send'))) return false;
+        }
         const { data: { session } } = await sb.auth.getSession();
         if (!session) { toast('You are signed out. Please sign in again.', 'error'); return false; }
         const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-customer-email`, {
@@ -1267,7 +1278,10 @@
         });
         const r = await resp.json().catch(() => ({}));
         if (!resp.ok) { toast(r.error || 'Could not send email.', 'error'); return false; }
-        toast(`Emailed to ${r.sentTo || activeCustomer.email}`, 'success');
+        // Record locally so the (sent) label and Resend wording update immediately.
+        activeComms.unshift({ kind: commKind, created_at: new Date().toISOString() });
+        toast(`${kind === 'payment' ? 'Payment link' : 'Invoice'} sent to ${r.sentTo || activeCustomer.email}`, 'success');
+        renderPaymentSection();
         return true;
     }
 
@@ -1291,7 +1305,7 @@
             const cp = el('button', 'btn btn-secondary text-xs w-full', 'Copy Payment Link');
             cp.onclick = () => { navigator.clipboard.writeText(o.stripe_payment_link_url); toast('Payment link copied', 'success'); };
             box.appendChild(cp);
-            const em = el('button', 'btn btn-primary text-xs w-full mt-1', 'Email Link to Customer');
+            const em = el('button', 'btn btn-primary text-xs w-full mt-1', 'Email Link to Customer' + (alreadySent('payment_email') ? ' (sent)' : ''));
             em.onclick = () => sendCustomerEmail('payment');
             box.appendChild(em);
             const rg = el('button', `btn ${changed ? 'btn-warning' : 'btn-secondary'} text-xs w-full mt-1`, changed ? `Regenerate at ${money(lastComputedTotal)}` : 'Regenerate Link');
@@ -1331,17 +1345,16 @@
             if (result.paymentLinkId) activeOrder.stripe_payment_link_id = result.paymentLinkId;
             renderPaymentSection();
             try { await navigator.clipboard.writeText(result.paymentUrl); toast(`Payment link ${regenerate ? 'regenerated' : 'created'} & copied`, 'success'); } catch (_) { toast(`Payment link ${regenerate ? 'regenerated' : 'created'}`, 'success'); }
-            // Ask before emailing the customer (never auto-sends).
-            if (activeCustomer?.email && await confirmDialog(`Email this payment link to ${activeCustomer.first_name || 'the customer'} (${activeCustomer.email})?`, 'Send email')) {
-                await sendCustomerEmail('payment');
-            }
+            // Offer to email the customer (sendCustomerEmail asks its own Send/Resend confirmation).
+            if (activeCustomer?.email) await sendCustomerEmail('payment');
         } catch (err) { toast('Error: ' + err.message, 'error'); renderPaymentSection(); }
     }
 
     // Called from the invoice window's "Send to Customer" button (same origin).
+    // The invoice window shows its own confirm + result, so we skip the in-app confirm here.
     async function emailInvoice() {
-        if (!window.__lastInvoice) { toast('Open the invoice first.', 'error'); return; }
-        await sendCustomerEmail('invoice', { items: window.__lastInvoice.items, total: window.__lastInvoice.total });
+        if (!window.__lastInvoice) { toast('Open the invoice first.', 'error'); return false; }
+        return await sendCustomerEmail('invoice', { items: window.__lastInvoice.items, total: window.__lastInvoice.total }, { skipConfirm: true });
     }
 
     // ---------- open / mutate an order ----------
@@ -1372,23 +1385,7 @@
         fillDrawer(); loadSurveySection(orderId); drawer.showModal();
     }
 
-    // Shows which customer emails have gone out for this order, and when.
-    function renderComms() {
-        const box = $id('commsSection'); if (!box) return;
-        const labels = { payment_email: 'Payment link email', invoice_email: 'Invoice email', thank_you: 'Thank you + survey', referral_reward: 'Referral reward' };
-        const latest = {};
-        for (const c of activeComms) { if (!latest[c.kind]) latest[c.kind] = c; }
-        let html = '';
-        for (const k of ['payment_email', 'invoice_email', 'thank_you', 'referral_reward']) {
-            const c = latest[k];
-            if (k === 'referral_reward' && !c && !activeOrder?.referral_code_used) continue;
-            const status = c
-                ? `<span style="color:var(--green);font-weight:700">Sent ${dateOnly(c.created_at)}</span>`
-                : `<span class="text-gray-500">Not sent</span>`;
-            html += `<div class="flex justify-between gap-2"><span>${labels[k]}</span>${status}</div>`;
-        }
-        box.innerHTML = html || '<p class="text-gray-500">Nothing sent yet.</p>';
-    }
+    const alreadySent = kind => activeComms.some(c => c.kind === kind);
 
     $id('saveStatus').onclick = async () => {
         const s = $id('statusSelect').value;
@@ -1449,8 +1446,9 @@
         adjustments.filter(x => x.kind === 'discount').forEach(x => items.push({ l: x.label, a: '-' + money(x.amount) }));
         // Stash the exact line items so the invoice window's "Send to Customer" can email them.
         window.__lastInvoice = { items: items.map(i => ({ l: i.l, a: i.a })), total: money(b.total) };
+        const invoiceSent = alreadySent('invoice_email');
         const name = escapeHtml(`${activeCustomer.first_name || ''} ${activeCustomer.last_name || ''}`.trim());
-        const html = `<!DOCTYPE html><html><head><title>Invoice #${orderId}</title><style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600&display=swap');*{box-sizing:border-box}body{margin:0;padding:24px;font-family:'Nunito',sans-serif;background:#fdf2f8}.inv{max-width:800px;margin:auto;background:#fff;border-radius:20px;padding:32px;box-shadow:0 10px 40px rgba(190,24,93,.15)}.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}.brand{font-family:'Playfair Display',serif;font-size:28px}.pill{background:#eff6ff;color:#1d4ed8;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600}hr{border:none;border-top:1px solid #e5e7eb;margin:16px 0}.info{display:flex;justify-content:space-between;font-size:13px;margin-bottom:20px}.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9ca3af;margin-bottom:4px}.val{font-weight:600}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}th{text-align:left;padding:10px;background:#f9fafb;font-weight:600}th:last-child{text-align:right}td{padding:10px;border-bottom:1px solid #f3f4f6}td:last-child{text-align:right}.tot td{border-top:2px solid #d1d5db;background:#fef3c7;font-weight:700}.tot td:last-child{font-size:18px;color:#b91c1c}.ftr{text-align:center;margin-top:20px;font-size:11px;color:#9ca3af}.invbar{display:flex;justify-content:space-between;gap:12px;max-width:800px;margin:0 auto 14px}.invbar button{border-radius:999px;padding:10px 20px;font-family:'Nunito',sans-serif;font-weight:600;font-size:14px;cursor:pointer}.btn-back{background:#fff;color:#be185d;border:1px solid #be185d}.btn-print{background:#be185d;color:#fff;border:none}.btn-send{background:#5D4E4E;color:#fff;border:none}@media print{body{background:#fff;padding:0}.inv{box-shadow:none}.invbar{display:none}}</style></head><body><div class="invbar"><button class="btn-back" onclick="window.close()">Back to Order</button><button class="btn-send" onclick="if(window.opener&&window.opener.emailInvoice){window.opener.emailInvoice();this.textContent='Sent — check staff app';}else{alert('Open the invoice from the staff app to email it.');}">Send to Customer</button><button class="btn-print" onclick="window.print()">Print / Save PDF</button></div><div class="inv"><div class="hdr"><div><img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" style="height:60px;margin-bottom:8px"><div class="brand">Rebel Ribbon</div></div><div style="text-align:right"><div class="pill">Invoice #${orderId}</div><div style="margin-top:4px;font-size:12px"><strong>Date:</strong> ${new Date().toLocaleDateString()}</div></div></div><hr/><div class="info"><div><div class="lbl">Bill to</div><div class="val">${name}</div><div>${escapeHtml(activeCustomer.email || '')}</div><div>${escapeHtml(formatPhone(activeCustomer.phone) || '')}</div></div><div style="text-align:right"><div class="lbl">From</div><div class="val">Rebel Ribbon</div><div>www.rebelribbon.com</div><div>info@rebelribbon.com</div></div></div><table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>${items.map(i => `<tr><td>${escapeHtml(i.l)}</td><td>${i.a}</td></tr>`).join('')}<tr class="tot"><td>Total Due</td><td>${money(b.total)}</td></tr></tbody></table><div class="ftr">Thank you for supporting handmade custom cookies!</div></div></body></html>`;
+        const html = `<!DOCTYPE html><html><head><title>Invoice #${orderId}</title><style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600&display=swap');*{box-sizing:border-box}body{margin:0;padding:24px;font-family:'Nunito',sans-serif;background:#fdf2f8}.inv{max-width:800px;margin:auto;background:#fff;border-radius:20px;padding:32px;box-shadow:0 10px 40px rgba(190,24,93,.15)}.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}.brand{font-family:'Playfair Display',serif;font-size:28px}.pill{background:#eff6ff;color:#1d4ed8;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600}hr{border:none;border-top:1px solid #e5e7eb;margin:16px 0}.info{display:flex;justify-content:space-between;font-size:13px;margin-bottom:20px}.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9ca3af;margin-bottom:4px}.val{font-weight:600}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}th{text-align:left;padding:10px;background:#f9fafb;font-weight:600}th:last-child{text-align:right}td{padding:10px;border-bottom:1px solid #f3f4f6}td:last-child{text-align:right}.tot td{border-top:2px solid #d1d5db;background:#fef3c7;font-weight:700}.tot td:last-child{font-size:18px;color:#b91c1c}.ftr{text-align:center;margin-top:20px;font-size:11px;color:#9ca3af}.invbar{display:flex;justify-content:space-between;gap:12px;max-width:800px;margin:0 auto 14px}.invbar button{border-radius:999px;padding:10px 20px;font-family:'Nunito',sans-serif;font-weight:600;font-size:14px;cursor:pointer}.btn-back{background:#fff;color:#be185d;border:1px solid #be185d}.btn-print{background:#be185d;color:#fff;border:none}.btn-send{background:#5D4E4E;color:#fff;border:none}@media print{body{background:#fff;padding:0}.inv{box-shadow:none}.invbar{display:none}}</style></head><body><div class="invbar"><button class="btn-back" onclick="window.close()">Back to Order</button><button class="btn-send" id="sendBtn" data-sent="${invoiceSent ? '1' : '0'}">${invoiceSent ? 'Send to Customer (sent)' : 'Send to Customer'}</button><button class="btn-print" onclick="window.print()">Print / Save PDF</button></div><script>document.getElementById('sendBtn').addEventListener('click',async function(){var s=this.dataset.sent==='1';if(!confirm(s?'Resend the invoice to the customer?':'Send the invoice to the customer?'))return;this.disabled=true;var ok=false;try{ok=window.opener&&window.opener.emailInvoice?await window.opener.emailInvoice():false;}catch(e){}this.disabled=false;if(ok){this.dataset.sent='1';this.textContent='Send to Customer (sent)';alert('Invoice sent to the customer.');}else{alert('Could not send. Please try again from the staff app.');}});<\/script><div class="inv"><div class="hdr"><div><img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" style="height:60px;margin-bottom:8px"><div class="brand">Rebel Ribbon</div></div><div style="text-align:right"><div class="pill">Invoice #${orderId}</div><div style="margin-top:4px;font-size:12px"><strong>Date:</strong> ${new Date().toLocaleDateString()}</div></div></div><hr/><div class="info"><div><div class="lbl">Bill to</div><div class="val">${name}</div><div>${escapeHtml(activeCustomer.email || '')}</div><div>${escapeHtml(formatPhone(activeCustomer.phone) || '')}</div></div><div style="text-align:right"><div class="lbl">From</div><div class="val">Rebel Ribbon</div><div>www.rebelribbon.com</div><div>info@rebelribbon.com</div></div></div><table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>${items.map(i => `<tr><td>${escapeHtml(i.l)}</td><td>${i.a}</td></tr>`).join('')}<tr class="tot"><td>Total Due</td><td>${money(b.total)}</td></tr></tbody></table><div class="ftr">Thank you for supporting handmade custom cookies!</div></div></body></html>`;
         const w = window.open('', '_blank', 'width=900,height=800');
         if (!w) { toast('Please allow pop-ups to view the invoice.', 'error'); return; }
         w.document.write(html); w.document.close();
