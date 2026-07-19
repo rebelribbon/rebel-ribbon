@@ -107,7 +107,7 @@
 
         /* ---------- Dialogs ---------- */
         dialog::backdrop { background: rgba(70,58,58,0.45); backdrop-filter: blur(2px); }
-        dialog { max-height: 90vh; overflow-y: auto; border: none; background: var(--cream); color: var(--brown); box-shadow: var(--shadow); }
+        dialog { max-height: 90vh; overflow-y: auto; -webkit-overflow-scrolling: touch; border: none; background: var(--cream); color: var(--brown); box-shadow: var(--shadow); }
         #editor { border-radius: var(--radius); padding: 0; width: 100%; max-width: 48rem; }
         #orderDrawer { width: 100%; max-width: 100%; margin: 0; border-radius: 0; height: 100%; overflow-x: hidden; padding: 0; }
         @media (min-width: 1024px) { #orderDrawer { max-width: 1080px; height: auto; border-radius: var(--radius); } }
@@ -144,6 +144,14 @@
         .btn-ghost:hover { background: rgba(93,78,78,.06); }
         .btn-lg { padding: 0.75rem 1.5rem; font-size: 1rem; }
         .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        /* ---------- Mobile ergonomics ---------- */
+        /* iOS Safari auto-zooms when a focused field is under 16px. Bump every
+           editable control to 16px on small screens so tapping a field never
+           zooms the page (which it then refuses to zoom back out). */
+        @media (max-width: 640px) {
+            input, select, textarea { font-size: 16px; }
+        }
 
         /* ---------- Badges ---------- */
         .status-badge { padding: 0.22rem 0.65rem; border-radius: 999px; font-size: 0.72rem; font-weight: 700; letter-spacing: 0.02em; display: inline-block; }
@@ -226,9 +234,9 @@
             <h1 id="signinTitle" class="text-2xl mb-1 text-center">Rebel Ribbon</h1>
             <p class="text-sm text-gray-600 mb-6 text-center">Staff sign in with your @rebelribbon.com email.</p>
             <label class="block text-sm font-bold mb-1">Email</label>
-            <input id="email" type="email" placeholder="you@rebelribbon.com" class="w-full px-4 py-2.5 rounded-xl border mb-4"/>
+            <input id="email" type="email" placeholder="you@rebelribbon.com" autocomplete="username" inputmode="email" autocapitalize="off" autocorrect="off" spellcheck="false" enterkeyhint="next" class="w-full px-4 py-2.5 rounded-xl border mb-4"/>
             <label class="block text-sm font-bold mb-1">Password</label>
-            <input id="password" type="password" placeholder="Password" class="w-full px-4 py-2.5 rounded-xl border mb-5"/>
+            <input id="password" type="password" placeholder="Password" autocomplete="current-password" enterkeyhint="go" class="w-full px-4 py-2.5 rounded-xl border mb-5"/>
             <button id="signInButton" class="w-full btn btn-primary btn-lg">Sign In</button>
             <p id="authMsg" class="text-sm mt-3 text-center" style="color: var(--red);"></p>
         </div>
@@ -270,7 +278,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-16</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-17</div>
         </div>
     </nav>
 
@@ -599,13 +607,17 @@
     const pageSize = 20;
 
     // ---------- auth ----------
-    $id('signInButton').onclick = async () => {
+    async function doSignIn() {
         const email = $id('email').value.trim(), pw = $id('password').value.trim();
         if (!onlyCompanyEmail(email)) { $id('authMsg').textContent = 'Use your @rebelribbon.com email.'; return; }
         const { error } = await sb.auth.signInWithPassword({ email, password: pw });
         if (error) { $id('authMsg').textContent = error.message; return; }
         bootstrap();
-    };
+    }
+    $id('signInButton').onclick = doSignIn;
+    // Let the keyboard's Return/Go key submit from either field on mobile.
+    $id('email').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); $id('password').focus(); } });
+    $id('password').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); doSignIn(); } });
     $id('logout').onclick = async () => { await sb.auth.signOut(); location.reload(); };
 
     async function bootstrap() {
