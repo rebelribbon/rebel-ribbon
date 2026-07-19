@@ -269,7 +269,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-13</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-14</div>
         </div>
     </nav>
 
@@ -364,19 +364,27 @@
                 <div class="space-y-4 lg:space-y-6">
                     <!-- 1. Customer -->
                     <div class="card">
-                        <h3 class="card-label">Customer</h3>
+                        <div class="flex items-center justify-between gap-2" style="margin-bottom:1rem;">
+                            <h3 class="card-label" style="margin:0;">Customer</h3>
+                            <button id="addContact" class="btn btn-secondary text-xs lg:hidden hidden">Save Contact</button>
+                        </div>
                         <div class="dl">
                             <div class="field"><div class="k">Name</div><div class="v" id="cust_name"></div></div>
                             <div class="field"><div class="k">Customer ID</div><div class="v" id="cust_id"></div></div>
                             <div class="field"><div class="k">Phone</div><a class="v link" id="cust_phone_link"></a></div>
                             <div class="field"><div class="k">Email</div><a class="v link break-all" id="cust_email"></a></div>
-                            <div class="field full"><div class="k">Address</div><div class="v"><div id="cust_addr1"></div><div id="cust_addr2"></div><div id="cust_citystzip"></div></div></div>
-                            <div class="field full"><div class="k">Referral Code</div><div class="v code-text" id="cust_referral_code" style="word-break:break-all"></div></div>
-                        </div>
-                        <div class="flex flex-wrap gap-2 mt-4">
-                            <button id="addContact" class="btn btn-secondary text-xs lg:hidden hidden">Save Contact</button>
-                            <button id="mapLocation" class="btn btn-secondary text-xs">View on Map</button>
-                            <button id="shareReferral" class="btn btn-secondary text-xs hidden">Share Image</button>
+                            <div class="field full">
+                                <div class="k">Address</div>
+                                <div class="v"><div id="cust_addr1"></div><div id="cust_addr2"></div><div id="cust_citystzip"></div></div>
+                                <button id="mapLocation" class="btn btn-secondary text-xs mt-2">View on Map</button>
+                            </div>
+                            <div class="field full">
+                                <div class="k">Referral Code</div>
+                                <div class="flex items-center flex-wrap gap-2 mt-1">
+                                    <span class="code-text" id="cust_referral_code" style="word-break:break-all;font-weight:700;"></span>
+                                    <button id="shareReferral" class="btn btn-secondary text-xs hidden">Share Image</button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <!-- 2. Event -->
