@@ -120,7 +120,13 @@
         /* ---------- Cards ---------- */
         .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 1.25rem; box-shadow: var(--shadow-sm); }
         .card-accent { border-color: var(--pink); }
-        .card-label { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--rose-deep); margin: 0 0 0.9rem; }
+        .card-label { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--rose-deep); margin: 0 0 1rem; }
+        /* Responsive label/value fields inside the order drawer cards */
+        .dl { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.25rem; }
+        .field .k { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--brown-light); }
+        .field .v { font-weight: 600; color: var(--brown); margin-top: 3px; line-height: 1.45; word-break: break-word; }
+        .field.full { grid-column: 1 / -1; }
+        .notebox { margin-top: 0.4rem; padding: 0.8rem 0.9rem; border: 1px solid var(--line); border-radius: 12px; background: var(--pink-soft); white-space: pre-wrap; line-height: 1.55; min-height: 2.6rem; }
 
         /* ---------- Buttons ---------- */
         .btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.5rem 1.1rem; border-radius: 999px; font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.18s; border: 1px solid transparent; white-space: nowrap; }
@@ -263,7 +269,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-12</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-13</div>
         </div>
     </nav>
 
@@ -359,63 +365,57 @@
                     <!-- 1. Customer -->
                     <div class="card">
                         <h3 class="card-label">Customer</h3>
-                        <div class="grid grid-cols-2 gap-3 text-sm">
-                            <div><span class="font-medium">Name:</span><div id="cust_name"></div><button id="addContact" class="btn btn-secondary text-xs mt-1 lg:hidden hidden">Save Contact</button></div>
-                            <div><span class="font-medium">ID:</span><div id="cust_id" class="text-gray-700"></div></div>
-                            <div><span class="font-medium">Phone:</span><br/><a id="cust_phone_link" class="link"></a></div>
-                            <div><span class="font-medium">Email:</span><br/><a id="cust_email" class="link break-all"></a></div>
+                        <div class="dl">
+                            <div class="field"><div class="k">Name</div><div class="v" id="cust_name"></div></div>
+                            <div class="field"><div class="k">Customer ID</div><div class="v" id="cust_id"></div></div>
+                            <div class="field"><div class="k">Phone</div><a class="v link" id="cust_phone_link"></a></div>
+                            <div class="field"><div class="k">Email</div><a class="v link break-all" id="cust_email"></a></div>
+                            <div class="field full"><div class="k">Address</div><div class="v"><div id="cust_addr1"></div><div id="cust_addr2"></div><div id="cust_citystzip"></div></div></div>
+                            <div class="field full"><div class="k">Referral Code</div><div class="v code-text" id="cust_referral_code" style="word-break:break-all"></div></div>
                         </div>
-                        <div class="mt-4 text-sm">
-                            <span class="font-medium">Address:</span>
-                            <div id="cust_addr1"></div><div id="cust_addr2"></div><div id="cust_citystzip"></div>
-                            <button id="mapLocation" class="btn btn-ghost text-xs mt-1" style="color:var(--rose-deep);">View on Map</button>
-                        </div>
-                        <div class="mt-4 text-sm">
-                            <span class="font-medium">Referral Code:</span>
-                            <div id="cust_referral_code" class="mt-1 code-text" style="word-break:break-all"></div>
-                            <button id="shareReferral" class="btn btn-secondary text-xs mt-2 hidden">Share Image</button>
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            <button id="addContact" class="btn btn-secondary text-xs lg:hidden hidden">Save Contact</button>
+                            <button id="mapLocation" class="btn btn-secondary text-xs">View on Map</button>
+                            <button id="shareReferral" class="btn btn-secondary text-xs hidden">Share Image</button>
                         </div>
                     </div>
                     <!-- 2. Event -->
                     <div class="card">
                         <h3 class="card-label">Event</h3>
-                        <div class="grid grid-cols-2 gap-3 text-sm">
-                            <div><span class="font-medium">Event:</span><div id="ov_event_name"></div></div>
-                            <div><span class="font-medium">Date:</span><div id="ov_event"></div></div>
+                        <div class="dl">
+                            <div class="field"><div class="k">Event</div><div class="v" id="ov_event_name"></div></div>
+                            <div class="field"><div class="k">Date</div><div class="v" id="ov_event"></div></div>
                         </div>
                     </div>
                     <!-- 3. Order -->
                     <div class="card">
                         <h3 class="card-label">Order</h3>
-                        <div class="grid grid-cols-3 gap-3 text-sm mb-4">
-                            <div><span class="font-medium">Submitted:</span><div id="ov_submitted"></div></div>
-                            <div class="col-span-2"><span class="font-medium">Pickup/Delivery:</span><div id="ov_pickup"></div></div>
-                            <div><span class="font-medium">Dozens:</span><div id="ov_dzns"></div></div>
-                            <div><span class="font-medium">Flavor:</span><div id="ov_flavor"></div></div>
-                            <div><span class="font-medium">Dietary:</span><div id="ov_dietary"></div></div>
+                        <div class="dl">
+                            <div class="field"><div class="k">Submitted</div><div class="v" id="ov_submitted"></div></div>
+                            <div class="field"><div class="k">Pickup / Delivery</div><div class="v" id="ov_pickup"></div></div>
+                            <div class="field"><div class="k">Dozens</div><div class="v" id="ov_dzns"></div></div>
+                            <div class="field"><div class="k">Flavor</div><div class="v" id="ov_flavor"></div></div>
+                            <div class="field"><div class="k">Dietary</div><div class="v" id="ov_dietary"></div></div>
                         </div>
-                        <div class="grid grid-cols-3 gap-4 text-sm">
-                            <div>
-                                <span class="font-medium">Photo:</span>
-                                <img id="ov_photo" class="w-32 h-32 mt-2 rounded border cursor-pointer" style="object-fit:cover;"/>
-                                <input id="uploadPhoto" type="file" accept="image/*" class="block mt-2 text-xs"/>
-                                <button id="btnUploadPhoto" class="btn btn-secondary text-xs mt-1">Upload</button>
-                            </div>
-                            <div class="col-span-2">
-                                <span class="font-medium">Design Notes:</span>
-                                <p id="ov_notes" class="p-3 border rounded-lg bg-gray-50 mt-1"></p>
+                        <div class="field full mt-4"><div class="k">Design Notes</div><p class="notebox" id="ov_notes"></p></div>
+                        <div class="field full mt-4">
+                            <div class="k">Inspiration Photo</div>
+                            <img id="ov_photo" class="mt-2 rounded border cursor-pointer" style="width:100%;max-width:220px;aspect-ratio:1;object-fit:cover;"/>
+                            <div class="flex flex-wrap items-center gap-2 mt-2">
+                                <input id="uploadPhoto" type="file" accept="image/*" class="text-xs"/>
+                                <button id="btnUploadPhoto" class="btn btn-secondary text-xs">Upload</button>
                             </div>
                         </div>
                     </div>
                     <!-- 4. Extras -->
                     <div class="card">
                         <h3 class="card-label">Extras</h3>
-                        <div class="grid grid-cols-3 gap-3 text-sm">
-                            <div><span class="font-medium">Type:</span><div id="ov_pd_type"></div></div>
-                            <div><span class="font-medium">Consult:</span><div id="ov_consultation"></div></div>
-                            <div><span class="font-medium">Gift Note:</span><div id="ov_gift_note"></div></div>
+                        <div class="dl">
+                            <div class="field"><div class="k">Type</div><div class="v" id="ov_pd_type"></div></div>
+                            <div class="field"><div class="k">Consult</div><div class="v" id="ov_consultation"></div></div>
+                            <div class="field"><div class="k">Gift Note</div><div class="v" id="ov_gift_note"></div></div>
                         </div>
-                        <div class="mt-2 text-sm"><span class="font-medium">Gift Text:</span><p id="ov_gift_text" class="p-2 border rounded bg-gray-50 mt-1"></p></div>
+                        <div class="field full mt-3"><div class="k">Gift Text</div><p class="notebox" id="ov_gift_text"></p></div>
                     </div>
                     <!-- 5. Pricing -->
                     <div class="card card-accent">
@@ -477,8 +477,8 @@
     const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     // Inline placeholder so we never depend on a third-party image service.
-    const NO_PHOTO = 'data:image/svg+xml;utf8,' + encodeURIComponent(
-        '<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="128" height="128" fill="%23F7EDED"/><text x="64" y="68" font-family="Arial" font-size="12" fill="%237A6B6B" text-anchor="middle">No photo</text></svg>'
+    const NO_PHOTO = 'data:image/svg+xml,' + encodeURIComponent(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="220" height="220"><rect width="220" height="220" fill="#F7EDED"/><text x="110" y="115" font-family="Arial" font-size="15" fill="#7A6B6B" text-anchor="middle">No photo yet</text></svg>'
     );
 
     // ---------- small helpers ----------
