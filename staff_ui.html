@@ -286,7 +286,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-19</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-20</div>
         </div>
     </nav>
 
@@ -374,6 +374,7 @@
                     </div>
                     <div id="drawerActions">
                         <button id="viewInvoice" class="btn btn-primary">Invoice</button>
+                        <button id="sendThankYou" class="btn btn-success" hidden>Send Survey &amp; Referral</button>
                         <button id="reshareReferral" class="btn btn-secondary" hidden>Re-share Referral</button>
                         <button id="reshareSurvey" class="btn btn-secondary" hidden>Re-share Survey</button>
                         <button id="deleteOrder" class="btn btn-danger">Delete</button>
@@ -925,7 +926,7 @@
             ${!used
                 ? `<input class="survey-link-input" value="${escapeHtml(url)}" readonly/><div class="text-xs text-gray-500">Expires: ${tok.expires_at ? new Date(tok.expires_at).toLocaleDateString() : 'Never'}</div>`
                 : `<div class="text-sm text-gray-600">Done: ${tok.used_at ? new Date(tok.used_at).toLocaleDateString() : ''}</div>`}
-            ${alreadySent('survey_email') ? `<div class="text-xs text-gray-500 mt-2">Emailed to the customer. Use “Re-share Survey” above to send again.</div>` : ''}
+            ${(alreadySent('survey_email') || alreadySent('thank_you')) ? `<div class="text-xs text-gray-500 mt-2">Emailed to the customer. Use “Re-share Survey” above to send again.</div>` : ''}
             ${exp && !used ? `<button id="regenLink" class="btn btn-warning mt-2 w-full">Regenerate</button>` : ''}</div>`;
         $id('copyLink')?.addEventListener('click', () => { navigator.clipboard.writeText(url); toast('Survey link copied', 'success'); });
         $id('regenLink')?.addEventListener('click', () => genSurveyLink(orderId));
@@ -1250,12 +1251,30 @@
         setText('ov_reward_code', activeOrder?.referral_reward_code || '');
     }
 
-    // The referral/survey "Re-share" buttons only make sense once the order is
-    // Completed (that is when the code + survey are first sent). Invoice stays.
+    // Once an order is Completed, the customer's survey + referral code go out
+    // as one thank-you (staff-confirmed, once per order). Before it is sent we
+    // show a single "Send Survey & Referral" button; after, the two "Re-share"
+    // buttons. Invoice is always available.
     function updateHeaderActions() {
         const done = activeOrder?.status === 'Completed';
-        $id('reshareReferral').hidden = !(done && activeCustomerReferralCode);
-        $id('reshareSurvey').hidden = !done;
+        const thanked = alreadySent('thank_you');
+        const surveySent = thanked || alreadySent('survey_email');
+        $id('sendThankYou').hidden = !(done && !thanked);
+        $id('reshareReferral').hidden = !(done && thanked && activeCustomerReferralCode);
+        $id('reshareSurvey').hidden = !(done && surveySent);
+    }
+
+    // Confirm popup to send the survey link + referral code to the customer.
+    // Runs at most once per order (also guarded server-side). `auto` is true
+    // when triggered by marking the order Completed, so it stays quiet if there
+    // is nothing to send.
+    async function sendThankYou(auto) {
+        if (!activeOrder || activeOrder.status !== 'Completed') return;
+        if (alreadySent('thank_you')) { if (!auto) toast('Already sent to this customer.', 'error'); return; }
+        if (!activeCustomer?.email) { if (!auto) toast('This customer has no email on file.', 'error'); return; }
+        const name = activeCustomer.first_name || 'the customer';
+        if (!(await confirmDialog(`Send ${name} their survey link and referral code now?\n\nThis goes out once per order.`, 'Send now'))) return;
+        await sendCustomerEmail('thank_you', {}, { skipConfirm: true });
     }
 
     // ---------- vCard / Save Contact ----------
@@ -1325,6 +1344,7 @@
     }
     $id('reshareReferral').onclick = generateReferralImage;
     $id('reshareSurvey').onclick = () => sendCustomerEmail('survey');
+    $id('sendThankYou').onclick = () => sendThankYou(false);
 
     // ---------- payment ----------
     // Ask the staff-only edge function to email the customer (payment link or invoice).
@@ -1336,6 +1356,7 @@
         const meta = {
             payment: { commKind: 'payment_email', thing: 'the payment link', label: 'Payment link' },
             survey: { commKind: 'survey_email', thing: 'the customer survey', label: 'Survey link' },
+            thank_you: { commKind: 'thank_you', thing: 'the survey and referral code', label: 'Survey & referral code' },
             invoice: { commKind: 'invoice_email', thing: 'the invoice', label: 'Invoice' }
         }[kind] || { commKind: 'invoice_email', thing: 'the invoice', label: 'Invoice' };
         const commKind = meta.commKind;
@@ -1354,11 +1375,12 @@
         });
         const r = await resp.json().catch(() => ({}));
         if (!resp.ok) { toast(r.error || 'Could not send email.', 'error'); return false; }
-        // Record locally so the (sent) label and Resend wording update immediately.
-        activeComms.unshift({ kind: commKind, created_at: new Date().toISOString() });
-        toast(`${meta.label} sent to ${r.sentTo || activeCustomer.email}`, 'success');
-        renderPaymentSection();
-        if (kind === 'survey') loadSurveySection(activeOrder.id);
+        // Record locally so the (sent) label and button state update immediately.
+        if (!activeComms.some(c => c.kind === commKind)) activeComms.unshift({ kind: commKind, created_at: new Date().toISOString() });
+        // The server skips a duplicate thank-you (once per order) and reports it.
+        toast(r.already ? `${meta.label} was already sent to this customer.` : `${meta.label} sent to ${r.sentTo || activeCustomer.email}`, 'success');
+        renderPaymentSection(); updateHeaderActions();
+        if (kind === 'survey' || kind === 'thank_you') loadSurveySection(activeOrder.id);
         return true;
     }
 
@@ -1468,6 +1490,7 @@
     $id('saveStatus').onclick = async () => {
         const s = $id('statusSelect').value;
         const hadReward = activeOrder.referral_reward_code;
+        const wasCompleted = activeOrder.status === 'Completed';
         const { error } = await sb.from('orders').update({ status: s }).eq('id', activeOrder.id);
         if (error) { toast(error.message, 'error'); return; }
         const { data: fresh } = await sb.from('orders').select('*').eq('id', activeOrder.id).single();
@@ -1476,6 +1499,8 @@
         if (!hadReward && activeOrder.referral_reward_code) {
             toast(`Referral reward ${activeOrder.referral_reward_code} created — 15% off, single use.`, 'success', 6000);
         } else { toast('Status updated', 'success'); }
+        // First time an order is completed, offer to send the survey + referral.
+        if (s === 'Completed' && !wasCompleted && !alreadySent('thank_you')) sendThankYou(true);
     };
     // Per-tab editing: each tab's Edit button opens the form scoped to just
     // that tab's fields. Order/Extras/Event live on the order row; Customer
