@@ -112,6 +112,13 @@
         #orderDrawer { width: 100%; max-width: 100%; margin: 0; border-radius: 0; height: 100%; overflow-x: hidden; padding: 0; }
         @media (min-width: 1024px) { #orderDrawer { max-width: 1080px; height: auto; border-radius: var(--radius); } }
         #drawerTitle { font-family: 'Playfair Display', serif; font-weight: 600; }
+        /* Drawer tabs: split the order details into Order / Customer / Payment /
+           Survey so staff never scroll a long single column to reach one field. */
+        #drawerTabs { display: flex; gap: 0.4rem; padding: 0.15rem 1rem 0.85rem; width: 100%; }
+        .dtab { flex: 1; text-align: center; padding: 0.5rem 0.4rem; border-radius: 999px; border: 1px solid var(--line); background: #fff; color: var(--brown-light); font-weight: 700; font-size: 0.8rem; cursor: pointer; white-space: nowrap; transition: all 0.18s; }
+        .dtab:hover { border-color: var(--rose); color: var(--rose-deep); }
+        .dtab.active { background: var(--brown); color: #fff; border-color: var(--brown); }
+        .tabpane[hidden] { display: none; }
         #drawerActions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; width: 100%; margin-top: 0.85rem; }
         @media (min-width: 1024px) { #drawerActions { display: flex; width: auto; margin-top: 0; } }
         #signinCard { position: fixed; inset: 0; z-index: 1000; background: linear-gradient(160deg, var(--pink-soft), var(--pink-light) 55%, var(--cream)); display: flex; align-items: center; justify-content: center; padding: 1rem; }
@@ -278,7 +285,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-17</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-18</div>
         </div>
     </nav>
 
@@ -348,30 +355,74 @@
 
     <dialog id="orderDrawer">
         <div class="p-0">
-            <div class="sticky top-0 p-4 border-b bg-white flex flex-wrap items-center justify-between shadow-sm" style="z-index:10;">
-                <div class="flex items-center gap-3">
-                    <button id="backToOrders" class="btn btn-ghost text-sm px-2">Back</button>
-                    <div>
-                        <h2 id="drawerTitle" class="text-xl">Order #XXXX</h2>
-                        <div class="mt-1.5 flex items-center gap-2 text-sm">
-                            <select id="statusSelect" class="px-3 py-1.5 rounded-full border text-sm bg-white">
-                                <option value="Active">Active</option>
-                                <option value="Completed">Completed</option>
-                                <option value="Canceled">Canceled</option>
-                            </select>
-                            <button id="saveStatus" class="btn btn-success text-sm py-1.5">Save</button>
+            <div class="sticky top-0 border-b bg-white shadow-sm" style="z-index:10;">
+                <div class="p-4 flex flex-wrap items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <button id="backToOrders" class="btn btn-ghost text-sm px-2">Back</button>
+                        <div>
+                            <h2 id="drawerTitle" class="text-xl">Order #XXXX</h2>
+                            <div class="mt-1.5 flex items-center gap-2 text-sm">
+                                <select id="statusSelect" class="px-3 py-1.5 rounded-full border text-sm bg-white">
+                                    <option value="Active">Active</option>
+                                    <option value="Completed">Completed</option>
+                                    <option value="Canceled">Canceled</option>
+                                </select>
+                                <button id="saveStatus" class="btn btn-success text-sm py-1.5">Save</button>
+                            </div>
                         </div>
                     </div>
+                    <div id="drawerActions">
+                        <button id="editFields" class="btn btn-secondary">Edit</button>
+                        <button id="viewInvoice" class="btn btn-primary">Invoice</button>
+                        <button id="deleteOrder" class="btn btn-danger">Delete</button>
+                    </div>
                 </div>
-                <div id="drawerActions">
-                    <button id="editFields" class="btn btn-secondary">Edit</button>
-                    <button id="viewInvoice" class="btn btn-primary">Invoice</button>
-                    <button id="deleteOrder" class="btn btn-danger">Delete</button>
+                <div id="drawerTabs">
+                    <button class="dtab active" data-pane="order">Order</button>
+                    <button class="dtab" data-pane="customer">Customer</button>
+                    <button class="dtab" data-pane="payment">Payment</button>
+                    <button class="dtab" data-pane="survey" id="tabSurvey" hidden>Survey</button>
                 </div>
             </div>
             <div class="p-4 lg:p-6" style="max-width:760px;margin:0 auto;">
-                <div class="space-y-4 lg:space-y-6">
-                    <!-- 1. Customer -->
+                <!-- ORDER tab: what to make and when -->
+                <div class="tabpane space-y-4 lg:space-y-6" data-pane="order">
+                    <div class="card">
+                        <h3 class="card-label">Order</h3>
+                        <div class="dl">
+                            <div class="field"><div class="k">Submitted</div><div class="v" id="ov_submitted"></div></div>
+                            <div class="field"><div class="k">Pickup / Delivery</div><div class="v" id="ov_pickup"></div></div>
+                        </div>
+                        <div class="dl dl-3" style="margin-top:1rem;">
+                            <div class="field"><div class="k">Dozens</div><div class="v" id="ov_dzns"></div></div>
+                            <div class="field"><div class="k">Flavor</div><div class="v" id="ov_flavor"></div></div>
+                            <div class="field"><div class="k">Dietary</div><div class="v" id="ov_dietary"></div></div>
+                        </div>
+                        <div class="field full mt-4"><div class="k">Design Notes</div><p class="notebox" id="ov_notes"></p></div>
+                        <div class="field full mt-4" id="photoField">
+                            <div class="k">Inspiration Photo</div>
+                            <img id="ov_photo" class="mt-2 rounded border cursor-pointer" style="width:100%;max-width:220px;aspect-ratio:1;object-fit:cover;"/>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-label">Event</h3>
+                        <div class="dl">
+                            <div class="field"><div class="k">Event</div><div class="v" id="ov_event_name"></div></div>
+                            <div class="field"><div class="k">Date</div><div class="v" id="ov_event"></div></div>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-label">Extras</h3>
+                        <div class="dl dl-3">
+                            <div class="field"><div class="k">Type</div><div class="v" id="ov_pd_type"></div></div>
+                            <div class="field"><div class="k">Consult</div><div class="v" id="ov_consultation"></div></div>
+                            <div class="field"><div class="k">Gift Note</div><div class="v" id="ov_gift_note"></div></div>
+                        </div>
+                        <div class="field full mt-3"><div class="k">Gift Text</div><p class="notebox" id="ov_gift_text"></p></div>
+                    </div>
+                </div>
+                <!-- CUSTOMER tab -->
+                <div class="tabpane space-y-4 lg:space-y-6" data-pane="customer" hidden>
                     <div class="card">
                         <div class="flex items-center justify-between gap-2" style="margin-bottom:1rem;">
                             <h3 class="card-label" style="margin:0;">Customer</h3>
@@ -396,43 +447,9 @@
                             </div>
                         </div>
                     </div>
-                    <!-- 2. Event -->
-                    <div class="card">
-                        <h3 class="card-label">Event</h3>
-                        <div class="dl">
-                            <div class="field"><div class="k">Event</div><div class="v" id="ov_event_name"></div></div>
-                            <div class="field"><div class="k">Date</div><div class="v" id="ov_event"></div></div>
-                        </div>
-                    </div>
-                    <!-- 3. Order -->
-                    <div class="card">
-                        <h3 class="card-label">Order</h3>
-                        <div class="dl">
-                            <div class="field"><div class="k">Submitted</div><div class="v" id="ov_submitted"></div></div>
-                            <div class="field"><div class="k">Pickup / Delivery</div><div class="v" id="ov_pickup"></div></div>
-                        </div>
-                        <div class="dl dl-3" style="margin-top:1rem;">
-                            <div class="field"><div class="k">Dozens</div><div class="v" id="ov_dzns"></div></div>
-                            <div class="field"><div class="k">Flavor</div><div class="v" id="ov_flavor"></div></div>
-                            <div class="field"><div class="k">Dietary</div><div class="v" id="ov_dietary"></div></div>
-                        </div>
-                        <div class="field full mt-4"><div class="k">Design Notes</div><p class="notebox" id="ov_notes"></p></div>
-                        <div class="field full mt-4" id="photoField">
-                            <div class="k">Inspiration Photo</div>
-                            <img id="ov_photo" class="mt-2 rounded border cursor-pointer" style="width:100%;max-width:220px;aspect-ratio:1;object-fit:cover;"/>
-                        </div>
-                    </div>
-                    <!-- 4. Extras -->
-                    <div class="card">
-                        <h3 class="card-label">Extras</h3>
-                        <div class="dl dl-3">
-                            <div class="field"><div class="k">Type</div><div class="v" id="ov_pd_type"></div></div>
-                            <div class="field"><div class="k">Consult</div><div class="v" id="ov_consultation"></div></div>
-                            <div class="field"><div class="k">Gift Note</div><div class="v" id="ov_gift_note"></div></div>
-                        </div>
-                        <div class="field full mt-3"><div class="k">Gift Text</div><p class="notebox" id="ov_gift_text"></p></div>
-                    </div>
-                    <!-- 5. Pricing -->
+                </div>
+                <!-- PAYMENT tab: total, pay status/link, adjustments -->
+                <div class="tabpane space-y-4 lg:space-y-6" data-pane="payment" hidden>
                     <div class="card card-accent">
                         <h3 class="card-label">Pricing</h3>
                         <div id="pricingRows" class="text-sm space-y-2"></div>
@@ -442,7 +459,10 @@
                             <div id="rewardRow" class="hidden"><span class="font-medium">Reward issued:</span> <span id="ov_reward_code" class="code-text"></span></div>
                         </div>
                     </div>
-                    <!-- 6. Fees and Discounts -->
+                    <div class="card">
+                        <h3 class="card-label">Payment</h3>
+                        <div id="paymentSection" class="text-sm space-y-2"></div>
+                    </div>
                     <div class="card">
                         <h3 class="card-label">Fees &amp; Discounts</h3>
                         <div class="flex flex-wrap gap-2 mb-3">
@@ -458,12 +478,9 @@
                             </table>
                         </div>
                     </div>
-                    <!-- 7. Payment -->
-                    <div class="card">
-                        <h3 class="card-label">Payment</h3>
-                        <div id="paymentSection" class="text-sm space-y-2"></div>
-                    </div>
-                    <!-- 8. Customer Survey -->
+                </div>
+                <!-- SURVEY tab: only revealed once the order is Completed -->
+                <div class="tabpane space-y-4 lg:space-y-6" data-pane="survey" hidden>
                     <div class="card">
                         <h3 class="card-label">Customer Survey</h3>
                         <div id="surveyLinkSection"><p class="text-gray-500 text-sm">Loading...</p></div>
@@ -1069,6 +1086,23 @@
 
     // ---------- order drawer ----------
     const drawer = $id('orderDrawer');
+
+    // ---------- drawer tabs ----------
+    function switchDrawerTab(name) {
+        document.querySelectorAll('#drawerTabs .dtab').forEach(b => b.classList.toggle('active', b.dataset.pane === name));
+        document.querySelectorAll('#orderDrawer .tabpane').forEach(p => { p.hidden = p.dataset.pane !== name; });
+        drawer.scrollTop = 0;
+    }
+    document.querySelectorAll('#drawerTabs .dtab').forEach(b => b.onclick = () => switchDrawerTab(b.dataset.pane));
+    // The survey lives behind its own tab that only appears once the order is
+    // Completed. Hide it (and bounce off it) otherwise.
+    function updateSurveyTab() {
+        const done = activeOrder?.status === 'Completed';
+        $id('tabSurvey').hidden = !done;
+        if (done) loadSurveySection(activeOrder.id);
+        else if ($id('tabSurvey').classList.contains('active')) switchDrawerTab('order');
+    }
+
     let activeOrder = null, activeCustomer = null, pricing = null, adjustments = [];
     let discountCodeDetails = null, referralCodeDetails = null, discountCodeAmount = 0, referralDiscountAmount = 0;
     let activeCustomerReferralCode = null, lastComputedTotal = 0, activeComms = [];
@@ -1409,7 +1443,7 @@
         const { data: comms } = await sb.from('customer_communications').select('kind,subject,created_at,metadata').eq('order_id', orderId).order('created_at', { ascending: false });
         activeComms = comms || [];
         document.body.style.cursor = 'default';
-        fillDrawer(); loadSurveySection(orderId); drawer.showModal();
+        switchDrawerTab('order'); fillDrawer(); updateSurveyTab(); drawer.showModal();
     }
 
     const alreadySent = kind => activeComms.some(c => c.kind === kind);
@@ -1421,7 +1455,7 @@
         if (error) { toast(error.message, 'error'); return; }
         const { data: fresh } = await sb.from('orders').select('*').eq('id', activeOrder.id).single();
         if (fresh) activeOrder = fresh; else activeOrder.status = s;
-        fillDrawer(); loadTable();
+        fillDrawer(); updateSurveyTab(); loadTable();
         if (!hadReward && activeOrder.referral_reward_code) {
             toast(`Referral reward ${activeOrder.referral_reward_code} created — 15% off, single use.`, 'success', 6000);
         } else { toast('Status updated', 'success'); }
