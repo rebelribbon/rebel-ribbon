@@ -123,6 +123,7 @@
         .card-label { font-size: 0.68rem; font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--rose-deep); margin: 0 0 1rem; }
         /* Responsive label/value fields inside the order drawer cards */
         .dl { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem 1.25rem; }
+        .dl.dl-3 { grid-template-columns: repeat(3, 1fr); gap: 1rem 0.75rem; }
         .field .k { font-size: 0.66rem; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: var(--brown-light); }
         .field .v { font-weight: 600; color: var(--brown); margin-top: 3px; line-height: 1.45; word-break: break-word; }
         .field.full { grid-column: 1 / -1; }
@@ -269,7 +270,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-14</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-15</div>
         </div>
     </nav>
 
@@ -418,7 +419,7 @@
                     <!-- 4. Extras -->
                     <div class="card">
                         <h3 class="card-label">Extras</h3>
-                        <div class="dl">
+                        <div class="dl dl-3">
                             <div class="field"><div class="k">Type</div><div class="v" id="ov_pd_type"></div></div>
                             <div class="field"><div class="k">Consult</div><div class="v" id="ov_consultation"></div></div>
                             <div class="field"><div class="k">Gift Note</div><div class="v" id="ov_gift_note"></div></div>
