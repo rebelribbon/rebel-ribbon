@@ -263,7 +263,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-9</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-10</div>
         </div>
     </nav>
 
@@ -1250,6 +1250,23 @@
     $id('shareReferral').onclick = generateReferralImage;
 
     // ---------- payment ----------
+    // Ask the staff-only edge function to email the customer (payment link or invoice).
+    async function sendCustomerEmail(kind, extra = {}) {
+        if (!activeOrder) return false;
+        if (!activeCustomer?.email) { toast('This customer has no email on file.', 'error'); return false; }
+        const { data: { session } } = await sb.auth.getSession();
+        if (!session) { toast('You are signed out. Please sign in again.', 'error'); return false; }
+        const resp = await fetch(`${SUPABASE_URL}/functions/v1/send-customer-email`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+            body: JSON.stringify({ orderId: activeOrder.id, kind, ...extra })
+        });
+        const r = await resp.json().catch(() => ({}));
+        if (!resp.ok) { toast(r.error || 'Could not send email.', 'error'); return false; }
+        toast(`Emailed to ${r.sentTo || activeCustomer.email}`, 'success');
+        return true;
+    }
+
     function renderPaymentSection() {
         const o = activeOrder, box = $id('paymentSection'); if (!box) return;
         const status = o?.payment_status || 'unpaid';
@@ -1263,6 +1280,9 @@
             const cp = el('button', 'btn btn-secondary text-xs w-full', 'Copy Payment Link');
             cp.onclick = () => { navigator.clipboard.writeText(o.stripe_payment_link_url); toast('Payment link copied', 'success'); };
             box.appendChild(cp);
+            const em = el('button', 'btn btn-primary text-xs w-full mt-1', 'Email Link to Customer');
+            em.onclick = () => sendCustomerEmail('payment');
+            box.appendChild(em);
         } else {
             const gen = el('button', 'btn btn-primary w-full mt-2', 'Generate Payment Link');
             gen.onclick = generatePaymentLink; box.appendChild(gen);
@@ -1295,7 +1315,17 @@
             Object.assign(activeOrder, { stripe_payment_link_url: result.paymentUrl, payment_status: 'pending', payment_amount: amount });
             renderPaymentSection();
             try { await navigator.clipboard.writeText(result.paymentUrl); toast('Payment link created & copied', 'success'); } catch (_) { toast('Payment link created', 'success'); }
+            // Ask before emailing the customer (never auto-sends).
+            if (activeCustomer?.email && await confirmDialog(`Email this payment link to ${activeCustomer.first_name || 'the customer'} (${activeCustomer.email})?`, 'Send email')) {
+                await sendCustomerEmail('payment');
+            }
         } catch (err) { toast('Error: ' + err.message, 'error'); renderPaymentSection(); }
+    }
+
+    // Called from the invoice window's "Send to Customer" button (same origin).
+    async function emailInvoice() {
+        if (!window.__lastInvoice) { toast('Open the invoice first.', 'error'); return; }
+        await sendCustomerEmail('invoice', { items: window.__lastInvoice.items, total: window.__lastInvoice.total });
     }
 
     // ---------- open / mutate an order ----------
@@ -1381,8 +1411,10 @@
         if (b.codeDisc > 0) items.push({ l: `Discount (${activeOrder.discount_code_used})`, a: '-' + money(b.codeDisc) });
         if (b.refDisc > 0) items.push({ l: `Referral (${activeOrder.referral_code_used})`, a: '-' + money(b.refDisc) });
         adjustments.filter(x => x.kind === 'discount').forEach(x => items.push({ l: x.label, a: '-' + money(x.amount) }));
+        // Stash the exact line items so the invoice window's "Send to Customer" can email them.
+        window.__lastInvoice = { items: items.map(i => ({ l: i.l, a: i.a })), total: money(b.total) };
         const name = escapeHtml(`${activeCustomer.first_name || ''} ${activeCustomer.last_name || ''}`.trim());
-        const html = `<!DOCTYPE html><html><head><title>Invoice #${orderId}</title><style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600&display=swap');*{box-sizing:border-box}body{margin:0;padding:24px;font-family:'Nunito',sans-serif;background:#fdf2f8}.inv{max-width:800px;margin:auto;background:#fff;border-radius:20px;padding:32px;box-shadow:0 10px 40px rgba(190,24,93,.15)}.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}.brand{font-family:'Playfair Display',serif;font-size:28px}.pill{background:#eff6ff;color:#1d4ed8;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600}hr{border:none;border-top:1px solid #e5e7eb;margin:16px 0}.info{display:flex;justify-content:space-between;font-size:13px;margin-bottom:20px}.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9ca3af;margin-bottom:4px}.val{font-weight:600}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}th{text-align:left;padding:10px;background:#f9fafb;font-weight:600}th:last-child{text-align:right}td{padding:10px;border-bottom:1px solid #f3f4f6}td:last-child{text-align:right}.tot td{border-top:2px solid #d1d5db;background:#fef3c7;font-weight:700}.tot td:last-child{font-size:18px;color:#b91c1c}.ftr{text-align:center;margin-top:20px;font-size:11px;color:#9ca3af}.invbar{display:flex;justify-content:space-between;gap:12px;max-width:800px;margin:0 auto 14px}.invbar button{border-radius:999px;padding:10px 20px;font-family:'Nunito',sans-serif;font-weight:600;font-size:14px;cursor:pointer}.btn-back{background:#fff;color:#be185d;border:1px solid #be185d}.btn-print{background:#be185d;color:#fff;border:none}@media print{body{background:#fff;padding:0}.inv{box-shadow:none}.invbar{display:none}}</style></head><body><div class="invbar"><button class="btn-back" onclick="window.close()">Back to Order</button><button class="btn-print" onclick="window.print()">Print / Save PDF</button></div><div class="inv"><div class="hdr"><div><img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" style="height:60px;margin-bottom:8px"><div class="brand">Rebel Ribbon</div></div><div style="text-align:right"><div class="pill">Invoice #${orderId}</div><div style="margin-top:4px;font-size:12px"><strong>Date:</strong> ${new Date().toLocaleDateString()}</div></div></div><hr/><div class="info"><div><div class="lbl">Bill to</div><div class="val">${name}</div><div>${escapeHtml(activeCustomer.email || '')}</div><div>${escapeHtml(formatPhone(activeCustomer.phone) || '')}</div></div><div style="text-align:right"><div class="lbl">From</div><div class="val">Rebel Ribbon</div><div>www.rebelribbon.com</div><div>info@rebelribbon.com</div></div></div><table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>${items.map(i => `<tr><td>${escapeHtml(i.l)}</td><td>${i.a}</td></tr>`).join('')}<tr class="tot"><td>Total Due</td><td>${money(b.total)}</td></tr></tbody></table><div class="ftr">Thank you for supporting handmade custom cookies!</div></div></body></html>`;
+        const html = `<!DOCTYPE html><html><head><title>Invoice #${orderId}</title><style>@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Nunito:wght@400;600&display=swap');*{box-sizing:border-box}body{margin:0;padding:24px;font-family:'Nunito',sans-serif;background:#fdf2f8}.inv{max-width:800px;margin:auto;background:#fff;border-radius:20px;padding:32px;box-shadow:0 10px 40px rgba(190,24,93,.15)}.hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}.brand{font-family:'Playfair Display',serif;font-size:28px}.pill{background:#eff6ff;color:#1d4ed8;padding:4px 12px;border-radius:999px;font-size:11px;font-weight:600}hr{border:none;border-top:1px solid #e5e7eb;margin:16px 0}.info{display:flex;justify-content:space-between;font-size:13px;margin-bottom:20px}.lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#9ca3af;margin-bottom:4px}.val{font-weight:600}table{width:100%;border-collapse:collapse;font-size:13px;margin-top:16px}th{text-align:left;padding:10px;background:#f9fafb;font-weight:600}th:last-child{text-align:right}td{padding:10px;border-bottom:1px solid #f3f4f6}td:last-child{text-align:right}.tot td{border-top:2px solid #d1d5db;background:#fef3c7;font-weight:700}.tot td:last-child{font-size:18px;color:#b91c1c}.ftr{text-align:center;margin-top:20px;font-size:11px;color:#9ca3af}.invbar{display:flex;justify-content:space-between;gap:12px;max-width:800px;margin:0 auto 14px}.invbar button{border-radius:999px;padding:10px 20px;font-family:'Nunito',sans-serif;font-weight:600;font-size:14px;cursor:pointer}.btn-back{background:#fff;color:#be185d;border:1px solid #be185d}.btn-print{background:#be185d;color:#fff;border:none}.btn-send{background:#5D4E4E;color:#fff;border:none}@media print{body{background:#fff;padding:0}.inv{box-shadow:none}.invbar{display:none}}</style></head><body><div class="invbar"><button class="btn-back" onclick="window.close()">Back to Order</button><button class="btn-send" onclick="if(window.opener&&window.opener.emailInvoice){window.opener.emailInvoice();this.textContent='Sent — check staff app';}else{alert('Open the invoice from the staff app to email it.');}">Send to Customer</button><button class="btn-print" onclick="window.print()">Print / Save PDF</button></div><div class="inv"><div class="hdr"><div><img src="https://rebelribbon.github.io/rebel-ribbon/Bowtrans.png" style="height:60px;margin-bottom:8px"><div class="brand">Rebel Ribbon</div></div><div style="text-align:right"><div class="pill">Invoice #${orderId}</div><div style="margin-top:4px;font-size:12px"><strong>Date:</strong> ${new Date().toLocaleDateString()}</div></div></div><hr/><div class="info"><div><div class="lbl">Bill to</div><div class="val">${name}</div><div>${escapeHtml(activeCustomer.email || '')}</div><div>${escapeHtml(formatPhone(activeCustomer.phone) || '')}</div></div><div style="text-align:right"><div class="lbl">From</div><div class="val">Rebel Ribbon</div><div>www.rebelribbon.com</div><div>info@rebelribbon.com</div></div></div><table><thead><tr><th>Description</th><th>Amount</th></tr></thead><tbody>${items.map(i => `<tr><td>${escapeHtml(i.l)}</td><td>${i.a}</td></tr>`).join('')}<tr class="tot"><td>Total Due</td><td>${money(b.total)}</td></tr></tbody></table><div class="ftr">Thank you for supporting handmade custom cookies!</div></div></body></html>`;
         const w = window.open('', '_blank', 'width=900,height=800');
         if (!w) { toast('Please allow pop-ups to view the invoice.', 'error'); return; }
         w.document.write(html); w.document.close();
