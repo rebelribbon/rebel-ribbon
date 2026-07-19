@@ -263,7 +263,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-10</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-11</div>
         </div>
     </nav>
 
@@ -431,6 +431,10 @@
                     <div class="card">
                         <h3 class="card-label">Payment</h3>
                         <div id="paymentSection" class="text-sm space-y-2"></div>
+                    </div>
+                    <div class="card">
+                        <h3 class="card-label">Sent to Customer</h3>
+                        <div id="commsSection" class="text-sm space-y-2"></div>
                     </div>
                     <div class="card">
                         <h3 class="card-label">Fees &amp; Discounts</h3>
@@ -1044,7 +1048,7 @@
     const drawer = $id('orderDrawer');
     let activeOrder = null, activeCustomer = null, pricing = null, adjustments = [];
     let discountCodeDetails = null, referralCodeDetails = null, discountCodeAmount = 0, referralDiscountAmount = 0;
-    let activeCustomerReferralCode = null, lastComputedTotal = 0;
+    let activeCustomerReferralCode = null, lastComputedTotal = 0, activeComms = [];
 
     async function fetchPricing() {
         const { data } = await sb.from('pricing').select('*').order('created_at', { ascending: false }).limit(1);
@@ -1171,7 +1175,7 @@
         setText('ov_discount_code', o?.discount_code_used ? `${o.discount_code_used} (${discountCodeDetails?.isValid ? 'applied' : 'invalid'})` : 'None');
         setText('ov_referral_code', o?.referral_code_used ? `${o.referral_code_used} (${referralCodeDetails?.isValid ? 'applied' : 'invalid'})` : 'None');
         $id('statusSelect').value = o?.status || 'Active';
-        renderAdjustments(); computeTotals(); renderPaymentSection(); renderReferralExtras();
+        renderAdjustments(); computeTotals(); renderPaymentSection(); renderReferralExtras(); renderComms();
     }
 
     function renderReferralExtras() {
@@ -1276,6 +1280,13 @@
         box.innerHTML = html;
         if (status === 'paid') return;
         if (o?.stripe_payment_link_url) {
+            // Flag when the order total no longer matches the link's amount.
+            const changed = o.payment_amount != null && Math.abs((lastComputedTotal || 0) - Number(o.payment_amount)) > 0.005;
+            if (changed) {
+                const note = el('div', 'text-xs mt-1', `Total is now ${money(lastComputedTotal)} but this link is for ${money(o.payment_amount)}. Regenerate to update it.`);
+                note.style.color = 'var(--amber)';
+                box.appendChild(note);
+            }
             const inp = el('input', 'survey-link-input'); inp.readOnly = true; inp.value = o.stripe_payment_link_url; box.appendChild(inp);
             const cp = el('button', 'btn btn-secondary text-xs w-full', 'Copy Payment Link');
             cp.onclick = () => { navigator.clipboard.writeText(o.stripe_payment_link_url); toast('Payment link copied', 'success'); };
@@ -1283,25 +1294,32 @@
             const em = el('button', 'btn btn-primary text-xs w-full mt-1', 'Email Link to Customer');
             em.onclick = () => sendCustomerEmail('payment');
             box.appendChild(em);
+            const rg = el('button', `btn ${changed ? 'btn-warning' : 'btn-secondary'} text-xs w-full mt-1`, changed ? `Regenerate at ${money(lastComputedTotal)}` : 'Regenerate Link');
+            rg.onclick = () => generatePaymentLink(true);
+            box.appendChild(rg);
         } else {
             const gen = el('button', 'btn btn-primary w-full mt-2', 'Generate Payment Link');
-            gen.onclick = generatePaymentLink; box.appendChild(gen);
+            gen.onclick = () => generatePaymentLink(false);
+            box.appendChild(gen);
         }
     }
-    async function generatePaymentLink() {
+    async function generatePaymentLink(regenerate = false) {
         if (!activeOrder) return;
         const amount = Math.round((lastComputedTotal || 0) * 100) / 100;
         if (!(amount > 0)) { toast('Total must be greater than $0. Check pricing first.', 'error'); return; }
-        if (!(await confirmDialog(`Create a Stripe payment link for ${money(amount)}?`, 'Create link'))) return;
+        const prompt = regenerate
+            ? `Regenerate the payment link for ${money(amount)}?\n\nThe old link will stop working.`
+            : `Create a Stripe payment link for ${money(amount)}?`;
+        if (!(await confirmDialog(prompt, regenerate ? 'Regenerate' : 'Create link'))) return;
         const { data: { session } } = await sb.auth.getSession();
         if (!session) { toast('You are signed out. Please sign in again.', 'error'); return; }
-        $id('paymentSection').innerHTML = '<p class="text-gray-500">Creating payment link…</p>';
+        $id('paymentSection').innerHTML = `<p class="text-gray-500">${regenerate ? 'Regenerating' : 'Creating'} payment link…</p>`;
         try {
             const resp = await fetch(`${SUPABASE_URL}/functions/v1/create-payment-link`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
                 body: JSON.stringify({
-                    orderId: activeOrder.id, amount,
+                    orderId: activeOrder.id, amount, regenerate,
                     customerEmail: activeCustomer?.email || '',
                     customerName: activeCustomer ? `${activeCustomer.first_name || ''} ${activeCustomer.last_name || ''}`.trim() : '',
                     description: `Rebel Ribbon Order #${activeOrder.order_id || formatOrderId(activeOrder.id)}`
@@ -1309,12 +1327,10 @@
             });
             const result = await resp.json();
             if (!resp.ok) throw new Error(result.error || 'Could not create payment link');
-            const upd = { stripe_payment_link_url: result.paymentUrl, payment_amount: amount, payment_status: 'pending' };
-            if (result.paymentLinkId) upd.stripe_payment_link_id = result.paymentLinkId;
-            await sb.from('orders').update(upd).eq('id', activeOrder.id);
             Object.assign(activeOrder, { stripe_payment_link_url: result.paymentUrl, payment_status: 'pending', payment_amount: amount });
+            if (result.paymentLinkId) activeOrder.stripe_payment_link_id = result.paymentLinkId;
             renderPaymentSection();
-            try { await navigator.clipboard.writeText(result.paymentUrl); toast('Payment link created & copied', 'success'); } catch (_) { toast('Payment link created', 'success'); }
+            try { await navigator.clipboard.writeText(result.paymentUrl); toast(`Payment link ${regenerate ? 'regenerated' : 'created'} & copied`, 'success'); } catch (_) { toast(`Payment link ${regenerate ? 'regenerated' : 'created'}`, 'success'); }
             // Ask before emailing the customer (never auto-sends).
             if (activeCustomer?.email && await confirmDialog(`Email this payment link to ${activeCustomer.first_name || 'the customer'} (${activeCustomer.email})?`, 'Send email')) {
                 await sendCustomerEmail('payment');
@@ -1350,8 +1366,28 @@
             activeOrder.discount_code_used ? fetchDiscountCodeDetails(activeOrder.discount_code_used, activeCustomer?.email) : null,
             activeOrder.referral_code_used ? fetchReferralCodeDetails(activeOrder.referral_code_used) : null
         ]);
+        const { data: comms } = await sb.from('customer_communications').select('kind,subject,created_at,metadata').eq('order_id', orderId).order('created_at', { ascending: false });
+        activeComms = comms || [];
         document.body.style.cursor = 'default';
         fillDrawer(); loadSurveySection(orderId); drawer.showModal();
+    }
+
+    // Shows which customer emails have gone out for this order, and when.
+    function renderComms() {
+        const box = $id('commsSection'); if (!box) return;
+        const labels = { payment_email: 'Payment link email', invoice_email: 'Invoice email', thank_you: 'Thank you + survey', referral_reward: 'Referral reward' };
+        const latest = {};
+        for (const c of activeComms) { if (!latest[c.kind]) latest[c.kind] = c; }
+        let html = '';
+        for (const k of ['payment_email', 'invoice_email', 'thank_you', 'referral_reward']) {
+            const c = latest[k];
+            if (k === 'referral_reward' && !c && !activeOrder?.referral_code_used) continue;
+            const status = c
+                ? `<span style="color:var(--green);font-weight:700">Sent ${dateOnly(c.created_at)}</span>`
+                : `<span class="text-gray-500">Not sent</span>`;
+            html += `<div class="flex justify-between gap-2"><span>${labels[k]}</span>${status}</div>`;
+        }
+        box.innerHTML = html || '<p class="text-gray-500">Nothing sent yet.</p>';
     }
 
     $id('saveStatus').onclick = async () => {
