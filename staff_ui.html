@@ -286,7 +286,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-20</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-21</div>
         </div>
     </nav>
 
@@ -374,9 +374,9 @@
                     </div>
                     <div id="drawerActions">
                         <button id="viewInvoice" class="btn btn-primary">Invoice</button>
-                        <button id="sendThankYou" class="btn btn-success" hidden>Send Survey &amp; Referral</button>
-                        <button id="reshareReferral" class="btn btn-secondary" hidden>Re-share Referral</button>
-                        <button id="reshareSurvey" class="btn btn-secondary" hidden>Re-share Survey</button>
+                        <button id="sendThankYou" class="btn btn-success hidden">Send Survey &amp; Referral</button>
+                        <button id="reshareReferral" class="btn btn-secondary hidden">Re-share Referral</button>
+                        <button id="reshareSurvey" class="btn btn-secondary hidden">Re-share Survey</button>
                         <button id="deleteOrder" class="btn btn-danger">Delete</button>
                     </div>
                 </div>
@@ -1259,9 +1259,11 @@
         const done = activeOrder?.status === 'Completed';
         const thanked = alreadySent('thank_you');
         const surveySent = thanked || alreadySent('survey_email');
-        $id('sendThankYou').hidden = !(done && !thanked);
-        $id('reshareReferral').hidden = !(done && thanked && activeCustomerReferralCode);
-        $id('reshareSurvey').hidden = !(done && surveySent);
+        // Use the .hidden utility (display:none !important) — the plain [hidden]
+        // attribute is overridden by .btn's display:inline-flex.
+        $id('sendThankYou').classList.toggle('hidden', !(done && !thanked));
+        $id('reshareReferral').classList.toggle('hidden', !(done && thanked && activeCustomerReferralCode));
+        $id('reshareSurvey').classList.toggle('hidden', !(done && surveySent));
     }
 
     // Confirm popup to send the survey link + referral code to the customer.
