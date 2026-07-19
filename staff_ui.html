@@ -270,7 +270,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-15</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-16</div>
         </div>
     </nav>
 
@@ -370,10 +370,10 @@
                             <button id="addContact" class="btn btn-secondary text-xs lg:hidden hidden">Save Contact</button>
                         </div>
                         <div class="dl">
-                            <div class="field"><div class="k">Name</div><div class="v" id="cust_name"></div></div>
+                            <div class="field full"><div class="k">Name</div><div class="v" id="cust_name"></div></div>
                             <div class="field"><div class="k">Customer ID</div><div class="v" id="cust_id"></div></div>
                             <div class="field"><div class="k">Phone</div><a class="v link" id="cust_phone_link"></a></div>
-                            <div class="field"><div class="k">Email</div><a class="v link break-all" id="cust_email"></a></div>
+                            <div class="field full"><div class="k">Email</div><a class="v link break-all" id="cust_email"></a></div>
                             <div class="field full">
                                 <div class="k">Address</div>
                                 <div class="v"><div id="cust_addr1"></div><div id="cust_addr2"></div><div id="cust_citystzip"></div></div>
@@ -402,18 +402,16 @@
                         <div class="dl">
                             <div class="field"><div class="k">Submitted</div><div class="v" id="ov_submitted"></div></div>
                             <div class="field"><div class="k">Pickup / Delivery</div><div class="v" id="ov_pickup"></div></div>
+                        </div>
+                        <div class="dl dl-3" style="margin-top:1rem;">
                             <div class="field"><div class="k">Dozens</div><div class="v" id="ov_dzns"></div></div>
                             <div class="field"><div class="k">Flavor</div><div class="v" id="ov_flavor"></div></div>
                             <div class="field"><div class="k">Dietary</div><div class="v" id="ov_dietary"></div></div>
                         </div>
                         <div class="field full mt-4"><div class="k">Design Notes</div><p class="notebox" id="ov_notes"></p></div>
-                        <div class="field full mt-4">
+                        <div class="field full mt-4" id="photoField">
                             <div class="k">Inspiration Photo</div>
                             <img id="ov_photo" class="mt-2 rounded border cursor-pointer" style="width:100%;max-width:220px;aspect-ratio:1;object-fit:cover;"/>
-                            <div class="flex flex-wrap items-center gap-2 mt-2">
-                                <input id="uploadPhoto" type="file" accept="image/*" class="text-xs"/>
-                                <button id="btnUploadPhoto" class="btn btn-secondary text-xs">Upload</button>
-                            </div>
                         </div>
                     </div>
                     <!-- 4. Extras -->
@@ -891,8 +889,10 @@
             ${!used
                 ? `<input class="survey-link-input" value="${escapeHtml(url)}" readonly/><div class="text-xs text-gray-500">Expires: ${tok.expires_at ? new Date(tok.expires_at).toLocaleDateString() : 'Never'}</div>`
                 : `<div class="text-sm text-gray-600">Done: ${tok.used_at ? new Date(tok.used_at).toLocaleDateString() : ''}</div>`}
+            ${!used && !exp ? `<button id="emailSurvey" class="btn btn-primary mt-2 w-full">Email to Customer${alreadySent('survey_email') ? ' (sent)' : ''}</button>` : ''}
             ${exp && !used ? `<button id="regenLink" class="btn btn-warning mt-2 w-full">Regenerate</button>` : ''}</div>`;
         $id('copyLink')?.addEventListener('click', () => { navigator.clipboard.writeText(url); toast('Survey link copied', 'success'); });
+        $id('emailSurvey')?.addEventListener('click', () => sendCustomerEmail('survey'));
         $id('regenLink')?.addEventListener('click', () => genSurveyLink(orderId));
     }
 
@@ -1271,8 +1271,13 @@
     async function sendCustomerEmail(kind, extra = {}, opts = {}) {
         if (!activeOrder) return false;
         if (!activeCustomer?.email) { toast('This customer has no email on file.', 'error'); return false; }
-        const commKind = kind === 'payment' ? 'payment_email' : 'invoice_email';
-        const thing = kind === 'payment' ? 'the payment link' : 'the invoice';
+        const meta = {
+            payment: { commKind: 'payment_email', thing: 'the payment link', label: 'Payment link' },
+            survey: { commKind: 'survey_email', thing: 'the customer survey', label: 'Survey link' },
+            invoice: { commKind: 'invoice_email', thing: 'the invoice', label: 'Invoice' }
+        }[kind] || { commKind: 'invoice_email', thing: 'the invoice', label: 'Invoice' };
+        const commKind = meta.commKind;
+        const thing = meta.thing;
         const sent = alreadySent(commKind);
         if (!opts.skipConfirm) {
             const q = sent ? `Resend ${thing} to ${activeCustomer.email}?` : `Send ${thing} to ${activeCustomer.email}?`;
@@ -1289,8 +1294,9 @@
         if (!resp.ok) { toast(r.error || 'Could not send email.', 'error'); return false; }
         // Record locally so the (sent) label and Resend wording update immediately.
         activeComms.unshift({ kind: commKind, created_at: new Date().toISOString() });
-        toast(`${kind === 'payment' ? 'Payment link' : 'Invoice'} sent to ${r.sentTo || activeCustomer.email}`, 'success');
+        toast(`${meta.label} sent to ${r.sentTo || activeCustomer.email}`, 'success');
         renderPaymentSection();
+        if (kind === 'survey') loadSurveySection(activeOrder.id);
         return true;
     }
 
@@ -1426,17 +1432,6 @@
         adjustments.unshift({ ...data, amount: Number(data.amount || 0) });
         $id('adjLabel').value = ''; $id('adjAmount').value = '';
         renderAdjustments(); computeTotals();
-    };
-    $id('btnUploadPhoto').onclick = async () => {
-        const f = $id('uploadPhoto').files?.[0]; if (!f) { toast('Choose a file first.', 'error'); return; }
-        const path = `${activeOrder.id}/photo_${Date.now()}.${f.name.split('.').pop()}`;
-        const { data, error } = await sb.storage.from('order_uploads').upload(path, f, { upsert: true });
-        if (error) { toast(error.message, 'error'); return; }
-        const { data: pub } = sb.storage.from('order_uploads').getPublicUrl(data.path);
-        await sb.from('orders').update({ design_inspiration_photo: pub?.publicUrl }).eq('id', activeOrder.id);
-        activeOrder.design_inspiration_photo = pub?.publicUrl;
-        $id('ov_photo').src = pub?.publicUrl; $id('uploadPhoto').value = '';
-        toast('Photo uploaded', 'success');
     };
     $id('ov_photo').onclick = function () { if (this.src && this.src !== NO_PHOTO) window.open(this.src, '_blank'); };
 
