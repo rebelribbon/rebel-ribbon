@@ -104,6 +104,15 @@
         .pickup-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.85rem 0; border-top: 1px solid var(--line-soft); cursor: pointer; }
         .pickup-row:hover { background: var(--pink-soft); }
         .pickup-when { font-weight: 700; color: var(--brown); white-space: nowrap; }
+        .stat-card.stat-clickable { cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .05s; }
+        .stat-card.stat-clickable:hover { border-color: var(--rose); box-shadow: var(--shadow-md); }
+        .stat-card.stat-clickable:active { transform: translateY(1px); }
+        .stat-hint { font-size: 0.66rem; color: var(--rose-deep); font-weight: 700; margin-top: 0.35rem; letter-spacing: .04em; }
+        #statDialog { width: 100%; max-width: 620px; border-radius: var(--radius); padding: 0; }
+        @media (max-width: 640px) { #statDialog { max-width: 100%; height: 100%; border-radius: 0; margin: 0; } }
+        .stat-row { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; padding: 0.85rem 0.25rem; border-top: 1px solid var(--line-soft); cursor: pointer; }
+        .stat-row:first-child { border-top: none; }
+        .stat-row:hover { background: var(--pink-soft); }
 
         /* ---------- Dialogs ---------- */
         dialog::backdrop { background: rgba(70,58,58,0.45); backdrop-filter: blur(2px); }
@@ -286,7 +295,7 @@
         <div id="logout-sidebar">
             <span id="who" class="block truncate mb-2 text-gray-400 text-xs"></span>
             <button id="logout" class="btn btn-secondary w-full text-sm">Sign out</button>
-            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-21</div>
+            <div id="buildVersion" class="text-gray-500 text-xs mt-2 text-center">v2026.07.18-22</div>
         </div>
     </nav>
 
@@ -495,6 +504,16 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </dialog>
+
+    <dialog id="statDialog">
+        <div class="p-0">
+            <div class="sticky top-0 p-4 border-b bg-white flex items-center justify-between shadow-sm" style="z-index:10;">
+                <h2 id="statTitle" class="text-xl serif" style="font-weight:600;">Orders</h2>
+                <button id="statClose" class="btn btn-ghost text-sm px-2">Close</button>
+            </div>
+            <div class="p-4" id="statBody"></div>
         </div>
     </dialog>
 
@@ -879,18 +898,23 @@
         const unpaidTotal = (unpaid.data || []).reduce((s, o) => s + Number(o.payment_amount || 0), 0);
         const weekCount = (pickups.data || []).filter(o => o.pickup_delivery_date && o.pickup_delivery_date <= weekEnd).length;
 
-        const stat = (value, label, sub) =>
-            `<div class="stat-card"><div class="stat-value">${value}</div><div class="stat-label">${label}</div>${sub ? `<div class="stat-sub">${sub}</div>` : ''}</div>`;
+        const stat = (value, label, key, sub) =>
+            `<div class="stat-card stat-clickable" data-stat="${key}"><div class="stat-value">${value}</div><div class="stat-label">${label}</div>${sub ? `<div class="stat-sub">${sub}</div>` : ''}<div class="stat-hint">View →</div></div>`;
 
         let html = `<div class="stat-grid">
-            ${stat(activeC.count || 0, 'Active Orders')}
-            ${stat(unpaid.count || 0, 'Unpaid', unpaidTotal ? money(unpaidTotal) + ' outstanding' : '')}
-            ${stat(weekCount, 'Pickups This Week')}
-            ${stat(pending.count || 0, 'Reviews to Approve')}
+            ${stat(activeC.count || 0, 'Active Orders', 'active')}
+            ${stat(unpaid.count || 0, 'Unpaid', 'unpaid', unpaidTotal ? money(unpaidTotal) + ' outstanding' : '')}
+            ${stat(weekCount, 'Pickups This Week', 'pickups')}
+            ${stat(pending.count || 0, 'Reviews to Approve', 'reviews')}
         </div>`;
 
         html += `<div class="card"><h3 class="card-label">Upcoming Pickups &amp; Deliveries</h3><div id="pickupList"></div></div>`;
         box.innerHTML = html;
+
+        box.querySelectorAll('.stat-card[data-stat]').forEach(c => c.onclick = () => {
+            const k = c.dataset.stat;
+            if (k === 'reviews') gotoReviews(); else openStatOrders(k);
+        });
 
         const list = $id('pickupList');
         const rows = pickups.data || [];
@@ -905,6 +929,41 @@
             list.appendChild(row);
         }
     }
+
+    // ---------- dashboard stat drilldown ----------
+    // Each dashboard card opens the list of orders behind its count.
+    const statSpecs = {
+        active: { title: 'Active Orders', apply: q => q.eq('status', 'Active') },
+        unpaid: { title: 'Unpaid Orders', apply: q => q.eq('status', 'Active').neq('payment_status', 'paid') },
+        pickups: { title: 'Pickups This Week', apply: q => q.eq('status', 'Active').gte('pickup_delivery_date', todayStr()).lte('pickup_delivery_date', dateOnly(new Date(Date.now() + 7 * 86400000))) }
+    };
+    async function openStatOrders(key) {
+        const spec = statSpecs[key]; if (!spec) return;
+        $id('statTitle').textContent = spec.title;
+        const body = $id('statBody'); body.innerHTML = '<p class="text-gray-500 text-sm">Loading…</p>';
+        $id('statDialog').showModal();
+        let q = sb.from('orders_full').select('id,order_id,customer_first_name,customer_last_name,status,payment_status,payment_amount,pickup_delivery_date,pickup_delivery_type,cookie_amount_dzns');
+        const { data, error } = await spec.apply(q).order('pickup_delivery_date', { ascending: true });
+        if (error) { body.innerHTML = `<div class="text-red-600 text-sm">Couldn't load these orders. Please try again.</div>`; return; }
+        const rows = data || [];
+        if (!rows.length) { body.innerHTML = '<p class="text-gray-500 text-sm py-8 text-center">No orders here right now.</p>'; return; }
+        body.innerHTML = '';
+        for (const o of rows) {
+            const name = `${o.customer_first_name || ''} ${o.customer_last_name || ''}`.trim() || 'N/A';
+            const right = key === 'unpaid'
+                ? `<div class="pickup-when">${o.payment_amount != null ? money(o.payment_amount) : ''}</div>`
+                : `<div class="pickup-when">${o.pickup_delivery_date ? prettyDate(o.pickup_delivery_date) : '—'}</div>`;
+            const row = el('div', 'stat-row');
+            row.innerHTML = `<div><div class="font-semibold">${escapeHtml(name)}</div>
+                <div class="text-xs text-gray-500">#${escapeHtml(o.order_id || formatOrderId(o.id))} · ${o.cookie_amount_dzns ?? '?'} dz${o.pickup_delivery_type ? ' · ' + escapeHtml(o.pickup_delivery_type) : ''}</div></div>${right}`;
+            row.onclick = () => openOrderManager(o.id);
+            body.appendChild(row);
+        }
+    }
+    function gotoReviews() {
+        activeKey = 'reviews'; activeReviewTab = 'pending'; page = 0; renderTabs(); loadTable();
+    }
+    $id('statClose').onclick = () => $id('statDialog').close();
 
     // ---------- survey link (in drawer) ----------
     async function loadSurveySection(orderId) {
